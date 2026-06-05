@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3 uid="uid://bfd2t23h8y76b"]
+
+[ext_resource type="Script" path="res://src/common/classes/room.gd" id="1_script"]
+
+[node name="RoomBase" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Background" type="Sprite2D" parent="."]
+
+[node name="HotspotsLayer" type="Node2D" parent="."]
+
+[node name="CharactersLayer" type="Node2D" parent="."]
+
+[node name="ForegroundLayer" type="Node2D" parent="."]
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+layer = 10

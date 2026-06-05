@@ -1,0 +1,13 @@
+# Godot-specific ignores
+.godot/
+*.translation
+*.signature
+
+# Android export builds
+*.apk
+*.apks
+*.aab
+
+# OS generated files
+.DS_Store
+Thumbs.db

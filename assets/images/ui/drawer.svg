@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100" width="150" height="100">
+  <!-- Solid wood drawer face -->
+  <rect x="5" y="5" width="140" height="90" fill="#2d1500" stroke="#110700" stroke-width="4" rx="3"/>
+  <rect x="15" y="15" width="120" height="70" fill="#4b270a" stroke="#110700" stroke-width="2"/>
+  
+  <!-- Ornate brass handle backing plate -->
+  <rect x="45" y="35" width="60" height="30" fill="#854d0e" stroke="#1c1917" stroke-width="2" rx="4"/>
+  <!-- Keyhole detail -->
+  <circle cx="75" cy="50" r="4" fill="#000000"/>
+  <polygon points="73,50 77,50 79,62 71,62" fill="#000000"/>
+  
+  <!-- Handle Ring -->
+  <path d="M 55 50 C 55 70 95 70 95 50" fill="none" stroke="#ca8a04" stroke-width="4" stroke-linecap="round"/>
+</svg>

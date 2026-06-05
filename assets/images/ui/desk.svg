@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 150" width="300" height="150">
+  <!-- Solid wood top -->
+  <rect x="10" y="20" width="280" height="25" fill="#451a03" stroke="#1c1917" stroke-width="4"/>
+  <!-- Decorative trim -->
+  <rect x="20" y="45" width="260" height="10" fill="#3f1a04"/>
+  <!-- Heavy wood legs/sides -->
+  <rect x="30" y="55" width="40" height="90" fill="#270e01" stroke="#1c1917" stroke-width="4"/>
+  <rect x="230" y="55" width="40" height="90" fill="#270e01" stroke="#1c1917" stroke-width="4"/>
+  <!-- Front backing board (modesty panel) -->
+  <rect x="70" y="55" width="160" height="70" fill="#311102" stroke="#1c1917" stroke-width="3"/>
+  <!-- Stack of old yellow papers on desk -->
+  <polygon points="120,15 150,14 148,20 118,21" fill="#fef08a" stroke="#1c1917" stroke-width="1.5"/>
+  <polygon points="123,13 147,11 149,18 125,20" fill="#fef9c3"/>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 300" width="120" height="300">
+  <!-- Hat / Fedora -->
+  <path d="M20 70 L100 70 L90 50 L30 50 Z" fill="#1b242e"/>
+  <ellipse cx="60" cy="72" rx="48" ry="4" fill="#151d26"/>
+  <!-- Head & Collar -->
+  <circle cx="60" cy="90" r="18" fill="#1e293b"/>
+  <path d="M48 105 L72 105 L80 125 L40 125 Z" fill="#0f172a"/>
+  <!-- Trenchcoat / Body -->
+  <path d="M35 125 L85 125 L95 240 L25 240 Z" fill="#1e293b"/>
+  <!-- Belt and details -->
+  <rect x="33" y="170" width="54" height="6" fill="#0f172a"/>
+  <rect x="54" y="167" width="12" height="12" fill="#e2e8f0" rx="1"/>
+  <!-- Coat shadows / buttons -->
+  <circle cx="45" cy="145" r="3" fill="#0f172a"/>
+  <circle cx="45" cy="195" r="3" fill="#0f172a"/>
+  <circle cx="75" cy="145" r="3" fill="#0f172a"/>
+  <circle cx="75" cy="195" r="3" fill="#0f172a"/>
+  <!-- Legs / Trousers -->
+  <rect x="42" y="240" width="14" height="50" fill="#0f172a"/>
+  <rect x="64" y="240" width="14" height="50" fill="#0f172a"/>
+  <!-- Boots -->
+  <path d="M35 290 L56 290 L56 298 L30 298 Z" fill="#111827"/>
+  <path d="M64 290 L85 290 L90 298 L64 298 Z" fill="#111827"/>
+  <!-- Glowing Eyes (Lovecraftian sanity motif) -->
+  <ellipse cx="51" cy="88" rx="3" ry="1.5" fill="#22d3ee"/>
+  <ellipse cx="69" cy="88" rx="3" ry="1.5" fill="#22d3ee"/>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <rect width="1920" height="1080" fill="#090d16"/>
+  <!-- Floor/Street -->
+  <rect x="0" y="800" width="1920" height="280" fill="#1e293b"/>
+  <!-- Street stones (horizontal dividers) -->
+  <line x1="0" y1="800" x2="1920" y2="800" stroke="#090d16" stroke-width="8"/>
+  <ellipse cx="960" cy="940" rx="960" ry="140" fill="#162e3d" opacity="0.3"/> <!-- Wet reflection -->
+  
+  <!-- Silhouette of seaside warehouses/houses in background -->
+  <path d="M400 800 L400 450 L550 350 L700 450 L700 800 Z" fill="#0b131f"/>
+  <path d="M700 800 L700 500 L850 420 L950 500 L950 800 Z" fill="#070c14"/>
+  <path d="M0 800 L0 350 L150 250 L350 400 L350 800 Z" fill="#0f1726"/>
+  
+  <!-- Fog / Sea Mist gradient -->
+  <rect x="0" y="300" width="1920" height="500" fill="url(#fog-grad)" opacity="0.25"/>
+  <defs>
+    <linearGradient id="fog-grad" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#090d16" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Gothic/Old Innsmouth Street Lamp -->
+  <g transform="translate(1450, 200)">
+    <!-- Lamp post -->
+    <rect x="-10" y="100" width="20" height="500" fill="#020617"/>
+    <path d="M -30 100 L 30 100 L 10 120 L -10 120 Z" fill="#020617"/>
+    <!-- Brackets -->
+    <path d="M -10 150 C -40 150 -50 120 -50 90 L -50 70 L -10 110 Z" fill="#020617"/>
+    <!-- Glass lantern housing -->
+    <path d="M -70 70 L -30 70 L -40 10 L -60 10 Z" fill="#020617"/>
+    <path d="M -60 10 L -40 10 L -50 -10 Z" fill="#020617"/>
+    <!-- Yellow/Green eerie light bulb -->
+    <circle cx="-50" cy="40" r="14" fill="#fef08a" opacity="0.8"/>
+    <!-- Glowing cone from the lamp -->
+    <polygon points="-50 40 -300 600 200 600" fill="#fef08a" opacity="0.12"/>
+  </g>
+  
+  <!-- Diagonal heavy rain lines -->
+  <line x1="100" y1="50" x2="30" y2="250" stroke="#38bdf8" stroke-width="1.5" opacity="0.4"/>
+  <line x1="500" y1="20" x2="430" y2="220" stroke="#38bdf8" stroke-width="1.5" opacity="0.4"/>
+  <line x1="900" y1="60" x2="830" y2="260" stroke="#38bdf8" stroke-width="1.5" opacity="0.4"/>
+  <line x1="1300" y1="40" x2="1230" y2="240" stroke="#38bdf8" stroke-width="1.5" opacity="0.4"/>
+  <line x1="1700" y1="30" x2="1630" y2="230" stroke="#38bdf8" stroke-width="1.5" opacity="0.4"/>
+</svg>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400">
+  <!-- Outer cabinet wooden structure -->
+  <rect x="10" y="10" width="280" height="380" fill="#2d1500" stroke="#110700" stroke-width="8" rx="6"/>
+  <rect x="18" y="18" width="264" height="12" fill="#180a00"/>
+  
+  <!-- Shelves -->
+  <rect x="18" y="110" width="264" height="10" fill="#451e03"/>
+  <rect x="18" y="200" width="264" height="10" fill="#451e03"/>
+  <rect x="18" y="290" width="264" height="10" fill="#451e03"/>
+  
+  <!-- Shelf 1 (Top) Books -->
+  <rect x="30" y="35" width="18" height="75" fill="#7f1d1d" stroke="#110700" stroke-width="2"/>
+  <rect x="48" y="40" width="14" height="70" fill="#1e3a5f" stroke="#110700" stroke-width="2"/>
+  <rect x="62" y="32" width="20" height="78" fill="#14532d" stroke="#110700" stroke-width="2"/>
+  <rect x="82" y="45" width="16" height="65" fill="#78350f" stroke="#110700" stroke-width="2"/>
+  <!-- Leaning book -->
+  <g transform="translate(98,110) rotate(15) translate(-98,-110)">
+    <rect x="98" y="35" width="16" height="75" fill="#581c87" stroke="#110700" stroke-width="2"/>
+  </g>
+  <!-- Books at the right side of shelf 1 -->
+  <rect x="200" y="40" width="18" height="70" fill="#450a0a" stroke="#110700" stroke-width="2"/>
+  <rect x="218" y="35" width="22" height="75" fill="#065f46" stroke="#110700" stroke-width="2"/>
+  <rect x="240" y="38" width="16" height="72" fill="#854d0e" stroke="#110700" stroke-width="2"/>
+  
+  <!-- Shelf 2 Books -->
+  <rect x="35" y="125" width="22" height="75" fill="#3f1a04" stroke="#110700" stroke-width="2"/>
+  <rect x="57" y="135" width="18" height="65" fill="#1e293b" stroke="#110700" stroke-width="2"/>
+  <rect x="75" y="120" width="24" height="80" fill="#7f1d1d" stroke="#110700" stroke-width="2"/>
+  <rect x="99" y="130" width="15" height="70" fill="#0f766e" stroke="#110700" stroke-width="2"/>
+  <rect x="114" y="125" width="20" height="75" fill="#854d0e" stroke="#110700" stroke-width="2"/>
+  
+  <!-- Shelf 3 Books (Ancient/mysterious glowing section) -->
+  <rect x="30" y="215" width="25" height="75" fill="#311042" stroke="#4a044e" stroke-width="2"/>
+  <!-- Glowing book of shadows -->
+  <rect x="55" y="210" width="28" height="80" fill="#0f172a" stroke="#06b6d4" stroke-width="3"/>
+  <path d="M 69 225 L 69 275" stroke="#06b6d4" stroke-width="2"/> <!-- Glowing rune on spine -->
+  <rect x="83" y="220" width="20" height="70" fill="#172554" stroke="#1d4ed8" stroke-width="2"/>
+  
+  <rect x="150" y="225" width="18" height="65" fill="#451a03" stroke="#110700" stroke-width="2"/>
+  <rect x="168" y="215" width="22" height="75" fill="#14532d" stroke="#110700" stroke-width="2"/>
+  <rect x="190" y="222" width="16" height="68" fill="#701a75" stroke="#110700" stroke-width="2"/>
+  <g transform="translate(206,290) rotate(12) translate(-206,-290)">
+    <rect x="206" y="220" width="15" height="70" fill="#9a3412" stroke="#110700" stroke-width="2"/>
+  </g>
+  
+  <!-- Bottom Cabinet base doors -->
+  <rect x="18" y="300" width="128" height="80" fill="#1f0a00" stroke="#110700" stroke-width="4"/>
+  <rect x="146" y="300" width="128" height="80" fill="#1f0a00" stroke="#110700" stroke-width="4"/>
+  <!-- Brass door handles -->
+  <circle cx="125" cy="340" r="4" fill="#eab308"/>
+  <circle cx="140" cy="340" r="4" fill="#eab308"/>
+</svg>

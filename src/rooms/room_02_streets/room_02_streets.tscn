@@ -1,0 +1,116 @@
+[gd_scene load_steps=14 format=3 uid="uid://df72streetsb8b"]
+
+[ext_resource type="Script" path="res://src/rooms/room_02_streets/room_02_streets.gd" id="1_script"]
+[ext_resource type="Script" path="res://src/rooms/player.gd" id="2_player"]
+[ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="3_hotspot"]
+[ext_resource type="Texture2D" uid="uid://streets_background_tex" path="res://assets/images/backgrounds/streets_bg.svg" id="4_bg"]
+[ext_resource type="Texture2D" uid="uid://door_tex" path="res://assets/images/ui/door.svg" id="5_door"]
+[ext_resource type="Texture2D" uid="uid://inspector_tex" path="res://assets/images/characters/inspector.svg" id="6_inspector"]
+[ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="7_flicker"]
+
+[sub_resource type="Environment" id="Environment_streets"]
+background_mode = 3
+glow_enabled = true
+glow_levels/1 = 1.0
+glow_levels/2 = 1.0
+glow_levels/3 = 1.0
+glow_levels/5 = 1.0
+glow_intensity = 1.1
+glow_strength = 1.0
+glow_bloom = 0.22
+glow_blend_mode = 0
+
+[sub_resource type="Gradient" id="Gradient_light"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_light"]
+gradient = SubResource("Gradient_light")
+width = 512
+height = 512
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_doorback"]
+polygon = PackedVector2Array(100, 780, 300, 780, 300, 800, 100, 800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(80, 200)
+
+[node name="Room_Streets" type="Node2D"]
+script = ExtResource("1_script")
+room_name = "Calles Lluviosas de Innsmouth"
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_streets")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(0.180392, 0.219608, 0.27451, 1)
+
+[node name="Background" type="Sprite2D" parent="."]
+position = Vector2(960, 540)
+texture = ExtResource("4_bg")
+
+[node name="StreetLampLight" type="PointLight2D" parent="Background" id="LampLight"]
+position = Vector2(440, -300)
+scale = Vector2(3.5, 3.5)
+color = Color(0.996078, 0.890196, 0.545098, 1)
+energy = 1.8
+shadow_enabled = true
+texture = SubResource("GradientTexture2D_light")
+script = ExtResource("7_flicker")
+min_energy = 0.9
+max_energy = 1.6
+speed = 10.0
+
+[node name="HotspotsLayer" type="Node2D" parent="."]
+
+[node name="DoorBack" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
+script = ExtResource("3_hotspot")
+hotspot_name = "Puerta del Despacho"
+walk_to_point = NodePath("WalkToPoint")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/DoorBack"]
+polygon = PackedVector2Array(100, 450, 300, 450, 300, 800, 100, 800)
+
+[node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/DoorBack"]
+position = Vector2(200, 750)
+
+[node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/DoorBack"]
+position = Vector2(200, 625)
+texture = ExtResource("5_door")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="HotspotsLayer/DoorBack"]
+occluder = SubResource("OccluderPolygon2D_doorback")
+
+[node name="CharactersLayer" type="Node2D" parent="."]
+
+[node name="Player" type="CharacterBody2D" parent="CharactersLayer"]
+position = Vector2(1650, 650)
+script = ExtResource("2_player")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CharactersLayer/Player"]
+shape = SubResource("RectangleShape2D_player")
+
+[node name="Sprite2D" type="Sprite2D" parent="CharactersLayer/Player"]
+position = Vector2(0, 0)
+scale = Vector2(0.65, 0.65)
+texture = ExtResource("6_inspector")
+
+[node name="DetectiveLabel" type="Label" parent="CharactersLayer/Player"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -80.0
+offset_top = -140.0
+offset_right = 80.0
+offset_bottom = -110.0
+grow_horizontal = 2
+text = "Inspector (Player)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ForegroundLayer" type="Node2D" parent="."]
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+layer = 10

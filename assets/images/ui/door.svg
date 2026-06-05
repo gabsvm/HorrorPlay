@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 350" width="200" height="350">
+  <!-- Gothic Arched door frame -->
+  <path d="M10 340 L10 120 A 90 120 0 0 1 190 120 L190 340 Z" fill="#1e293b" stroke="#0f172a" stroke-width="8"/>
+  <!-- Inner wood door panel -->
+  <path d="M20 338 L20 125 A 80 110 0 0 1 180 125 L180 338 Z" fill="#451a03" stroke="#1c1917" stroke-width="4"/>
+  
+  <!-- Vertical wood panels lines -->
+  <line x1="60" y1="125" x2="60" y2="338" stroke="#1c1917" stroke-width="3"/>
+  <line x1="100" y1="50" x2="100" y2="338" stroke="#1c1917" stroke-width="3"/>
+  <line x1="140" y1="125" x2="140" y2="338" stroke="#1c1917" stroke-width="3"/>
+  
+  <!-- Iron straps (gothic styling reinforcements) -->
+  <rect x="20" y="160" width="160" height="12" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="40" cy="166" r="3" fill="#64748b"/>
+  <circle cx="100" cy="166" r="3" fill="#64748b"/>
+  <circle cx="160" cy="166" r="3" fill="#64748b"/>
+  
+  <rect x="20" y="270" width="160" height="12" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="40" cy="276" r="3" fill="#64748b"/>
+  <circle cx="100" cy="276" r="3" fill="#64748b"/>
+  <circle cx="160" cy="276" r="3" fill="#64748b"/>
+  
+  <!-- Heavy iron handle -->
+  <rect x="155" y="200" width="10" height="40" fill="#0f172a" stroke="#1c1917" stroke-width="2" rx="2"/>
+  <path d="M 160 205 L 140 215 L 140 225 L 160 235" fill="none" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/>
+</svg>
