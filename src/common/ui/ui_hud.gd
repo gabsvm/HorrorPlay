@@ -56,11 +56,13 @@ func _update_sanity_ui(value: int) -> void:
 
 func _on_inventory_changed(_item: ItemData) -> void:
 	_update_inventory_ui()
+	_play_pickup_sfx()
 
 func _on_active_item_changed(item: ItemData) -> void:
 	if item:
 		active_item_label.text = "Seleccionado: " + item.name
 		hover_label.text = "Item activo: " + item.name
+		_play_select_sfx()
 	else:
 		active_item_label.text = "Sin selección"
 		clear_hover_text()
@@ -73,6 +75,8 @@ func _update_inventory_ui() -> void:
 	# Populate slots
 	for item in Inventory.items:
 		var slot_btn = TextureButton.new()
+		slot_btn.pivot_offset = Vector2(70, 50) # Set center as pivot for scaling
+		slot_btn.scale = Vector2.ZERO # Start flat for pop animation
 		
 		# Draw a placeholder flat panel background for touch visibility
 		var panel = Panel.new()
@@ -96,6 +100,10 @@ func _update_inventory_ui() -> void:
 			
 		slot_btn.pressed.connect(func(): _on_slot_pressed(item))
 		slots_container.add_child(slot_btn)
+		
+		# Juicy Ease Back popping animation
+		var tween = create_tween()
+		tween.tween_property(slot_btn, "scale", Vector2.ONE, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _on_slot_pressed(item: ItemData) -> void:
 	if Inventory.active_item == item:
@@ -148,3 +156,34 @@ func _on_reveal_pressed() -> void:
 				var tween = create_tween()
 				tween.tween_property(sprite, "modulate", Color(0, 0.94, 1.0, 1.0), 0.5)
 				tween.tween_property(sprite, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.7)
+
+func _play_procedural_sfx(freq: float, duration_ms: int, pitch: float = 1.0) -> void:
+	var sfx_player = AudioStreamPlayer.new()
+	for i in AudioServer.bus_count:
+		if AudioServer.get_bus_name(i) == "SFX":
+			sfx_player.bus = &"SFX"
+			break
+	add_child(sfx_player)
+	
+	var stream = AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_8_BITS
+	stream.mix_rate = 11025
+	var data = PackedByteArray()
+	for i in range(duration_ms * 11): # 11 samples per ms
+		var val = int(sin(i * freq) * 127 + 128)
+		data.append(val)
+	stream.data = data
+	sfx_player.stream = stream
+	sfx_player.pitch_scale = pitch
+	sfx_player.play()
+	sfx_player.finished.connect(func(): sfx_player.queue_free())
+
+func _play_pickup_sfx() -> void:
+	# Satisfying retro arpeggio
+	_play_procedural_sfx(0.12, 80, 1.0)
+	await get_tree().create_timer(0.06).timeout
+	_play_procedural_sfx(0.18, 120, 1.2)
+
+func _play_select_sfx() -> void:
+	# Soft tactile click
+	_play_procedural_sfx(0.3, 20, 0.85)

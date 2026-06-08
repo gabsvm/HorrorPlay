@@ -160,8 +160,8 @@ occluder = SubResource("OccluderPolygon2D_fisherman")
 [node name="Player" type="CharacterBody2D" parent="CharactersLayer"]
 position = Vector2(1650, 650)
 script = ExtResource("2_player")
-idle_textures = Array[Texture2D]([ExtResource("11_i1"), ExtResource("12_i2"), ExtResource("13_i3"), ExtResource("14_i4")])
-walk_textures = Array[Texture2D]([ExtResource("15_w1"), ExtResource("16_w2"), ExtResource("17_w3"), ExtResource("18_w4"), ExtResource("19_w5"), ExtResource("20_w6")])
+idle_textures = Array[Texture2D]([ExtResource("10_i1"), ExtResource("11_i2"), ExtResource("12_i3"), ExtResource("13_i4")])
+walk_textures = Array[Texture2D]([ExtResource("14_w1"), ExtResource("15_w2"), ExtResource("16_w3"), ExtResource("17_w4"), ExtResource("18_w5"), ExtResource("19_w6")])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CharactersLayer/Player"]
 shape = SubResource("RectangleShape2D_player")
@@ -170,6 +170,14 @@ shape = SubResource("RectangleShape2D_player")
 texture_filter = 1
 position = Vector2(0, 30)
 scale = Vector2(4.0, 4.0)
+
+[node name="LanternLight" type="PointLight2D" parent="CharactersLayer/Player"]
+position = Vector2(0, 30)
+scale = Vector2(1.5, 1.5)
+color = Color(0.996078, 0.941176, 0.854902, 1)
+energy = 0.7
+shadow_enabled = true
+texture = SubResource("GradientTexture2D_light")
 
 [node name="DetectiveLabel" type="Label" parent="CharactersLayer/Player"]
 anchors_preset = 5
