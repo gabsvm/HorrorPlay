@@ -18,6 +18,22 @@ func _ready() -> void:
 	_update_sanity_ui(Sanity.current_sanity)
 	_on_active_item_changed(Inventory.active_item)
 	clear_hover_text()
+	_setup_safe_area()
+
+func _setup_safe_area() -> void:
+	var os = OS.get_name()
+	if os == "Android" or os == "iOS":
+		var safe_area = DisplayServer.get_display_safe_area()
+		var window_size = DisplayServer.window_get_size()
+		
+		# Shift elements away from notch and system cuts
+		$TopBar.offset_top = max(0, safe_area.position.y)
+		$TopBar.offset_left = max(0, safe_area.position.x)
+		$TopBar.offset_right = -max(0, window_size.x - safe_area.end.x)
+		
+		$InventoryPanel.offset_bottom = -max(0, window_size.y - safe_area.end.y)
+		$InventoryPanel.offset_left = max(0, safe_area.position.x)
+		$InventoryPanel.offset_right = -max(0, window_size.x - safe_area.end.x)
 
 func show_hover_text(text: String) -> void:
 	if Inventory.active_item:
@@ -103,3 +119,32 @@ func _on_load_pressed() -> void:
 
 func _on_drain_sanity_pressed() -> void:
 	Sanity.drain_sanity(10)
+
+func _on_reveal_pressed() -> void:
+	# Play a beautiful procedural chime (high pitch synthetic chime)
+	var chime_player = AudioStreamPlayer.new()
+	chime_player.bus = &"SFX"
+	add_child(chime_player)
+	
+	var beep_stream = AudioStreamWAV.new()
+	beep_stream.format = AudioStreamWAV.FORMAT_8_BITS
+	beep_stream.mix_rate = 11025
+	var data = PackedByteArray()
+	for i in range(1102): # ~100ms
+		var val = int(sin(i * 0.15) * 127 + 128)
+		data.append(val)
+	beep_stream.data = data
+	chime_player.stream = beep_stream
+	chime_player.pitch_scale = 1.6
+	chime_player.play()
+	chime_player.finished.connect(func(): chime_player.queue_free())
+	
+	# Flash all hotspots with a glorious glowing cian outline/modulate
+	var hotspots = get_tree().get_nodes_in_group("hotspots")
+	for hs in hotspots:
+		if hs is Hotspot:
+			var sprite = hs.get_node_or_null("Sprite2D")
+			if sprite:
+				var tween = create_tween()
+				tween.tween_property(sprite, "modulate", Color(0, 0.94, 1.0, 1.0), 0.5)
+				tween.tween_property(sprite, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.7)

@@ -18,11 +18,59 @@ var current_tween: Tween
 var choices_list: Array[Dictionary] = []
 var is_choice_mode: bool = false
 
+var last_visible_chars: int = 0
+var synth_player: AudioStreamPlayer
+var beep_stream: AudioStreamWAV
+
 func _ready() -> void:
 	next_indicator.visible = false
 	choices_container.visible = false
 	# Ensure the balloon covers the full viewport or sits at the bottom nicely
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_setup_synth()
+
+func _setup_synth() -> void:
+	synth_player = AudioStreamPlayer.new()
+	# Safely assign to master or SFX
+	for i in AudioServer.bus_count:
+		if AudioServer.get_bus_name(i) == "SFX":
+			synth_player.bus = &"SFX"
+			break
+	add_child(synth_player)
+	
+	beep_stream = AudioStreamWAV.new()
+	beep_stream.format = AudioStreamWAV.FORMAT_8_BITS
+	beep_stream.mix_rate = 8000
+	var data = PackedByteArray()
+	for i in range(350): # ~45ms of retro wave sound
+		var val = int(sin(i * 0.25) * 127 + 128)
+		data.append(val)
+	beep_stream.data = data
+
+func _process(_delta: float) -> void:
+	if is_typing and text_label:
+		if text_label.visible_characters != last_visible_chars:
+			last_visible_chars = text_label.visible_characters
+			# Play bleep sound every 2 characters to avoid machine-gun ear fatigue
+			if last_visible_chars % 2 == 0:
+				_play_typewriter_sound()
+
+func _play_typewriter_sound() -> void:
+	if not synth_player or not beep_stream:
+		return
+		
+	# Adjust pitch based on speaker name to give them unique synthetic "voices"
+	if speaker_name == "Pescador Sombrío":
+		synth_player.pitch_scale = randf_range(0.4, 0.55) # Deep raspy voice
+	elif speaker_name == "Tabernero" or speaker_name == "Tabernero Barnaby":
+		synth_player.pitch_scale = randf_range(0.5, 0.65) # Gruff bartender voice
+	elif speaker_name == "Sistema" or speaker_name == "Save":
+		synth_player.pitch_scale = randf_range(1.1, 1.25) # High synth chime
+	else:
+		synth_player.pitch_scale = randf_range(0.8, 1.0) # Detective standard voice
+		
+	synth_player.stream = beep_stream
+	synth_player.play()
 
 func start_dialogue(lines: Array[String], speaker: String) -> void:
 	dialog_lines = lines

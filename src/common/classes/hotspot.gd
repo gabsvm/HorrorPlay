@@ -13,6 +13,7 @@ signal item_used_failed(item: ItemData)
 
 func _ready() -> void:
 	input_pickable = true
+	add_to_group("hotspots")
 	# Set collision layer 1 (Hotspots) as defined in project.godot
 	collision_layer = 1
 	collision_mask = 0

@@ -44,7 +44,7 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -650.0
+offset_left = -820.0
 offset_top = 15.0
 offset_right = -30.0
 offset_bottom = -15.0
@@ -52,6 +52,11 @@ grow_horizontal = 0
 grow_vertical = 2
 theme_override_constants/separation = 15
 alignment = 2
+
+[node name="RevealButton" type="Button" parent="TopBar/ButtonContainer"]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+text = "Revelar Ojo"
 
 [node name="DrainButton" type="Button" parent="TopBar/ButtonContainer"]
 custom_minimum_size = Vector2(160, 0)
@@ -123,6 +128,7 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 20
 
+[connection signal="pressed" from="TopBar/ButtonContainer/RevealButton" to="." method="_on_reveal_pressed"]
 [connection signal="pressed" from="TopBar/ButtonContainer/DrainButton" to="." method="_on_drain_sanity_pressed"]
 [connection signal="pressed" from="TopBar/ButtonContainer/SaveButton" to="." method="_on_save_pressed"]
 [connection signal="pressed" from="TopBar/ButtonContainer/LoadButton" to="." method="_on_load_pressed"]
