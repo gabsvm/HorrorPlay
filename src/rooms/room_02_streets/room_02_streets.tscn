@@ -1,12 +1,26 @@
-[gd_scene load_steps=14 format=3 uid="uid://df72streetsb8b"]
+[gd_scene load_steps=20 format=3 uid="uid://df72streetsb8b"]
 
 [ext_resource type="Script" path="res://src/rooms/room_02_streets/room_02_streets.gd" id="1_script"]
 [ext_resource type="Script" path="res://src/rooms/player.gd" id="2_player"]
 [ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="3_hotspot"]
-[ext_resource type="Texture2D" uid="uid://streets_background_tex" path="res://assets/images/backgrounds/streets_bg.svg" id="4_bg"]
-[ext_resource type="Texture2D" uid="uid://door_tex" path="res://assets/images/ui/door.svg" id="5_door"]
+[ext_resource type="Texture2D" uid="uid://streets_bg_tex" path="res://assets/images/backgrounds/gothicvania_mg.png" id="4_bg"]
+[ext_resource type="Texture2D" uid="uid://house_c_tex" path="res://assets/images/props/house-c.png" id="5_door"]
 [ext_resource type="Texture2D" uid="uid://inspector_tex" path="res://assets/images/characters/inspector.svg" id="6_inspector"]
 [ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="7_flicker"]
+[ext_resource type="Texture2D" uid="uid://street_lamp_prop_tex" path="res://assets/images/props/street-lamp.png" id="8_lamp_prop"]
+[ext_resource type="AudioStream" uid="uid://gothic_music" path="res://assets/audio/music/gothic_village.ogg" id="9_music"]
+
+[ext_resource type="Texture2D" uid="uid://inspect_idle_1" path="res://assets/images/characters/inspector/idle/hat-man-idle-1.png" id="10_i1"]
+[ext_resource type="Texture2D" uid="uid://inspect_idle_2" path="res://assets/images/characters/inspector/idle/hat-man-idle-2.png" id="11_i2"]
+[ext_resource type="Texture2D" uid="uid://inspect_idle_3" path="res://assets/images/characters/inspector/idle/hat-man-idle-3.png" id="12_i3"]
+[ext_resource type="Texture2D" uid="uid://inspect_idle_4" path="res://assets/images/characters/inspector/idle/hat-man-idle-4.png" id="13_i4"]
+
+[ext_resource type="Texture2D" uid="uid://inspect_walk_1" path="res://assets/images/characters/inspector/walk/hat-man-walk-1.png" id="14_w1"]
+[ext_resource type="Texture2D" uid="uid://inspect_walk_2" path="res://assets/images/characters/inspector/walk/hat-man-walk-2.png" id="15_w2"]
+[ext_resource type="Texture2D" uid="uid://inspect_walk_3" path="res://assets/images/characters/inspector/walk/hat-man-walk-3.png" id="16_w3"]
+[ext_resource type="Texture2D" uid="uid://inspect_walk_4" path="res://assets/images/characters/inspector/walk/hat-man-walk-4.png" id="17_w4"]
+[ext_resource type="Texture2D" uid="uid://inspect_walk_5" path="res://assets/images/characters/inspector/walk/hat-man-walk-5.png" id="18_w5"]
+[ext_resource type="Texture2D" uid="uid://inspect_walk_6" path="res://assets/images/characters/inspector/walk/hat-man-walk-6.png" id="19_w6"]
 
 [sub_resource type="Environment" id="Environment_streets"]
 background_mode = 3
@@ -40,6 +54,7 @@ size = Vector2(80, 200)
 [node name="Room_Streets" type="Node2D"]
 script = ExtResource("1_script")
 room_name = "Calles Lluviosas de Innsmouth"
+music_theme = ExtResource("9_music")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_streets")
@@ -48,12 +63,20 @@ environment = SubResource("Environment_streets")
 color = Color(0.180392, 0.219608, 0.27451, 1)
 
 [node name="Background" type="Sprite2D" parent="."]
+texture_filter = 1
 position = Vector2(960, 540)
+scale = Vector2(6.0, 5.0)
 texture = ExtResource("4_bg")
 
-[node name="StreetLampLight" type="PointLight2D" parent="Background" id="LampLight"]
-position = Vector2(440, -300)
+[node name="StreetLampProp" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(1400, 600)
 scale = Vector2(3.5, 3.5)
+texture = ExtResource("8_lamp_prop")
+
+[node name="StreetLampLight" type="PointLight2D" parent="StreetLampProp" id="LampLight"]
+position = Vector2(0, -60)
+scale = Vector2(1.2, 1.2)
 color = Color(0.996078, 0.890196, 0.545098, 1)
 energy = 1.8
 shadow_enabled = true
@@ -77,7 +100,9 @@ polygon = PackedVector2Array(100, 450, 300, 450, 300, 800, 100, 800)
 position = Vector2(200, 750)
 
 [node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/DoorBack"]
-position = Vector2(200, 625)
+texture_filter = 1
+position = Vector2(200, 600)
+scale = Vector2(3.0, 3.0)
 texture = ExtResource("5_door")
 
 [node name="LightOccluder2D" type="LightOccluder2D" parent="HotspotsLayer/DoorBack"]
@@ -88,14 +113,16 @@ occluder = SubResource("OccluderPolygon2D_doorback")
 [node name="Player" type="CharacterBody2D" parent="CharactersLayer"]
 position = Vector2(1650, 650)
 script = ExtResource("2_player")
+idle_textures = Array[Texture2D]([ExtResource("10_i1"), ExtResource("11_i2"), ExtResource("12_i3"), ExtResource("13_i4")])
+walk_textures = Array[Texture2D]([ExtResource("14_w1"), ExtResource("15_w2"), ExtResource("16_w3"), ExtResource("17_w4"), ExtResource("18_w5"), ExtResource("19_w6")])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CharactersLayer/Player"]
 shape = SubResource("RectangleShape2D_player")
 
 [node name="Sprite2D" type="Sprite2D" parent="CharactersLayer/Player"]
-position = Vector2(0, 0)
-scale = Vector2(0.65, 0.65)
-texture = ExtResource("6_inspector")
+texture_filter = 1
+position = Vector2(0, 30)
+scale = Vector2(4.0, 4.0)
 
 [node name="DetectiveLabel" type="Label" parent="CharactersLayer/Player"]
 anchors_preset = 5
