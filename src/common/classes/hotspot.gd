@@ -53,3 +53,20 @@ func _on_mouse_exited() -> void:
 		var hud = get_tree().current_scene.find_child("UI_HUD*", true, false)
 		if hud and hud.has_method("clear_hover_text"):
 			hud.clear_hover_text()
+
+func is_point_inside(global_pos: Vector2) -> bool:
+	var poly_node = get_node_or_null("CollisionPolygon2D")
+	if poly_node and poly_node is CollisionPolygon2D:
+		var local_pos = poly_node.to_local(global_pos)
+		return Geometry2D.is_point_in_polygon(local_pos, poly_node.polygon)
+		
+	var shape_node = get_node_or_null("CollisionShape2D")
+	if shape_node and shape_node is CollisionShape2D and shape_node.shape:
+		var local_pos = shape_node.to_local(global_pos)
+		if shape_node.shape is RectangleShape2D:
+			var rect_size = shape_node.shape.size
+			return abs(local_pos.x) <= rect_size.x / 2.0 and abs(local_pos.y) <= rect_size.y / 2.0
+		elif shape_node.shape is CircleShape2D:
+			return local_pos.length() <= shape_node.shape.radius
+			
+	return false

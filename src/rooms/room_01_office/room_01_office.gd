@@ -31,21 +31,18 @@ func _on_interaction_requested(action_type: String, pos: Vector2) -> void:
 	if InputController.is_input_blocked:
 		return
 		
-	# Find what was clicked/tapped by query of 2D physics
-	var query = PhysicsPointQueryParameters2D.new()
-	query.position = pos
-	query.collision_mask = 1 # Hotspot layer
-	query.collide_with_areas = true
-	query.collide_with_bodies = false
-	
-	var space_state = get_world_2d().direct_space_state
-	var results = space_state.intersect_point(query)
-	
-	if results.size() > 0:
-		# Clicked on a hotspot! Find the topmost one (by Z Index or first result)
-		var area = results[0]["collider"] as Hotspot
-		if area and area.is_active:
-			_walk_and_execute(area, action_type)
+	# Find which hotspot was clicked geometrically (fully thread-safe & robust!)
+	var clicked_hotspot: Hotspot = null
+	var hotspots_parent = get_node_or_null("HotspotsLayer")
+	if hotspots_parent:
+		for hs in hotspots_parent.get_children():
+			if hs is Hotspot and hs.is_active:
+				if hs.is_point_inside(pos):
+					clicked_hotspot = hs
+					break
+					
+	if clicked_hotspot:
+		_walk_and_execute(clicked_hotspot, action_type)
 	else:
 		# Clicked on the floor! Walk player there if not examining/using item
 		if action_type == "interact" and Inventory.active_item == null:
