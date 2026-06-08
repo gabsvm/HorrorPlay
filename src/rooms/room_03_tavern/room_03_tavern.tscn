@@ -1,0 +1,169 @@
+[gd_scene load_steps=22 format=3 uid="uid://df72tavern8b"]
+
+[ext_resource type="Script" path="res://src/rooms/room_03_tavern/room_03_tavern.gd" id="1_script"]
+[ext_resource type="Script" path="res://src/rooms/player.gd" id="2_player"]
+[ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="3_hotspot"]
+[ext_resource type="Texture2D" uid="uid://streets_bg_tex" path="res://assets/images/backgrounds/gothicvania_bg.png" id="4_bg"]
+[ext_resource type="Texture2D" uid="uid://door_tex" path="res://assets/images/ui/door.svg" id="5_door"]
+[ext_resource type="Texture2D" uid="uid://bearded_idle_1" path="res://assets/images/characters/innkeeper/idle/bearded-idle-1.png" id="6_bearded"]
+[ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="7_flicker"]
+[ext_resource type="Resource" uid="uid://item_dock_key" path="res://src/common/classes/dock_key.tres" id="8_dock_key"]
+
+[ext_resource type="Texture2D" uid="uid://inspect_idle_1" path="res://assets/images/characters/inspector/idle/hat-man-idle-1.png" id="10_i1"]
+[ext_resource type="Texture2D" uid="uid://inspect_idle_2" path="res://assets/images/characters/inspector/idle/hat-man-idle-2.png" id="11_i2"]
+[ext_resource type="Texture2D" uid="uid://inspect_idle_3" path="res://assets/images/characters/inspector/idle/hat-man-idle-3.png" id="12_i3"]
+[ext_resource type="Texture2D" uid="uid://inspect_idle_4" path="res://assets/images/characters/inspector/idle/hat-man-idle-4.png" id="13_i4"]
+
+[ext_resource type="Texture2D" uid="uid://inspect_walk_1" path="res://assets/images/characters/inspector/walk/hat-man-walk-1.png" id="14_w1"]
+[ext_resource type="Texture2D" uid="uid://inspect_walk_2" path="res://assets/images/characters/inspector/walk/hat-man-walk-2.png" id="15_w2"]
+[ext_resource type="Texture2D" uid="uid://inspect_walk_3" path="res://assets/images/characters/inspector/walk/hat-man-walk-3.png" id="16_w3"]
+[ext_resource type="Texture2D" uid="uid://inspect_walk_4" path="res://assets/images/characters/inspector/walk/hat-man-walk-4.png" id="17_w4"]
+[ext_resource type="Texture2D" uid="uid://inspect_walk_5" path="res://assets/images/characters/inspector/walk/hat-man-walk-5.png" id="18_w5"]
+[ext_resource type="Texture2D" uid="uid://inspect_walk_6" path="res://assets/images/characters/inspector/walk/hat-man-walk-6.png" id="19_w6"]
+
+[sub_resource type="Environment" id="Environment_tavern"]
+background_mode = 3
+glow_enabled = true
+glow_levels/1 = 1.0
+glow_levels/2 = 1.0
+glow_levels/3 = 1.0
+glow_levels/5 = 1.0
+glow_intensity = 1.2
+glow_strength = 1.1
+glow_bloom = 0.25
+glow_blend_mode = 0
+
+[sub_resource type="Gradient" id="Gradient_light"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_light"]
+gradient = SubResource("Gradient_light")
+width = 512
+height = 512
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_doorback"]
+polygon = PackedVector2Array(100, 780, 300, 780, 300, 800, 100, 800)
+
+[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_innkeeper"]
+polygon = PackedVector2Array(980, 780, 1020, 780, 1020, 800, 980, 800)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(80, 200)
+
+[node name="Room_Tavern" type="Node2D"]
+script = ExtResource("1_script")
+room_name = "Taberna 'El Pez Dorado'"
+dock_key_item = ExtResource("8_dock_key")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_tavern")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(0.25098, 0.196078, 0.156863, 1)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(960, 540)
+scale = Vector2(6.0, 5.0)
+texture = ExtResource("4_bg")
+
+[node name="WarmLight1" type="PointLight2D" parent="Background"]
+position = Vector2(-150, 40)
+scale = Vector2(0.6, 0.6)
+color = Color(0.992157, 0.647059, 0.360784, 1)
+energy = 1.4
+shadow_enabled = true
+texture = SubResource("GradientTexture2D_light")
+script = ExtResource("7_flicker")
+min_energy = 0.8
+max_energy = 1.5
+
+[node name="WarmLight2" type="PointLight2D" parent="Background"]
+position = Vector2(100, 40)
+scale = Vector2(0.6, 0.6)
+color = Color(0.992157, 0.647059, 0.360784, 1)
+energy = 1.4
+shadow_enabled = true
+texture = SubResource("GradientTexture2D_light")
+script = ExtResource("7_flicker")
+min_energy = 0.8
+max_energy = 1.5
+
+[node name="HotspotsLayer" type="Node2D" parent="."]
+
+[node name="DoorBack" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
+script = ExtResource("3_hotspot")
+hotspot_name = "Salida de la Taberna"
+walk_to_point = NodePath("WalkToPoint")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/DoorBack"]
+polygon = PackedVector2Array(100, 450, 300, 450, 300, 800, 100, 800)
+
+[node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/DoorBack"]
+position = Vector2(200, 750)
+
+[node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/DoorBack"]
+texture_filter = 1
+position = Vector2(200, 625)
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("5_door")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="HotspotsLayer/DoorBack"]
+occluder = SubResource("OccluderPolygon2D_doorback")
+
+[node name="Innkeeper" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
+script = ExtResource("3_hotspot")
+hotspot_name = "Tabernero Barnaby"
+walk_to_point = NodePath("WalkToPoint")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Innkeeper"]
+polygon = PackedVector2Array(950, 600, 1050, 600, 1050, 800, 950, 800)
+
+[node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Innkeeper"]
+position = Vector2(900, 750)
+
+[node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/Innkeeper"]
+texture_filter = 1
+position = Vector2(1000, 715)
+scale = Vector2(4.0, 4.0)
+texture = ExtResource("6_bearded")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="HotspotsLayer/Innkeeper"]
+occluder = SubResource("OccluderPolygon2D_innkeeper")
+
+[node name="CharactersLayer" type="Node2D" parent="."]
+
+[node name="Player" type="CharacterBody2D" parent="CharactersLayer"]
+position = Vector2(500, 650)
+script = ExtResource("2_player")
+idle_textures = Array[Texture2D]([ExtResource("10_i1"), ExtResource("11_i2"), ExtResource("12_i3"), ExtResource("13_i4")])
+walk_textures = Array[Texture2D]([ExtResource("14_w1"), ExtResource("15_w2"), ExtResource("16_w3"), ExtResource("17_w4"), ExtResource("18_w5"), ExtResource("19_w6")])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CharactersLayer/Player"]
+shape = SubResource("RectangleShape2D_player")
+
+[node name="Sprite2D" type="Sprite2D" parent="CharactersLayer/Player"]
+texture_filter = 1
+position = Vector2(0, 30)
+scale = Vector2(4.0, 4.0)
+
+[node name="DetectiveLabel" type="Label" parent="CharactersLayer/Player"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -80.0
+offset_top = -140.0
+offset_right = 80.0
+offset_bottom = -110.0
+grow_horizontal = 2
+text = "Inspector (Player)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ForegroundLayer" type="Node2D" parent="."]
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+layer = 10
