@@ -52,20 +52,20 @@ func _on_door_back_interacted(verb: String) -> void:
 func _on_innkeeper_interacted(verb: String) -> void:
 	if verb == "interact":
 		if GameState.get_flag("has_dock_key"):
-			DialogueManager.show_dialogue(["Ya te di la llave. No hay nada más para vos acá, inspector."], "Tabernero")
+			DialogueManager.show_dialogue(["Ya tenés la llave del cobertizo. Ahora largate, me espantás a los clientes locales."], "Tabernero")
 		elif GameState.get_flag("fisherman_met") and GameState.get_flag("has_read_necronomicon"):
 			DialogueManager.show_dialogue([
-				"Así que el viejo Silas te mandó... Sí, tengo la llave de los candados del muelle.",
-				"El oficial desaparecido me la dejó para saldar su cuenta antes de marchar al Arrecife.",
-				"Tomala, inspector. Pero si terminás ahogado como él, yo no sé nada."
+				"¿Silas te dijo que yo tenía el duplicado? Ese viejo habla de más...",
+				"Sí, tengo la llave de los botes. El oficial desaparecido me la dejó como fianza por su cuenta de ginebra antes de no volver nunca más.",
+				"Tomala, inspector. Si terminás en el fondo del Arrecife alimentando a las bestias, a mí no me metas en tus actas policiales."
 			], "Tabernero")
 			if dock_key_item:
 				Inventory.add_item(dock_key_item)
 			GameState.set_flag("has_dock_key", true)
 		else:
 			DialogueManager.show_dialogue([
-				"No servimos a extranjeros curiosos, inspector.",
-				"Tomate tu trago caliente y marchate antes de que la marea suba más."
+				"No servimos alcohol a la ley, inspector.",
+				"Terminá tu agua caliente y marchate antes de que a los muchachos del muelle les moleste tu placa."
 			], "Tabernero")
 	elif verb == "examine":
 		DialogueManager.show_dialogue(["El tabernero Barnaby. Limpia un vaso mugriento y me mira con hostilidad."], "Inspector")

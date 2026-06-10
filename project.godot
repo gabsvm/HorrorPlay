@@ -49,3 +49,7 @@ window/stretch/aspect="expand"
 
 renderer/rendering_method="mobile"
 textures/vram_compression/import_etc2_astc=true
+
+[android]
+permissions=["android.permission.VIBRATE"]
+script_mode=0

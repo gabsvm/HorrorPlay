@@ -1,0 +1,28 @@
+# .gitattributes - Line endings and binary handling
+
+# Force LF line endings for text files
+* text=auto eol=lf
+
+# Force CRLF for Windows-specific files (if needed)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files should not have line ending conversion
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ogg binary
+*.wav binary
+*.ttf binary
+*.otf binary
+*.tres binary
+*.tscn binary
+*.uid binary
+
+# Godot project files
+*.godot binary
+*.import binary
+
+# Prevent large files from being tracked (>100MB)
+*.apk filter=lfs diff=lfs merge=lfs -text
+*.aab filter=lfs diff=lfs merge=lfs -text

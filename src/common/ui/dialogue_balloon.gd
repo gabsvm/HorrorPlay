@@ -21,6 +21,7 @@ var is_choice_mode: bool = false
 var last_visible_chars: int = 0
 var synth_player: AudioStreamPlayer
 var beep_stream: AudioStreamWAV
+var typing_canceled: bool = false
 
 func _ready() -> void:
 	next_indicator.visible = false
@@ -91,20 +92,42 @@ func start_choices(prompt: String, choices: Array[Dictionary], speaker: String) 
 
 func _show_current_line() -> void:
 	speaker_label.text = speaker_name
-	text_label.text = dialog_lines[current_line_index]
-	text_label.visible_characters = 0
 	next_indicator.visible = false
+	choices_container.visible = false
+	_type_text(dialog_lines[current_line_index])
+
+func _type_text(text_to_type: String) -> void:
+	text_label.text = text_to_type
+	text_label.visible_characters = 0
+	last_visible_chars = 0
 	is_typing = true
+	typing_canceled = false
 	
-	if current_tween:
-		current_tween.kill()
+	while text_label.visible_characters < text_to_type.length():
+		if typing_canceled:
+			break
+		text_label.visible_characters += 1
+		last_visible_chars = text_label.visible_characters
 		
-	current_tween = create_tween()
-	var duration = text_label.text.length() * 0.02
-	current_tween.tween_property(text_label, "visible_characters", text_label.text.length(), duration)
-	current_tween.finished.connect(_on_typing_finished)
+		# Get the current character to determine the punctuation pause delay
+		var current_char = text_to_type[text_label.visible_characters - 1]
+		var delay = 0.02 # Base typing speed
+		
+		if current_char in [".", "!", "?", "…"]:
+			delay = 0.45 # Punctuation pause
+		elif current_char in [",", ";", ":", "-"]:
+			delay = 0.22 # Short breathing pause
+		elif current_char == " ":
+			delay = 0.01 # Spaces flow faster
+			
+		_play_typewriter_sound()
+		await get_tree().create_timer(delay).timeout
+		
+	_on_typing_finished()
 
 func _on_typing_finished() -> void:
+	if not is_typing:
+		return
 	is_typing = false
 	
 	if is_choice_mode and current_line_index == dialog_lines.size() - 1:
@@ -158,8 +181,7 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		if is_typing:
 			# Skip typing and show whole line
-			if current_tween:
-				current_tween.kill()
+			typing_canceled = true
 			text_label.visible_characters = text_label.text.length()
 			_on_typing_finished()
 		else:

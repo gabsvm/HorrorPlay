@@ -63,15 +63,15 @@ func _on_desk_interacted(verb: String) -> void:
 	if verb == "interact":
 		if not GameState.get_flag("office_drawer_unlocked"):
 			DialogueManager.show_dialogue([
-				"Un escritorio desordenado con reportes policiales.",
-				"Encuentro una llave oxidada oculta bajo unos papeles amarillentos."
+				"Reportes de muertes locales... Autopsias inconclusas que hablan de 'asfixia seca' en tierra firme.",
+				"Bajo la pila de expedientes confiscados, encuentro una llave de bronce cubierta de herrumbre verdosa."
 			], "Inspector")
 			if key_item:
 				Inventory.add_item(key_item)
 		else:
-			DialogueManager.show_dialogue(["El escritorio ya no tiene nada de interés."], "Inspector")
+			DialogueManager.show_dialogue(["Solo quedan expedientes con manchas de humedad salina."], "Inspector")
 	elif verb == "examine":
-		DialogueManager.show_dialogue(["Es mi escritorio de roble. Huele a tabaco rancio y humedad."], "Inspector")
+		DialogueManager.show_dialogue(["Mi escritorio de roble. Huele a tabaco rancio, papel viejo y a ese persistente hedor a pescado descompuesto que sube desde el muelle."], "Inspector")
 
 func _on_bookcase_interacted(verb: String) -> void:
 	if verb == "interact":
@@ -99,7 +99,11 @@ func _on_bookcase_interacted(verb: String) -> void:
 		DialogueManager.show_dialogue(["Cientos de lomos gastados me miran desde la oscuridad."], "Inspector")
 
 func _on_read_modern_book() -> void:
-	DialogueManager.show_dialogue(["Habla de tratamientos psiquiátricos obsoletos. Nada útil."])
+	DialogueManager.show_dialogue([
+		"Un tratado de patologías costeras de 1898...",
+		"Describe deformidades congénitas en los pobladores de Innsmouth: ojos fijos sin párpados, piel escamosa e hipoplasia pulmonar con indicios de hendiduras branquiales internas.",
+		"Qué aberración científica..."
+	])
 
 func _on_read_ancient_diary() -> void:
 	DialogueManager.show_dialogue([

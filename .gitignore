@@ -11,3 +11,8 @@
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Android keystore (CRITICAL: never commit your signing key!)
+android/keystore/*.keystore
+android/keystore/*.jks
+android/keystore/*.keystore.*
