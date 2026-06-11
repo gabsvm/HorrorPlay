@@ -6,7 +6,11 @@ extends Control
 @onready var slots_container: HBoxContainer = $InventoryPanel/ScrollContainer/SlotsContainer
 @onready var active_item_label: Label = $InventoryPanel/ActiveItemLabel
 
+var cached_sfx: Dictionary = {}
+
 func _ready() -> void:
+	_init_sfx_cache()
+	
 	# Connect to Global Autoload signals
 	Inventory.item_added.connect(_on_inventory_changed)
 	Inventory.item_removed.connect(_on_inventory_changed)
@@ -128,24 +132,46 @@ func _on_load_pressed() -> void:
 func _on_drain_sanity_pressed() -> void:
 	Sanity.drain_sanity(10)
 
-func _on_reveal_pressed() -> void:
-	# Play a beautiful procedural chime (high pitch synthetic chime)
-	var chime_player = AudioStreamPlayer.new()
-	chime_player.bus = &"SFX"
-	add_child(chime_player)
-	
-	var beep_stream = AudioStreamWAV.new()
-	beep_stream.format = AudioStreamWAV.FORMAT_8_BITS
-	beep_stream.mix_rate = 11025
+func _init_sfx_cache() -> void:
+	cached_sfx["pickup_1"] = _generate_sfx_stream(0.12, 80)
+	cached_sfx["pickup_2"] = _generate_sfx_stream(0.18, 120)
+	cached_sfx["select"] = _generate_sfx_stream(0.3, 20)
+	cached_sfx["reveal"] = _generate_sfx_stream(0.15, 100)
+
+func _generate_sfx_stream(freq: float, duration_ms: int) -> AudioStreamWAV:
+	var stream = AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_8_BITS
+	stream.mix_rate = 11025
 	var data = PackedByteArray()
-	for i in range(1102): # ~100ms
-		var val = int(sin(i * 0.15) * 127 + 128)
+	for i in range(duration_ms * 11): # 11 samples per ms
+		var val = int(sin(i * freq) * 127 + 128)
 		data.append(val)
-	beep_stream.data = data
-	chime_player.stream = beep_stream
-	chime_player.pitch_scale = 1.6
-	chime_player.play()
-	chime_player.finished.connect(func(): chime_player.queue_free())
+	stream.data = data
+	return stream
+
+func _play_cached_sfx(key: String, pitch: float = 1.0) -> void:
+	if not cached_sfx.has(key):
+		return
+		
+	var sfx_player = AudioStreamPlayer.new()
+	for i in AudioServer.bus_count:
+		if AudioServer.get_bus_name(i) == "SFX":
+			sfx_player.bus = &"SFX"
+			break
+	add_child(sfx_player)
+	
+	sfx_player.stream = cached_sfx[key]
+	sfx_player.pitch_scale = pitch
+	sfx_player.play()
+	sfx_player.finished.connect(func(): sfx_player.queue_free())
+
+func _on_reveal_pressed() -> void:
+	# Play a beautiful procedural chime using the cache
+	_play_cached_sfx("reveal", 1.6)
+	
+	# Vibrate device on reveal if on mobile (120ms of dramatic vibration)
+	if OS.get_name() in ["Android", "iOS"]:
+		Input.vibrate_handheld(120)
 	
 	# Flash all hotspots with a glorious glowing cian outline/modulate
 	var hotspots = get_tree().get_nodes_in_group("hotspots")
@@ -157,33 +183,12 @@ func _on_reveal_pressed() -> void:
 				tween.tween_property(sprite, "modulate", Color(0, 0.94, 1.0, 1.0), 0.5)
 				tween.tween_property(sprite, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.7)
 
-func _play_procedural_sfx(freq: float, duration_ms: int, pitch: float = 1.0) -> void:
-	var sfx_player = AudioStreamPlayer.new()
-	for i in AudioServer.bus_count:
-		if AudioServer.get_bus_name(i) == "SFX":
-			sfx_player.bus = &"SFX"
-			break
-	add_child(sfx_player)
-	
-	var stream = AudioStreamWAV.new()
-	stream.format = AudioStreamWAV.FORMAT_8_BITS
-	stream.mix_rate = 11025
-	var data = PackedByteArray()
-	for i in range(duration_ms * 11): # 11 samples per ms
-		var val = int(sin(i * freq) * 127 + 128)
-		data.append(val)
-	stream.data = data
-	sfx_player.stream = stream
-	sfx_player.pitch_scale = pitch
-	sfx_player.play()
-	sfx_player.finished.connect(func(): sfx_player.queue_free())
-
 func _play_pickup_sfx() -> void:
 	# Satisfying retro arpeggio
-	_play_procedural_sfx(0.12, 80, 1.0)
+	_play_cached_sfx("pickup_1", 1.0)
 	await get_tree().create_timer(0.06).timeout
-	_play_procedural_sfx(0.18, 120, 1.2)
+	_play_cached_sfx("pickup_2", 1.2)
 
 func _play_select_sfx() -> void:
 	# Soft tactile click
-	_play_procedural_sfx(0.3, 20, 0.85)
+	_play_cached_sfx("select", 0.85)

@@ -120,7 +120,6 @@ func _type_text(text_to_type: String) -> void:
 		elif current_char == " ":
 			delay = 0.01 # Spaces flow faster
 			
-		_play_typewriter_sound()
 		await get_tree().create_timer(delay).timeout
 		
 	_on_typing_finished()
