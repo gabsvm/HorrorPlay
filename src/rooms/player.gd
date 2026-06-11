@@ -17,6 +17,11 @@ var current_target: Vector2 = Vector2.ZERO
 func _ready() -> void:
 	add_to_group("Player")
 	current_target = global_position
+	
+	# Autohide debug tag above the player's head
+	var debug_label = get_node_or_null("DetectiveLabel")
+	if debug_label:
+		debug_label.queue_free()
 
 func _process(delta: float) -> void:
 	# Check if moving

@@ -29,6 +29,18 @@ func _ready() -> void:
 	# Ensure the balloon covers the full viewport or sits at the bottom nicely
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	
+	# Style the flat gray panel with a gorgeous antique framed brass stylebox
+	var style_box = StyleBoxFlat.new()
+	style_box.bg_color = Color(0.06, 0.06, 0.08, 0.9) # Dark blueish-charcoal abisall
+	style_box.border_width_top = 4
+	style_box.border_width_bottom = 4
+	style_box.border_color = Color(0.35, 0.3, 0.25, 0.75) # Muted antique brass / bronze
+	style_box.content_margin_left = 60
+	style_box.content_margin_right = 60
+	style_box.content_margin_top = 30
+	style_box.content_margin_bottom = 30
+	panel.add_theme_stylebox_override("panel", style_box)
+	
 	# Apply vintage typewriter font to dialogue elements
 	var custom_font = load("res://assets/fonts/SpecialElite-Regular.ttf")
 	if custom_font:

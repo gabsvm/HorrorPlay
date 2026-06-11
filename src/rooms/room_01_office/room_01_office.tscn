@@ -5,11 +5,11 @@
 [ext_resource type="Resource" uid="uid://be87db21h836b" path="res://src/common/classes/diary.tres" id="3_diary"]
 [ext_resource type="Script" path="res://src/rooms/player.gd" id="4_player"]
 [ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="5_hotspot"]
-[ext_resource type="Texture2D" uid="uid://gothic_bg_tex" path="res://assets/images/backgrounds/gothicvania_bg.png" id="6_bg"]
-[ext_resource type="Texture2D" uid="uid://crate_stack_tex" path="res://assets/images/props/crate-stack.png" id="7_desk"]
-[ext_resource type="Texture2D" uid="uid://well_tex" path="res://assets/images/props/well.png" id="8_bookcase"]
-[ext_resource type="Texture2D" uid="uid://crate_tex" path="res://assets/images/props/crate.png" id="9_drawer"]
-[ext_resource type="Texture2D" uid="uid://house_a_tex" path="res://assets/images/props/house-a.png" id="10_door"]
+[ext_resource type="Texture2D" uid="uid://3aduv7t0x565" path="res://assets/images/backgrounds/office_bg.svg" id="6_bg"]
+[ext_resource type="Texture2D" uid="uid://dfl7v10byy224" path="res://assets/images/ui/desk.svg" id="7_desk"]
+[ext_resource type="Texture2D" uid="uid://b4wvudiwj0d8u" path="res://assets/images/ui/bookcase.svg" id="8_bookcase"]
+[ext_resource type="Texture2D" uid="uid://bujsn62mr8ym6" path="res://assets/images/ui/drawer.svg" id="9_drawer"]
+[ext_resource type="Texture2D" uid="uid://b6tnneh5fa6cw" path="res://assets/images/ui/door.svg" id="10_door"]
 [ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="12_flicker"]
 [ext_resource type="AudioStream" uid="uid://gothic_music" path="res://assets/audio/music/gothic_village.ogg" id="13_music"]
 
@@ -79,7 +79,7 @@ color = Color(0.180392, 0.219608, 0.27451, 1)
 [node name="Background" type="Sprite2D" parent="."]
 texture_filter = 1
 position = Vector2(960, 540)
-scale = Vector2(6.0, 5.0)
+scale = Vector2(1.0, 1.0)
 texture = ExtResource("6_bg")
 
 [node name="Moonlight" type="PointLight2D" parent="Background"]
@@ -105,8 +105,8 @@ position = Vector2(600, 750)
 
 [node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/Desk"]
 texture_filter = 1
-position = Vector2(600, 730)
-scale = Vector2(3.5, 3.5)
+position = Vector2(600, 725)
+scale = Vector2(1.0, 1.0)
 texture = ExtResource("7_desk")
 
 [node name="Light" type="PointLight2D" parent="HotspotsLayer/Desk" groups=["lights"]]
@@ -136,8 +136,8 @@ position = Vector2(1000, 750)
 
 [node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/Bookcase"]
 texture_filter = 1
-position = Vector2(1000, 680)
-scale = Vector2(3.5, 3.5)
+position = Vector2(1000, 600)
+scale = Vector2(1.0, 1.0)
 texture = ExtResource("8_bookcase")
 
 [node name="OccultGlow" type="PointLight2D" parent="HotspotsLayer/Bookcase"]
@@ -168,8 +168,8 @@ position = Vector2(1325, 750)
 
 [node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/Drawer"]
 texture_filter = 1
-position = Vector2(1325, 760)
-scale = Vector2(3.5, 3.5)
+position = Vector2(1325, 750)
+scale = Vector2(1.0, 1.0)
 texture = ExtResource("9_drawer")
 
 [node name="LightOccluder2D" type="LightOccluder2D" parent="HotspotsLayer/Drawer"]
@@ -188,8 +188,8 @@ position = Vector2(1750, 750)
 
 [node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/Door"]
 texture_filter = 1
-position = Vector2(1750, 600)
-scale = Vector2(3.0, 3.0)
+position = Vector2(1750, 625)
+scale = Vector2(1.0, 1.0)
 texture = ExtResource("10_door")
 
 [node name="LightOccluder2D" type="LightOccluder2D" parent="HotspotsLayer/Door"]
