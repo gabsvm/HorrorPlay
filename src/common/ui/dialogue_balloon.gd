@@ -28,6 +28,14 @@ func _ready() -> void:
 	choices_container.visible = false
 	# Ensure the balloon covers the full viewport or sits at the bottom nicely
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	
+	# Apply vintage typewriter font to dialogue elements
+	var custom_font = load("res://assets/fonts/SpecialElite-Regular.ttf")
+	if custom_font:
+		speaker_label.add_theme_font_override("font", custom_font)
+		text_label.add_theme_font_override("normal_font", custom_font)
+		next_indicator.add_theme_font_override("font", custom_font)
+		
 	_setup_synth()
 
 func _setup_synth() -> void:

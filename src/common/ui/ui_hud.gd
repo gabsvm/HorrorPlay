@@ -7,9 +7,15 @@ extends Control
 @onready var active_item_label: Label = $InventoryPanel/ActiveItemLabel
 
 var cached_sfx: Dictionary = {}
+var custom_font: Font = null
 
 func _ready() -> void:
 	_init_sfx_cache()
+	
+	# Apply vintage typewriter font recursively to HUD elements
+	custom_font = load("res://assets/fonts/SpecialElite-Regular.ttf")
+	if custom_font:
+		_apply_theme_font_recursive(self, custom_font)
 	
 	# Connect to Global Autoload signals
 	Inventory.item_added.connect(_on_inventory_changed)
@@ -38,6 +44,12 @@ func _setup_safe_area() -> void:
 		$InventoryPanel.offset_bottom = -max(0, window_size.y - safe_area.end.y)
 		$InventoryPanel.offset_left = max(0, safe_area.position.x)
 		$InventoryPanel.offset_right = -max(0, window_size.x - safe_area.end.x)
+
+func _apply_theme_font_recursive(node: Node, font: Font) -> void:
+	if node is Control:
+		node.add_theme_font_override("font", font)
+	for child in node.get_children():
+		_apply_theme_font_recursive(child, font)
 
 func show_hover_text(text: String) -> void:
 	if Inventory.active_item:
@@ -103,6 +115,10 @@ func _update_inventory_ui() -> void:
 			slot_btn.texture_normal = item.icon
 			
 		slot_btn.pressed.connect(func(): _on_slot_pressed(item))
+		
+		if custom_font:
+			_apply_theme_font_recursive(slot_btn, custom_font)
+			
 		slots_container.add_child(slot_btn)
 		
 		# Juicy Ease Back popping animation
