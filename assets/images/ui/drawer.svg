@@ -1,14 +1,46 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100" width="150" height="100">
-  <!-- Solid wood drawer face -->
-  <rect x="5" y="5" width="140" height="90" fill="#2d1500" stroke="#110700" stroke-width="4" rx="3"/>
-  <rect x="15" y="15" width="120" height="70" fill="#4b270a" stroke="#110700" stroke-width="2"/>
+  <defs>
+    <filter id="gritty-noise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" result="noise"/>
+      <feColorMatrix type="matrix" values="
+        0.21 0.21 0.21 0 0
+        0.21 0.21 0.21 0 0
+        0.21 0.21 0.21 0 0
+        0    0    0    0.24 0" in="noise" result="coloredNoise"/>
+      <feComposite operator="over" in="coloredNoise" in2="SourceGraphic"/>
+    </filter>
+    
+    <linearGradient id="wood-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#401a01"/>
+      <stop offset="100%" stop-color="#140600"/>
+    </linearGradient>
+    <linearGradient id="bronze-plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#b45309"/>
+      <stop offset="50%" stop-color="#78350f"/>
+      <stop offset="100%" stop-color="#451a03"/>
+    </linearGradient>
+    <linearGradient id="gold-metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#ca8a04"/>
+      <stop offset="100%" stop-color="#854d0e"/>
+    </linearGradient>
+  </defs>
   
-  <!-- Ornate brass handle backing plate -->
-  <rect x="45" y="35" width="60" height="30" fill="#854d0e" stroke="#1c1917" stroke-width="2" rx="4"/>
-  <!-- Keyhole detail -->
-  <circle cx="75" cy="50" r="4" fill="#000000"/>
-  <polygon points="73,50 77,50 79,62 71,62" fill="#000000"/>
-  
-  <!-- Handle Ring -->
-  <path d="M 55 50 C 55 70 95 70 95 50" fill="none" stroke="#ca8a04" stroke-width="4" stroke-linecap="round"/>
+  <g filter="url(#gritty-noise)">
+    <!-- Solid wood drawer face -->
+    <rect x="5" y="5" width="140" height="90" fill="url(#wood-face)" stroke="#110700" stroke-width="5" rx="3"/>
+    <rect x="15" y="15" width="120" height="70" fill="#1c0a01" stroke="#110700" stroke-width="3" rx="2"/>
+    
+    <!-- Ornate brass/bronze handle backing plate -->
+    <rect x="45" y="32" width="60" height="36" fill="url(#bronze-plate)" stroke="#110700" stroke-width="3" rx="4"/>
+    <rect x="48" y="35" width="54" height="30" fill="none" stroke="url(#gold-metal)" stroke-width="1.5" rx="3" opacity="0.4"/>
+    
+    <!-- Keyhole detail -->
+    <circle cx="75" cy="50" r="5" fill="#000000"/>
+    <polygon points="72,50 78,50 80,64 70,64" fill="#000000"/>
+    
+    <!-- Handle Ring (gothic design hanging down) -->
+    <path d="M 55 50 C 55 75 95 75 95 50" fill="none" stroke="url(#gold-metal)" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 55 50 C 55 75 95 75 95 50" fill="none" stroke="#110700" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
 </svg>

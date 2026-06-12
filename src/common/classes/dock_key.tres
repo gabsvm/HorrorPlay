@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3 uid="uid://item_dock_key"]
 
-[ext_resource type="Texture2D" uid="uid://item_rusty_key_icon" path="res://assets/images/items/rusty_key.svg" id="1_icon"]
+[ext_resource type="Texture2D" uid="uid://item_dock_key_icon" path="res://assets/images/items/dock_key.svg" id="1_icon"]
 [ext_resource type="Script" path="res://src/common/classes/item_data.gd" id="2_script"]
 
 [resource]

@@ -9,6 +9,7 @@ extends CharacterBody2D
 @export var frame_rate: float = 8.0
 
 @onready var sprite: Sprite2D = $Sprite2D
+@onready var lantern: PointLight2D = get_node_or_null("LanternLight")
 
 var anim_time: float = 0.0
 var is_moving: bool = false
@@ -28,12 +29,35 @@ func _process(delta: float) -> void:
 	is_moving = global_position.distance_to(current_target) > 5.0
 	
 	anim_time += delta * frame_rate
+	
+	if lantern:
+		var noise = sin(anim_time * 0.8) * cos(anim_time * 0.43) + sin(anim_time * 1.5) * cos(anim_time * 0.9)
+		lantern.energy = lerp(0.55, 0.85, (noise + 2.0) / 4.0)
 	var textures = walk_textures if is_moving else idle_textures
 	
 	if textures.size() > 0:
 		var frame = int(anim_time) % textures.size()
 		if sprite:
 			sprite.texture = textures[frame]
+			sprite.position = Vector2(0, 30)
+			sprite.rotation = 0.0
+			sprite.scale = Vector2(4.0, 4.0)
+	else:
+		if sprite:
+			if sprite.texture == null:
+				sprite.texture = load("res://assets/images/characters/inspector.svg")
+			
+			if is_moving:
+				var bob = sin(anim_time * 1.5) * 6.0
+				var sway = cos(anim_time * 1.5) * 0.08
+				sprite.position = Vector2(0, 30 + bob)
+				sprite.rotation = sway
+				sprite.scale = Vector2(1.0, 1.0)
+			else:
+				var breath = sin(anim_time * 0.4) * 0.03
+				sprite.position = Vector2(0, 30)
+				sprite.rotation = 0.0
+				sprite.scale = Vector2(1.0, 1.0 + breath)
 
 func walk_to(target_position: Vector2) -> void:
 	current_target = target_position

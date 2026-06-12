@@ -56,8 +56,8 @@ func _on_innkeeper_interacted(verb: String) -> void:
 		elif GameState.get_flag("fisherman_met") and GameState.get_flag("has_read_necronomicon"):
 			DialogueManager.show_dialogue([
 				"¿Silas te dijo que yo tenía el duplicado? Ese viejo habla de más...",
-				"Sí, tengo la llave de los botes. El oficial desaparecido me la dejó como fianza por su cuenta de ginebra antes de no volver nunca más.",
-				"Tomala, inspector. Si terminás en el fondo del Arrecife alimentando a las bestias, a mí no me metas en tus actas policiales."
+				"Sí, tengo la [color=#374151]llave de los botes[/color]. El oficial desaparecido me la dejó como fianza por su cuenta de ginebra antes de no volver nunca más.",
+				"[wave amp=15 freq=2.5]Tomala, inspector. Si terminás en el fondo del Arrecife alimentando a las bestias, a mí no me metas en tus actas policiales.[/wave]"
 			], "Tabernero")
 			if dock_key_item:
 				Inventory.add_item(dock_key_item)

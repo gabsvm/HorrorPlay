@@ -64,14 +64,14 @@ func _on_desk_interacted(verb: String) -> void:
 		if not GameState.get_flag("office_drawer_unlocked"):
 			DialogueManager.show_dialogue([
 				"Reportes de muertes locales... Autopsias inconclusas que hablan de 'asfixia seca' en tierra firme.",
-				"Bajo la pila de expedientes confiscados, encuentro una llave de bronce cubierta de herrumbre verdosa."
+				"Bajo la pila de expedientes confiscados, encuentro una [color=#ca8a04]llave de bronce[/color] cubierta de herrumbre verdosa."
 			], "Inspector")
 			if key_item:
 				Inventory.add_item(key_item)
 		else:
 			DialogueManager.show_dialogue(["Solo quedan expedientes con manchas de humedad salina."], "Inspector")
 	elif verb == "examine":
-		DialogueManager.show_dialogue(["Mi escritorio de roble. Huele a tabaco rancio, papel viejo y a ese persistente hedor a pescado descompuesto que sube desde el muelle."], "Inspector")
+		DialogueManager.show_dialogue(["Mi escritorio de roble. Huele a [i]tabaco rancio[/i], papel viejo y a ese persistente hedor a pescado descompuesto que sube desde el muelle."], "Inspector")
 
 func _on_bookcase_interacted(verb: String) -> void:
 	if verb == "interact":
@@ -96,7 +96,7 @@ func _on_bookcase_interacted(verb: String) -> void:
 			"Inspector"
 		)
 	elif verb == "examine":
-		DialogueManager.show_dialogue(["Cientos de lomos gastados me miran desde la oscuridad."], "Inspector")
+		DialogueManager.show_dialogue(["Cientos de lomos gastados me miran desde la [i]oscuridad[/i]."], "Inspector")
 
 func _on_read_modern_book() -> void:
 	DialogueManager.show_dialogue([
@@ -107,8 +107,8 @@ func _on_read_modern_book() -> void:
 
 func _on_read_ancient_diary() -> void:
 	DialogueManager.show_dialogue([
-		"Las páginas están llenas de símbolos astrológicos y menciones a un arrecife costero.",
-		"Siento una ligera punzada en la nuca al leerlo."
+		"Las páginas están llenas de [color=#ca8a04]símbolos astrológicos[/color] y menciones a un [color=#06b6d4]arrecife costero[/color].",
+		"Siento una ligera [shake rate=20 level=10]punzada en la nuca[/shake] al leerlo."
 	])
 	Sanity.drain_sanity(10)
 	GameState.set_flag("has_read_necronomicon", true)
@@ -117,8 +117,8 @@ func _on_read_ancient_diary() -> void:
 
 func _on_read_whispers() -> void:
 	DialogueManager.show_dialogue([
-		"Un coro de voces inaudibles describe la geometría de las estrellas.",
-		"Mi mente tiembla ante tal verdad."
+		"[wave amp=20 freq=4]Un coro de voces inaudibles describe la geometría de las estrellas.[/wave]",
+		"[shake rate=25 level=12]Mi mente tiembla ante tal verdad.[/shake]"
 	])
 	Sanity.drain_sanity(30)
 
@@ -132,7 +132,7 @@ func _on_drawer_unlocked(item: ItemData) -> void:
 	GameState.set_flag("office_drawer_unlocked", true)
 	Inventory.remove_item(item)
 	DialogueManager.show_dialogue([
-		"La llave oxidada gira con un chirrido metálico espantoso.",
+		"La llave oxidada gira con un [shake rate=15 level=5][i]chirrido metálico espantoso[/i][/shake].",
 		"El cajón de bronce está desbloqueado."
 	], "Inspector")
 

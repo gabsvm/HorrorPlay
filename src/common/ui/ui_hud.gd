@@ -5,6 +5,7 @@ extends Control
 @onready var sanity_bar: ProgressBar = $TopBar/SanityBar
 @onready var slots_container: HBoxContainer = $InventoryPanel/ScrollContainer/SlotsContainer
 @onready var active_item_label: Label = $InventoryPanel/ActiveItemLabel
+@onready var vignette: TextureRect = $Vignette
 
 var cached_sfx: Dictionary = {}
 var custom_font: Font = null
@@ -69,6 +70,11 @@ func _on_sanity_changed(new_val: int) -> void:
 func _update_sanity_ui(value: int) -> void:
 	sanity_bar.value = value
 	sanity_bar.tooltip_text = "Cordura: %d/100" % value
+	if vignette:
+		# Map sanity (100 -> 0) to vignette opacity (0.2 -> 0.85)
+		var target_alpha = lerp(0.85, 0.2, float(value) / 100.0)
+		var tween = create_tween()
+		tween.tween_property(vignette, "modulate:a", target_alpha, 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 func _on_inventory_changed(_item: ItemData) -> void:
 	_update_inventory_ui()
@@ -100,19 +106,21 @@ func _update_inventory_ui() -> void:
 		panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		slot_btn.add_child(panel)
 		
-		var label = Label.new()
-		label.text = item.name
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		slot_btn.add_child(label)
-		
 		# Touch targets are at least 140x100px
 		slot_btn.custom_minimum_size = Vector2(140, 100)
 		
 		if item.icon:
 			slot_btn.texture_normal = item.icon
+			slot_btn.ignore_texture_size = true
+			slot_btn.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
+		else:
+			var label = Label.new()
+			label.text = item.name
+			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			slot_btn.add_child(label)
 			
 		slot_btn.pressed.connect(func(): _on_slot_pressed(item))
 		

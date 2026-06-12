@@ -123,14 +123,15 @@ func _type_text(text_to_type: String) -> void:
 	is_typing = true
 	typing_canceled = false
 	
-	while text_label.visible_characters < text_to_type.length():
+	var parsed_text = text_label.get_parsed_text()
+	while text_label.visible_characters < parsed_text.length():
 		if typing_canceled:
 			break
 		text_label.visible_characters += 1
 		last_visible_chars = text_label.visible_characters
 		
 		# Get the current character to determine the punctuation pause delay
-		var current_char = text_to_type[text_label.visible_characters - 1]
+		var current_char = parsed_text[text_label.visible_characters - 1]
 		var delay = 0.02 # Base typing speed
 		
 		if current_char in [".", "!", "?", "…"]:
@@ -201,7 +202,7 @@ func _input(event: InputEvent) -> void:
 		if is_typing:
 			# Skip typing and show whole line
 			typing_canceled = true
-			text_label.visible_characters = text_label.text.length()
+			text_label.visible_characters = text_label.get_parsed_text().length()
 			_on_typing_finished()
 		else:
 			current_line_index += 1

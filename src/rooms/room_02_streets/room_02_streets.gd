@@ -60,15 +60,15 @@ func _on_fisherman_interacted(verb: String) -> void:
 	if verb == "interact":
 		if GameState.get_flag("has_read_necronomicon"):
 			DialogueManager.show_dialogue([
-				"¿Ese cuaderno de cuero...? Es de él. Reconozco las coordenadas... el Arrecife del Diablo. Los guardacostas husmearon ahí y las aguas se los tragaron.",
-				"Si querés terminar igual, necesitás desatar los botes del muelle. Barnaby tiene la llave en la taberna... si es que no te echa antes.",
-				"No deberías seguir tentando a lo que duerme abajo, oficial. Innsmouth no olvida a los entrometidos."
+				"¿Ese cuaderno de cuero...? Es de él. Reconozco las coordenadas... el [color=#06b6d4]Arrecife del Diablo[/color]. Los guardacostas husmearon ahí y las aguas se los tragaron.",
+				"Si querés terminar igual, necesitás desatar los botes del muelle. Barnaby tiene la [color=#ca8a04]llave[/color] en la taberna... si es que no te echa antes.",
+				"[wave amp=15 freq=3]No deberías seguir tentando a lo que duerme abajo, oficial. Innsmouth no olvida a los entrometidos.[/wave]"
 			], "Pescador Sombrío")
 			GameState.set_flag("fisherman_met", true)
 		else:
 			DialogueManager.show_dialogue([
-				"La niebla está espesa, forastero... y la marea viene con hambre.",
-				"No meta las narices donde no debe si valora el pellejo."
+				"[wave amp=10 freq=2]La niebla está espesa, forastero... y la marea viene con hambre.[/wave]",
+				"No meta las narices donde no debe si valora el [shake rate=15 level=6]pellejo[/shake]."
 			], "Pescador Sombrío")
 	elif verb == "examine":
 		DialogueManager.show_dialogue(["Un anciano pescador. Huele a algas descompuestas y escamas secas."], "Inspector")

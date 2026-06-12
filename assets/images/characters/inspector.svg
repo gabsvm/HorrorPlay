@@ -1,27 +1,72 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 300" width="120" height="300">
-  <!-- Hat / Fedora -->
-  <path d="M20 70 L100 70 L90 50 L30 50 Z" fill="#1b242e"/>
-  <ellipse cx="60" cy="72" rx="48" ry="4" fill="#151d26"/>
-  <!-- Head & Collar -->
-  <circle cx="60" cy="90" r="18" fill="#1e293b"/>
-  <path d="M48 105 L72 105 L80 125 L40 125 Z" fill="#0f172a"/>
-  <!-- Trenchcoat / Body -->
-  <path d="M35 125 L85 125 L95 240 L25 240 Z" fill="#1e293b"/>
-  <!-- Belt and details -->
-  <rect x="33" y="170" width="54" height="6" fill="#0f172a"/>
-  <rect x="54" y="167" width="12" height="12" fill="#e2e8f0" rx="1"/>
-  <!-- Coat shadows / buttons -->
-  <circle cx="45" cy="145" r="3" fill="#0f172a"/>
-  <circle cx="45" cy="195" r="3" fill="#0f172a"/>
-  <circle cx="75" cy="145" r="3" fill="#0f172a"/>
-  <circle cx="75" cy="195" r="3" fill="#0f172a"/>
-  <!-- Legs / Trousers -->
-  <rect x="42" y="240" width="14" height="50" fill="#0f172a"/>
-  <rect x="64" y="240" width="14" height="50" fill="#0f172a"/>
-  <!-- Boots -->
-  <path d="M35 290 L56 290 L56 298 L30 298 Z" fill="#111827"/>
-  <path d="M64 290 L85 290 L90 298 L64 298 Z" fill="#111827"/>
-  <!-- Glowing Eyes (Lovecraftian sanity motif) -->
-  <ellipse cx="51" cy="88" rx="3" ry="1.5" fill="#22d3ee"/>
-  <ellipse cx="69" cy="88" rx="3" ry="1.5" fill="#22d3ee"/>
+  <defs>
+    <filter id="gritty-noise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" result="noise"/>
+      <feColorMatrix type="matrix" values="
+        0.21 0.21 0.21 0 0
+        0.21 0.21 0.21 0 0
+        0.21 0.21 0.21 0 0
+        0    0    0    0.24 0" in="noise" result="coloredNoise"/>
+      <feComposite operator="over" in="coloredNoise" in2="SourceGraphic"/>
+    </filter>
+    
+    <linearGradient id="coat-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="60%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="hat-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </linearGradient>
+    <linearGradient id="face-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  
+  <g filter="url(#gritty-noise)">
+    <!-- Hat / Fedora -->
+    <path d="M20 70 L100 70 L90 48 L30 50 Z" fill="url(#hat-grad)" stroke="#090d16" stroke-width="2"/>
+    <ellipse cx="60" cy="72" rx="48" ry="4.5" fill="#090d16"/>
+    <!-- Red ribbon on the hat (gothic accent) -->
+    <path d="M28 66 L92 66 L90 70 L30 70 Z" fill="#7f1d1d"/>
+    
+    <!-- Head & Collar -->
+    <circle cx="60" cy="90" r="18" fill="url(#face-grad)" stroke="#090d16" stroke-width="2"/>
+    <path d="M46 105 L74 105 L82 125 L38 125 Z" fill="#0f172a" stroke="#090d16" stroke-width="2"/>
+    
+    <!-- Trenchcoat / Body -->
+    <path d="M35 125 L85 125 L95 240 L25 240 Z" fill="url(#coat-grad)" stroke="#090d16" stroke-width="3"/>
+    
+    <!-- Coat lapels -->
+    <path d="M35 125 L50 160 L60 125 Z" fill="#475569" stroke="#090d16" stroke-width="1.5"/>
+    <path d="M85 125 L70 160 L60 125 Z" fill="#475569" stroke="#090d16" stroke-width="1.5"/>
+    
+    <!-- Belt and details -->
+    <rect x="31" y="170" width="58" height="7.5" fill="#090d16"/>
+    <rect x="54" y="167" width="12" height="13" fill="#cbd5e1" rx="1" stroke="#090d16" stroke-width="2"/>
+    
+    <!-- Coat shadows / buttons -->
+    <circle cx="45" cy="145" r="3.5" fill="#090d16"/>
+    <circle cx="45" cy="195" r="3.5" fill="#090d16"/>
+    <circle cx="75" cy="145" r="3.5" fill="#090d16"/>
+    <circle cx="75" cy="195" r="3.5" fill="#090d16"/>
+    
+    <!-- Legs / Trousers -->
+    <rect x="42" y="240" width="14" height="50" fill="#090d16"/>
+    <rect x="64" y="240" width="14" height="50" fill="#090d16"/>
+    
+    <!-- Boots -->
+    <path d="M35 290 L56 290 L56 298 L28 298 Z" fill="#090d16" stroke="#020617" stroke-width="1.5"/>
+    <path d="M64 290 L85 290 L92 298 L64 298 Z" fill="#090d16" stroke="#020617" stroke-width="1.5"/>
+    
+    <!-- Glowing Eyes (Lovecraftian sanity motif) -->
+    <!-- Glowing cyan eyes with a high-intensity white core -->
+    <ellipse cx="51" cy="88" rx="4.5" ry="2.5" fill="#06b6d4" opacity="0.6"/>
+    <ellipse cx="51" cy="88" rx="2" ry="1" fill="#ecfeff"/>
+    
+    <ellipse cx="69" cy="88" rx="4.5" ry="2.5" fill="#06b6d4" opacity="0.6"/>
+    <ellipse cx="69" cy="88" rx="2" ry="1" fill="#ecfeff"/>
+  </g>
 </svg>

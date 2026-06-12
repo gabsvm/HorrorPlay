@@ -6,13 +6,13 @@ extends Node2D
 @onready var next_prompt: Label = $CanvasLayer/NextPrompt
 
 var intro_lines: Array[String] = [
-	"Octubre de 1926. Boston, Massachusetts.",
-	"La comisaría me asignó el caso de tres guardacostas desaparecidos cerca del Arrecife del Diablo...",
-	"...en las inmediaciones de Innsmouth.",
-	"Un decrépito pueblo pesquero que no figura en los mapas gubernamentales.",
-	"Un lugar de calles sombrías, donde la gente sensata no mira al mar, y del que nadie habla de buena gana.",
-	"Conducido por la lluvia y los presagios oscuros, preparo mis pertenencias en el despacho antes de partir hacia el muelle...",
-	"Que mi fe me guarde de lo que me aguarda en la niebla."
+	"[center]Octubre de 1926. Boston, Massachusetts.[/center]",
+	"[center]La comisaría me asignó el caso de tres guardacostas desaparecidos cerca del [color=#ea580c]Arrecife del Diablo[/color]...[/center]",
+	"[center]...en las inmediaciones de [shake rate=15 level=8][color=#06b6d4]Innsmouth[/color][/shake].[/center]",
+	"[center]Un decrépito pueblo pesquero que no figura en los mapas gubernamentales.[/center]",
+	"[center]Un lugar de calles sombrías, donde la gente sensata no mira al mar, y del que nadie habla de buena gana.[/center]",
+	"[center]Conducido por la lluvia y los presagios oscuros, preparo mis pertenencias en el despacho antes de partir hacia el muelle...[/center]",
+	"[center]Que mi fe me guarde de lo que me aguarda en la [wave amp=15 freq=3]niebla[/wave].[/center]"
 ]
 
 var current_line_idx: int = 0
@@ -43,8 +43,9 @@ func _show_line() -> void:
 	if tween:
 		tween.kill()
 	tween = create_tween()
-	var duration = text_label.text.length() * 0.04
-	tween.tween_property(text_label, "visible_characters", text_label.text.length(), duration)
+	var visible_chars_count = text_label.get_parsed_text().length()
+	var duration = visible_chars_count * 0.04
+	tween.tween_property(text_label, "visible_characters", visible_chars_count, duration)
 	tween.finished.connect(_on_typing_finished)
 
 func _on_typing_finished() -> void:
@@ -63,7 +64,7 @@ func _input(event: InputEvent) -> void:
 		if is_typing:
 			if tween:
 				tween.kill()
-			text_label.visible_characters = text_label.text.length()
+			text_label.visible_characters = text_label.get_parsed_text().length()
 			_on_typing_finished()
 		else:
 			current_line_idx += 1
