@@ -14,8 +14,7 @@ extends Room
 func _ready() -> void:
 	super._ready()
 	
-	# Register for the generalized input clicks/taps
-	InputController.interaction_requested.connect(_on_interaction_requested)
+	# Input connection is handled by room.gd
 	
 	# Wire up hotspots to room-specific narratives
 	desk.interacted.connect(_on_desk_interacted)
@@ -27,37 +26,7 @@ func _ready() -> void:
 	
 	door.interacted.connect(_on_door_interacted)
 
-func _on_interaction_requested(action_type: String, pos: Vector2) -> void:
-	if InputController.is_input_blocked:
-		return
-		
-	# Find which hotspot was clicked geometrically (fully thread-safe & robust!)
-	var clicked_hotspot: Hotspot = null
-	var hotspots_parent = get_node_or_null("HotspotsLayer")
-	if hotspots_parent:
-		for hs in hotspots_parent.get_children():
-			if hs is Hotspot and hs.is_active:
-				if hs.is_point_inside(pos):
-					clicked_hotspot = hs
-					break
-					
-	if clicked_hotspot:
-		_walk_and_execute(clicked_hotspot, action_type)
-	else:
-		# Clicked on the floor! Walk player there if not examining/using item
-		if action_type == "interact" and Inventory.active_item == null:
-			player.walk_to(pos)
-
-func _walk_and_execute(hotspot: Hotspot, verb: String) -> void:
-	if hotspot.walk_to_point:
-		InputController.block_input(true)
-		await player.walk_to(hotspot.walk_to_point.global_position)
-		InputController.block_input(false)
-		
-	if Inventory.active_item != null and verb == "interact":
-		hotspot.execute_interaction("use_item")
-	else:
-		hotspot.execute_interaction(verb)
+	# Input handling and walk_and_execute are now handled by room.gd
 
 func _on_desk_interacted(verb: String) -> void:
 	if verb == "interact":

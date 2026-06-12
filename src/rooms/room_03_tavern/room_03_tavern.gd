@@ -9,38 +9,10 @@ extends Room
 
 func _ready() -> void:
 	super._ready()
-	InputController.interaction_requested.connect(_on_interaction_requested)
+	# Input connection and handling are now in room.gd
 	
 	door_back.interacted.connect(_on_door_back_interacted)
 	innkeeper.interacted.connect(_on_innkeeper_interacted)
-
-func _on_interaction_requested(action_type: String, pos: Vector2) -> void:
-	if InputController.is_input_blocked:
-		return
-		
-	# Find which hotspot was clicked geometrically (fully thread-safe & robust!)
-	var clicked_hotspot: Hotspot = null
-	var hotspots_parent = get_node_or_null("HotspotsLayer")
-	if hotspots_parent:
-		for hs in hotspots_parent.get_children():
-			if hs is Hotspot and hs.is_active:
-				if hs.is_point_inside(pos):
-					clicked_hotspot = hs
-					break
-					
-	if clicked_hotspot:
-		_walk_and_execute(clicked_hotspot, action_type)
-	else:
-		if action_type == "interact" and Inventory.active_item == null:
-			player.walk_to(pos)
-
-func _walk_and_execute(hotspot: Hotspot, verb: String) -> void:
-	if hotspot.walk_to_point:
-		InputController.block_input(true)
-		await player.walk_to(hotspot.walk_to_point.global_position)
-		InputController.block_input(false)
-		
-	hotspot.execute_interaction(verb)
 
 func _on_door_back_interacted(verb: String) -> void:
 	if verb == "interact":

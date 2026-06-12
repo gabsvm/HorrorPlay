@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://tavern_bg_tex"
-path="res://.godot/imported/tavern_bg.svg-e1368adbbf16a5e95e5eb04340eab50e.ctex"
+uid="uid://b4dajwwvjreo7"
+path="res://.godot/imported/tavern_bg.svg-ef87d0d00208625167d3692ad2ab72fe.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/images/backgrounds/tavern_bg.svg"
-dest_files=["res://.godot/imported/tavern_bg.svg-e1368adbbf16a5e95e5eb04340eab50e.ctex"]
+dest_files=["res://.godot/imported/tavern_bg.svg-ef87d0d00208625167d3692ad2ab72fe.ctex"]
 
 [params]
 

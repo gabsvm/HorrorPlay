@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://item_dock_key_icon"
-path="res://.godot/imported/dock_key.svg-e1368adbbf16a5e95e5eb04340eab50f.ctex"
+uid="uid://dbtdftdwy317"
+path="res://.godot/imported/dock_key.svg-ce0159407285473808a1399c55952047.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/images/items/dock_key.svg"
-dest_files=["res://.godot/imported/dock_key.svg-e1368adbbf16a5e95e5eb04340eab50f.ctex"]
+dest_files=["res://.godot/imported/dock_key.svg-ce0159407285473808a1399c55952047.ctex"]
 
 [params]
 

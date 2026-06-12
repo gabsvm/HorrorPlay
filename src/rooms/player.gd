@@ -43,21 +43,13 @@ func _process(delta: float) -> void:
 			sprite.rotation = 0.0
 			sprite.scale = Vector2(4.0, 4.0)
 	else:
+		# Fallback to inspector SVG if no textures provided
 		if sprite:
 			if sprite.texture == null:
 				sprite.texture = load("res://assets/images/characters/inspector.svg")
-			
-			if is_moving:
-				var bob = sin(anim_time * 1.5) * 6.0
-				var sway = cos(anim_time * 1.5) * 0.08
-				sprite.position = Vector2(0, 30 + bob)
-				sprite.rotation = sway
-				sprite.scale = Vector2(1.0, 1.0)
-			else:
-				var breath = sin(anim_time * 0.4) * 0.03
-				sprite.position = Vector2(0, 30)
-				sprite.rotation = 0.0
-				sprite.scale = Vector2(1.0, 1.0 + breath)
+			sprite.position = Vector2(0, 30)
+			sprite.rotation = 0.0
+			sprite.scale = Vector2(1.0, 1.0)
 
 func walk_to(target_position: Vector2) -> void:
 	current_target = target_position
