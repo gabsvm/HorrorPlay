@@ -160,18 +160,61 @@ func _display_choices() -> void:
 		
 	for i in range(choices_list.size()):
 		var choice = choices_list[i]
+		if not _choice_available(choice):
+			continue
 		
-		if choice.has("sanity_min") and Sanity.current_sanity < choice["sanity_min"]:
-			continue
-		if choice.has("sanity_max") and Sanity.current_sanity > choice["sanity_max"]:
-			continue
-			
 		var btn = Button.new()
 		btn.text = choice.get("text", "...")
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		btn.theme_type_variation = &"FlatButton"
 		btn.pressed.connect(func(): _on_choice_selected(choice))
 		choices_container.add_child(btn)
+
+func _choice_available(choice: Dictionary) -> bool:
+	if choice.has("sanity_min") and Sanity.current_sanity < int(choice["sanity_min"]):
+		return false
+	if choice.has("sanity_max") and Sanity.current_sanity > int(choice["sanity_max"]):
+		return false
+	
+	if choice.has("required_evidence"):
+		var required_evidence = choice["required_evidence"]
+		if required_evidence is Array:
+			for evidence_id in required_evidence:
+				if not Investigation.has_evidence(str(evidence_id)):
+					return false
+		else:
+			if not Investigation.has_evidence(str(required_evidence)):
+				return false
+	
+	if choice.has("required_flag"):
+		var required_flag = choice["required_flag"]
+		if required_flag is Array:
+			for flag_name in required_flag:
+				if not GameState.get_flag(str(flag_name)):
+					return false
+		else:
+			if not GameState.get_flag(str(required_flag)):
+				return false
+	
+	if choice.has("forbidden_flag"):
+		var forbidden_flag = choice["forbidden_flag"]
+		if forbidden_flag is Array:
+			for flag_name in forbidden_flag:
+				if GameState.get_flag(str(flag_name)):
+					return false
+		else:
+			if GameState.get_flag(str(forbidden_flag)):
+				return false
+	
+	if choice.has("required_item_id") and not Inventory.has_item(str(choice["required_item_id"])):
+		return false
+	
+	if choice.has("variable_equals") and choice["variable_equals"] is Dictionary:
+		for variable_name in choice["variable_equals"]:
+			if GameState.get_var(str(variable_name)) != choice["variable_equals"][variable_name]:
+				return false
+	
+	return true
 
 func _on_choice_selected(choice: Dictionary) -> void:
 	choices_container.visible = false
