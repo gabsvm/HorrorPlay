@@ -1,0 +1,178 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/rooms/room_05_boathouse/room_05_boathouse.gd" id="1_script"]
+[ext_resource type="Script" path="res://src/rooms/player.gd" id="2_player"]
+[ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="3_hotspot"]
+[ext_resource type="Texture2D" path="res://assets/images/backgrounds/boathouse_bg.svg" id="4_bg"]
+[ext_resource type="Resource" path="res://src/common/classes/brass_fuse.tres" id="5_fuse"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/gothic_village.ogg" id="6_music"]
+
+[sub_resource type="Environment" id="Environment_boathouse"]
+background_mode = 3
+glow_enabled = true
+glow_levels/1 = 1.0
+glow_levels/2 = 1.0
+glow_levels/3 = 1.0
+glow_levels/5 = 1.0
+glow_intensity = 1.0
+glow_strength = 0.85
+glow_bloom = 0.16
+
+[sub_resource type="Gradient" id="Gradient_light"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_light"]
+gradient = SubResource("Gradient_light")
+width = 512
+height = 512
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(80, 200)
+
+[node name="Room_Boathouse" type="Node2D"]
+script = ExtResource("1_script")
+brass_fuse_item = ExtResource("5_fuse")
+room_name = "Cobertizo de la Guardia Costera"
+music_theme = ExtResource("6_music")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_boathouse")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(0.19, 0.24, 0.25, 1)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(960, 540)
+texture = ExtResource("4_bg")
+
+[node name="MoonLeak" type="PointLight2D" parent="."]
+position = Vector2(610, 290)
+scale = Vector2(1.8, 1.8)
+color = Color(0.55, 0.77, 0.82, 1)
+energy = 0.42
+shadow_enabled = true
+texture = SubResource("GradientTexture2D_light")
+
+[node name="MainLight" type="PointLight2D" parent="."]
+position = Vector2(1060, 430)
+scale = Vector2(2.8, 2.8)
+color = Color(1, 0.78, 0.42, 1)
+energy = 0.0
+shadow_enabled = true
+texture = SubResource("GradientTexture2D_light")
+
+[node name="HotspotsLayer" type="Node2D" parent="."]
+
+[node name="DoorBack" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
+script = ExtResource("3_hotspot")
+hotspot_name = "Puerta al Muelle"
+walk_to_point = NodePath("WalkToPoint")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/DoorBack"]
+polygon = PackedVector2Array(70, 250, 350, 250, 350, 805, 70, 805)
+
+[node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/DoorBack"]
+position = Vector2(365, 790)
+
+[node name="ServiceLockers" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
+script = ExtResource("3_hotspot")
+hotspot_name = "Casilleros de Servicio"
+walk_to_point = NodePath("WalkToPoint")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/ServiceLockers"]
+polygon = PackedVector2Array(880, 205, 1340, 205, 1340, 810, 880, 810)
+
+[node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/ServiceLockers"]
+position = Vector2(910, 800)
+
+[node name="FuseBox" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
+script = ExtResource("3_hotspot")
+hotspot_name = "Caja Eléctrica del Pescante"
+walk_to_point = NodePath("WalkToPoint")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/FuseBox"]
+polygon = PackedVector2Array(640, 540, 850, 540, 850, 790, 640, 790)
+
+[node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/FuseBox"]
+position = Vector2(620, 800)
+
+[node name="Radio" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
+script = ExtResource("3_hotspot")
+hotspot_name = "Radio de Guardia"
+walk_to_point = NodePath("WalkToPoint")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Radio"]
+polygon = PackedVector2Array(1340, 420, 1810, 420, 1810, 735, 1340, 735)
+
+[node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Radio"]
+position = Vector2(1330, 790)
+
+[node name="FloorDrain" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
+script = ExtResource("3_hotspot")
+hotspot_name = "Desagüe del Piso"
+walk_to_point = NodePath("WalkToPoint")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/FloorDrain"]
+polygon = PackedVector2Array(335, 825, 690, 825, 690, 1005, 335, 1005)
+
+[node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/FloorDrain"]
+position = Vector2(520, 830)
+
+[node name="Boat317" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
+script = ExtResource("3_hotspot")
+hotspot_name = "Bote 317 y Pescante"
+walk_to_point = NodePath("WalkToPoint")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Boat317"]
+polygon = PackedVector2Array(1040, 690, 1850, 690, 1850, 1040, 1040, 1040)
+
+[node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Boat317"]
+position = Vector2(1180, 835)
+
+[node name="CharactersLayer" type="Node2D" parent="."]
+
+[node name="Player" type="CharacterBody2D" parent="CharactersLayer"]
+position = Vector2(430, 790)
+script = ExtResource("2_player")
+idle_textures = Array[Texture2D]([])
+walk_textures = Array[Texture2D]([])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CharactersLayer/Player"]
+shape = SubResource("RectangleShape2D_player")
+
+[node name="Sprite2D" type="Sprite2D" parent="CharactersLayer/Player"]
+texture_filter = 1
+position = Vector2(0, 30)
+
+[node name="LanternLight" type="PointLight2D" parent="CharactersLayer/Player"]
+position = Vector2(0, 30)
+scale = Vector2(1.7, 1.7)
+color = Color(0.98, 0.92, 0.78, 1)
+energy = 0.68
+shadow_enabled = true
+texture = SubResource("GradientTexture2D_light")
+
+[node name="ForegroundLayer" type="Node2D" parent="."]
+
+[node name="DustParticles" type="CPUParticles2D" parent="ForegroundLayer"]
+position = Vector2(960, 520)
+amount = 55
+lifetime = 7.5
+preprocess = 7.0
+emission_shape = 3
+emission_rect_extents = Vector2(960, 520)
+direction = Vector2(0.4, -0.2)
+spread = 180.0
+gravity = Vector2(0, -1)
+initial_velocity_min = 2.0
+initial_velocity_max = 8.0
+scale_amount_min = 1.0
+scale_amount_max = 3.0
+color = Color(0.72, 0.78, 0.72, 0.12)
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+layer = 10
