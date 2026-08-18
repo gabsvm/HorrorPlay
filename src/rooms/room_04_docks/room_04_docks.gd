@@ -58,7 +58,10 @@ func _on_boathouse_door_interacted(verb: String) -> void:
 		], "Inspector")
 		Sanity.drain_sanity(4)
 	
-	Investigation.set_objective("restore_boathouse_power")
+	if GameState.get_flag("boathouse_power_on"):
+		Investigation.set_objective("launch_boat")
+	else:
+		Investigation.set_objective("restore_boathouse_power")
 	SceneRouter.change_room("res://src/rooms/room_05_boathouse/room_05_boathouse.tscn")
 
 func _on_manifest_interacted(verb: String) -> void:
