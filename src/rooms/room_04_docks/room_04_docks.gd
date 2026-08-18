@@ -74,30 +74,32 @@ func _on_manifest_interacted(verb: String) -> void:
 	if verb == "interact":
 		GameState.set_flag("dock_manifest_read", true)
 		Investigation.discover_evidence("dock_manifest")
-		DialogueManager.show_dialogue([
+		await DialogueManager.show_dialogue([
 			"MANIFIESTO DE SALIDA — UNIDAD 317.",
 			"Tres guardacostas. Combustible para seis horas. Bengalas. Radio portátil. Destino declarado: patrulla del Arrecife del Diablo.",
 			"En el margen alguien escribió: [color=#ca8a04]«equipo de repuesto — casillero 317»[/color].",
 			"La línea de regreso está vacía."
 		], "Inspector")
+		await _maybe_trigger_water_event()
 
 func _on_shoreline_interacted(verb: String) -> void:
-	if verb == "interact" or verb == "examine":
-		if GameState.get_flag("dock_tracks_examined"):
-			DialogueManager.show_dialogue(["La marea está borrando las marcas. Preferiría que lo hiciera más rápido."], "Inspector")
-			return
-		
-		GameState.set_flag("dock_tracks_examined", true)
-		GameState.set_var("dock_tension", max(1, int(GameState.get_var("dock_tension", 0))))
-		Investigation.discover_evidence("amphibious_tracks")
-		Sanity.drain_sanity(8)
-		DialogueManager.show_dialogue([
-			"Hay huellas entre los pilotes. Botas de trabajo, profundas, que llegan desde el muelle hasta el borde del agua.",
-			"Pero junto a ellas hay otras marcas.",
-			"Cinco dedos demasiado largos unidos por una membrana. [shake rate=14 level=6]Apuntan desde el mar hacia tierra.[/shake]",
-			"No estoy siguiendo solamente el rastro de tres hombres desaparecidos."
-		], "Inspector")
-		_maybe_trigger_water_event()
+	if verb != "interact" and verb != "examine":
+		return
+	if GameState.get_flag("dock_tracks_examined"):
+		DialogueManager.show_dialogue(["La marea está borrando las marcas. Preferiría que lo hiciera más rápido."], "Inspector")
+		return
+	
+	GameState.set_flag("dock_tracks_examined", true)
+	GameState.set_var("dock_tension", max(1, int(GameState.get_var("dock_tension", 0))))
+	Investigation.discover_evidence("amphibious_tracks")
+	Sanity.drain_sanity(8)
+	await DialogueManager.show_dialogue([
+		"Hay huellas entre los pilotes. Botas de trabajo, profundas, que llegan desde el muelle hasta el borde del agua.",
+		"Pero junto a ellas hay otras marcas.",
+		"Cinco dedos demasiado largos unidos por una membrana. [shake rate=14 level=6]Apuntan desde el mar hacia tierra.[/shake]",
+		"No estoy siguiendo solamente el rastro de tres hombres desaparecidos."
+	], "Inspector")
+	await _maybe_trigger_water_event()
 
 func _on_boat_interacted(verb: String) -> void:
 	if verb == "examine":
@@ -112,13 +114,14 @@ func _on_boat_interacted(verb: String) -> void:
 			DialogueManager.show_dialogue(["El bote está suspendido por el pescante. Primero tengo que recuperar la energía del cobertizo."], "Inspector")
 
 func _maybe_trigger_water_event() -> void:
-	if not GameState.get_flag("dock_manifest_read"):
+	if not GameState.get_flag("dock_manifest_read") or not GameState.get_flag("dock_tracks_examined"):
 		return
 	if int(GameState.get_var("dock_tension", 0)) >= 2:
 		return
 	
 	GameState.set_var("dock_tension", 2)
-	await get_tree().create_timer(0.55).timeout
+	await get_tree().create_timer(0.4).timeout
+	AudioBus.play_horror_stinger(0.55)
 	AtmosphereController.horror_pulse(0.8)
 	await DialogueManager.show_dialogue([
 		"Algo pesado roza un pilote debajo de mí.",
