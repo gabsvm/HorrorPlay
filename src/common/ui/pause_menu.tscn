@@ -1,0 +1,113 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/common/ui/pause_menu.gd" id="1_script"]
+
+[node name="PauseMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.006, 0.008, 0.011, 0.84)
+
+[node name="Panel" type="Panel" parent="Backdrop"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -310.0
+offset_right = 300.0
+offset_bottom = 310.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Content" type="VBoxContainer" parent="Backdrop/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 58.0
+offset_top = 48.0
+offset_right = -58.0
+offset_bottom = -44.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 18
+alignment = 1
+
+[node name="Eyebrow" type="Label" parent="Backdrop/Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.57, 0.48, 0.32, 1)
+theme_override_font_sizes/font_size = 16
+text = "INNSMOUTH CHRONICLES"
+horizontal_alignment = 1
+
+[node name="Title" type="Label" parent="Backdrop/Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.86, 0.82, 0.71, 1)
+theme_override_font_sizes/font_size = 36
+text = "PAUSA"
+horizontal_alignment = 1
+
+[node name="Divider" type="HSeparator" parent="Backdrop/Panel/Content"]
+layout_mode = 2
+
+[node name="ResumeButton" type="Button" parent="Backdrop/Panel/Content"]
+custom_minimum_size = Vector2(0, 62)
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "Continuar investigación"
+
+[node name="SaveButton" type="Button" parent="Backdrop/Panel/Content"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Guardar partida"
+
+[node name="LoadButton" type="Button" parent="Backdrop/Panel/Content"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Cargar último guardado"
+
+[node name="MainMenuButton" type="Button" parent="Backdrop/Panel/Content"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Volver al menú principal"
+
+[node name="StatusLabel" type="Label" parent="Backdrop/Panel/Content"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.61, 0.7, 0.64, 1)
+theme_override_font_sizes/font_size = 17
+text = ""
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Hint" type="Label" parent="Backdrop/Panel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.42, 0.43, 0.42, 1)
+theme_override_font_sizes/font_size = 14
+text = "ESC / Atrás para cerrar"
+horizontal_alignment = 1
+
+[connection signal="pressed" from="Backdrop/Panel/Content/ResumeButton" to="." method="_on_resume_pressed"]
+[connection signal="pressed" from="Backdrop/Panel/Content/SaveButton" to="." method="_on_save_pressed"]
+[connection signal="pressed" from="Backdrop/Panel/Content/LoadButton" to="." method="_on_load_pressed"]
+[connection signal="pressed" from="Backdrop/Panel/Content/MainMenuButton" to="." method="_on_main_menu_pressed"]
