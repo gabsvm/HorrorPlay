@@ -3,17 +3,25 @@ extends Node
 
 signal flag_changed(flag_name: String, value: bool)
 signal variable_changed(var_name: String, value: Variant)
+signal state_reset
 
-var story_flags: Dictionary = {
+const DEFAULT_FLAGS = {
 	"has_read_necronomicon": false,
 	"inspector_met": false,
-	"office_drawer_unlocked": false
+	"office_drawer_unlocked": false,
+	"fisherman_met": false,
+	"has_dock_key": false,
+	"barnaby_threatened": false
 }
 
-var story_variables: Dictionary = {
+const DEFAULT_VARIABLES = {
 	"player_location": "office",
-	"current_day": 1
+	"current_day": 1,
+	"barnaby_attitude": 0
 }
+
+var story_flags: Dictionary = DEFAULT_FLAGS.duplicate(true)
+var story_variables: Dictionary = DEFAULT_VARIABLES.duplicate(true)
 
 func set_flag(flag_name: String, value: bool) -> void:
 	story_flags[flag_name] = value
@@ -28,3 +36,8 @@ func set_var(var_name: String, value: Variant) -> void:
 
 func get_var(var_name: String, default: Variant = null) -> Variant:
 	return story_variables.get(var_name, default)
+
+func reset_state() -> void:
+	story_flags = DEFAULT_FLAGS.duplicate(true)
+	story_variables = DEFAULT_VARIABLES.duplicate(true)
+	state_reset.emit()
