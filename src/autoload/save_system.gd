@@ -19,11 +19,12 @@ func save_game(slot_index: int) -> Error:
 		current_scene_path = get_tree().current_scene.scene_file_path
 
 	var save_data = {
-		"save_version": 1,
+		"save_version": 2,
 		"game_state": {
 			"flags": GameState.story_flags,
 			"variables": GameState.story_variables
 		},
+		"investigation": Investigation.get_save_data(),
 		"inventory": {
 			"items": item_paths
 		},
@@ -57,7 +58,6 @@ func load_game(slot_index: int) -> Error:
 	if not save_data is Dictionary:
 		return ERR_FILE_CORRUPT
 		
-	# Restore GameState
 	if save_data.has("game_state"):
 		var gs_data = save_data["game_state"]
 		if gs_data.has("flags"):
@@ -67,12 +67,16 @@ func load_game(slot_index: int) -> Error:
 			for variable in gs_data["variables"]:
 				GameState.set_var(variable, gs_data["variables"][variable])
 	
-	# Restore Sanity
+	if save_data.has("investigation") and save_data["investigation"] is Dictionary:
+		Investigation.load_save_data(save_data["investigation"])
+	else:
+		_restore_legacy_investigation_state()
+	
 	if save_data.has("sanity"):
 		Sanity.current_sanity = int(save_data["sanity"])
 	
-	# Restore Inventory
 	Inventory.items.clear()
+	Inventory.set_active_item(null)
 	if save_data.has("inventory") and save_data["inventory"].has("items"):
 		for res_path in save_data["inventory"]["items"]:
 			if ResourceLoader.exists(res_path):
@@ -80,10 +84,25 @@ func load_game(slot_index: int) -> Error:
 				if item_res:
 					Inventory.add_item(item_res)
 					
-	# Route to the saved room
 	if save_data.has("current_room_path") and save_data["current_room_path"] != "":
 		var target_room = save_data["current_room_path"]
 		if ResourceLoader.exists(target_room):
 			SceneRouter.change_room(target_room)
 			
 	return OK
+
+func _restore_legacy_investigation_state() -> void:
+	# Keep save_version 1 files useful after the investigation layer was added.
+	Investigation.reset_case()
+	Investigation.start_case()
+	Investigation.discover_evidence("coast_guard_reports")
+	
+	if GameState.get_flag("has_read_necronomicon"):
+		Investigation.discover_evidence("occult_diary")
+		Investigation.set_objective("find_local_lead")
+	if GameState.get_flag("fisherman_met"):
+		Investigation.discover_evidence("reef_testimony")
+		Investigation.set_objective("get_dock_access")
+	if GameState.get_flag("has_dock_key"):
+		Investigation.discover_evidence("dock_key")
+		Investigation.set_objective("reach_docks")
