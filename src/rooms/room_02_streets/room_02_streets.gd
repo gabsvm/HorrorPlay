@@ -5,6 +5,7 @@ extends Room
 @onready var door_back: Hotspot = $HotspotsLayer/DoorBack
 @onready var tavern_door: Hotspot = $HotspotsLayer/TavernDoor
 @onready var fisherman: Hotspot = $HotspotsLayer/Fisherman
+@onready var dock_path: Hotspot = $HotspotsLayer/DockPath
 
 func _ready() -> void:
 	super._ready()
@@ -12,6 +13,25 @@ func _ready() -> void:
 	door_back.interacted.connect(_on_door_back_interacted)
 	tavern_door.interacted.connect(_on_tavern_door_interacted)
 	fisherman.interacted.connect(_on_fisherman_interacted)
+	dock_path.interacted.connect(_on_dock_path_interacted)
+	_apply_barnaby_consequences()
+
+func _apply_barnaby_consequences() -> void:
+	if not GameState.get_flag("barnaby_threatened"):
+		return
+	
+	fisherman.is_active = false
+	var fisherman_sprite = fisherman.get_node_or_null("Sprite2D")
+	if fisherman_sprite:
+		fisherman_sprite.visible = false
+	
+	if not GameState.get_flag("street_after_threat_seen"):
+		GameState.set_flag("street_after_threat_seen", true)
+		DialogueManager.show_dialogue([
+			"Al salir de la taberna, las calles parecen haberse vaciado demasiado rápido.",
+			"Silas ya no está bajo el farol. Solo queda una colilla encendida, aplastada en el agua de lluvia.",
+			"Barnaby cumplió su advertencia: ahora Innsmouth sabe que estoy haciendo preguntas."
+		], "Inspector")
 
 func _on_door_back_interacted(verb: String) -> void:
 	if verb == "interact":
@@ -27,9 +47,28 @@ func _on_tavern_door_interacted(verb: String) -> void:
 	elif verb == "examine":
 		DialogueManager.show_dialogue(["Una fachada de taberna húmeda y maloliente con un farol verde."], "Inspector")
 
+func _on_dock_path_interacted(verb: String) -> void:
+	if verb == "interact":
+		if not GameState.get_flag("docks_visited"):
+			DialogueManager.show_dialogue([
+				"El callejón desciende hacia los muelles. El olor a sal se vuelve casi metálico.",
+				"No necesito una llave para llegar al agua... solo para entrar donde los guardacostas guardaban sus equipos."
+			], "Inspector")
+		SceneRouter.change_room("res://src/rooms/room_04_docks/room_04_docks.tscn")
+	elif verb == "examine":
+		if GameState.get_flag("has_dock_key"):
+			DialogueManager.show_dialogue(["El sendero baja hacia el muelle. La llave de Barnaby pesa en el bolsillo."], "Inspector")
+		else:
+			DialogueManager.show_dialogue(["Más abajo distingo el cobertizo de los guardacostas junto al agua."], "Inspector")
+
 func _on_fisherman_interacted(verb: String) -> void:
 	if verb == "interact":
-		if GameState.get_flag("has_read_necronomicon"):
+		if GameState.get_flag("has_dock_key"):
+			DialogueManager.show_dialogue([
+				"Silas mira la llave y palidece. —Entonces vas en serio.",
+				"—En el muelle buscá el número [color=#ca8a04]317[/color]. Pero si encontrás algo que parezca haber venido del agua... no lo lleves de vuelta al pueblo."
+			], "Pescador Sombrío")
+		elif GameState.get_flag("has_read_necronomicon"):
 			var first_interview = not GameState.get_flag("fisherman_met")
 			if first_interview:
 				DialogueManager.show_dialogue([
