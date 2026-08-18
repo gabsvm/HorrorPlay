@@ -27,9 +27,12 @@ func set_active_item(item: ItemData) -> void:
 	active_item_changed.emit(item)
 
 func clear_inventory() -> void:
+	var previous_items = items.duplicate()
 	active_item = null
 	items.clear()
 	active_item_changed.emit(null)
+	for item in previous_items:
+		item_removed.emit(item)
 	inventory_cleared.emit()
 
 func has_item(item_id: String) -> bool:
