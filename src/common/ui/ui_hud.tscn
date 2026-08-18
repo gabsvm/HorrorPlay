@@ -63,7 +63,7 @@ value = 100.0
 layout_mode = 0
 offset_left = 525.0
 offset_top = 12.0
-offset_right = 1260.0
+offset_right = 1120.0
 offset_bottom = 68.0
 theme_override_colors/font_color = Color(0.82, 0.78, 0.67, 1)
 theme_override_font_sizes/font_size = 18
@@ -77,7 +77,7 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -620.0
+offset_left = -790.0
 offset_top = 15.0
 offset_right = -30.0
 offset_bottom = -15.0
@@ -86,18 +86,23 @@ grow_vertical = 2
 theme_override_constants/separation = 15
 alignment = 2
 
+[node name="CaseButton" type="Button" parent="TopBar/ButtonContainer"]
+custom_minimum_size = Vector2(165, 0)
+layout_mode = 2
+text = "Expediente"
+
 [node name="RevealButton" type="Button" parent="TopBar/ButtonContainer"]
-custom_minimum_size = Vector2(160, 0)
+custom_minimum_size = Vector2(145, 0)
 layout_mode = 2
 text = "Revelar"
 
 [node name="SaveButton" type="Button" parent="TopBar/ButtonContainer"]
-custom_minimum_size = Vector2(120, 0)
+custom_minimum_size = Vector2(115, 0)
 layout_mode = 2
 text = "Guardar"
 
 [node name="LoadButton" type="Button" parent="TopBar/ButtonContainer"]
-custom_minimum_size = Vector2(120, 0)
+custom_minimum_size = Vector2(115, 0)
 layout_mode = 2
 text = "Cargar"
 
@@ -157,6 +162,104 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 20
 
+[node name="CasebookBackdrop" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.008, 0.01, 0.016, 0.9)
+
+[node name="CasebookPanel" type="Panel" parent="CasebookBackdrop"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -650.0
+offset_top = -400.0
+offset_right = 650.0
+offset_bottom = 400.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="CasebookBackdrop/CasebookPanel"]
+layout_mode = 0
+offset_left = 55.0
+offset_top = 35.0
+offset_right = 900.0
+offset_bottom = 80.0
+theme_override_colors/font_color = Color(0.78, 0.62, 0.34, 1)
+theme_override_font_sizes/font_size = 32
+text = "EXPEDIENTE 47-B · INNSMOUTH"
+
+[node name="Subtitle" type="Label" parent="CasebookBackdrop/CasebookPanel"]
+layout_mode = 0
+offset_left = 58.0
+offset_top = 82.0
+offset_right = 980.0
+offset_bottom = 112.0
+theme_override_colors/font_color = Color(0.58, 0.58, 0.55, 1)
+theme_override_font_sizes/font_size = 16
+text = "POLICÍA DE MASSACHUSETTS · OCTUBRE DE 1926 · USO INTERNO"
+
+[node name="ObjectiveHeading" type="Label" parent="CasebookBackdrop/CasebookPanel"]
+layout_mode = 0
+offset_left = 58.0
+offset_top = 145.0
+offset_right = 300.0
+offset_bottom = 180.0
+theme_override_colors/font_color = Color(0.78, 0.62, 0.34, 1)
+theme_override_font_sizes/font_size = 18
+text = "OBJETIVO ACTUAL"
+
+[node name="CaseObjective" type="Label" parent="CasebookBackdrop/CasebookPanel"]
+layout_mode = 0
+offset_left = 58.0
+offset_top = 182.0
+offset_right = 1225.0
+offset_bottom = 235.0
+theme_override_font_sizes/font_size = 20
+text = "Revisar el expediente y preparar la salida hacia Innsmouth."
+autowrap_mode = 2
+
+[node name="EvidenceHeading" type="Label" parent="CasebookBackdrop/CasebookPanel"]
+layout_mode = 0
+offset_left = 58.0
+offset_top = 265.0
+offset_right = 500.0
+offset_bottom = 305.0
+theme_override_colors/font_color = Color(0.78, 0.62, 0.34, 1)
+theme_override_font_sizes/font_size = 18
+text = "EVIDENCIA Y TESTIMONIOS"
+
+[node name="EvidenceScroll" type="ScrollContainer" parent="CasebookBackdrop/CasebookPanel"]
+layout_mode = 0
+offset_left = 55.0
+offset_top = 315.0
+offset_right = 1245.0
+offset_bottom = 690.0
+horizontal_scroll_mode = 0
+
+[node name="EvidenceList" type="VBoxContainer" parent="CasebookBackdrop/CasebookPanel/EvidenceScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+
+[node name="CloseButton" type="Button" parent="CasebookBackdrop/CasebookPanel"]
+layout_mode = 0
+offset_left = 1055.0
+offset_top = 715.0
+offset_right = 1245.0
+offset_bottom = 765.0
+text = "Cerrar"
+
+[connection signal="pressed" from="TopBar/ButtonContainer/CaseButton" to="." method="_on_case_pressed"]
 [connection signal="pressed" from="TopBar/ButtonContainer/RevealButton" to="." method="_on_reveal_pressed"]
 [connection signal="pressed" from="TopBar/ButtonContainer/SaveButton" to="." method="_on_save_pressed"]
 [connection signal="pressed" from="TopBar/ButtonContainer/LoadButton" to="." method="_on_load_pressed"]
+[connection signal="pressed" from="CasebookBackdrop/CasebookPanel/CloseButton" to="." method="_on_case_close_pressed"]
