@@ -16,6 +16,7 @@ var is_typing: bool = false
 var current_tween: Tween
 
 var choices_list: Array[Dictionary] = []
+var selected_choice: Dictionary = {}
 var is_choice_mode: bool = false
 
 var last_visible_chars: int = 0
@@ -26,22 +27,19 @@ var typing_canceled: bool = false
 func _ready() -> void:
 	next_indicator.visible = false
 	choices_container.visible = false
-	# Ensure the balloon covers the full viewport or sits at the bottom nicely
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	
-	# Style the flat gray panel with a gorgeous antique framed brass stylebox
 	var style_box = StyleBoxFlat.new()
-	style_box.bg_color = Color(0.06, 0.06, 0.08, 0.9) # Dark blueish-charcoal abisall
+	style_box.bg_color = Color(0.06, 0.06, 0.08, 0.9)
 	style_box.border_width_top = 4
 	style_box.border_width_bottom = 4
-	style_box.border_color = Color(0.35, 0.3, 0.25, 0.75) # Muted antique brass / bronze
+	style_box.border_color = Color(0.35, 0.3, 0.25, 0.75)
 	style_box.content_margin_left = 60
 	style_box.content_margin_right = 60
 	style_box.content_margin_top = 30
 	style_box.content_margin_bottom = 30
 	panel.add_theme_stylebox_override("panel", style_box)
 	
-	# Apply vintage typewriter font to dialogue elements
 	var custom_font = load("res://assets/fonts/SpecialElite-Regular.ttf")
 	if custom_font:
 		speaker_label.add_theme_font_override("font", custom_font)
@@ -52,7 +50,6 @@ func _ready() -> void:
 
 func _setup_synth() -> void:
 	synth_player = AudioStreamPlayer.new()
-	# Safely assign to master or SFX
 	for i in AudioServer.bus_count:
 		if AudioServer.get_bus_name(i) == "SFX":
 			synth_player.bus = &"SFX"
@@ -63,7 +60,7 @@ func _setup_synth() -> void:
 	beep_stream.format = AudioStreamWAV.FORMAT_8_BITS
 	beep_stream.mix_rate = 8000
 	var data = PackedByteArray()
-	for i in range(350): # ~45ms of retro wave sound
+	for i in range(350):
 		var val = int(sin(i * 0.25) * 127 + 128)
 		data.append(val)
 	beep_stream.data = data
@@ -72,7 +69,6 @@ func _process(_delta: float) -> void:
 	if is_typing and text_label:
 		if text_label.visible_characters != last_visible_chars:
 			last_visible_chars = text_label.visible_characters
-			# Play bleep sound every 2 characters to avoid machine-gun ear fatigue
 			if last_visible_chars % 2 == 0:
 				_play_typewriter_sound()
 
@@ -80,15 +76,14 @@ func _play_typewriter_sound() -> void:
 	if not synth_player or not beep_stream:
 		return
 		
-	# Adjust pitch based on speaker name to give them unique synthetic "voices"
 	if speaker_name == "Pescador Sombrío":
-		synth_player.pitch_scale = randf_range(0.4, 0.55) # Deep raspy voice
+		synth_player.pitch_scale = randf_range(0.4, 0.55)
 	elif speaker_name == "Tabernero" or speaker_name == "Tabernero Barnaby":
-		synth_player.pitch_scale = randf_range(0.5, 0.65) # Gruff bartender voice
+		synth_player.pitch_scale = randf_range(0.5, 0.65)
 	elif speaker_name == "Sistema" or speaker_name == "Save":
-		synth_player.pitch_scale = randf_range(1.1, 1.25) # High synth chime
+		synth_player.pitch_scale = randf_range(1.1, 1.25)
 	else:
-		synth_player.pitch_scale = randf_range(0.8, 1.0) # Detective standard voice
+		synth_player.pitch_scale = randf_range(0.8, 1.0)
 		
 	synth_player.stream = beep_stream
 	synth_player.play()
@@ -98,6 +93,7 @@ func start_dialogue(lines: Array[String], speaker: String) -> void:
 	speaker_name = speaker
 	current_line_index = 0
 	is_choice_mode = false
+	selected_choice = {}
 	choices_container.visible = false
 	_show_current_line()
 
@@ -106,6 +102,7 @@ func start_choices(prompt: String, choices: Array[Dictionary], speaker: String) 
 	speaker_name = speaker
 	current_line_index = 0
 	choices_list = choices
+	selected_choice = {}
 	is_choice_mode = true
 	choices_container.visible = false
 	_show_current_line()
@@ -130,16 +127,15 @@ func _type_text(text_to_type: String) -> void:
 		text_label.visible_characters += 1
 		last_visible_chars = text_label.visible_characters
 		
-		# Get the current character to determine the punctuation pause delay
 		var current_char = parsed_text[text_label.visible_characters - 1]
-		var delay = 0.02 # Base typing speed
+		var delay = 0.02
 		
 		if current_char in [".", "!", "?", "…"]:
-			delay = 0.45 # Punctuation pause
+			delay = 0.45
 		elif current_char in [",", ";", ":", "-"]:
-			delay = 0.22 # Short breathing pause
+			delay = 0.22
 		elif current_char == " ":
-			delay = 0.01 # Spaces flow faster
+			delay = 0.01
 			
 		await get_tree().create_timer(delay).timeout
 		
@@ -159,14 +155,12 @@ func _display_choices() -> void:
 	next_indicator.visible = false
 	choices_container.visible = true
 	
-	# Clear previous choice buttons
 	for child in choices_container.get_children():
 		child.queue_free()
 		
 	for i in range(choices_list.size()):
 		var choice = choices_list[i]
 		
-		# Check sanity condition if present
 		if choice.has("sanity_min") and Sanity.current_sanity < choice["sanity_min"]:
 			continue
 		if choice.has("sanity_max") and Sanity.current_sanity > choice["sanity_max"]:
@@ -176,20 +170,17 @@ func _display_choices() -> void:
 		btn.text = choice.get("text", "...")
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		btn.theme_type_variation = &"FlatButton"
-		
-		# Button style configuration
 		btn.pressed.connect(func(): _on_choice_selected(choice))
 		choices_container.add_child(btn)
 
 func _on_choice_selected(choice: Dictionary) -> void:
 	choices_container.visible = false
-	if choice.has("callback") and choice["callback"] is Callable:
-		choice["callback"].call()
+	selected_choice = choice
 	dialogue_finished.emit()
 
 func _input(event: InputEvent) -> void:
 	if is_choice_mode and choices_container.visible:
-		return # Don't advance click in choice mode
+		return
 		
 	var is_advance_input = false
 	if event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
@@ -200,7 +191,6 @@ func _input(event: InputEvent) -> void:
 	if is_advance_input:
 		get_viewport().set_input_as_handled()
 		if is_typing:
-			# Skip typing and show whole line
 			typing_canceled = true
 			text_label.visible_characters = text_label.get_parsed_text().length()
 			_on_typing_finished()
