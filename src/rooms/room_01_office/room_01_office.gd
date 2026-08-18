@@ -7,16 +7,12 @@ extends Room
 @onready var drawer: Hotspot = $HotspotsLayer/Drawer
 @onready var door: Hotspot = $HotspotsLayer/Door
 
-# Item resources for testing
 @export var key_item: ItemData
 @export var book_item: ItemData
 
 func _ready() -> void:
 	super._ready()
 	
-	# Input connection is handled by room.gd
-	
-	# Wire up hotspots to room-specific narratives
 	desk.interacted.connect(_on_desk_interacted)
 	bookcase.interacted.connect(_on_bookcase_interacted)
 	
@@ -26,10 +22,9 @@ func _ready() -> void:
 	
 	door.interacted.connect(_on_door_interacted)
 
-	# Input handling and walk_and_execute are now handled by room.gd
-
 func _on_desk_interacted(verb: String) -> void:
 	if verb == "interact":
+		Investigation.discover_evidence("coast_guard_reports")
 		if not GameState.get_flag("office_drawer_unlocked"):
 			DialogueManager.show_dialogue([
 				"Reportes de muertes locales... Autopsias inconclusas que hablan de 'asfixia seca' en tierra firme.",
@@ -81,6 +76,8 @@ func _on_read_ancient_diary() -> void:
 	])
 	Sanity.drain_sanity(10)
 	GameState.set_flag("has_read_necronomicon", true)
+	Investigation.discover_evidence("occult_diary")
+	Investigation.set_objective("find_local_lead")
 	if book_item:
 		Inventory.add_item(book_item)
 
