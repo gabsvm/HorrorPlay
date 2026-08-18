@@ -209,7 +209,7 @@ func _refresh_casebook() -> void:
 	if Investigation.discovered_evidence.is_empty():
 		var empty_label = Label.new()
 		empty_label.text = "Todavía no hay evidencia registrada."
-		empty_label.theme_override_font_sizes.font_size = 19
+		empty_label.add_theme_font_size_override("font_size", 19)
 		evidence_list.add_child(empty_label)
 		if custom_font:
 			_apply_theme_font_recursive(empty_label, custom_font)
