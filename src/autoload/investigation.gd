@@ -25,6 +25,26 @@ const EVIDENCE_CATALOG = {
 		"title": "Llave del muelle",
 		"description": "Barnaby dice que perteneció a uno de los oficiales desaparecidos. Abre el cobertizo de los botes.",
 		"category": "physical"
+	},
+	"dock_manifest": {
+		"title": "Manifiesto de salida N.º 317",
+		"description": "El bote 317 salió con tres guardacostas y regresó vacío. El mismo número aparece asignado al casillero de servicio del cobertizo.",
+		"category": "document"
+	},
+	"amphibious_tracks": {
+		"title": "Huellas en la bajamar",
+		"description": "Pisadas humanas llegan hasta el agua. Junto a ellas aparecen marcas anchas, membranosas, orientadas en sentido contrario: algo salió del mar.",
+		"category": "physical"
+	},
+	"reef_radio_log": {
+		"title": "Última transmisión del 317",
+		"description": "La radio del cobertizo conserva una señal fragmentada: campanas bajo el agua, una luz en el arrecife y una orden desesperada de no responder a las voces.",
+		"category": "audio"
+	},
+	"black_scale": {
+		"title": "Escama negra",
+		"description": "Una placa quitinosa del tamaño de una moneda, húmeda pese a llevar días bajo techo. No coincide con ninguna especie costera registrada.",
+		"category": "physical"
 	}
 }
 
@@ -32,7 +52,11 @@ const OBJECTIVES = {
 	"prepare_departure": "Revisar el expediente y preparar la salida hacia Innsmouth.",
 	"find_local_lead": "Encontrar a alguien que reconozca las referencias al Arrecife del Diablo.",
 	"get_dock_access": "Conseguir acceso a los botes y al cobertizo del muelle.",
-	"reach_docks": "Llegar al muelle y seguir el rastro de los guardacostas desaparecidos."
+	"reach_docks": "Llegar al muelle y seguir el rastro de los guardacostas desaparecidos.",
+	"enter_boathouse": "Entrar al cobertizo de los guardacostas.",
+	"restore_boathouse_power": "Restaurar la energía del cobertizo para activar el pescante del bote.",
+	"launch_boat": "Botar el 317 y seguir la última ruta registrada hacia el Arrecife del Diablo.",
+	"survive_reef_approach": "Mantener el rumbo mientras algo se mueve bajo la niebla del arrecife."
 }
 
 var case_active: bool = false
@@ -75,6 +99,12 @@ func set_objective(objective_id: String) -> void:
 		completed_objectives.append(current_objective_id)
 	current_objective_id = objective_id
 	objective_changed.emit(current_objective_id, get_current_objective_text())
+
+func complete_current_objective() -> void:
+	if current_objective_id != "" and not completed_objectives.has(current_objective_id):
+		completed_objectives.append(current_objective_id)
+	current_objective_id = ""
+	objective_changed.emit("", "")
 
 func get_current_objective_text() -> String:
 	return OBJECTIVES.get(current_objective_id, "")
