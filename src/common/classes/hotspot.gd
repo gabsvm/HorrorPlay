@@ -26,15 +26,20 @@ func _ready() -> void:
 func execute_interaction(verb: String) -> void:
 	if not is_active:
 		return
-		
+	
 	if verb == "use_item":
 		var active_item = Inventory.active_item
-		if active_item == required_item:
+		# A selected inventory item must not make every ordinary hotspot feel dead.
+		# Only item-gated hotspots consume the item-use verb; everything else falls
+		# back to its normal interaction while preserving the current selection.
+		if required_item == null:
+			interacted.emit("interact")
+		elif active_item == required_item:
 			_on_successful_item_use(active_item)
 		else:
 			_on_failed_item_use(active_item)
 		return
-			
+	
 	interacted.emit(verb)
 
 func _on_successful_item_use(item: ItemData) -> void:
@@ -60,7 +65,7 @@ func is_point_inside(global_pos: Vector2) -> bool:
 	if poly_node and poly_node is CollisionPolygon2D:
 		var local_pos = poly_node.to_local(global_pos)
 		return Geometry2D.is_point_in_polygon(local_pos, poly_node.polygon)
-		
+	
 	var shape_node = get_node_or_null("CollisionShape2D")
 	if shape_node and shape_node is CollisionShape2D and shape_node.shape:
 		var local_pos = shape_node.to_local(global_pos)
@@ -69,7 +74,7 @@ func is_point_inside(global_pos: Vector2) -> bool:
 			return abs(local_pos.x) <= rect_size.x / 2.0 and abs(local_pos.y) <= rect_size.y / 2.0
 		elif shape_node.shape is CircleShape2D:
 			return local_pos.length() <= shape_node.shape.radius
-			
+	
 	return false
 
 func reveal_feedback() -> void:
