@@ -35,14 +35,14 @@ func _apply_barnaby_consequences() -> void:
 
 func _on_door_back_interacted(verb: String) -> void:
 	if verb == "interact":
-		DialogueManager.show_dialogue(["Volviendo a la seguridad de mi oficina..."], "Inspector")
+		await DialogueManager.show_dialogue(["Volviendo a la seguridad de mi oficina..."], "Inspector")
 		SceneRouter.change_room("res://src/rooms/room_01_office/room_01_office.tscn")
 	elif verb == "examine":
 		DialogueManager.show_dialogue(["La vieja puerta de roble de la estación de policía."], "Inspector")
 
 func _on_tavern_door_interacted(verb: String) -> void:
 	if verb == "interact":
-		DialogueManager.show_dialogue(["La puerta de la taberna 'El Pez Dorado' rechina al abrirse..."], "Inspector")
+		await DialogueManager.show_dialogue(["La puerta de la taberna 'El Pez Dorado' rechina al abrirse..."], "Inspector")
 		SceneRouter.change_room("res://src/rooms/room_03_tavern/room_03_tavern.tscn")
 	elif verb == "examine":
 		DialogueManager.show_dialogue(["Una fachada de taberna húmeda y maloliente con un farol verde."], "Inspector")
@@ -50,7 +50,7 @@ func _on_tavern_door_interacted(verb: String) -> void:
 func _on_dock_path_interacted(verb: String) -> void:
 	if verb == "interact":
 		if not GameState.get_flag("docks_visited"):
-			DialogueManager.show_dialogue([
+			await DialogueManager.show_dialogue([
 				"El callejón desciende hacia los muelles. El olor a sal se vuelve casi metálico.",
 				"No necesito una llave para llegar al agua... solo para entrar donde los guardacostas guardaban sus equipos."
 			], "Inspector")
