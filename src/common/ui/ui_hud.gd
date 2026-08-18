@@ -19,11 +19,9 @@ var custom_font: Font = null
 
 func _ready() -> void:
 	_init_sfx_cache()
-	
 	custom_font = load("res://assets/fonts/SpecialElite-Regular.ttf")
 	if custom_font:
 		_apply_theme_font_recursive(self, custom_font)
-	
 	_apply_hud_styles()
 	casebook_backdrop.visible = false
 	
@@ -74,11 +72,9 @@ func _setup_safe_area() -> void:
 	if os == "Android" or os == "iOS":
 		var safe_area = DisplayServer.get_display_safe_area()
 		var window_size = DisplayServer.window_get_size()
-		
 		$TopBar.offset_top = max(0, safe_area.position.y)
 		$TopBar.offset_left = max(0, safe_area.position.x)
 		$TopBar.offset_right = -max(0, window_size.x - safe_area.end.x)
-		
 		$InventoryPanel.offset_bottom = -max(0, window_size.y - safe_area.end.y)
 		$InventoryPanel.offset_left = max(0, safe_area.position.x)
 		$InventoryPanel.offset_right = -max(0, window_size.x - safe_area.end.x)
@@ -142,22 +138,18 @@ func _on_active_item_changed(item: ItemData) -> void:
 
 func _update_inventory_ui() -> void:
 	inventory_panel.visible = not Inventory.items.is_empty()
-	
 	for child in slots_container.get_children():
 		child.queue_free()
-		
+	
 	for item in Inventory.items:
 		var slot_btn = TextureButton.new()
 		slot_btn.pivot_offset = Vector2(70, 50)
 		slot_btn.scale = Vector2.ZERO
-		
 		var panel = Panel.new()
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		slot_btn.add_child(panel)
-		
 		slot_btn.custom_minimum_size = Vector2(140, 100)
-		
 		if item.icon:
 			slot_btn.texture_normal = item.icon
 			slot_btn.ignore_texture_size = true
@@ -170,14 +162,10 @@ func _update_inventory_ui() -> void:
 			label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 			slot_btn.add_child(label)
-			
 		slot_btn.pressed.connect(func(): _on_slot_pressed(item))
-		
 		if custom_font:
 			_apply_theme_font_recursive(slot_btn, custom_font)
-			
 		slots_container.add_child(slot_btn)
-		
 		var tween = create_tween()
 		tween.tween_property(slot_btn, "scale", Vector2.ONE, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
@@ -202,10 +190,8 @@ func _refresh_casebook() -> void:
 	casebook_objective.text = Investigation.get_current_objective_text()
 	if casebook_objective.text.is_empty():
 		casebook_objective.text = "Sin objetivo activo."
-	
 	for child in evidence_list.get_children():
 		child.queue_free()
-	
 	if Investigation.discovered_evidence.is_empty():
 		var empty_label = Label.new()
 		empty_label.text = "Todavía no hay evidencia registrada."
@@ -214,19 +200,16 @@ func _refresh_casebook() -> void:
 		if custom_font:
 			_apply_theme_font_recursive(empty_label, custom_font)
 		return
-	
 	for evidence_id in Investigation.discovered_evidence:
 		var evidence = Investigation.get_evidence(evidence_id)
 		var entry = VBoxContainer.new()
 		entry.custom_minimum_size = Vector2(1100, 88)
 		entry.add_theme_constant_override("separation", 5)
-		
 		var title = Label.new()
 		title.text = str(evidence.get("title", evidence_id)).to_upper()
 		title.add_theme_color_override("font_color", Color(0.78, 0.62, 0.34, 1.0))
 		title.add_theme_font_size_override("font_size", 20)
 		entry.add_child(title)
-		
 		var description = Label.new()
 		description.text = str(evidence.get("description", ""))
 		description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -234,11 +217,8 @@ func _refresh_casebook() -> void:
 		description.add_theme_color_override("font_color", Color(0.82, 0.81, 0.76, 1.0))
 		description.add_theme_font_size_override("font_size", 17)
 		entry.add_child(description)
-		
 		evidence_list.add_child(entry)
-		var separator = HSeparator.new()
-		evidence_list.add_child(separator)
-		
+		evidence_list.add_child(HSeparator.new())
 		if custom_font:
 			_apply_theme_font_recursive(entry, custom_font)
 
@@ -276,14 +256,12 @@ func _generate_sfx_stream(freq: float, duration_ms: int) -> AudioStreamWAV:
 func _play_cached_sfx(key: String, pitch: float = 1.0) -> void:
 	if not cached_sfx.has(key):
 		return
-		
 	var sfx_player = AudioStreamPlayer.new()
 	for i in AudioServer.bus_count:
 		if AudioServer.get_bus_name(i) == "SFX":
 			sfx_player.bus = &"SFX"
 			break
 	add_child(sfx_player)
-	
 	sfx_player.stream = cached_sfx[key]
 	sfx_player.pitch_scale = pitch
 	sfx_player.play()
@@ -291,18 +269,11 @@ func _play_cached_sfx(key: String, pitch: float = 1.0) -> void:
 
 func _on_reveal_pressed() -> void:
 	_play_cached_sfx("reveal", 1.6)
-	
 	if OS.get_name() in ["Android", "iOS"]:
 		Input.vibrate_handheld(120)
-	
-	var hotspots = get_tree().get_nodes_in_group("hotspots")
-	for hs in hotspots:
-		if hs is Hotspot:
-			var sprite = hs.get_node_or_null("Sprite2D")
-			if sprite:
-				var tween = create_tween()
-				tween.tween_property(sprite, "modulate", Color(0, 0.94, 1.0, 1.0), 0.5)
-				tween.tween_property(sprite, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.7)
+	for hs in get_tree().get_nodes_in_group("hotspots"):
+		if hs is Hotspot and hs.has_method("reveal_feedback"):
+			hs.reveal_feedback()
 
 func _play_pickup_sfx() -> void:
 	_play_cached_sfx("pickup_1", 1.0)
