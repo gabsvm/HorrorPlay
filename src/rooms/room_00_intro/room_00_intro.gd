@@ -20,7 +20,7 @@ var is_typing: bool = false
 var tween: Tween
 
 func _ready() -> void:
-	InputController.block_input(true) # Block world interaction during intro
+	InputController.block_input(true)
 	next_prompt.visible = false
 	_play_intro_music()
 	_show_line()
@@ -76,5 +76,7 @@ func _on_skip_pressed() -> void:
 func _start_game() -> void:
 	if tween:
 		tween.kill()
+	if not Investigation.case_active:
+		Investigation.start_case()
 	InputController.block_input(false)
 	SceneRouter.change_room("res://src/rooms/room_01_office/room_01_office.tscn")
