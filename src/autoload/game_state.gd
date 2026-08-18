@@ -11,13 +11,27 @@ const DEFAULT_FLAGS = {
 	"office_drawer_unlocked": false,
 	"fisherman_met": false,
 	"has_dock_key": false,
-	"barnaby_threatened": false
+	"barnaby_threatened": false,
+	"street_after_threat_seen": false,
+	"docks_visited": false,
+	"dock_tracks_examined": false,
+	"dock_manifest_read": false,
+	"boathouse_unlocked": false,
+	"boathouse_entered": false,
+	"service_locker_opened": false,
+	"boathouse_fuse_installed": false,
+	"boathouse_power_on": false,
+	"reef_radio_heard": false,
+	"black_scale_found": false,
+	"boat_317_launched": false,
+	"reef_sequence_seen": false
 }
 
 const DEFAULT_VARIABLES = {
 	"player_location": "office",
 	"current_day": 1,
-	"barnaby_attitude": 0
+	"barnaby_attitude": 0,
+	"dock_tension": 0
 }
 
 var story_flags: Dictionary = DEFAULT_FLAGS.duplicate(true)
