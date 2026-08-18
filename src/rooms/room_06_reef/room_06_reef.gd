@@ -1,9 +1,10 @@
 # res://src/rooms/room_06_reef/room_06_reef.gd
-extends Node2D
+extends Room
 
 @onready var background: Sprite2D = $Background
 @onready var underwater_glow: PointLight2D = $UnderwaterGlow
 @onready var creature_shadow: Polygon2D = $CreatureShadow
+@onready var end_shade: ColorRect = $EndLayer/Shade
 @onready var end_panel: Panel = $EndLayer/EndPanel
 @onready var ending_title: Label = $EndLayer/EndPanel/Content/EndingTitle
 @onready var ending_body: Label = $EndLayer/EndPanel/Content/EndingBody
@@ -12,7 +13,9 @@ extends Node2D
 var custom_font: Font = null
 
 func _ready() -> void:
+	super._ready()
 	GameState.set_var("player_location", "devils_reef")
+	end_shade.visible = false
 	end_panel.visible = false
 	creature_shadow.modulate.a = 0.0
 	custom_font = load("res://assets/fonts/SpecialElite-Regular.ttf")
@@ -142,6 +145,7 @@ func _show_end_panel(title: String, body: String) -> void:
 		Investigation.EVIDENCE_CATALOG.size(),
 		Sanity.current_sanity
 	]
+	end_shade.visible = true
 	end_panel.visible = true
 	InputController.block_input(true)
 	var style = StyleBoxFlat.new()
