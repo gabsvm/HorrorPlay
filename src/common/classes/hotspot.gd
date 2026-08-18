@@ -103,7 +103,6 @@ func _build_reveal_geometry() -> void:
 	var fill = Polygon2D.new()
 	fill.polygon = points
 	fill.color = Color(0.05, 0.88, 1.0, 0.14)
-	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE if fill is Control else 0
 	reveal_container.add_child(fill)
 	
 	var outline = Line2D.new()
