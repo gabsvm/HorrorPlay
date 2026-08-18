@@ -93,21 +93,25 @@ func load_save_data(data: Dictionary) -> void:
 	completed_objectives.clear()
 	
 	for evidence_id in data.get("discovered_evidence", []):
-		var id = str(evidence_id)
-		if EVIDENCE_CATALOG.has(id) and not discovered_evidence.has(id):
-			discovered_evidence.append(id)
+		var evidence_key = str(evidence_id)
+		if EVIDENCE_CATALOG.has(evidence_key) and not discovered_evidence.has(evidence_key):
+			discovered_evidence.append(evidence_key)
 	
 	for objective_id in data.get("completed_objectives", []):
-		var id = str(objective_id)
-		if OBJECTIVES.has(id) and not completed_objectives.has(id):
-			completed_objectives.append(id)
+		var objective_key = str(objective_id)
+		if OBJECTIVES.has(objective_key) and not completed_objectives.has(objective_key):
+			completed_objectives.append(objective_key)
 	
 	current_objective_id = str(data.get("current_objective_id", ""))
 	if current_objective_id != "" and OBJECTIVES.has(current_objective_id):
 		objective_changed.emit(current_objective_id, get_current_objective_text())
+	else:
+		current_objective_id = ""
+		objective_changed.emit("", "")
 
 func reset_case() -> void:
 	case_active = false
 	discovered_evidence.clear()
 	completed_objectives.clear()
 	current_objective_id = ""
+	objective_changed.emit("", "")
