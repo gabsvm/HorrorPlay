@@ -1,6 +1,8 @@
 # res://src/autoload/save_system.gd
 extends Node
 
+signal checkpoint_saved(slot_index: int)
+
 const SAVE_PATH = "user://save_slot_%d.dat"
 const ENCRYPTION_KEY = "CthulhuFhtagnWgahNaglFhtagn"
 
@@ -12,6 +14,12 @@ func reset_runtime_state() -> void:
 	Investigation.reset_case()
 	Inventory.clear_inventory()
 	Sanity.reset_sanity()
+
+func save_checkpoint(slot_index: int = 1) -> Error:
+	var err = save_game(slot_index)
+	if err == OK:
+		checkpoint_saved.emit(slot_index)
+	return err
 
 func save_game(slot_index: int) -> Error:
 	var file = FileAccess.open_encrypted_with_pass(SAVE_PATH % slot_index, FileAccess.WRITE, ENCRYPTION_KEY)
@@ -25,7 +33,7 @@ func save_game(slot_index: int) -> Error:
 	if get_tree().current_scene:
 		current_scene_path = get_tree().current_scene.scene_file_path
 	var save_data = {
-		"save_version": 2,
+		"save_version": 3,
 		"game_state": {"flags": GameState.story_flags, "variables": GameState.story_variables},
 		"investigation": Investigation.get_save_data(),
 		"inventory": {"items": item_paths},
