@@ -17,15 +17,26 @@ func _ready() -> void:
 	_refresh_state()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
-		get_viewport().set_input_as_handled()
-		if visible:
-			close_menu()
-		else:
-			open_menu()
+	if not event.is_action_pressed("ui_cancel"):
+		return
+	
+	get_viewport().set_input_as_handled()
+	var casebook = _get_casebook()
+	if casebook and casebook.visible:
+		casebook.visible = false
+		InputController.block_input(false)
+		return
+	
+	if visible:
+		close_menu()
+	else:
+		open_menu()
 
 func open_menu() -> void:
 	if visible or DialogueManager.current_balloon:
+		return
+	var casebook = _get_casebook()
+	if casebook and casebook.visible:
 		return
 	visible = true
 	status_label.text = ""
@@ -37,6 +48,12 @@ func close_menu() -> void:
 		return
 	visible = false
 	InputController.block_input(false)
+
+func _get_casebook() -> CanvasItem:
+	var parent_node = get_parent()
+	if parent_node:
+		return parent_node.get_node_or_null("CasebookBackdrop") as CanvasItem
+	return null
 
 func _refresh_state() -> void:
 	load_button.disabled = not SaveSystem.has_save(1)
@@ -83,8 +100,8 @@ func _on_load_pressed() -> void:
 		status_label.text = "No se pudo cargar la partida."
 		return
 	
-	# SceneRouter now owns the visual transition. Do not spawn a success dialogue
-	# on the old scene while it is being destroyed.
+	# SceneRouter owns the transition. Avoid a success dialogue on a scene that
+	# is already being faded out and destroyed.
 	visible = false
 	InputController.block_input(false)
 
