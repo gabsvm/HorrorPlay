@@ -1,0 +1,164 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/rooms/room_06_reef/room_06_reef.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/images/backgrounds/reef_bg.svg" id="2_bg"]
+
+[sub_resource type="Environment" id="Environment_reef"]
+background_mode = 3
+glow_enabled = true
+glow_levels/1 = 1.0
+glow_levels/2 = 1.0
+glow_levels/3 = 1.0
+glow_levels/5 = 1.0
+glow_intensity = 1.2
+glow_strength = 1.0
+glow_bloom = 0.24
+
+[sub_resource type="Gradient" id="Gradient_light"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_light"]
+gradient = SubResource("Gradient_light")
+width = 512
+height = 512
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="StyleBoxFlat" id="Style_end_button"]
+bg_color = Color(0.08, 0.11, 0.11, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.33, 0.48, 0.42, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="Room_Reef" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_reef")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(0.38, 0.48, 0.48, 1)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(960, 540)
+texture = ExtResource("2_bg")
+
+[node name="UnderwaterGlow" type="PointLight2D" parent="."]
+position = Vector2(1320, 750)
+scale = Vector2(4.2, 2.2)
+color = Color(0.32, 0.72, 0.59, 1)
+energy = 0.38
+texture = SubResource("GradientTexture2D_light")
+
+[node name="CreatureShadow" type="Polygon2D" parent="."]
+position = Vector2(-340, 0)
+polygon = PackedVector2Array(310, 930, 480, 870, 700, 850, 930, 882, 1110, 950, 920, 1000, 680, 1025, 470, 1000)
+color = Color(0.005, 0.012, 0.013, 0.78)
+
+[node name="FogParticles" type="CPUParticles2D" parent="."]
+position = Vector2(960, 440)
+amount = 58
+lifetime = 10.0
+preprocess = 9.0
+emission_shape = 3
+emission_rect_extents = Vector2(1050, 190)
+direction = Vector2(1, 0)
+spread = 26.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 8.0
+initial_velocity_max = 22.0
+scale_amount_min = 45.0
+scale_amount_max = 115.0
+color = Color(0.68, 0.79, 0.78, 0.05)
+
+[node name="EndLayer" type="CanvasLayer" parent="."]
+layer = 120
+
+[node name="Shade" type="ColorRect" parent="EndLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.005, 0.009, 0.01, 0.36)
+
+[node name="EndPanel" type="Panel" parent="EndLayer"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -610.0
+offset_top = -265.0
+offset_right = 610.0
+offset_bottom = 265.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Content" type="VBoxContainer" parent="EndLayer/EndPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 70.0
+offset_top = 58.0
+offset_right = -70.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 28
+alignment = 1
+
+[node name="Eyebrow" type="Label" parent="EndLayer/EndPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.48, 0.7, 0.62, 1)
+theme_override_font_sizes/font_size = 18
+text = "FIN DEL VERTICAL SLICE · INNSMOUTH, 1926"
+horizontal_alignment = 1
+
+[node name="EndingTitle" type="Label" parent="EndLayer/EndPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.84, 0.72, 1)
+theme_override_font_sizes/font_size = 42
+text = "RUMBO A LO PROFUNDO"
+horizontal_alignment = 1
+
+[node name="EndingBody" type="Label" parent="EndLayer/EndPanel/Content"]
+custom_minimum_size = Vector2(0, 112)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.77, 0.79, 0.76, 1)
+theme_override_font_sizes/font_size = 22
+text = "La investigación continuará en el Arrecife del Diablo."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="StatsLabel" type="Label" parent="EndLayer/EndPanel/Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.65, 0.61, 1)
+theme_override_font_sizes/font_size = 18
+text = "Evidencias registradas: 0 · Cordura restante: 100%"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="EndLayer/EndPanel/Content"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="MenuButton" type="Button" parent="EndLayer/EndPanel/Content"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+theme_override_styles/normal = SubResource("Style_end_button")
+text = "Volver al menú principal"
+
+[connection signal="pressed" from="EndLayer/EndPanel/Content/MenuButton" to="." method="_on_menu_pressed"]
