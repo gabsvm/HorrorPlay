@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="45%" r="65%">
+      <stop offset="0" stop-color="#24313a"/>
+      <stop offset="1" stop-color="#070a0d"/>
+    </radialGradient>
+    <linearGradient id="brass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f0d38a"/>
+      <stop offset="0.45" stop-color="#9d6b2e"/>
+      <stop offset="1" stop-color="#4a2f18"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8ab2ad" stop-opacity="0.25"/>
+      <stop offset="0.5" stop-color="#d8efdf" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#4d6d69" stop-opacity="0.2"/>
+    </linearGradient>
+    <filter id="shadow"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>
+  <rect width="256" height="256" rx="26" fill="url(#bg)"/>
+  <ellipse cx="128" cy="190" rx="74" ry="18" fill="#000" opacity="0.55" filter="url(#shadow)"/>
+  <g transform="rotate(-10 128 128)">
+    <rect x="72" y="100" width="112" height="56" rx="19" fill="url(#glass)" stroke="#d7c99f" stroke-width="4"/>
+    <rect x="52" y="92" width="34" height="72" rx="8" fill="url(#brass)" stroke="#302013" stroke-width="4"/>
+    <rect x="170" y="92" width="34" height="72" rx="8" fill="url(#brass)" stroke="#302013" stroke-width="4"/>
+    <path d="M83 128 H106 C115 128 113 113 124 113 H132 C143 113 141 143 151 143 H174" fill="none" stroke="#e7bd62" stroke-width="6" stroke-linecap="round"/>
+    <path d="M59 108 H79 M59 120 H79 M59 136 H79 M59 148 H79" stroke="#5d3c1d" stroke-width="4"/>
+    <path d="M177 108 H197 M177 120 H197 M177 136 H197 M177 148 H197" stroke="#5d3c1d" stroke-width="4"/>
+  </g>
+  <path d="M55 51 C91 28 165 27 202 54" fill="none" stroke="#d8b462" stroke-width="2" opacity="0.25"/>
+</svg>
