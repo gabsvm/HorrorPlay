@@ -8,7 +8,6 @@ extends Room
 
 func _ready() -> void:
 	super._ready()
-	# Input connection and handling are now in room.gd
 	
 	door_back.interacted.connect(_on_door_back_interacted)
 	tavern_door.interacted.connect(_on_tavern_door_interacted)
@@ -31,12 +30,21 @@ func _on_tavern_door_interacted(verb: String) -> void:
 func _on_fisherman_interacted(verb: String) -> void:
 	if verb == "interact":
 		if GameState.get_flag("has_read_necronomicon"):
-			DialogueManager.show_dialogue([
-				"¿Ese cuaderno de cuero...? Es de él. Reconozco las coordenadas... el [color=#06b6d4]Arrecife del Diablo[/color]. Los guardacostas husmearon ahí y las aguas se los tragaron.",
-				"Si querés terminar igual, necesitás desatar los botes del muelle. Barnaby tiene la [color=#ca8a04]llave[/color] en la taberna... si es que no te echa antes.",
-				"[wave amp=15 freq=3]No deberías seguir tentando a lo que duerme abajo, oficial. Innsmouth no olvida a los entrometidos.[/wave]"
-			], "Pescador Sombrío")
-			GameState.set_flag("fisherman_met", true)
+			var first_interview = not GameState.get_flag("fisherman_met")
+			if first_interview:
+				DialogueManager.show_dialogue([
+					"¿Ese cuaderno de cuero...? Es de él. Reconozco las coordenadas... el [color=#06b6d4]Arrecife del Diablo[/color]. Los guardacostas husmearon ahí y las aguas se los tragaron.",
+					"Si querés terminar igual, necesitás desatar los botes del muelle. Barnaby tiene la [color=#ca8a04]llave[/color] en la taberna... si es que no te echa antes.",
+					"[wave amp=15 freq=3]No deberías seguir tentando a lo que duerme abajo, oficial. Innsmouth no olvida a los entrometidos.[/wave]"
+				], "Pescador Sombrío")
+				GameState.set_flag("fisherman_met", true)
+				Investigation.discover_evidence("reef_testimony")
+				Investigation.set_objective("get_dock_access")
+			else:
+				DialogueManager.show_dialogue([
+					"Ya te dije lo que sé. Barnaby conserva la llave. Yo no pienso acercarme al agua esta noche.",
+					"[wave amp=12 freq=2.5]Y si escuchás que algo responde desde la niebla... no respondas vos.[/wave]"
+				], "Pescador Sombrío")
 		else:
 			DialogueManager.show_dialogue([
 				"[wave amp=10 freq=2]La niebla está espesa, forastero... y la marea viene con hambre.[/wave]",
