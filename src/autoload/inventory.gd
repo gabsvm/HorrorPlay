@@ -5,6 +5,7 @@ signal item_added(item: ItemData)
 signal item_removed(item: ItemData)
 signal active_item_changed(item: ItemData)
 signal items_combined(item_a: ItemData, item_b: ItemData, result: ItemData)
+signal inventory_cleared
 
 var items: Array[ItemData] = []
 var active_item: ItemData = null
@@ -24,6 +25,12 @@ func remove_item(item: ItemData) -> void:
 func set_active_item(item: ItemData) -> void:
 	active_item = item
 	active_item_changed.emit(item)
+
+func clear_inventory() -> void:
+	active_item = null
+	items.clear()
+	active_item_changed.emit(null)
+	inventory_cleared.emit()
 
 func has_item(item_id: String) -> bool:
 	for i in items:
