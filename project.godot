@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 GameState="*res://src/autoload/game_state.gd"
+Investigation="*res://src/autoload/investigation.gd"
 Inventory="*res://src/autoload/inventory.gd"
 DialogueManager="*res://src/autoload/dialogue_manager.gd"
 SceneRouter="*res://src/autoload/scene_router.gd"
