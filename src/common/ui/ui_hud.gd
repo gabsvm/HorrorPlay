@@ -3,6 +3,7 @@ extends Control
 
 @onready var hover_label: Label = $HoverLabel
 @onready var sanity_bar: ProgressBar = $TopBar/SanityBar
+@onready var objective_label: Label = $TopBar/ObjectiveLabel
 @onready var slots_container: HBoxContainer = $InventoryPanel/ScrollContainer/SlotsContainer
 @onready var active_item_label: Label = $InventoryPanel/ActiveItemLabel
 @onready var vignette: TextureRect = $Vignette
@@ -13,21 +14,20 @@ var custom_font: Font = null
 func _ready() -> void:
 	_init_sfx_cache()
 	
-	# Apply vintage typewriter font recursively to HUD elements
 	custom_font = load("res://assets/fonts/SpecialElite-Regular.ttf")
 	if custom_font:
 		_apply_theme_font_recursive(self, custom_font)
 	
-	# Connect to Global Autoload signals
-	Inventory.item_added.connect(_on_inventory_changed)
-	Inventory.item_removed.connect(_on_inventory_changed)
+	Inventory.item_added.connect(_on_item_added)
+	Inventory.item_removed.connect(_on_item_removed)
 	Inventory.active_item_changed.connect(_on_active_item_changed)
 	Sanity.sanity_changed.connect(_on_sanity_changed)
+	Investigation.objective_changed.connect(_on_objective_changed)
 	
-	# Initial draw
 	_update_inventory_ui()
 	_update_sanity_ui(Sanity.current_sanity)
 	_on_active_item_changed(Inventory.active_item)
+	_on_objective_changed(Investigation.current_objective_id, Investigation.get_current_objective_text())
 	clear_hover_text()
 	_setup_safe_area()
 
@@ -37,7 +37,6 @@ func _setup_safe_area() -> void:
 		var safe_area = DisplayServer.get_display_safe_area()
 		var window_size = DisplayServer.window_get_size()
 		
-		# Shift elements away from notch and system cuts
 		$TopBar.offset_top = max(0, safe_area.position.y)
 		$TopBar.offset_left = max(0, safe_area.position.x)
 		$TopBar.offset_right = -max(0, window_size.x - safe_area.end.x)
@@ -71,14 +70,22 @@ func _update_sanity_ui(value: int) -> void:
 	sanity_bar.value = value
 	sanity_bar.tooltip_text = "Cordura: %d/100" % value
 	if vignette:
-		# Map sanity (100 -> 0) to vignette opacity (0.2 -> 0.85)
-		var target_alpha = lerp(0.85, 0.2, float(value) / 100.0)
+		var target_alpha = lerp(0.78, 0.16, float(value) / 100.0)
 		var tween = create_tween()
 		tween.tween_property(vignette, "modulate:a", target_alpha, 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
-func _on_inventory_changed(_item: ItemData) -> void:
+func _on_objective_changed(_objective_id: String, objective_text: String) -> void:
+	if objective_text.is_empty():
+		objective_label.text = "CASO — Sin objetivo activo"
+	else:
+		objective_label.text = "CASO — " + objective_text
+
+func _on_item_added(_item: ItemData) -> void:
 	_update_inventory_ui()
 	_play_pickup_sfx()
+
+func _on_item_removed(_item: ItemData) -> void:
+	_update_inventory_ui()
 
 func _on_active_item_changed(item: ItemData) -> void:
 	if item:
@@ -90,23 +97,19 @@ func _on_active_item_changed(item: ItemData) -> void:
 		clear_hover_text()
 
 func _update_inventory_ui() -> void:
-	# Clear slots
 	for child in slots_container.get_children():
 		child.queue_free()
 		
-	# Populate slots
 	for item in Inventory.items:
 		var slot_btn = TextureButton.new()
-		slot_btn.pivot_offset = Vector2(70, 50) # Set center as pivot for scaling
-		slot_btn.scale = Vector2.ZERO # Start flat for pop animation
+		slot_btn.pivot_offset = Vector2(70, 50)
+		slot_btn.scale = Vector2.ZERO
 		
-		# Draw a placeholder flat panel background for touch visibility
 		var panel = Panel.new()
 		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		slot_btn.add_child(panel)
 		
-		# Touch targets are at least 140x100px
 		slot_btn.custom_minimum_size = Vector2(140, 100)
 		
 		if item.icon:
@@ -129,7 +132,6 @@ func _update_inventory_ui() -> void:
 			
 		slots_container.add_child(slot_btn)
 		
-		# Juicy Ease Back popping animation
 		var tween = create_tween()
 		tween.tween_property(slot_btn, "scale", Vector2.ONE, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
@@ -153,9 +155,6 @@ func _on_load_pressed() -> void:
 	else:
 		DialogueManager.show_dialogue(["No se encontró una partida guardada o archivo corrupto."], "Sistema")
 
-func _on_drain_sanity_pressed() -> void:
-	Sanity.drain_sanity(10)
-
 func _init_sfx_cache() -> void:
 	cached_sfx["pickup_1"] = _generate_sfx_stream(0.12, 80)
 	cached_sfx["pickup_2"] = _generate_sfx_stream(0.18, 120)
@@ -167,7 +166,7 @@ func _generate_sfx_stream(freq: float, duration_ms: int) -> AudioStreamWAV:
 	stream.format = AudioStreamWAV.FORMAT_8_BITS
 	stream.mix_rate = 11025
 	var data = PackedByteArray()
-	for i in range(duration_ms * 11): # 11 samples per ms
+	for i in range(duration_ms * 11):
 		var val = int(sin(i * freq) * 127 + 128)
 		data.append(val)
 	stream.data = data
@@ -190,14 +189,11 @@ func _play_cached_sfx(key: String, pitch: float = 1.0) -> void:
 	sfx_player.finished.connect(func(): sfx_player.queue_free())
 
 func _on_reveal_pressed() -> void:
-	# Play a beautiful procedural chime using the cache
 	_play_cached_sfx("reveal", 1.6)
 	
-	# Vibrate device on reveal if on mobile (120ms of dramatic vibration)
 	if OS.get_name() in ["Android", "iOS"]:
 		Input.vibrate_handheld(120)
 	
-	# Flash all hotspots with a glorious glowing cian outline/modulate
 	var hotspots = get_tree().get_nodes_in_group("hotspots")
 	for hs in hotspots:
 		if hs is Hotspot:
@@ -208,11 +204,9 @@ func _on_reveal_pressed() -> void:
 				tween.tween_property(sprite, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.7)
 
 func _play_pickup_sfx() -> void:
-	# Satisfying retro arpeggio
 	_play_cached_sfx("pickup_1", 1.0)
 	await get_tree().create_timer(0.06).timeout
 	_play_cached_sfx("pickup_2", 1.2)
 
 func _play_select_sfx() -> void:
-	# Soft tactile click
 	_play_cached_sfx("select", 0.85)
