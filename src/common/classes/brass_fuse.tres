@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/images/items/brass_fuse.svg" id="1_icon"]
+[ext_resource type="Script" path="res://src/common/classes/item_data.gd" id="2_script"]
+
+[resource]
+script = ExtResource("2_script")
+id = "brass_fuse"
+name = "Fusible de Latón"
+description = "Un fusible industrial de alto amperaje. El vidrio está intacto y los contactos siguen secos."
+icon = ExtResource("1_icon")
+combinable_with = Array[ExtResource("2_script")]([])
