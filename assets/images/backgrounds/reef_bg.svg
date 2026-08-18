@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#020407"/>
+      <stop offset="0.6" stop-color="#071116"/>
+      <stop offset="1" stop-color="#0d2025"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d262c"/>
+      <stop offset="1" stop-color="#02090c"/>
+    </linearGradient>
+    <radialGradient id="underlight" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#5cb39a" stop-opacity="0.52"/>
+      <stop offset="0.35" stop-color="#2b776b" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#0a282a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="moon" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#d8e7e8" stop-opacity="0.58"/>
+      <stop offset="1" stop-color="#7f9ea2" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="25"/></filter>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.48" numOctaves="4" seed="31"/><feColorMatrix values="0 0 0 0 0.5 0 0 0 0 0.65 0 0 0 0 0.64 0 0 0 .08 0"/></filter>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <circle cx="310" cy="170" r="160" fill="url(#moon)"/>
+  <circle cx="310" cy="170" r="45" fill="#d8e5e3" opacity="0.28"/>
+
+  <!-- fog banks -->
+  <g fill="#9db4b4" opacity="0.075" filter="url(#blur)">
+    <ellipse cx="310" cy="430" rx="520" ry="115"/>
+    <ellipse cx="1030" cy="390" rx="680" ry="130"/>
+    <ellipse cx="1710" cy="470" rx="510" ry="125"/>
+  </g>
+
+  <!-- Devil's Reef silhouette -->
+  <path d="M1070 565 L1130 500 L1190 528 L1240 430 L1308 505 L1360 455 L1425 520 L1490 470 L1560 540 L1630 505 L1710 565 Z" fill="#030607" stroke="#0e1b1c" stroke-width="6"/>
+  <path d="M1260 464 L1286 325 L1312 464 Z" fill="#06090a"/>
+  <rect x="1279" y="260" width="14" height="80" fill="#06090a"/>
+  <circle cx="1286" cy="250" r="16" fill="#7fb7a3" opacity="0.38"/>
+
+  <!-- ocean -->
+  <rect x="0" y="550" width="1920" height="530" fill="url(#water)"/>
+  <g fill="none" stroke="#6b9898" opacity="0.13">
+    <path d="M0 635 C200 600 380 660 570 628 S900 602 1080 642 S1440 670 1630 635 S1810 623 1920 640" stroke-width="4"/>
+    <path d="M0 725 C170 690 350 750 550 720 S930 688 1120 737 S1480 756 1680 724 S1845 715 1920 731" stroke-width="3"/>
+    <path d="M0 835 C190 795 390 862 600 825 S980 802 1190 846 S1530 865 1750 827 S1870 824 1920 834" stroke-width="2"/>
+  </g>
+
+  <!-- impossible light below water -->
+  <ellipse cx="1330" cy="720" rx="460" ry="235" fill="url(#underlight)" filter="url(#blur)"/>
+  <ellipse cx="1330" cy="733" rx="260" ry="110" fill="#58a991" opacity="0.09"/>
+
+  <!-- suggestions of vast geometry under the surface -->
+  <g fill="none" stroke="#4d9b89" opacity="0.10">
+    <path d="M970 830 C1080 680 1250 650 1390 792 C1510 914 1630 890 1760 755" stroke-width="14"/>
+    <path d="M1060 900 C1200 760 1365 770 1470 910" stroke-width="9"/>
+    <path d="M1180 980 C1290 875 1450 880 1540 1000" stroke-width="6"/>
+  </g>
+
+  <!-- player boat foreground -->
+  <g transform="translate(690 815) rotate(-1)">
+    <path d="M-260 30 Q0 145 285 24 L230 132 Q0 212 -235 132 Z" fill="#111a1c" stroke="#040606" stroke-width="11"/>
+    <path d="M-205 76 H225" stroke="#6e6d62" stroke-width="9"/>
+    <text x="20" y="132" text-anchor="middle" font-family="serif" font-size="38" fill="#a6a18d">317</text>
+    <rect x="-42" y="-35" width="22" height="118" fill="#101414"/>
+    <path d="M-30 -26 L118 -126" stroke="#151919" stroke-width="9"/>
+    <circle cx="121" cy="-128" r="20" fill="#f0d48b" opacity="0.52"/>
+  </g>
+
+  <!-- something just beneath the boat -->
+  <path d="M320 1010 C520 925 790 940 980 1025 C780 1055 520 1065 320 1010 Z" fill="#020607" opacity="0.72"/>
+  <circle cx="810" cy="1018" r="7" fill="#82c4a7" opacity="0.32"/>
+  <circle cx="845" cy="1014" r="7" fill="#82c4a7" opacity="0.32"/>
+
+  <rect width="1920" height="1080" filter="url(#grain)" opacity="0.38"/>
+</svg>
