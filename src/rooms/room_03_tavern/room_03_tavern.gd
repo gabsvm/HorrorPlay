@@ -9,13 +9,12 @@ extends Room
 
 func _ready() -> void:
 	super._ready()
-	
 	door_back.interacted.connect(_on_door_back_interacted)
 	innkeeper.interacted.connect(_on_innkeeper_interacted)
 
 func _on_door_back_interacted(verb: String) -> void:
 	if verb == "interact":
-		DialogueManager.show_dialogue(["Saliendo nuevamente a las calles frías y húmedas..."], "Inspector")
+		await DialogueManager.show_dialogue(["Saliendo nuevamente a las calles frías y húmedas..."], "Inspector")
 		SceneRouter.change_room("res://src/rooms/room_02_streets/room_02_streets.tscn")
 	elif verb == "examine":
 		DialogueManager.show_dialogue(["La pesada puerta de entrada de la taberna."], "Inspector")
@@ -40,6 +39,7 @@ func _show_barnaby_confrontation() -> void:
 		[
 			{
 				"text": "[Investigación] Decirle exactamente lo que Silas contó sobre la llave.",
+				"required_evidence": "reef_testimony",
 				"callback": _on_barnaby_reasoned
 			},
 			{
@@ -86,7 +86,10 @@ func _grant_dock_key() -> void:
 		Inventory.add_item(dock_key_item)
 	GameState.set_flag("has_dock_key", true)
 	Investigation.discover_evidence("dock_key")
-	Investigation.set_objective("reach_docks")
+	if GameState.get_flag("docks_visited"):
+		Investigation.set_objective("enter_boathouse")
+	else:
+		Investigation.set_objective("reach_docks")
 
 func _show_barnaby_after_key() -> void:
 	if GameState.get_flag("barnaby_threatened"):
