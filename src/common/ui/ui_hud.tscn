@@ -47,7 +47,7 @@ offset_top = 20.0
 offset_right = 200.0
 offset_bottom = 60.0
 theme_override_font_sizes/font_size = 22
-text = "Mente / Fe:"
+text = "Cordura"
 vertical_alignment = 1
 
 [node name="SanityBar" type="ProgressBar" parent="TopBar"]
@@ -65,7 +65,7 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -820.0
+offset_left = -620.0
 offset_top = 15.0
 offset_right = -30.0
 offset_bottom = -15.0
@@ -77,12 +77,7 @@ alignment = 2
 [node name="RevealButton" type="Button" parent="TopBar/ButtonContainer"]
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
-text = "Revelar Ojo"
-
-[node name="DrainButton" type="Button" parent="TopBar/ButtonContainer"]
-custom_minimum_size = Vector2(160, 0)
-layout_mode = 2
-text = "Daño Mental"
+text = "Revelar"
 
 [node name="SaveButton" type="Button" parent="TopBar/ButtonContainer"]
 custom_minimum_size = Vector2(120, 0)
@@ -108,7 +103,7 @@ mouse_filter = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 28
-text = "Examinar Escritorio"
+text = ""
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -151,6 +146,5 @@ size_flags_vertical = 3
 theme_override_constants/separation = 20
 
 [connection signal="pressed" from="TopBar/ButtonContainer/RevealButton" to="." method="_on_reveal_pressed"]
-[connection signal="pressed" from="TopBar/ButtonContainer/DrainButton" to="." method="_on_drain_sanity_pressed"]
 [connection signal="pressed" from="TopBar/ButtonContainer/SaveButton" to="." method="_on_save_pressed"]
 [connection signal="pressed" from="TopBar/ButtonContainer/LoadButton" to="." method="_on_load_pressed"]
