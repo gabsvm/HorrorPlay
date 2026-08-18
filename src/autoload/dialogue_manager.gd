@@ -9,7 +9,7 @@ var current_balloon: Node = null
 
 func show_dialogue(lines: Array[String], speaker: String = "Inspector") -> void:
 	if current_balloon:
-		return # Already displaying dialogue
+		return
 		
 	dialogue_started.emit()
 	InputController.block_input(true)
@@ -39,8 +39,16 @@ func show_choices(prompt: String, choices: Array[Dictionary], speaker: String = 
 	
 	await current_balloon.dialogue_finished
 	
+	# The choice callback must run only after the current balloon stops owning the
+	# dialogue channel. Previously callbacks ran inside the balloon, so any
+	# callback that called show_dialogue() was silently rejected as "already
+	# displaying dialogue".
+	var selected_choice: Dictionary = current_balloon.selected_choice
 	current_balloon.queue_free()
 	current_balloon = null
 	
 	InputController.block_input(false)
 	dialogue_ended.emit()
+	
+	if selected_choice.has("callback") and selected_choice["callback"] is Callable:
+		selected_choice["callback"].call()
