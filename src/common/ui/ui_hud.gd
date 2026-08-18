@@ -2,11 +2,17 @@
 extends Control
 
 @onready var hover_label: Label = $HoverLabel
+@onready var top_bar: Panel = $TopBar
 @onready var sanity_bar: ProgressBar = $TopBar/SanityBar
 @onready var objective_label: Label = $TopBar/ObjectiveLabel
+@onready var inventory_panel: Panel = $InventoryPanel
 @onready var slots_container: HBoxContainer = $InventoryPanel/ScrollContainer/SlotsContainer
 @onready var active_item_label: Label = $InventoryPanel/ActiveItemLabel
 @onready var vignette: TextureRect = $Vignette
+@onready var casebook_backdrop: ColorRect = $CasebookBackdrop
+@onready var casebook_panel: Panel = $CasebookBackdrop/CasebookPanel
+@onready var casebook_objective: Label = $CasebookBackdrop/CasebookPanel/CaseObjective
+@onready var evidence_list: VBoxContainer = $CasebookBackdrop/CasebookPanel/EvidenceScroll/EvidenceList
 
 var cached_sfx: Dictionary = {}
 var custom_font: Font = null
@@ -18,11 +24,15 @@ func _ready() -> void:
 	if custom_font:
 		_apply_theme_font_recursive(self, custom_font)
 	
+	_apply_hud_styles()
+	casebook_backdrop.visible = false
+	
 	Inventory.item_added.connect(_on_item_added)
 	Inventory.item_removed.connect(_on_item_removed)
 	Inventory.active_item_changed.connect(_on_active_item_changed)
 	Sanity.sanity_changed.connect(_on_sanity_changed)
 	Investigation.objective_changed.connect(_on_objective_changed)
+	Investigation.evidence_discovered.connect(_on_evidence_discovered)
 	
 	_update_inventory_ui()
 	_update_sanity_ui(Sanity.current_sanity)
@@ -30,6 +40,34 @@ func _ready() -> void:
 	_on_objective_changed(Investigation.current_objective_id, Investigation.get_current_objective_text())
 	clear_hover_text()
 	_setup_safe_area()
+
+func _apply_hud_styles() -> void:
+	var top_style = StyleBoxFlat.new()
+	top_style.bg_color = Color(0.018, 0.021, 0.028, 0.88)
+	top_style.border_width_bottom = 2
+	top_style.border_color = Color(0.34, 0.27, 0.17, 0.72)
+	top_style.content_margin_left = 18
+	top_style.content_margin_right = 18
+	top_bar.add_theme_stylebox_override("panel", top_style)
+	
+	var inventory_style = StyleBoxFlat.new()
+	inventory_style.bg_color = Color(0.018, 0.021, 0.028, 0.9)
+	inventory_style.border_width_top = 2
+	inventory_style.border_color = Color(0.34, 0.27, 0.17, 0.68)
+	inventory_panel.add_theme_stylebox_override("panel", inventory_style)
+	
+	var case_style = StyleBoxFlat.new()
+	case_style.bg_color = Color(0.035, 0.032, 0.029, 0.98)
+	case_style.border_width_left = 3
+	case_style.border_width_top = 3
+	case_style.border_width_right = 3
+	case_style.border_width_bottom = 3
+	case_style.border_color = Color(0.42, 0.31, 0.17, 0.95)
+	case_style.corner_radius_top_left = 6
+	case_style.corner_radius_top_right = 6
+	case_style.corner_radius_bottom_left = 6
+	case_style.corner_radius_bottom_right = 6
+	casebook_panel.add_theme_stylebox_override("panel", case_style)
 
 func _setup_safe_area() -> void:
 	var os = OS.get_name()
@@ -79,6 +117,12 @@ func _on_objective_changed(_objective_id: String, objective_text: String) -> voi
 		objective_label.text = "CASO — Sin objetivo activo"
 	else:
 		objective_label.text = "CASO — " + objective_text
+	if casebook_backdrop.visible:
+		_refresh_casebook()
+
+func _on_evidence_discovered(_evidence_id: String, _evidence: Dictionary) -> void:
+	if casebook_backdrop.visible:
+		_refresh_casebook()
 
 func _on_item_added(_item: ItemData) -> void:
 	_update_inventory_ui()
@@ -97,6 +141,8 @@ func _on_active_item_changed(item: ItemData) -> void:
 		clear_hover_text()
 
 func _update_inventory_ui() -> void:
+	inventory_panel.visible = not Inventory.items.is_empty()
+	
 	for child in slots_container.get_children():
 		child.queue_free()
 		
@@ -140,6 +186,61 @@ func _on_slot_pressed(item: ItemData) -> void:
 		Inventory.set_active_item(null)
 	else:
 		Inventory.set_active_item(item)
+
+func _on_case_pressed() -> void:
+	if DialogueManager.current_balloon:
+		return
+	casebook_backdrop.visible = true
+	InputController.block_input(true)
+	_refresh_casebook()
+
+func _on_case_close_pressed() -> void:
+	casebook_backdrop.visible = false
+	InputController.block_input(false)
+
+func _refresh_casebook() -> void:
+	casebook_objective.text = Investigation.get_current_objective_text()
+	if casebook_objective.text.is_empty():
+		casebook_objective.text = "Sin objetivo activo."
+	
+	for child in evidence_list.get_children():
+		child.queue_free()
+	
+	if Investigation.discovered_evidence.is_empty():
+		var empty_label = Label.new()
+		empty_label.text = "Todavía no hay evidencia registrada."
+		empty_label.theme_override_font_sizes.font_size = 19
+		evidence_list.add_child(empty_label)
+		if custom_font:
+			_apply_theme_font_recursive(empty_label, custom_font)
+		return
+	
+	for evidence_id in Investigation.discovered_evidence:
+		var evidence = Investigation.get_evidence(evidence_id)
+		var entry = VBoxContainer.new()
+		entry.custom_minimum_size = Vector2(1100, 88)
+		entry.add_theme_constant_override("separation", 5)
+		
+		var title = Label.new()
+		title.text = str(evidence.get("title", evidence_id)).to_upper()
+		title.add_theme_color_override("font_color", Color(0.78, 0.62, 0.34, 1.0))
+		title.add_theme_font_size_override("font_size", 20)
+		entry.add_child(title)
+		
+		var description = Label.new()
+		description.text = str(evidence.get("description", ""))
+		description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		description.custom_minimum_size = Vector2(1080, 45)
+		description.add_theme_color_override("font_color", Color(0.82, 0.81, 0.76, 1.0))
+		description.add_theme_font_size_override("font_size", 17)
+		entry.add_child(description)
+		
+		evidence_list.add_child(entry)
+		var separator = HSeparator.new()
+		evidence_list.add_child(separator)
+		
+		if custom_font:
+			_apply_theme_font_recursive(entry, custom_font)
 
 func _on_save_pressed() -> void:
 	var err = SaveSystem.save_game(1)
