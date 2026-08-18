@@ -15,11 +15,9 @@ func _ready() -> void:
 	
 	desk.interacted.connect(_on_desk_interacted)
 	bookcase.interacted.connect(_on_bookcase_interacted)
-	
 	drawer.interacted.connect(_on_drawer_interacted)
 	drawer.item_used_successfully.connect(_on_drawer_unlocked)
 	drawer.item_used_failed.connect(_on_drawer_unlock_failed)
-	
 	door.interacted.connect(_on_door_interacted)
 
 func _on_desk_interacted(verb: String) -> void:
@@ -42,10 +40,7 @@ func _on_bookcase_interacted(verb: String) -> void:
 		DialogueManager.show_choices(
 			"Una enorme biblioteca repleta de libros antiguos. ¿Qué tomo reviso?",
 			[
-				{
-					"text": "Leer tomo médico moderno.",
-					"callback": _on_read_modern_book
-				},
+				{"text": "Leer tomo médico moderno.", "callback": _on_read_modern_book},
 				{
 					"text": "[Sanidad > 60] Consultar el antiguo diario de cuero.",
 					"sanity_min": 60,
@@ -108,7 +103,7 @@ func _on_drawer_unlock_failed(item: ItemData) -> void:
 func _on_door_interacted(verb: String) -> void:
 	if verb == "interact":
 		if GameState.get_flag("office_drawer_unlocked"):
-			DialogueManager.show_dialogue(["Es hora de salir a las calles lluviosas de Innsmouth..."], "Inspector")
+			await DialogueManager.show_dialogue(["Es hora de salir a las calles lluviosas de Innsmouth..."], "Inspector")
 			SceneRouter.change_room("res://src/rooms/room_02_streets/room_02_streets.tscn")
 		else:
 			DialogueManager.show_dialogue(["No puedo marcharme de la oficina sin antes asegurar mis pertenencias cerradas."], "Inspector")
