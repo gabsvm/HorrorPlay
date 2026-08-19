@@ -10,6 +10,7 @@ const DEFAULT_FLAGS = {
 	"inspector_met": false,
 	"office_drawer_unlocked": false,
 	"fisherman_met": false,
+	"heard_barnaby_key_rumor": false,
 	"has_dock_key": false,
 	"barnaby_threatened": false,
 	"street_after_threat_seen": false,
@@ -22,6 +23,8 @@ const DEFAULT_FLAGS = {
 	"boathouse_fuse_installed": false,
 	"boathouse_power_on": false,
 	"reef_radio_heard": false,
+	"boathouse_intrusion_started": false,
+	"boathouse_intrusion_survived": false,
 	"black_scale_found": false,
 	"boat_317_launched": false,
 	"reef_sequence_seen": false
@@ -31,7 +34,9 @@ const DEFAULT_VARIABLES = {
 	"player_location": "office",
 	"current_day": 1,
 	"barnaby_attitude": 0,
-	"dock_tension": 0
+	"dock_tension": 0,
+	"boathouse_intrusion_outcome": "",
+	"reef_ending_title": ""
 }
 
 var story_flags: Dictionary = DEFAULT_FLAGS.duplicate(true)
