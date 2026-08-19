@@ -1,170 +1,195 @@
-# HorrorPlay — AA Vertical Slice Target
+# HorrorPlay — AA Vertical Slice
 
 ## Product target
 
-Build a polished 30–45 minute narrative-horror vertical slice that feels deliberate, authored and replayable rather than like a point-and-click systems demo.
+A polished 30–45 minute narrative-horror vertical slice that feels authored, coherent and replayable instead of like a point-and-click systems demo.
 
-The goal is not to imitate a literal AA production budget. The goal is AA-level player-facing discipline: cohesive art direction, strong sound design, readable interaction, consequential investigation, stable save/load, intentional pacing, and no exposed prototype controls.
+The target is AA-level player-facing discipline rather than literal AA budget: cohesive presentation, investigation with consequences, escalating dread, stable persistence, restrained UI and a complete beginning-to-payoff arc.
 
 ## Experience pillars
 
-1. **Investigation before key hunting** — clues, testimony and physical evidence must form a case the player can follow.
-2. **Dread through anticipation** — horror escalates through sound, environmental change and unreliable perception before showing a creature.
-3. **Consequences without dead ends** — major obstacles support alternate approaches that reconverge while preserving consequences.
-4. **Sanity changes perception** — sanity changes image, descriptions and available decisions instead of behaving like health.
-5. **Mobile-first interaction without mobile-looking presentation** — touch remains first class, while the UI stays cinematic on PC.
+1. **Investigation before key hunting** — evidence, testimony and physical clues form a case the player can reason through.
+2. **Dread through anticipation** — sound, environmental staging and unreliable perception escalate before the threat is shown clearly.
+3. **Consequences without dead ends** — approaches reconverge while preserving social, sanity and evidence state.
+4. **Sanity changes perception** — mental state affects image, ambience, descriptions and available decisions rather than acting as health.
+5. **PC and touch share one authored experience** — no debug-only path is required to complete the slice.
 
 ## Current playable slice
 
 ### 0. Main menu — IMPLEMENTED
 - New Investigation / Continue / desktop Quit.
-- Save awareness.
-- Game now boots through a proper shell instead of directly into the intro.
+- Save-slot awareness.
+- Animated panel entrance and room-ambience cleanup.
+- Dedicated real Pause menu with Resume / Save / Load / Main Menu.
 
-### 1. Intro — FOUNDATION PRESENT
-- Existing narrative intro retained.
-- Still needs the planned playable Coast Guard cold open for the final production pass.
+### 1. Coast Guard cold open — IMPLEMENTED
+- The slice opens four nights before the investigation aboard Coast Guard unit 317.
+- Authored boat / reef / fog / underwater-light staging replaces the old black-screen exposition sequence.
+- Establishes the recurring motifs paid off later: underwater green light, three bells, names spoken over radio and submerged architecture.
+- Creature-shadow pass, rain, ambience and cinematic stingers escalate the sequence without changing the future inspector's sanity state.
+- Skip remains available.
 
-### 2. Office — FOUNDATION PRESENT
-- Evidence file, medical material and occult diary feed the Investigation system.
-- Real idle/walk animation is restored automatically instead of silently falling back to a static SVG.
-- Existing drawer interaction remains the weakest puzzle in the slice and should be replaced or expanded.
+### 2. Inspector office — EXPANDED INVESTIGATION TUTORIAL
+- Rebuilt authored environment with integrated desk, evidence cabinet, case board, confiscated-book library, window lighting and depth staging.
+- Removed oversized placeholder hotspot sprites from the composition.
+- Coast Guard reports become formal evidence and expose a timeline inconsistency.
+- Optional 1898 pathology monograph becomes persistent evidence.
+- Occult diary adds coordinates and the three-bells motif while costing sanity.
+- Low-sanity bookshelf event changes perception instead of acting as a generic damage button.
+- Case board summarizes discovered facts dynamically.
+- Evidence-cabinet interaction now establishes that somebody removed material before the inspector received the case.
 
-### 3. Innsmouth streets — EXPANDED
-- Streets now connect to the docks even before the player obtains the key, allowing reconnaissance before progression.
-- Silas updates the case and identifies the 317 lead.
-- Threatening Barnaby has a visible consequence: Silas disappears and the return beat changes.
-- Still needs the planned split into several visually distinct street micro-zones.
+### 3. Marsh Street — REACTIVE INVESTIGATION HUB
+- Rebuilt as three readable visual zones: police station, tavern/social center, and fish-market/harbor edge.
+- Harbor notice is optional evidence proving the reef was officially restricted before the Coast Guard disappearance.
+- Fish market has sanity-reactive descriptions.
+- Silas can advance the case through the Coast Guard file even if the player never reads the occult diary.
+- The docks can be reconnoitered before obtaining the key.
+- Threatening Barnaby empties the street, removes Silas and triggers a visible watcher beat with sound / perception / sanity consequences.
+- Stone footsteps, wet reflection, rain and low fog give the hub its own surface and ambience identity.
 
-### 4. Tavern — FIRST CONSEQUENCE IMPLEMENTED
-- Barnaby can be approached through evidence-based reasoning or intimidation.
-- Reasoning requires the relevant testimony rather than merely displaying flavor text.
-- Barnaby attitude persists and intimidation changes later staging.
-- A third systemic route remains desirable for the production version.
+### 4. The Golden Fish tavern — MULTI-ROUTE SOCIAL PROBLEM
+- Rebuilt environment with integrated bar, shelves, fireplace, patrons, missing-men board and atmospheric smoke.
+- Barnaby access problem now supports four meaningful approaches:
+  1. Silas testimony,
+  2. dock manifest documentary pressure,
+  3. overheard patron rumor,
+  4. police intimidation.
+- Barnaby attitude persists and changes later dialogue.
+- Intimidation creates a visible downstream consequence in Marsh Street and costs sanity.
+- Patron and notice-board interactions reward prior investigation.
 
-### 5. Docks — PLAYABLE
-- New `room_04_docks` scene and authored dock background.
-- Accessible before obtaining dock access, so exploration and progression are not the same gate.
-- Manifest evidence establishes boat / locker number 317.
+### 5. Innsmouth docks — PLAYABLE INVESTIGATION SPACE
+- Accessible before the dock key, separating reconnaissance from progression.
+- Manifest establishes boat / locker number 317 and supports a documentary route back to Barnaby.
 - Amphibious tracks provide optional physical evidence and sanity impact.
-- Finding both clues triggers an order-independent authored water event with sound, post-process and sanity response.
-- The boathouse door respects the dock key and preserves progression correctly on re-entry.
+- Finding both clues triggers an order-independent water event with sound, perception and sanity response.
+- Boat 317, boathouse and town return path are all staged as integrated hotspots.
+- Wet-wood footsteps, sea/wind ambience, rain and fog differentiate the location sonically and visually.
 
-### 6. Coast Guard boathouse — PLAYABLE MULTI-STAGE PUZZLE
-- New `room_05_boathouse` scene and authored interior background.
-- Evidence-gated locker puzzle: the correct 317 option appears only after discovering the manifest.
-- Locker 317 provides a physical brass fuse inventory item.
-- Fuse installation and breaker restoration are separate steps.
-- Power restoration changes scene lighting and wakes the radio.
-- The final 317 transmission becomes persistent evidence and affects sanity.
-- Optional black scale evidence rewards deeper exploration.
-- Boat launch is gated by restoring power and hearing the final transmission.
+### 6. Coast Guard boathouse — MULTI-STAGE PUZZLE + DANGER BEAT
+- Manifest-gated locker deduction identifies service locker 317.
+- Locker provides a physical brass fuse inventory item.
+- Fuse installation and breaker restoration are separate puzzle steps.
+- Power restoration changes lighting and wakes the radio.
+- Last 317 transmission becomes evidence and repeats the cold-open motif.
+- Optional black scale rewards deeper exploration.
+- After the radio, an immediate-danger concealment sequence occurs at the door:
+  - evidence-aware darkness strategy using the amphibious tracks,
+  - hiding inside locker 317,
+  - high-sanity confrontation.
+- All routes reconverge without arbitrary death, but preserve outcome and different sanity costs.
+- Boat launch requires both the radio evidence and surviving the encounter.
 
-### 7. Devil's Reef — PLAYABLE VERTICAL-SLICE FINALE
-- New `room_06_reef` scene and authored reef background.
-- Three resolution paths are selected according to evidence and sanity:
+### 7. Devil's Reef — INTERACTIVE VERTICAL-SLICE FINALE
+- Three resolution paths depend on evidence and sanity:
   - investigation / dark navigation,
   - disciplined course holding,
   - answering the voice at low sanity.
-- Creature-pass staging combines animation, underwater lighting, a horror stinger and perception pulse.
-- Ending panel reports evidence count and remaining sanity, then returns to the main menu.
+- Creature-pass staging combines animation, underwater lighting, ambience, horror stinger and perception pulse.
+- Ending state persists.
+- Ending report includes total evidence, optional evidence and remaining sanity.
 
-## Systems implemented in the foundation branch
+## Systems now implemented
 
 ### Investigation
 - Stable evidence catalog and IDs.
-- Current and completed objectives.
-- Casebook UI.
-- Evidence persistence in save data.
-- Dialogue predicates for evidence, flags, variables, inventory and sanity.
+- Current / completed objectives.
+- Casebook with evidence categories.
+- Persistent evidence state.
+- Conditional dialogue based on evidence, flags, variables, inventory and sanity.
+- Multiple non-occult and documentary progression routes.
 
 ### Dialogue
 - Choice callbacks execute only after the active balloon releases the dialogue channel.
-- Conditional choices support investigation-state requirements.
-- Scene transitions now wait for their authored transition dialogue instead of fading under an active balloon.
+- Conditional choice predicates are centralized.
+- Authored transitions await dialogue completion.
+- Dialogue feedback audio uses restrained 16-bit PCM rather than the original unsigned 8-bit prototype beep.
 
 ### Sanity / perception
-- Four internal tiers: Stable, Uneasy, Fractured, Breaking.
-- Continuous sanity-driven post-processing.
-- Authored `horror_pulse()` for short perception spikes that return to the current mental-state profile.
-- Reef decisions explicitly react to sanity thresholds.
-
-### Interaction / UX
-- Real idle/walk animation recovery and authoritative movement tween ownership.
-- A selected inventory item no longer swallows normal interactions on non-item-gated hotspots.
-- Reveal now outlines actual hotspot collision geometry, including interactables embedded in a painted background.
-- Inventory hides when empty.
-- Debug `Daño Mental` control is removed.
-
-### Save / shell
-- Versioned save schema v3.
-- Deterministic runtime reset before load.
-- Investigation, inventory, sanity and room persistence.
-- Deferred room checkpoints inherited by every gameplay `Room`.
-- Main menu with Continue awareness.
-- Dedicated Pause menu replaces permanent Save / Load buttons in the gameplay HUD.
+- Stable / Uneasy / Fractured / Breaking internal tiers.
+- HUD presents these as mental-state labels instead of a health-like percentage display.
+- Continuous post-process response.
+- Short authored perception pulses.
+- Sanity-reactive room ambience pitch.
+- Altered environmental descriptions.
+- Sanity-gated decisions at the boathouse and reef.
 
 ### Audio
-- Existing music routing retained.
-- Cached cinematic horror stinger added for authored escalation beats.
-- This remains an interim solution; proper room ambience and authored SFX are still required.
+- Per-room procedural ambience profiles for office, streets, tavern, docks, boathouse and reef.
+- Crossfaded ambience transitions.
+- Surface-aware footsteps for wood, stone, wet wood and metal.
+- Cached cinematic horror stinger.
+- Location-specific dialogue timbres for important speakers / radio.
+- These generated sounds are deliberately replaceable scaffolding: final recorded / authored sound assets can slot into the same architecture without changing room logic.
 
-## Art direction
+### Movement / interaction
+- Real inspector idle / walk animation recovery.
+- One authoritative movement tween.
+- Deliberate eased movement speed.
+- Free floor clicks are constrained to room walk bounds instead of allowing the inspector to walk into walls / sky.
+- Hotspot walk markers still allow precise authored staging.
+- Reveal outlines real hotspot geometry even when interaction art is painted into the background.
+- Invalid selected-item use safely falls back where appropriate instead of swallowing interaction.
 
-The new dock, boathouse and reef SVGs are significantly more authored than the original placeholder rooms, but they are still **vertical-slice production scaffolding**, not the final art target.
+### UI / shell
+- Main menu and Continue awareness.
+- Dedicated pause overlay; gameplay tree actually pauses while the menu remains responsive.
+- Gameplay HUD reduced to mental state / objective / Expediente / Reveal / Pause.
+- Evidence and objective toast feedback.
+- Inventory hides when empty.
+- Safe-area adjustments for Android / iOS.
+- Debug damage controls and debug player labels removed.
 
-Recommended final direction remains high-detail cinematic pixel art / illustrated pixel hybrid with separate BG/MG/FG layers, lighting masks and animation passes.
+### Persistence
+- Versioned save schema v3.
+- Deterministic runtime reset before load.
+- Investigation, inventory, sanity, room and branching state persistence.
+- Automatic per-room checkpoints.
+- Additional checkpoints after major social / danger decisions.
+- Legacy investigation-state reconstruction retained for earlier saves.
 
-For each hero room, budget:
-- background architecture / sky,
-- midground interactable architecture,
-- props and decals,
-- foreground occluders,
-- lighting masks / emissive windows,
-- weather particles,
-- subtle ambient animation.
+### Validation infrastructure
+- `tools/validate_project.gd` recursively loads project scripts, scenes, resources, shaders and imported assets.
+- `.github/workflows/godot-validate.yml` installs Godot 4.6.3, imports the project headlessly and runs the resource validator on `agent/**` pushes and pull requests.
+- Runtime gameplay still requires a real Godot execution / manual playthrough before merge; this branch has not been claimed as runtime-green from the ChatGPT environment.
 
-Do not treat post-processing or enlarged low-detail SVGs as a substitute for final environment art.
+## Art status
 
-## Audio target still outstanding
+Office, Marsh Street and tavern have been rebuilt to match the authored staging philosophy introduced by docks / boathouse / reef. The slice is now visually coherent enough for gameplay and pacing evaluation.
 
-The largest production gap after this milestone is audio. The slice still needs:
-- unique room-tone ambience per location,
-- rain / wind / water layers with variation,
-- footsteps by surface,
-- door, wood, metal, paper, inventory and mechanical one-shots,
-- radio / creature / distant vocal design,
-- at least three musical states: investigation, dread and escalation,
-- sanity-reactive alternate layers or processing.
+These environments are still vector-based vertical-slice production art. A later commercial production pass should replace or paint over them with the chosen final language (high-detail cinematic pixel art / illustrated pixel hybrid) while preserving the composition, hotspot geometry and lighting intent established here.
 
-## Next production pass
+## What remains after the first real Godot playtest
 
-1. **Runtime validation in Godot 4.6.x** — launch every new scene, inspect imports, parser errors, signal paths, save/load and touch interaction. This cannot be honestly marked complete until the project is executed in Godot.
-2. **Replace the office micro-puzzle** with an investigation puzzle of the same quality as the boathouse chain.
-3. **Split the street hub** into multiple micro-zones and add foreground occlusion / ambient NPC staging.
-4. **Create a proper ambience and SFX architecture**, then replace temporary procedural sounds beat by beat.
-5. **Add walk polygons / navigation constraints** before spatial layouts become more complex.
-6. **Move authored dialogue out of room scripts** into data resources before the content count grows further.
-7. **Final art pass** for office, streets, tavern, docks, boathouse and reef.
-8. **Cold-open Coast Guard sequence** that establishes the same bells / 317 / underwater-light motif paid off at the reef.
+Do **not** expand to more chapters before resolving playtest findings. The next pass should be driven by observed runtime behavior:
 
-## Definition of done for the slice
+1. Parser / import / signal errors found by Godot or CI.
+2. Collision / walk-bound tuning based on actual clicks and touch input.
+3. Dialogue pacing and branch clarity from a blind playthrough.
+4. Save / Continue / re-entry edge cases.
+5. Performance on the weakest target Android device.
+6. Replacement of procedural sound beds with final authored audio where the mix proves effective.
+7. Final painted environment / animation pass after compositions are validated in motion.
+8. Move large dialogue blocks into data resources before adding substantially more narrative content.
 
-- 30–45 minutes for a blind first playthrough.
-- No debug buttons or labels visible.
-- Main menu, Pause, Continue, checkpoint and manual save/load behavior work.
-- At least two meaningful approaches to the tavern/dock-access problem.
-- Casebook communicates what the player knows and what they are trying to do.
-- Sanity changes choices and presentation beyond a progress bar.
-- Office, street, tavern, docks, boathouse and reef have near-final visual passes.
-- No static player fallback during normal play.
-- Save/load resumes progression without contradictions.
-- One complete multi-step investigation puzzle exists.
-- One complete horror escalation and interactive payoff exists before the slice ends.
-- PC mouse and mobile touch both complete the slice without debug controls.
+## Definition of done for this implementation milestone
 
-## Current foundation branch
+- Complete arc from cold open → office → Marsh Street / tavern / docks → boathouse → Devil's Reef payoff.
+- No debug control required to progress.
+- More than one viable route to dock access.
+- Optional evidence changes later interpretation / options.
+- One complete multi-stage physical investigation puzzle.
+- One complete danger / concealment beat.
+- One complete sanity / evidence-dependent finale.
+- Persistent casebook, objectives and choices.
+- Distinct ambience and footstep surfaces across locations.
+- Main menu, pause, manual save/load and automatic checkpoints implemented.
+- Automated headless validation infrastructure committed.
+- Manual Godot 4.6.3 playtest remains the gate before merge to `main`.
+
+## Working branch
 
 `agent/aa-vertical-slice-foundation`
 
-At this milestone the branch is more than a systems prototype: it contains a complete investigation chain from office through docks, boathouse and an interactive Devil's Reef ending. The next highest-value work is **runtime validation + audio + replacing remaining weak early-game content**, not additional global shaders.
+This branch is intentionally **not merged into `main`** yet. It is the test candidate for the first complete AA-oriented vertical slice.
