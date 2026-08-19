@@ -1,121 +1,82 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
   <defs>
-    <filter id="gritty-noise">
-      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" result="noise"/>
-      <feColorMatrix type="matrix" values="
-        0.21 0.21 0.21 0 0
-        0.21 0.21 0.21 0 0
-        0.21 0.21 0.21 0 0
-        0    0    0    0.24 0" in="noise" result="coloredNoise"/>
-      <feComposite operator="over" in="coloredNoise" in2="SourceGraphic"/>
-    </filter>
-    
-    <linearGradient id="wall-wood" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#140b05"/>
-      <stop offset="50%" stop-color="#24150a"/>
-      <stop offset="100%" stop-color="#0c0703"/>
-    </linearGradient>
-    <linearGradient id="floor-wood" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#361f10"/>
-      <stop offset="100%" stop-color="#140b05"/>
-    </linearGradient>
-    <radialGradient id="fire-glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ea580c"/>
-      <stop offset="50%" stop-color="#9a3412" stop-opacity="0.5"/>
-      <stop offset="100%" stop-color="#140b05" stop-opacity="0"/>
-    </radialGradient>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#241912"/><stop offset=".65" stop-color="#17100c"/><stop offset="1" stop-color="#0b0806"/></linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5a341d"/><stop offset=".45" stop-color="#321c11"/><stop offset="1" stop-color="#170d08"/></linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#332116"/><stop offset="1" stop-color="#0c0806"/></linearGradient>
+    <radialGradient id="fire"><stop stop-color="#ffd07b" stop-opacity=".9"/><stop offset=".25" stop-color="#d76a25" stop-opacity=".48"/><stop offset="1" stop-color="#27120a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="lantern"><stop stop-color="#ffd88b" stop-opacity=".68"/><stop offset=".4" stop-color="#b96b2e" stop-opacity=".17"/><stop offset="1" stop-color="#170d08" stop-opacity="0"/></radialGradient>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".34" numOctaves="3" seed="18" result="n"/><feColorMatrix in="n" type="matrix" values=".13 0 0 0 0 0 .13 0 0 0 0 0 .13 0 0 0 0 0 .15 0"/><feBlend in2="SourceGraphic" mode="overlay"/></filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="20"/></filter>
   </defs>
-  
-  <g filter="url(#gritty-noise)">
-    <!-- Solid Dark Warm Wall Background -->
-    <rect x="0" y="0" width="1920" height="1080" fill="url(#wall-wood)"/>
-    
-    <!-- Wooden Wall Panel Pillars -->
-    <rect x="180" y="0" width="40" height="800" fill="#0a0502" stroke="#000000" stroke-width="2"/>
-    <rect x="680" y="0" width="40" height="800" fill="#0a0502" stroke="#000000" stroke-width="2"/>
-    <rect x="1180" y="0" width="40" height="800" fill="#0a0502" stroke="#000000" stroke-width="2"/>
-    <rect x="1680" y="0" width="40" height="800" fill="#0a0502" stroke="#000000" stroke-width="2"/>
-    
-    <!-- Perspective Floor Planks -->
-    <rect x="0" y="800" width="1920" height="280" fill="url(#floor-wood)"/>
-    <!-- Floor grooves/lines -->
-    <line x1="0" y1="800" x2="1920" y2="800" stroke="#0c0703" stroke-width="8"/>
-    <line x1="150" y1="800" x2="0" y2="1080" stroke="#0c0703" stroke-width="4" opacity="0.6"/>
-    <line x1="450" y1="800" x2="250" y2="1080" stroke="#0c0703" stroke-width="4" opacity="0.6"/>
-    <line x1="750" y1="800" x2="650" y2="1080" stroke="#0c0703" stroke-width="4" opacity="0.6"/>
-    <line x1="1050" y1="800" x2="1050" y2="1080" stroke="#0c0703" stroke-width="4" opacity="0.6"/>
-    <line x1="1350" y1="800" x2="1450" y2="1080" stroke="#0c0703" stroke-width="4" opacity="0.6"/>
-    <line x1="1650" y1="800" x2="1850" y2="1080" stroke="#0c0703" stroke-width="4" opacity="0.6"/>
 
-    <!-- Bar Shelves on the back wall -->
-    <g opacity="0.85">
-      <!-- Shelf 1 -->
-      <rect x="300" y="250" width="300" height="12" fill="#361f10" stroke="#0c0703" stroke-width="2"/>
-      <!-- Shelf 1 Bottles -->
-      <rect x="330" y="190" width="16" height="60" rx="3" fill="#78350f" stroke="#0c0703" stroke-width="2"/>
-      <rect x="350" y="200" width="14" height="50" rx="3" fill="#065f46" stroke="#0c0703" stroke-width="2"/>
-      <rect x="370" y="180" width="18" height="70" rx="3" fill="#451a03" stroke="#0c0703" stroke-width="2"/>
-      <rect x="420" y="195" width="15" height="55" rx="3" fill="#1e3a5f" stroke="#0c0703" stroke-width="2"/>
-      <rect x="440" y="190" width="16" height="60" rx="3" fill="#78350f" stroke="#0c0703" stroke-width="2"/>
-      <rect x="470" y="185" width="20" height="65" rx="3" fill="#14532d" stroke="#0c0703" stroke-width="2"/>
+  <g filter="url(#grain)">
+    <rect width="1920" height="1080" fill="url(#wall)"/>
+    <rect y="745" width="1920" height="335" fill="url(#floor)"/>
+    <path d="M0 745H1920M0 830H1920M0 930H1920M0 1040H1920" stroke="#0c0806" stroke-width="5" opacity=".62"/>
+    <path d="M150 745L0 1080M470 745L330 1080M800 745L750 1080M1130 745L1190 1080M1470 745L1630 1080M1740 745L1920 1010" stroke="#120c09" stroke-width="4" opacity=".6"/>
 
-      <!-- Shelf 2 -->
-      <rect x="300" y="420" width="300" height="12" fill="#361f10" stroke="#0c0703" stroke-width="2"/>
-      <!-- Shelf 2 Bottles & Tankards -->
-      <rect x="320" y="365" width="18" height="55" rx="2" fill="#7c2d12" stroke="#0c0703" stroke-width="2"/>
-      <rect x="345" y="360" width="16" height="60" rx="3" fill="#15803d" stroke="#0c0703" stroke-width="2"/>
-      <rect x="380" y="375" width="22" height="45" rx="4" fill="#a16207" stroke="#0c0703" stroke-width="2"/> <!-- Tankard -->
-      <rect x="430" y="365" width="16" height="55" rx="2" fill="#0f766e" stroke="#0c0703" stroke-width="2"/>
-      <rect x="455" y="360" width="20" height="60" rx="3" fill="#7c2d12" stroke="#0c0703" stroke-width="2"/>
-      <rect x="480" y="375" width="22" height="45" rx="4" fill="#a16207" stroke="#0c0703" stroke-width="2"/> <!-- Tankard -->
+    <!-- beams and warped ceiling -->
+    <path d="M0 95H1920M180 0V740M690 0V740M1210 0V740M1710 0V740" stroke="#090604" stroke-width="34" opacity=".92"/>
+    <path d="M0 96L330 35L690 96L1010 40L1210 96L1480 44L1920 95" fill="none" stroke="#0b0705" stroke-width="25"/>
+
+    <!-- rainy door / entrance left -->
+    <g transform="translate(55 280)">
+      <rect width="250" height="480" fill="#100b08" stroke="#070504" stroke-width="14"/>
+      <rect x="22" y="22" width="206" height="436" fill="url(#wood)"/>
+      <path d="M42 48h166v162H42zM42 234h166v185H42z" fill="none" stroke="#1d110b" stroke-width="9"/>
+      <circle cx="192" cy="282" r="11" fill="#9c7840"/>
+      <path d="M10 0h230" stroke="#3f291b" stroke-width="18"/>
     </g>
 
-    <!-- Large Keg/Barrel on a stand (Right side) -->
-    <g transform="translate(1350, 450)">
-      <!-- Stand -->
-      <polygon points="-40,150 40,150 20,250 -20,250" fill="#1c0d02" stroke="#0c0703" stroke-width="4"/>
-      <polygon points="-80,250 -40,250 -60,350 -100,350" fill="#1c0d02" stroke="#0c0703" stroke-width="4"/>
-      <polygon points="40,250 80,250 100,350 60,350" fill="#1c0d02" stroke="#0c0703" stroke-width="4"/>
-      <!-- Barrel body -->
-      <ellipse cx="0" cy="150" rx="100" ry="110" fill="#451a03" stroke="#0c0703" stroke-width="6"/>
-      <ellipse cx="0" cy="150" rx="80" ry="90" fill="#2d1101" stroke="#0c0703" stroke-width="3"/>
-      <!-- Metal bands -->
-      <ellipse cx="0" cy="150" rx="90" ry="100" fill="none" stroke="#374151" stroke-width="8" opacity="0.4"/>
-      <!-- Spigot/Tap -->
-      <rect x="-10" y="210" width="20" height="30" fill="#b45309" stroke="#0c0703" stroke-width="3"/>
-      <rect x="-20" y="230" width="40" height="12" fill="#ca8a04" stroke="#0c0703" stroke-width="2"/>
+    <!-- bar wall shelves -->
+    <g transform="translate(810 145)">
+      <rect width="525" height="425" fill="#120c09" stroke="#080604" stroke-width="12"/>
+      <rect x="18" y="18" width="489" height="389" fill="#26170f"/>
+      <path d="M20 133H505M20 258H505M20 380H505" stroke="#090604" stroke-width="14"/>
+      <g stroke="#0a0705" stroke-width="3">
+        <path d="M47 61h26v60H47z" fill="#5d3525"/><path d="M83 47h22v74H83z" fill="#375342"/><path d="M117 66h30v55h-30z" fill="#665229"/><path d="M160 42h22v79h-22z" fill="#503128"/><path d="M196 56h29v65h-29z" fill="#2d4c4b"/><path d="M242 39h24v82h-24z" fill="#744128"/><path d="M282 63h32v58h-32z" fill="#4b3b25"/><path d="M329 48h26v73h-26z" fill="#315038"/><path d="M371 58h28v63h-28z" fill="#68402b"/><path d="M416 41h24v80h-24z" fill="#3e4e58"/><path d="M454 69h27v52h-27z" fill="#644129"/>
+        <path d="M43 183h31v63H43z" fill="#4d4b2e"/><path d="M85 167h24v79H85z" fill="#6b3427"/><path d="M122 191h30v55h-30z" fill="#29453b"/><path d="M166 174h25v72h-25z" fill="#4a3a29"/><path d="M210 181h35v65h-35z" fill="#6b4c28"/><path d="M259 163h22v83h-22z" fill="#375057"/><path d="M297 183h28v63h-28z" fill="#62392b"/><path d="M340 173h31v73h-31z" fill="#334c36"/><path d="M386 188h30v58h-30z" fill="#65532d"/><path d="M431 169h24v77h-24z" fill="#53302a"/>
+      </g>
+      <ellipse cx="264" cy="329" rx="58" ry="41" fill="#172322" stroke="#8d7247" stroke-width="6"/><path d="M224 330c24-29 56-28 83-2c-26 23-58 24-83 2z" fill="#567765" opacity=".7"/><circle cx="282" cy="324" r="4" fill="#d5c88b"/>
     </g>
 
-    <!-- Cozy Brick Fireplace (Center Background) -->
-    <g transform="translate(800, 350)">
-      <!-- Fireplace structure -->
-      <rect x="0" y="100" width="300" height="350" fill="#271c19" stroke="#0c0703" stroke-width="6" rx="4"/>
-      <!-- Hearth Opening -->
-      <path d="M 50 450 L 50 250 A 100 100 0 0 1 250 250 L 250 450 Z" fill="#0c0703" stroke="#1c1917" stroke-width="4"/>
-      <!-- Mantlepiece -->
-      <rect x="-20" y="80" width="340" height="25" fill="#1c0d02" stroke="#0c0703" stroke-width="4" rx="2"/>
-      <!-- Chimney breast going up -->
-      <rect x="30" y="-350" width="240" height="430" fill="#1f1513" stroke="#0c0703" stroke-width="4"/>
-      <!-- Brick pattern lines (subtle) -->
-      <line x1="30" y1="-250" x2="270" y2="-250" stroke="#0c0703" stroke-width="2" opacity="0.3"/>
-      <line x1="30" y1="-150" x2="270" y2="-150" stroke="#0c0703" stroke-width="2" opacity="0.3"/>
-      <line x1="30" y1="-50" x2="270" y2="-50" stroke="#0c0703" stroke-width="2" opacity="0.3"/>
-      <line x1="30" y1="50" x2="270" y2="50" stroke="#0c0703" stroke-width="2" opacity="0.3"/>
-      <line x1="30" y1="180" x2="270" y2="180" stroke="#0c0703" stroke-width="2" opacity="0.3"/>
-      
-      <!-- Glowing fire light backing -->
-      <rect x="50" y="250" width="200" height="200" fill="url(#fire-glow)" opacity="0.95"/>
-      
-      <!-- Glowing embers/fire in hearth -->
-      <circle cx="150" cy="400" r="45" fill="#ea580c" opacity="0.8"/>
-      <polygon points="120,430 180,430 150,360" fill="#facc15" opacity="0.9"/>
-      <polygon points="100,430 140,430 120,380" fill="#f97316" opacity="0.8"/>
-      <polygon points="160,430 200,430 180,380" fill="#f97316" opacity="0.8"/>
-      <!-- Cast iron grate -->
-      <line x1="80" y1="440" x2="220" y2="440" stroke="#1c1917" stroke-width="8" stroke-linecap="round"/>
-      <line x1="100" y1="410" x2="100" y2="440" stroke="#1c1917" stroke-width="4"/>
-      <line x1="150" y1="410" x2="150" y2="440" stroke="#1c1917" stroke-width="4"/>
-      <line x1="200" y1="410" x2="200" y2="440" stroke="#1c1917" stroke-width="4"/>
+    <!-- main bar counter -->
+    <g transform="translate(700 535)">
+      <path d="M0 90H785L740 295H40Z" fill="url(#wood)" stroke="#090604" stroke-width="12"/>
+      <rect x="-18" y="62" width="820" height="55" rx="5" fill="#4e2c18" stroke="#090604" stroke-width="10"/>
+      <path d="M76 127v139M225 127v139M374 127v139M523 127v139M672 127v139" stroke="#1a100b" stroke-width="7" opacity=".65"/>
+      <g transform="translate(94 23)"><ellipse cx="0" cy="25" rx="34" ry="10" fill="#191410"/><path d="M-26 22v32q26 16 52 0V22" fill="#45413a"/><path d="M30 25q28 10 4 28" fill="none" stroke="#45413a" stroke-width="7"/></g>
+      <g transform="translate(594 15) rotate(5)"><rect width="115" height="67" fill="#9d8e70"/><path d="M12 17h83M12 30h66M12 44h88" stroke="#4b4335" stroke-width="4"/></g>
     </g>
+
+    <!-- fireplace right -->
+    <g transform="translate(1505 325)">
+      <rect width="330" height="425" fill="#211916" stroke="#0a0705" stroke-width="12"/>
+      <path d="M55 425V240Q55 135 165 135Q275 135 275 240V425Z" fill="#090605" stroke="#16100d" stroke-width="9"/>
+      <rect x="-25" y="-12" width="380" height="35" fill="#321f15" stroke="#0a0705" stroke-width="9"/>
+      <ellipse cx="165" cy="365" rx="210" ry="190" fill="url(#fire)" opacity=".55" filter="url(#soft)"/>
+      <path d="M110 403q22-94 58-8q29-126 63 8q-45 38-121 0z" fill="#e57a2c"/><path d="M137 402q20-62 35-10q19-81 34 10q-29 21-69 0z" fill="#ffd36e"/>
+      <path d="M82 420H250" stroke="#201813" stroke-width="13" stroke-linecap="round"/>
+    </g>
+
+    <!-- patrons / booths -->
+    <g opacity=".82">
+      <path d="M342 607q0-55 40-55q42 0 42 55v101h-82z" fill="#12100e"/><circle cx="383" cy="530" r="31" fill="#161310"/>
+      <path d="M470 634q0-60 44-60q43 0 43 60v91h-87z" fill="#11100e"/><circle cx="514" cy="548" r="30" fill="#181511"/>
+      <path d="M574 604q0-48 36-48q39 0 39 48v112h-75z" fill="#12100f"/><circle cx="611" cy="535" r="27" fill="#171411"/>
+      <rect x="330" y="690" width="340" height="35" fill="#27180f" stroke="#0c0805" stroke-width="7"/>
+    </g>
+
+    <!-- back notice board / missing men -->
+    <g transform="translate(380 205)">
+      <rect width="280" height="230" fill="#201610" stroke="#090604" stroke-width="10"/><rect x="18" y="18" width="244" height="194" fill="#6f5b43" opacity=".62"/>
+      <path d="M36 39h82v105H36zM141 47h99v72h-99zM133 137h105v54h-105z" fill="#c3b694" stroke="#3d3429" stroke-width="3"/>
+      <circle cx="77" cy="73" r="17" fill="#70695b"/><path d="M49 102h55M154 66h65M154 82h55M150 155h66M150 171h78" stroke="#565044" stroke-width="4"/>
+    </g>
+
+    <!-- hanging lantern pools -->
+    <g><path d="M610 0v160M1440 0v170" stroke="#0a0705" stroke-width="9"/><path d="M565 158h90l-13 74h-64zM1396 168h88l-12 72h-64z" fill="#2b2015" stroke="#0b0805" stroke-width="8"/><circle cx="610" cy="196" r="13" fill="#e7b75b"/><circle cx="1440" cy="205" r="13" fill="#e7b75b"/><ellipse cx="610" cy="300" rx="260" ry="300" fill="url(#lantern)" opacity=".35"/><ellipse cx="1440" cy="310" rx="250" ry="300" fill="url(#lantern)" opacity=".32"/></g>
+
+    <rect y="1040" width="1920" height="40" fill="#050403" opacity=".62"/>
   </g>
 </svg>
