@@ -4,12 +4,14 @@ extends Node2D
 
 @export var room_name: String = "Unnamed Room"
 @export var music_theme: AudioStream
+@export var ambience_profile: String = ""
 @export var checkpoint_on_ready: bool = true
 
 func _ready() -> void:
 	SceneRouter.current_room = self
 	if music_theme:
 		AudioBus.play_music(music_theme)
+	AudioBus.play_ambience(ambience_profile)
 	
 	var ui_layer = get_node_or_null("UILayer")
 	if ui_layer and not ui_layer.has_node("UI_HUD"):
@@ -22,8 +24,6 @@ func _ready() -> void:
 	if not InputController.interaction_requested.is_connected(_on_interaction_requested):
 		InputController.interaction_requested.connect(_on_interaction_requested)
 	
-	# Defer the checkpoint so the room-specific _ready() can finish setting its
-	# location, one-shot flags and other authored state first.
 	if checkpoint_on_ready:
 		call_deferred("_save_room_checkpoint")
 
