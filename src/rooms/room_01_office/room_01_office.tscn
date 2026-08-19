@@ -1,41 +1,23 @@
-[gd_scene load_steps=23 format=3 uid="uid://df72fdby37c8b"]
+[gd_scene load_steps=11 format=3 uid="uid://df72fdby37c8b"]
 
 [ext_resource type="Script" path="res://src/rooms/room_01_office/room_01_office.gd" id="1_script"]
 [ext_resource type="Resource" uid="uid://cbe7dby376f0s" path="res://src/common/classes/rusty_key.tres" id="2_key"]
 [ext_resource type="Resource" uid="uid://be87db21h836b" path="res://src/common/classes/diary.tres" id="3_diary"]
 [ext_resource type="Script" path="res://src/rooms/player.gd" id="4_player"]
 [ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="5_hotspot"]
-[ext_resource type="Texture2D" uid="uid://3aduv7t0x565" path="res://assets/images/backgrounds/office_bg.svg" id="6_bg"]
-[ext_resource type="Texture2D" uid="uid://dfl7v10byy224" path="res://assets/images/ui/desk.svg" id="7_desk"]
-[ext_resource type="Texture2D" uid="uid://b4wvudiwj0d8u" path="res://assets/images/ui/bookcase.svg" id="8_bookcase"]
-[ext_resource type="Texture2D" uid="uid://bujsn62mr8ym6" path="res://assets/images/ui/drawer.svg" id="9_drawer"]
-[ext_resource type="Texture2D" uid="uid://b6tnneh5fa6cw" path="res://assets/images/ui/door.svg" id="10_door"]
-[ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="12_flicker"]
-[ext_resource type="AudioStream" uid="uid://gothic_music" path="res://assets/audio/music/gothic_village.ogg" id="13_music"]
+[ext_resource type="Texture2D" path="res://assets/images/backgrounds/office_bg.svg" id="6_bg"]
+[ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="7_flicker"]
+[ext_resource type="AudioStream" uid="uid://gothic_music" path="res://assets/audio/music/gothic_village.ogg" id="8_music"]
 
-[ext_resource type="Texture2D" uid="uid://inspect_idle_1" path="res://assets/images/characters/inspector/idle/hat-man-idle-1.png" id="14_i1"]
-[ext_resource type="Texture2D" uid="uid://inspect_idle_2" path="res://assets/images/characters/inspector/idle/hat-man-idle-2.png" id="15_i2"]
-[ext_resource type="Texture2D" uid="uid://inspect_idle_3" path="res://assets/images/characters/inspector/idle/hat-man-idle-3.png" id="16_i3"]
-[ext_resource type="Texture2D" uid="uid://inspect_idle_4" path="res://assets/images/characters/inspector/idle/hat-man-idle-4.png" id="17_i4"]
-
-[ext_resource type="Texture2D" uid="uid://inspect_walk_1" path="res://assets/images/characters/inspector/walk/hat-man-walk-1.png" id="18_w1"]
-[ext_resource type="Texture2D" uid="uid://inspect_walk_2" path="res://assets/images/characters/inspector/walk/hat-man-walk-2.png" id="19_w2"]
-[ext_resource type="Texture2D" uid="uid://inspect_walk_3" path="res://assets/images/characters/inspector/walk/hat-man-walk-3.png" id="20_w3"]
-[ext_resource type="Texture2D" uid="uid://inspect_walk_4" path="res://assets/images/characters/inspector/walk/hat-man-walk-4.png" id="21_w4"]
-[ext_resource type="Texture2D" uid="uid://inspect_walk_5" path="res://assets/images/characters/inspector/walk/hat-man-walk-5.png" id="22_w5"]
-[ext_resource type="Texture2D" uid="uid://inspect_walk_6" path="res://assets/images/characters/inspector/walk/hat-man-walk-6.png" id="23_w6"]
-
-[sub_resource type="Environment" id="Environment_gothic"]
+[sub_resource type="Environment" id="Environment_office"]
 background_mode = 3
 glow_enabled = true
 glow_levels/1 = 1.0
 glow_levels/2 = 1.0
 glow_levels/3 = 1.0
-glow_levels/5 = 1.0
-glow_intensity = 1.2
-glow_strength = 1.1
-glow_bloom = 0.25
-glow_blend_mode = 0
+glow_intensity = 0.78
+glow_strength = 0.82
+glow_bloom = 0.12
 
 [sub_resource type="Gradient" id="Gradient_light"]
 colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0)
@@ -49,159 +31,99 @@ fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
-size = Vector2(80, 200)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_desk"]
-polygon = PackedVector2Array(450, 780, 750, 780, 750, 800, 450, 800)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_bookcase"]
-polygon = PackedVector2Array(850, 780, 1150, 780, 1150, 800, 850, 800)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_drawer"]
-polygon = PackedVector2Array(1250, 780, 1400, 780, 1400, 800, 1250, 800)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_door"]
-polygon = PackedVector2Array(1650, 780, 1850, 780, 1850, 800, 1650, 800)
+size = Vector2(72, 180)
 
 [node name="Room_Office" type="Node2D"]
 script = ExtResource("1_script")
 key_item = ExtResource("2_key")
 book_item = ExtResource("3_diary")
 room_name = "Oficina del Inspector"
-music_theme = ExtResource("13_music")
+music_theme = ExtResource("8_music")
+ambience_profile = "office"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_gothic")
+environment = SubResource("Environment_office")
 
 [node name="CanvasModulate" type="CanvasModulate" parent="."]
-color = Color(0.180392, 0.219608, 0.27451, 1)
+color = Color(0.66, 0.69, 0.72, 1)
 
 [node name="Background" type="Sprite2D" parent="."]
 texture_filter = 1
 position = Vector2(960, 540)
-scale = Vector2(1.0, 1.0)
 texture = ExtResource("6_bg")
 
-[node name="Moonlight" type="PointLight2D" parent="Background"]
-position = Vector2(-100, -50)
-scale = Vector2(0.5, 0.5)
-color = Color(0.27451, 0.756863, 0.890196, 1)
-energy = 1.6
+[node name="WindowMoonlight" type="PointLight2D" parent="."]
+position = Vector2(255, 390)
+scale = Vector2(2.2, 2.5)
+color = Color(0.44, 0.69, 0.82, 1)
+energy = 0.58
 shadow_enabled = true
 texture = SubResource("GradientTexture2D_light")
+
+[node name="DeskLamp" type="PointLight2D" parent="."]
+position = Vector2(760, 585)
+scale = Vector2(1.45, 1.15)
+color = Color(0.96, 0.68, 0.38, 1)
+energy = 1.05
+texture = SubResource("GradientTexture2D_light")
+script = ExtResource("7_flicker")
+min_energy = 0.88
+max_energy = 1.08
+speed = 2.2
 
 [node name="HotspotsLayer" type="Node2D" parent="."]
 
 [node name="Desk" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("5_hotspot")
-hotspot_name = "Escritorio de Roble"
+hotspot_name = "Escritorio y expediente"
 walk_to_point = NodePath("WalkToPoint")
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Desk"]
-polygon = PackedVector2Array(450, 650, 750, 650, 750, 800, 450, 800)
+polygon = PackedVector2Array(380, 560, 830, 560, 830, 845, 380, 845)
 
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Desk"]
-position = Vector2(600, 750)
-
-[node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/Desk"]
-texture_filter = 1
-position = Vector2(600, 725)
-scale = Vector2(1.0, 1.0)
-texture = ExtResource("7_desk")
-
-[node name="Light" type="PointLight2D" parent="HotspotsLayer/Desk" groups=["lights"]]
-position = Vector2(600, 650)
-scale = Vector2(2.2, 2.2)
-color = Color(0.992157, 0.54902, 0.360784, 1)
-energy = 1.6
-shadow_enabled = true
-texture = SubResource("GradientTexture2D_light")
-script = ExtResource("12_flicker")
-min_energy = 0.8
-max_energy = 1.5
-
-[node name="LightOccluder2D" type="LightOccluder2D" parent="HotspotsLayer/Desk"]
-occluder = SubResource("OccluderPolygon2D_desk")
+position = Vector2(620, 820)
 
 [node name="Bookcase" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("5_hotspot")
-hotspot_name = "Biblioteca Antigua"
+hotspot_name = "Biblioteca de casos confiscados"
 walk_to_point = NodePath("WalkToPoint")
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Bookcase"]
-polygon = PackedVector2Array(850, 400, 1150, 400, 1150, 800, 850, 800)
+polygon = PackedVector2Array(845, 235, 1170, 235, 1170, 750, 845, 750)
 
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Bookcase"]
-position = Vector2(1000, 750)
-
-[node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/Bookcase"]
-texture_filter = 1
-position = Vector2(1000, 600)
-scale = Vector2(1.0, 1.0)
-texture = ExtResource("8_bookcase")
-
-[node name="OccultGlow" type="PointLight2D" parent="HotspotsLayer/Bookcase"]
-position = Vector2(980, 650)
-scale = Vector2(1.6, 1.6)
-color = Color(0.639216, 0.109804, 0.686275, 1)
-energy = 1.6
-texture = SubResource("GradientTexture2D_light")
-script = ExtResource("12_flicker")
-min_energy = 0.8
-max_energy = 1.6
-speed = 5.0
-
-[node name="LightOccluder2D" type="LightOccluder2D" parent="HotspotsLayer/Bookcase"]
-occluder = SubResource("OccluderPolygon2D_bookcase")
+position = Vector2(1040, 805)
 
 [node name="Drawer" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point", "required_item")]
 script = ExtResource("5_hotspot")
-hotspot_name = "Cajón de Bronce"
+hotspot_name = "Archivador de evidencias"
 required_item = ExtResource("2_key")
 walk_to_point = NodePath("WalkToPoint")
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Drawer"]
-polygon = PackedVector2Array(1250, 700, 1400, 700, 1400, 800, 1250, 800)
+polygon = PackedVector2Array(1225, 510, 1440, 510, 1440, 790, 1225, 790)
 
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Drawer"]
-position = Vector2(1325, 750)
-
-[node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/Drawer"]
-texture_filter = 1
-position = Vector2(1325, 750)
-scale = Vector2(1.0, 1.0)
-texture = ExtResource("9_drawer")
-
-[node name="LightOccluder2D" type="LightOccluder2D" parent="HotspotsLayer/Drawer"]
-occluder = SubResource("OccluderPolygon2D_drawer")
+position = Vector2(1335, 820)
 
 [node name="Door" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("5_hotspot")
-hotspot_name = "Puerta de Roble"
+hotspot_name = "Salida a Innsmouth"
 walk_to_point = NodePath("WalkToPoint")
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Door"]
-polygon = PackedVector2Array(1650, 450, 1850, 450, 1850, 800, 1650, 800)
+polygon = PackedVector2Array(1590, 275, 1860, 275, 1860, 810, 1590, 810)
 
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Door"]
-position = Vector2(1750, 750)
-
-[node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/Door"]
-texture_filter = 1
-position = Vector2(1750, 625)
-scale = Vector2(1.0, 1.0)
-texture = ExtResource("10_door")
-
-[node name="LightOccluder2D" type="LightOccluder2D" parent="HotspotsLayer/Door"]
-occluder = SubResource("OccluderPolygon2D_door")
+position = Vector2(1715, 815)
 
 [node name="CharactersLayer" type="Node2D" parent="."]
+y_sort_enabled = true
 
 [node name="Player" type="CharacterBody2D" parent="CharactersLayer"]
-position = Vector2(250, 650)
+position = Vector2(275, 755)
 script = ExtResource("4_player")
-idle_textures = Array[Texture2D]([])
-walk_textures = Array[Texture2D]([])
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CharactersLayer/Player"]
 shape = SubResource("RectangleShape2D_player")
@@ -209,46 +131,32 @@ shape = SubResource("RectangleShape2D_player")
 [node name="Sprite2D" type="Sprite2D" parent="CharactersLayer/Player"]
 texture_filter = 1
 position = Vector2(0, 30)
-scale = Vector2(1.0, 1.0)
 
 [node name="LanternLight" type="PointLight2D" parent="CharactersLayer/Player"]
-position = Vector2(0, 30)
-scale = Vector2(1.5, 1.5)
-color = Color(0.996078, 0.941176, 0.854902, 1)
-energy = 0.7
+position = Vector2(0, 25)
+scale = Vector2(1.35, 1.35)
+color = Color(0.96, 0.84, 0.65, 1)
+energy = 0.48
 shadow_enabled = true
 texture = SubResource("GradientTexture2D_light")
-
-[node name="DetectiveLabel" type="Label" parent="CharactersLayer/Player"]
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -80.0
-offset_top = -140.0
-offset_right = 80.0
-offset_bottom = -110.0
-grow_horizontal = 2
-text = "Inspector (Player)"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="ForegroundLayer" type="Node2D" parent="."]
 
 [node name="DustParticles" type="CPUParticles2D" parent="ForegroundLayer"]
 position = Vector2(960, 540)
-amount = 35
-lifetime = 6.0
+amount = 28
+lifetime = 7.0
 preprocess = 5.0
 emission_shape = 3
-emission_rect_extents = Vector2(960, 540)
-direction = Vector2(1.0, 1.0)
-spread = 180.0
-gravity = Vector2(0, -2)
-initial_velocity_min = 4.0
-initial_velocity_max = 12.0
-scale_amount_min = 1.0
-scale_amount_max = 3.0
-color = Color(0.8, 0.9, 1.0, 0.15)
+emission_rect_extents = Vector2(900, 440)
+direction = Vector2(0.3, -0.2)
+spread = 150.0
+gravity = Vector2(0, -1.5)
+initial_velocity_min = 2.0
+initial_velocity_max = 8.0
+scale_amount_min = 0.8
+scale_amount_max = 2.2
+color = Color(0.78, 0.82, 0.83, 0.12)
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 layer = 10
