@@ -77,21 +77,26 @@ speed = 2.2
 script = ExtResource("5_hotspot")
 hotspot_name = "Escritorio y expediente"
 walk_to_point = NodePath("WalkToPoint")
-
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Desk"]
 polygon = PackedVector2Array(380, 560, 830, 560, 830, 845, 380, 845)
-
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Desk"]
 position = Vector2(620, 820)
+
+[node name="CaseBoard" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
+script = ExtResource("5_hotspot")
+hotspot_name = "Tablero del caso 47-B"
+walk_to_point = NodePath("WalkToPoint")
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/CaseBoard"]
+polygon = PackedVector2Array(405, 90, 770, 90, 770, 390, 405, 390)
+[node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/CaseBoard"]
+position = Vector2(590, 670)
 
 [node name="Bookcase" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("5_hotspot")
 hotspot_name = "Biblioteca de casos confiscados"
 walk_to_point = NodePath("WalkToPoint")
-
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Bookcase"]
 polygon = PackedVector2Array(845, 235, 1170, 235, 1170, 750, 845, 750)
-
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Bookcase"]
 position = Vector2(1040, 805)
 
@@ -100,10 +105,8 @@ script = ExtResource("5_hotspot")
 hotspot_name = "Archivador de evidencias"
 required_item = ExtResource("2_key")
 walk_to_point = NodePath("WalkToPoint")
-
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Drawer"]
 polygon = PackedVector2Array(1225, 510, 1440, 510, 1440, 790, 1225, 790)
-
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Drawer"]
 position = Vector2(1335, 820)
 
@@ -111,27 +114,21 @@ position = Vector2(1335, 820)
 script = ExtResource("5_hotspot")
 hotspot_name = "Salida a Innsmouth"
 walk_to_point = NodePath("WalkToPoint")
-
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Door"]
 polygon = PackedVector2Array(1590, 275, 1860, 275, 1860, 810, 1590, 810)
-
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Door"]
 position = Vector2(1715, 815)
 
 [node name="CharactersLayer" type="Node2D" parent="."]
 y_sort_enabled = true
-
 [node name="Player" type="CharacterBody2D" parent="CharactersLayer"]
 position = Vector2(275, 755)
 script = ExtResource("4_player")
-
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CharactersLayer/Player"]
 shape = SubResource("RectangleShape2D_player")
-
 [node name="Sprite2D" type="Sprite2D" parent="CharactersLayer/Player"]
 texture_filter = 1
 position = Vector2(0, 30)
-
 [node name="LanternLight" type="PointLight2D" parent="CharactersLayer/Player"]
 position = Vector2(0, 25)
 scale = Vector2(1.35, 1.35)
@@ -141,7 +138,6 @@ shadow_enabled = true
 texture = SubResource("GradientTexture2D_light")
 
 [node name="ForegroundLayer" type="Node2D" parent="."]
-
 [node name="DustParticles" type="CPUParticles2D" parent="ForegroundLayer"]
 position = Vector2(960, 540)
 amount = 28
