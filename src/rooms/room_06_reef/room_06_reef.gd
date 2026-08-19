@@ -13,6 +13,9 @@ extends Room
 var custom_font: Font = null
 
 func _ready() -> void:
+	room_name = "Arrecife del Diablo"
+	ambience_profile = "reef"
+	checkpoint_on_ready = true
 	super._ready()
 	GameState.set_var("player_location", "devils_reef")
 	end_shade.visible = false
@@ -31,9 +34,9 @@ func _apply_font_recursive(node: Node) -> void:
 
 func _begin_approach() -> void:
 	if GameState.get_flag("reef_sequence_seen"):
-		_show_end_panel("EL ARRECIFE RECUERDA", "La aproximación al Arrecife del Diablo ya forma parte del expediente.")
+		var previous_title = str(GameState.get_var("reef_ending_title", "EL ARRECIFE RECUERDA"))
+		_show_end_panel(previous_title, "La aproximación al Arrecife del Diablo ya forma parte del expediente. El 317 permanece junto a la estructura negra.")
 		return
-	
 	await get_tree().create_timer(0.7).timeout
 	AudioBus.play_horror_stinger(0.45)
 	AtmosphereController.horror_pulse(0.55)
@@ -43,7 +46,6 @@ func _begin_approach() -> void:
 		"La brújula empieza a oscilar.",
 		"Entonces la radio pronuncia mi apellido con la voz de un hombre muerto hace tres días."
 	], "Inspector")
-	
 	DialogueManager.show_choices(
 		"Una luz verdosa se mueve bajo el bote. Algo está siguiendo al 317.",
 		[
@@ -133,6 +135,7 @@ func _play_creature_pass(intensity: float) -> void:
 
 func _finish_slice(title: String, body: String) -> void:
 	GameState.set_flag("reef_sequence_seen", true)
+	GameState.set_var("reef_ending_title", title)
 	Investigation.complete_current_objective()
 	SaveSystem.save_game(1)
 	_show_end_panel(title, body)
@@ -140,9 +143,14 @@ func _finish_slice(title: String, body: String) -> void:
 func _show_end_panel(title: String, body: String) -> void:
 	ending_title.text = title
 	ending_body.text = body
-	stats_label.text = "Evidencias registradas: %d / %d    ·    Cordura restante: %d%%" % [
+	var optional_count = 0
+	for evidence_id in ["pathology_monograph", "harbor_notice", "black_scale"]:
+		if Investigation.has_evidence(evidence_id):
+			optional_count += 1
+	stats_label.text = "Evidencias: %d / %d    ·    Opcionales: %d / 3    ·    Cordura: %d%%" % [
 		Investigation.discovered_evidence.size(),
 		Investigation.EVIDENCE_CATALOG.size(),
+		optional_count,
 		Sanity.current_sanity
 	]
 	end_shade.visible = true
