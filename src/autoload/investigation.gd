@@ -11,6 +11,11 @@ const EVIDENCE_CATALOG = {
 		"description": "Tres desapariciones cerca del Arrecife del Diablo. Los informes locales mencionan una imposible 'asfixia seca'.",
 		"category": "document"
 	},
+	"pathology_monograph": {
+		"title": "Patologías costeras, 1898",
+		"description": "Un estudio médico describe en familias antiguas de Innsmouth ojos inmóviles, piel queratinizada e indicios de estructuras branquiales internas. El autor lo atribuyó a endogamia.",
+		"category": "document"
+	},
 	"occult_diary": {
 		"title": "Diario de cuero",
 		"description": "Un cuaderno marcado con símbolos astronómicos y coordenadas que apuntan hacia el Arrecife del Diablo.",
@@ -20,6 +25,11 @@ const EVIDENCE_CATALOG = {
 		"title": "Testimonio de Silas",
 		"description": "El pescador reconoce las coordenadas del diario y vincula a los guardacostas con el arrecife. Barnaby conserva una llave de los botes.",
 		"category": "testimony"
+	},
+	"harbor_notice": {
+		"title": "Aviso de mareas del puerto",
+		"description": "El puerto cerró oficialmente el acceso al Arrecife del Diablo después de tres incidentes nocturnos. Alguien arrancó del aviso el sello que identificaba quién dio la orden.",
+		"category": "document"
 	},
 	"dock_key": {
 		"title": "Llave del muelle",
