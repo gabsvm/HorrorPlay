@@ -2,13 +2,13 @@
 extends Control
 
 @onready var panel: Panel = $Backdrop/Panel
-@onready var title: Label = $Backdrop/Panel/Content/Title
 @onready var status_label: Label = $Backdrop/Panel/Content/StatusLabel
 @onready var load_button: Button = $Backdrop/Panel/Content/LoadButton
 
 var custom_font: Font = null
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 	custom_font = load("res://assets/fonts/SpecialElite-Regular.ttf")
 	if custom_font:
@@ -16,17 +16,19 @@ func _ready() -> void:
 	_apply_style()
 	_refresh_state()
 
+func _exit_tree() -> void:
+	if get_tree() and get_tree().paused:
+		get_tree().paused = false
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("ui_cancel"):
 		return
-	
 	get_viewport().set_input_as_handled()
 	var casebook = _get_casebook()
 	if casebook and casebook.visible:
 		casebook.visible = false
 		InputController.block_input(false)
 		return
-	
 	if visible:
 		close_menu()
 	else:
@@ -42,10 +44,12 @@ func open_menu() -> void:
 	status_label.text = ""
 	_refresh_state()
 	InputController.block_input(true)
+	get_tree().paused = true
 
 func close_menu() -> void:
 	if not visible:
 		return
+	get_tree().paused = false
 	visible = false
 	InputController.block_input(false)
 
@@ -66,7 +70,7 @@ func _apply_font_recursive(node: Node) -> void:
 
 func _apply_style() -> void:
 	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.024, 0.025, 0.029, 0.97)
+	panel_style.bg_color = Color(0.024, 0.025, 0.029, 0.98)
 	panel_style.border_width_left = 2
 	panel_style.border_width_top = 2
 	panel_style.border_width_right = 2
@@ -94,19 +98,19 @@ func _on_load_pressed() -> void:
 		status_label.text = "No hay ninguna partida guardada."
 		load_button.disabled = true
 		return
-	
+	get_tree().paused = false
+	InputController.block_input(true)
 	var err = SaveSystem.load_game(1)
 	if err != OK:
+		get_tree().paused = true
 		status_label.text = "No se pudo cargar la partida."
 		return
-	
-	# SceneRouter owns the transition. Avoid a success dialogue on a scene that
-	# is already being faded out and destroyed.
 	visible = false
 	InputController.block_input(false)
 
 func _on_main_menu_pressed() -> void:
 	SaveSystem.save_checkpoint(1)
+	get_tree().paused = false
 	visible = false
 	InputController.block_input(false)
 	SceneRouter.change_room("res://src/menu/main_menu.tscn")
