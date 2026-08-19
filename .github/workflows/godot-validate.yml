@@ -1,0 +1,50 @@
+name: Godot Validate
+
+on:
+  push:
+    branches:
+      - "agent/**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Import and validate resources
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot 4.6.3
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 \
+            --output godot.zip \
+            "https://github.com/godotengine/godot-builds/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x Godot_v4.6.3-stable_linux.x86_64
+          ./Godot_v4.6.3-stable_linux.x86_64 --version
+
+      - name: Import project resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./Godot_v4.6.3-stable_linux.x86_64 \
+            --headless \
+            --path . \
+            --import
+
+      - name: Validate scripts scenes and assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./Godot_v4.6.3-stable_linux.x86_64 \
+            --headless \
+            --path . \
+            --script res://tools/validate_project.gd
