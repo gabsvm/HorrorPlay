@@ -33,7 +33,6 @@ func _on_innkeeper_interacted(verb: String) -> void:
 		return
 	if verb != "interact":
 		return
-	
 	if GameState.get_flag("has_dock_key"):
 		_show_barnaby_after_key()
 	elif _can_confront_barnaby():
@@ -45,9 +44,11 @@ func _on_innkeeper_interacted(verb: String) -> void:
 		], "Tabernero Barnaby")
 
 func _can_confront_barnaby() -> bool:
-	return Investigation.has_evidence("reef_testimony") \
-		or Investigation.has_evidence("dock_manifest") \
+	return (
+		Investigation.has_evidence("reef_testimony")
+		or Investigation.has_evidence("dock_manifest")
 		or GameState.get_flag("heard_barnaby_key_rumor")
+	)
 
 func _show_barnaby_confrontation() -> void:
 	DialogueManager.show_choices(
@@ -157,7 +158,6 @@ func _on_patrons_interacted(verb: String) -> void:
 	if not Investigation.has_evidence("coast_guard_reports"):
 		DialogueManager.show_dialogue(["—No sabemos nada de turistas ni policías —dice uno antes de que yo haga una pregunta."], "Cliente")
 		return
-	
 	GameState.set_flag("heard_barnaby_key_rumor", true)
 	await DialogueManager.show_dialogue([
 		"Me siento en la mesa contigua y dejo que crean que estoy leyendo el periódico.",
