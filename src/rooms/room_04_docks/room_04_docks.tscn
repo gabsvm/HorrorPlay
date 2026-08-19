@@ -36,6 +36,7 @@ size = Vector2(72, 180)
 script = ExtResource("1_script")
 room_name = "Muelles de Innsmouth"
 music_theme = ExtResource("8_music")
+suppress_music = true
 ambience_profile = "docks"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
