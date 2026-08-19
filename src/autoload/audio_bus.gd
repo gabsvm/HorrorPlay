@@ -11,6 +11,7 @@ var horror_stinger_stream: AudioStreamWAV
 var ambience_cache: Dictionary = {}
 var footstep_cache: Dictionary = {}
 var ambience_tween: Tween = null
+var music_tween: Tween = null
 
 const AMBIENCE_PROFILES := ["office", "streets", "tavern", "docks", "boathouse", "reef"]
 const FOOTSTEP_SURFACES := ["wood", "stone", "wet_wood", "metal"]
@@ -39,15 +40,36 @@ func play_music(stream: AudioStream, fade_time: float = 1.5) -> void:
 	var next_player = music_players[next_idx]
 	if current_player.playing and current_player.stream == stream:
 		return
+	if music_tween and music_tween.is_valid():
+		music_tween.kill()
 	next_player.stream = stream
 	next_player.volume_db = -80.0
 	next_player.play()
-	var tween = create_tween().set_parallel(true)
-	tween.tween_property(current_player, "volume_db", -80.0, fade_time)
-	tween.tween_property(next_player, "volume_db", 0.0, fade_time)
-	await tween.finished
+	music_tween = create_tween().set_parallel(true)
+	music_tween.tween_property(current_player, "volume_db", -80.0, fade_time)
+	music_tween.tween_property(next_player, "volume_db", 0.0, fade_time)
+	await music_tween.finished
 	current_player.stop()
 	active_player_idx = next_idx
+	music_tween = null
+
+func stop_music(fade_time: float = 1.0) -> void:
+	if music_tween and music_tween.is_valid():
+		music_tween.kill()
+	var playing: Array[AudioStreamPlayer] = []
+	for player in music_players:
+		if player.playing:
+			playing.append(player)
+	if playing.is_empty():
+		return
+	music_tween = create_tween().set_parallel(true)
+	for player in playing:
+		music_tween.tween_property(player, "volume_db", -80.0, fade_time)
+	await music_tween.finished
+	for player in playing:
+		player.stop()
+		player.volume_db = 0.0
+	music_tween = null
 
 func play_ambience(profile: String, fade_time: float = 1.25) -> void:
 	if profile.is_empty():
