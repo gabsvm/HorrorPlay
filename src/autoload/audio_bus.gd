@@ -28,6 +28,8 @@ func _ready() -> void:
 		ambience_cache[profile] = _build_ambience_loop(profile)
 	for surface in FOOTSTEP_SURFACES:
 		footstep_cache[surface] = _build_footstep(surface)
+	if not Sanity.sanity_changed.is_connected(_on_sanity_changed):
+		Sanity.sanity_changed.connect(_on_sanity_changed)
 
 func play_music(stream: AudioStream, fade_time: float = 1.5) -> void:
 	if not stream:
@@ -63,7 +65,7 @@ func play_ambience(profile: String, fade_time: float = 1.25) -> void:
 	var next_player = ambience_players[next_idx]
 	next_player.stream = ambience_cache[profile]
 	next_player.volume_db = -80.0
-	next_player.pitch_scale = 1.0
+	next_player.pitch_scale = _sanity_ambience_pitch()
 	next_player.play()
 	ambience_tween = create_tween().set_parallel(true)
 	ambience_tween.tween_property(current_player, "volume_db", -80.0, fade_time)
@@ -85,6 +87,17 @@ func stop_ambience(fade_time: float = 0.8) -> void:
 	await ambience_tween.finished
 	current_player.stop()
 
+func _on_sanity_changed(_value: int) -> void:
+	var target_pitch = _sanity_ambience_pitch()
+	for player in ambience_players:
+		if player.playing:
+			var tween = create_tween()
+			tween.tween_property(player, "pitch_scale", target_pitch, 1.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+func _sanity_ambience_pitch() -> float:
+	var distress = 1.0 - clamp(float(Sanity.current_sanity) / 100.0, 0.0, 1.0)
+	return lerp(1.0, 0.935, distress)
+
 func play_sfx(stream: AudioStream, volume_db: float = 0.0, pitch_scale: float = 1.0) -> void:
 	if not stream:
 		return
@@ -101,9 +114,12 @@ func play_footstep(surface: String = "wood", intensity: float = 1.0) -> void:
 	if not footstep_cache.has(surface):
 		surface = "wood"
 	var base_volume = -13.5
-	if surface == "stone": base_volume = -12.5
-	elif surface == "wet_wood": base_volume = -11.8
-	elif surface == "metal": base_volume = -14.0
+	if surface == "stone":
+		base_volume = -12.5
+	elif surface == "wet_wood":
+		base_volume = -11.8
+	elif surface == "metal":
+		base_volume = -14.0
 	play_sfx(footstep_cache[surface], base_volume + lerp(-2.0, 1.0, clamp(intensity, 0.0, 1.0)), randf_range(0.92, 1.08))
 
 func play_horror_stinger(intensity: float = 1.0) -> void:
@@ -140,7 +156,8 @@ func _build_footstep(surface: String) -> AudioStreamWAV:
 		var t = float(i) / float(stream.mix_rate)
 		var env = pow(max(0.0, 1.0 - t / duration), 3.2)
 		var noise = rng.randf_range(-1.0, 1.0)
-		filtered = lerp(filtered, noise, 0.22 if surface != "stone" else 0.5)
+		var filter_amount = 0.22 if surface != "stone" else 0.5
+		filtered = lerp(filtered, noise, filter_amount)
 		var value := 0.0
 		match surface:
 			"stone": value = filtered * 0.5 + sin(TAU * 118.0 * t) * 0.18
@@ -184,7 +201,8 @@ func _build_ambience_loop(profile: String) -> AudioStreamWAV:
 				left = raw_l * 0.06 + slow_l * 0.12 + room_hum + sin(TAU * 0.12 * t) * slow_l * 0.08
 				right = raw_r * 0.05 + slow_r * 0.1 + room_hum
 			"streets":
-				if rng.randf() < 0.012: rain_env = rng.randf_range(0.35, 0.85)
+				if rng.randf() < 0.012:
+					rain_env = rng.randf_range(0.35, 0.85)
 				rain_env *= 0.985
 				left = raw_l * (0.12 + rain_env * 0.12) + slow_l * 0.22 + sin(TAU * 0.08 * t) * 0.05
 				right = raw_r * (0.11 + rain_env * 0.1) + slow_r * 0.2
