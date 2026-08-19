@@ -63,6 +63,7 @@ func _on_new_game_pressed() -> void:
 	accepting_input = false
 	SaveSystem.reset_runtime_state()
 	status_label.text = ""
+	AudioBus.stop_music(0.65)
 	InputController.block_input(false)
 	SceneRouter.change_room("res://src/rooms/room_00_intro/room_00_intro.tscn")
 
