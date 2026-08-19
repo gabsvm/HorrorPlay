@@ -34,6 +34,7 @@ script = ExtResource("1_script")
 brass_fuse_item = ExtResource("5_fuse")
 room_name = "Cobertizo de la Guardia Costera"
 music_theme = ExtResource("6_music")
+suppress_music = true
 ambience_profile = "boathouse"
 footstep_surface = "wet_wood"
 walk_bounds = Rect2(60, 700, 1800, 330)
