@@ -1,35 +1,126 @@
-[gd_scene load_steps=2 format=3 uid="uid://df72intro8b"]
+[gd_scene load_steps=5 format=3 uid="uid://df72intro8b"]
 
 [ext_resource type="Script" path="res://src/rooms/room_00_intro/room_00_intro.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/images/backgrounds/cold_open_bg.svg" id="2_bg"]
+
+[sub_resource type="Gradient" id="Gradient_light"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_light"]
+gradient = SubResource("Gradient_light")
+width = 512
+height = 512
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
 
 [node name="Room_Intro" type="Node2D"]
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
-offset_right = 1920.0
-offset_bottom = 1080.0
-color = Color(0, 0, 0, 1)
+[node name="Background" type="Sprite2D" parent="."]
+texture_filter = 1
+position = Vector2(960, 540)
+texture = ExtResource("2_bg")
+
+[node name="UnderwaterGlow" type="PointLight2D" parent="."]
+position = Vector2(880, 850)
+scale = Vector2(3.8, 1.65)
+color = Color(0.31, 0.84, 0.62, 1)
+energy = 0.0
+texture = SubResource("GradientTexture2D_light")
+
+[node name="CreatureShadow" type="Polygon2D" parent="."]
+position = Vector2(-500, 70)
+polygon = PackedVector2Array(460, 880, 610, 830, 805, 820, 1040, 850, 1210, 920, 1040, 966, 820, 983, 620, 963)
+color = Color(0.002, 0.008, 0.009, 0.82)
+modulate = Color(1, 1, 1, 0)
+
+[node name="RainParticles" type="CPUParticles2D" parent="."]
+position = Vector2(960, -40)
+amount = 250
+lifetime = 1.7
+preprocess = 2.0
+emission_shape = 3
+emission_rect_extents = Vector2(1030, 1)
+direction = Vector2(-0.3, 1)
+spread = 3.0
+gravity = Vector2(0, 170)
+initial_velocity_min = 780.0
+initial_velocity_max = 1080.0
+scale_amount_min = 1.2
+scale_amount_max = 3.0
+color = Color(0.68, 0.82, 0.84, 0.24)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="TopShade" type="ColorRect" parent="CanvasLayer"]
+offset_right = 1920.0
+offset_bottom = 190.0
+mouse_filter = 2
+color = Color(0.005, 0.009, 0.01, 0.56)
+
+[node name="LocationLabel" type="Label" parent="CanvasLayer"]
+offset_left = 68.0
+offset_top = 48.0
+offset_right = 1150.0
+offset_bottom = 92.0
+theme_override_colors/font_color = Color(0.72, 0.8, 0.78, 1)
+theme_override_font_sizes/font_size = 20
+text = "ARRECIFE DEL DIABLO · CUATRO NOCHES ANTES"
+
+[node name="UnitLabel" type="Label" parent="CanvasLayer"]
+offset_left = 68.0
+offset_top = 96.0
+offset_right = 1000.0
+offset_bottom = 145.0
+theme_override_colors/font_color = Color(0.47, 0.59, 0.58, 1)
+theme_override_font_sizes/font_size = 17
+text = "GUARDIA COSTERA · UNIDAD 317 · 01:47"
+
+[node name="DialogueShade" type="ColorRect" parent="CanvasLayer"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -285.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.006, 0.01, 0.012, 0.88)
+
+[node name="SpeakerLabel" type="Label" parent="CanvasLayer"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 90.0
+offset_top = -252.0
+offset_right = -90.0
+offset_bottom = -210.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.72, 0.61, 0.39, 1)
+theme_override_font_sizes/font_size = 20
+text = "RADIO · UNIDAD 317"
 
 [node name="TextLabel" type="RichTextLabel" parent="CanvasLayer"]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -600.0
-offset_top = -150.0
-offset_right = 600.0
-offset_bottom = 150.0
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 90.0
+offset_top = -202.0
+offset_right = -280.0
+offset_bottom = -62.0
 grow_horizontal = 2
-grow_vertical = 2
-theme_override_colors/default_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 8
-theme_override_font_sizes/normal_font_size = 32
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/default_color = Color(0.87, 0.88, 0.84, 1)
+theme_override_font_sizes/normal_font_size = 27
 bbcode_enabled = true
-text = "[center]Octubre de 1926. Boston, Massachusetts.[/center]"
+fit_content = true
+text = "Patrulla 317 a estación... entrando en el sector del arrecife."
 
 [node name="NextPrompt" type="Label" parent="CanvasLayer"]
 anchors_preset = 3
@@ -37,30 +128,40 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -450.0
-offset_top = -100.0
-offset_right = -60.0
+offset_left = -325.0
+offset_top = -92.0
+offset_right = -70.0
 offset_bottom = -50.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 22
-text = "Haz click o toca para continuar >>"
+theme_override_colors/font_color = Color(0.58, 0.68, 0.65, 1)
+theme_override_font_sizes/font_size = 17
+text = "CONTINUAR  ›"
 horizontal_alignment = 2
-vertical_alignment = 1
 
 [node name="SkipButton" type="Button" parent="CanvasLayer"]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -220.0
-offset_top = 40.0
-offset_right = -40.0
-offset_bottom = 90.0
+offset_left = -205.0
+offset_top = 42.0
+offset_right = -45.0
+offset_bottom = 88.0
 grow_horizontal = 0
-theme_override_font_sizes/font_size = 22
-text = "Omitir intro >>"
+theme_override_colors/font_color = Color(0.58, 0.64, 0.62, 1)
+theme_override_font_sizes/font_size = 17
+text = "OMITIR"
 flat = true
+
+[node name="Blackout" type="ColorRect" parent="CanvasLayer"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
 
 [connection signal="pressed" from="CanvasLayer/SkipButton" to="." method="_on_skip_pressed"]
