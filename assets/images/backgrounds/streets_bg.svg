@@ -1,74 +1,79 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
   <defs>
-    <filter id="gritty-noise">
-      <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" result="noise"/>
-      <feColorMatrix type="matrix" values="
-        0.21 0.21 0.21 0 0
-        0.21 0.21 0.21 0 0
-        0.21 0.21 0.21 0 0
-        0    0    0    0.24 0" in="noise" result="coloredNoise"/>
-      <feComposite operator="over" in="coloredNoise" in2="SourceGraphic"/>
-    </filter>
-    
-    <linearGradient id="sky-grad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#02040a"/>
-      <stop offset="100%" stop-color="#0b131f"/>
-    </linearGradient>
-    <linearGradient id="street-grad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#1e293b"/>
-      <stop offset="100%" stop-color="#090d16"/>
-    </linearGradient>
-    <linearGradient id="lamp-glow" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#fef08a"/>
-      <stop offset="100%" stop-color="#ca8a04" stop-opacity="0.2"/>
-    </linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#070c12"/><stop offset=".62" stop-color="#101b22"/><stop offset="1" stop-color="#17242a"/></linearGradient>
+    <linearGradient id="stone" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#26343a"/><stop offset="1" stop-color="#0b1115"/></linearGradient>
+    <linearGradient id="station" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#273136"/><stop offset="1" stop-color="#101519"/></linearGradient>
+    <linearGradient id="tavern" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#34241a"/><stop offset="1" stop-color="#160f0b"/></linearGradient>
+    <linearGradient id="fog" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#9ab2b8" stop-opacity="0"/><stop offset=".5" stop-color="#9ab2b8" stop-opacity=".14"/><stop offset="1" stop-color="#a9c2c7" stop-opacity=".04"/></linearGradient>
+    <radialGradient id="amber"><stop stop-color="#ffd98a" stop-opacity=".72"/><stop offset=".42" stop-color="#c27a28" stop-opacity=".18"/><stop offset="1" stop-color="#1a1916" stop-opacity="0"/></radialGradient>
+    <radialGradient id="green"><stop stop-color="#8dd0a7" stop-opacity=".55"/><stop offset=".5" stop-color="#315e45" stop-opacity=".13"/><stop offset="1" stop-color="#0b1410" stop-opacity="0"/></radialGradient>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".32" numOctaves="3" seed="11" result="n"/><feColorMatrix in="n" type="matrix" values=".12 0 0 0 0 0 .12 0 0 0 0 0 .12 0 0 0 0 0 .16 0"/><feBlend in2="SourceGraphic" mode="overlay"/></filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="25"/></filter>
   </defs>
-  
-  <g filter="url(#gritty-noise)">
-    <!-- Sky -->
-    <rect width="1920" height="1080" fill="url(#sky-grad)"/>
-    
-    <!-- Floor/Street -->
-    <rect x="0" y="800" width="1920" height="280" fill="url(#street-grad)"/>
-    <!-- Street stones (horizontal dividers) -->
-    <line x1="0" y1="800" x2="1920" y2="800" stroke="#02040a" stroke-width="8"/>
-    <ellipse cx="960" cy="940" rx="960" ry="140" fill="#162e3d" opacity="0.15"/> <!-- Wet reflection -->
-    
-    <!-- Silhouette of seaside warehouses/houses in background -->
-    <path d="M400 800 L400 450 L550 350 L700 450 L700 800 Z" fill="#070c14" opacity="0.9"/>
-    <path d="M700 800 L700 500 L850 420 L950 500 L950 800 Z" fill="#04060b" opacity="0.95"/>
-    <path d="M0 800 L0 350 L150 250 L350 400 L350 800 Z" fill="#0b1220" opacity="0.85"/>
-    
-    <!-- Fog / Sea Mist gradient -->
-    <rect x="0" y="300" width="1920" height="500" fill="url(#fog-grad)" opacity="0.2"/>
-    <defs>
-      <linearGradient id="fog-grad" x1="0" y1="1" x2="0" y2="0">
-        <stop offset="0%" stop-color="#0f172a"/>
-        <stop offset="100%" stop-color="#090d16" stop-opacity="0"/>
-      </linearGradient>
-    </defs>
-    
-    <!-- Gothic/Old Innsmouth Street Lamp -->
-    <g transform="translate(1450, 200)">
-      <!-- Lamp post -->
-      <rect x="-10" y="100" width="20" height="500" fill="#020617"/>
-      <path d="M -30 100 L 30 100 L 10 120 L -10 120 Z" fill="#020617"/>
-      <!-- Brackets -->
-      <path d="M -10 150 C -40 150 -50 120 -50 90 L -50 70 L -10 110 Z" fill="#020617"/>
-      <!-- Glass lantern housing -->
-      <path d="M -70 70 L -30 70 L -40 10 L -60 10 Z" fill="#020617"/>
-      <path d="M -60 10 L -40 10 L -50 -10 Z" fill="#020617"/>
-      <!-- Yellow/Green eerie light bulb -->
-      <circle cx="-50" cy="40" r="14" fill="#fef08a" opacity="0.9"/>
-      <!-- Glowing cone from the lamp -->
-      <polygon points="-50 40 -300 600 200 600" fill="url(#lamp-glow)" opacity="0.12"/>
+
+  <g filter="url(#grain)">
+    <rect width="1920" height="1080" fill="url(#sky)"/>
+    <!-- distant harbor skyline -->
+    <path d="M0 540L95 500L95 405L175 355L265 420L265 510L365 470L365 370L470 325L570 405L570 500L680 470L680 410L760 360L850 410L850 510L970 470L970 385L1080 335L1185 410L1185 515L1310 470L1310 350L1420 300L1540 390L1540 500L1640 450L1640 360L1750 315L1845 390L1845 520L1920 500V760H0Z" fill="#0a1014" opacity=".92"/>
+    <path d="M1340 350V180M1372 345V205M1318 213H1394" stroke="#0a0e11" stroke-width="11"/><path d="M1725 320V165M1750 315V205" stroke="#080d10" stroke-width="8"/>
+
+    <!-- police station left zone -->
+    <g transform="translate(0 305)">
+      <path d="M20 430V95L92 30H330L390 94V430Z" fill="url(#station)" stroke="#090d10" stroke-width="11"/>
+      <path d="M72 108H337M92 30V0H315V30" stroke="#0b1013" stroke-width="12"/>
+      <rect x="95" y="185" width="118" height="245" fill="#171a1b" stroke="#090b0c" stroke-width="10"/>
+      <rect x="234" y="154" width="96" height="98" fill="#162630" stroke="#090d10" stroke-width="9"/><path d="M282 154V252M234 205H330" stroke="#0c1419" stroke-width="7"/>
+      <rect x="72" y="66" width="260" height="48" fill="#151b1e" stroke="#080b0d" stroke-width="7"/><text x="202" y="98" text-anchor="middle" fill="#8f9ba0" font-size="24" font-family="serif" letter-spacing="4">POLICE</text>
     </g>
-    
-    <!-- Diagonal heavy rain lines (atmospheric background) -->
-    <line x1="100" y1="50" x2="30" y2="250" stroke="#38bdf8" stroke-width="1.5" opacity="0.2"/>
-    <line x1="500" y1="20" x2="430" y2="220" stroke="#38bdf8" stroke-width="1.5" opacity="0.2"/>
-    <line x1="900" y1="60" x2="830" y2="260" stroke="#38bdf8" stroke-width="1.5" opacity="0.2"/>
-    <line x1="1300" y1="40" x2="1230" y2="240" stroke="#38bdf8" stroke-width="1.5" opacity="0.2"/>
-    <line x1="1700" y1="30" x2="1630" y2="230" stroke="#38bdf8" stroke-width="1.5" opacity="0.2"/>
+
+    <!-- tavern center zone -->
+    <g transform="translate(445 270)">
+      <path d="M0 470V135L110 35H455L545 128V470Z" fill="url(#tavern)" stroke="#0a0908" stroke-width="12"/>
+      <path d="M62 128L130 68H430L493 128" fill="#211710" stroke="#0a0908" stroke-width="10"/>
+      <rect x="76" y="175" width="130" height="295" fill="#17100c" stroke="#080605" stroke-width="10"/>
+      <rect x="235" y="175" width="105" height="115" fill="#274131" stroke="#080806" stroke-width="8"/><rect x="364" y="175" width="105" height="115" fill="#2c4534" stroke="#080806" stroke-width="8"/>
+      <path d="M287 175V290M416 175V290" stroke="#111b15" stroke-width="7"/>
+      <rect x="146" y="94" width="300" height="54" fill="#17110d" stroke="#080605" stroke-width="7"/><text x="296" y="129" text-anchor="middle" fill="#b9985d" font-size="28" font-family="serif" letter-spacing="2">THE GOLDEN FISH</text>
+      <path d="M416 104c30-28 61 16 18 29c-43 14-61-15-18-29z" fill="#8b743d" opacity=".8"/>
+    </g>
+    <ellipse cx="760" cy="602" rx="340" ry="280" fill="url(#green)" opacity=".32" filter="url(#soft)"/>
+
+    <!-- closed fish market / social pressure zone -->
+    <g transform="translate(1040 410)">
+      <path d="M0 350V95H425V350Z" fill="#161f20" stroke="#090d0e" stroke-width="10"/>
+      <path d="M-25 108L54 25H388L455 108" fill="#182224" stroke="#090d0e" stroke-width="11"/>
+      <rect x="35" y="145" width="350" height="175" fill="#0c1213" stroke="#070a0a" stroke-width="8"/>
+      <path d="M55 155v155M125 155v155M195 155v155M265 155v155M335 155v155" stroke="#293335" stroke-width="8"/>
+      <rect x="52" y="82" width="320" height="48" fill="#111719" stroke="#070a0a" stroke-width="6"/><text x="212" y="114" text-anchor="middle" fill="#68777a" font-size="24" font-family="serif">MARSH STREET FISH</text>
+      <path d="M90 260c46-44 95-6 46 26c-49 32-92 2-46-26zM250 235c38-30 76 4 39 29c-38 26-77 0-39-29z" fill="#273234" opacity=".8"/>
+    </g>
+
+    <!-- harbor board and descent to docks -->
+    <g transform="translate(1505 425)">
+      <path d="M0 345V112H104V345Z" fill="#1a1712" stroke="#090806" stroke-width="9"/>
+      <rect x="-76" y="55" width="260" height="155" fill="#3c3427" stroke="#0b0907" stroke-width="9"/>
+      <rect x="-58" y="72" width="224" height="120" fill="#b9aa86" opacity=".72"/>
+      <path d="M-40 95h178M-40 116h132M-40 142h165M-40 163h110" stroke="#4e493e" stroke-width="5"/>
+      <path d="M168 240L354 335L330 395L145 295Z" fill="#171819" stroke="#08090a" stroke-width="8"/>
+      <path d="M200 286l88 44" stroke="#788c8f" stroke-width="6"/>
+    </g>
+
+    <!-- lamps -->
+    <g transform="translate(960 260)"><path d="M0 530V76" stroke="#080b0c" stroke-width="18"/><path d="M0 84c0-47 38-73 83-73" fill="none" stroke="#080b0c" stroke-width="15"/><path d="M58 12h67l-8 72H66Z" fill="#1a1914" stroke="#080807" stroke-width="9"/><circle cx="92" cy="47" r="18" fill="#e5b85c"/><ellipse cx="92" cy="62" rx="210" ry="260" fill="url(#amber)" opacity=".55" filter="url(#soft)"/></g>
+    <g transform="translate(1480 350) scale(.8)"><path d="M0 500V75" stroke="#080b0c" stroke-width="18"/><path d="M0 84c0-47 38-73 83-73" fill="none" stroke="#080b0c" stroke-width="15"/><path d="M58 12h67l-8 72H66Z" fill="#1a1914" stroke="#080807" stroke-width="9"/><circle cx="92" cy="47" r="18" fill="#d9b357"/></g>
+
+    <!-- wet street -->
+    <path d="M0 720H1920V1080H0Z" fill="url(#stone)"/>
+    <path d="M0 720H1920" stroke="#090e11" stroke-width="13"/>
+    <path d="M0 820H1920M0 925H1920M0 1030H1920" stroke="#111a1e" stroke-width="5"/>
+    <path d="M100 720L0 1080M390 720L295 1080M720 720L680 1080M1040 720L1100 1080M1370 720L1500 1080M1690 720L1890 1080" stroke="#11191c" stroke-width="4"/>
+    <ellipse cx="980" cy="830" rx="250" ry="45" fill="#b78a45" opacity=".08"/><ellipse cx="1490" cy="900" rx="220" ry="36" fill="#6f9aa0" opacity=".08"/>
+
+    <!-- drain / harbor direction -->
+    <path d="M1500 770l390 0v90l-390 0z" fill="#10181b" opacity=".72"/><path d="M1530 790h320M1550 816h280M1570 842h240" stroke="#394a4e" stroke-width="5" opacity=".45"/>
+    <rect x="0" y="540" width="1920" height="360" fill="url(#fog)"/>
+
+    <!-- foreground rain streaks painted into backdrop -->
+    <g stroke="#b7d6de" stroke-width="3" opacity=".16"><path d="M90 40l-72 205M330 5l-70 202M575 65l-67 194M820 20l-69 201M1090 30l-70 205M1350 10l-72 205M1605 48l-69 200M1850 3l-69 202"/></g>
   </g>
 </svg>
