@@ -1,29 +1,13 @@
-[gd_scene load_steps=23 format=3 uid="uid://df72streetsb8b"]
+[gd_scene load_steps=12 format=3 uid="uid://df72streetsb8b"]
 
 [ext_resource type="Script" path="res://src/rooms/room_02_streets/room_02_streets.gd" id="1_script"]
 [ext_resource type="Script" path="res://src/rooms/player.gd" id="2_player"]
 [ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="3_hotspot"]
-[ext_resource type="Texture2D" uid="uid://qxvsmk1kflna" path="res://assets/images/backgrounds/streets_bg.svg" id="4_bg"]
-[ext_resource type="Texture2D" uid="uid://door_tex" path="res://assets/images/ui/door.svg" id="5_door"]
-[ext_resource type="Texture2D" uid="uid://house_b_tex" path="res://assets/images/props/house-b.png" id="6_house_b"]
-[ext_resource type="Texture2D" uid="uid://oldman_idle_1" path="res://assets/images/characters/fisherman/idle/oldman-idle-1.png" id="7_oldman"]
-[ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="8_flicker"]
-[ext_resource type="Texture2D" uid="uid://street_lamp_prop_tex" path="res://assets/images/props/street-lamp.png" id="9_lamp_prop"]
-[ext_resource type="AudioStream" uid="uid://gothic_music" path="res://assets/audio/music/gothic_village.ogg" id="10_music"]
-[ext_resource type="Texture2D" path="res://assets/images/props/sign.png" id="11_sign"]
-
-[ext_resource type="Texture2D" uid="uid://inspect_idle_1" path="res://assets/images/characters/inspector/idle/hat-man-idle-1.png" id="12_i1"]
-[ext_resource type="Texture2D" uid="uid://inspect_idle_2" path="res://assets/images/characters/inspector/idle/hat-man-idle-2.png" id="13_i2"]
-[ext_resource type="Texture2D" uid="uid://inspect_idle_3" path="res://assets/images/characters/inspector/idle/hat-man-idle-3.png" id="14_i3"]
-[ext_resource type="Texture2D" uid="uid://inspect_idle_4" path="res://assets/images/characters/inspector/idle/hat-man-idle-4.png" id="15_i4"]
-
-[ext_resource type="Texture2D" uid="uid://inspect_walk_1" path="res://assets/images/characters/inspector/walk/hat-man-walk-1.png" id="16_w1"]
-[ext_resource type="Texture2D" uid="uid://inspect_walk_2" path="res://assets/images/characters/inspector/walk/hat-man-walk-2.png" id="17_w2"]
-[ext_resource type="Texture2D" uid="uid://inspect_walk_3" path="res://assets/images/characters/inspector/walk/hat-man-walk-3.png" id="18_w3"]
-[ext_resource type="Texture2D" uid="uid://inspect_walk_4" path="res://assets/images/characters/inspector/walk/hat-man-walk-4.png" id="19_w4"]
-[ext_resource type="Texture2D" uid="uid://inspect_walk_5" path="res://assets/images/characters/inspector/walk/hat-man-walk-5.png" id="20_w5"]
-[ext_resource type="Texture2D" uid="uid://inspect_walk_6" path="res://assets/images/characters/inspector/walk/hat-man-walk-6.png" id="21_w6"]
-[ext_resource type="Shader" path="res://src/common/shaders/wet_floor_reflection.gdshader" id="24_reflection_shader"]
+[ext_resource type="Texture2D" path="res://assets/images/backgrounds/streets_bg.svg" id="4_bg"]
+[ext_resource type="Texture2D" uid="uid://oldman_idle_1" path="res://assets/images/characters/fisherman/idle/oldman-idle-1.png" id="5_oldman"]
+[ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="6_flicker"]
+[ext_resource type="AudioStream" uid="uid://gothic_music" path="res://assets/audio/music/gothic_village.ogg" id="7_music"]
+[ext_resource type="Shader" path="res://src/common/shaders/wet_floor_reflection.gdshader" id="8_reflection_shader"]
 
 [sub_resource type="Environment" id="Environment_streets"]
 background_mode = 3
@@ -31,11 +15,9 @@ glow_enabled = true
 glow_levels/1 = 1.0
 glow_levels/2 = 1.0
 glow_levels/3 = 1.0
-glow_levels/5 = 1.0
-glow_intensity = 1.1
-glow_strength = 1.0
-glow_bloom = 0.22
-glow_blend_mode = 0
+glow_intensity = 0.92
+glow_strength = 0.86
+glow_bloom = 0.15
 
 [sub_resource type="Gradient" id="Gradient_light"]
 colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0)
@@ -49,36 +31,28 @@ fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_reflection"]
-shader = ExtResource("24_reflection_shader")
-shader_parameter/horizon_y = 0.7407
-shader_parameter/reflection_strength = 0.35
-shader_parameter/distortion_strength = 0.003
-shader_parameter/wave_speed = 4.0
-shader_parameter/wave_frequency = 45.0
-shader_parameter/wet_tint = Color(0.05, 0.08, 0.15, 1.0)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_doorback"]
-polygon = PackedVector2Array(100, 780, 300, 780, 300, 800, 100, 800)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_tavern"]
-polygon = PackedVector2Array(600, 780, 800, 780, 800, 800, 600, 800)
-
-[sub_resource type="OccluderPolygon2D" id="OccluderPolygon2D_fisherman"]
-polygon = PackedVector2Array(1180, 780, 1220, 780, 1220, 800, 1180, 800)
+shader = ExtResource("8_reflection_shader")
+shader_parameter/horizon_y = 0.666
+shader_parameter/reflection_strength = 0.22
+shader_parameter/distortion_strength = 0.0025
+shader_parameter/wave_speed = 3.1
+shader_parameter/wave_frequency = 38.0
+shader_parameter/wet_tint = Color(0.045, 0.07, 0.085, 1)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
-size = Vector2(80, 200)
+size = Vector2(72, 180)
 
 [node name="Room_Streets" type="Node2D"]
 script = ExtResource("1_script")
-room_name = "Calles Lluviosas de Innsmouth"
-music_theme = ExtResource("10_music")
+room_name = "Marsh Street · Innsmouth"
+music_theme = ExtResource("7_music")
+ambience_profile = "streets"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_streets")
 
 [node name="CanvasModulate" type="CanvasModulate" parent="."]
-color = Color(0.180392, 0.219608, 0.27451, 1)
+color = Color(0.58, 0.65, 0.68, 1)
 
 [node name="Background" type="Sprite2D" parent="."]
 texture_filter = 1
@@ -87,163 +61,151 @@ texture = ExtResource("4_bg")
 
 [node name="WetReflection" type="ColorRect" parent="."]
 material = SubResource("ShaderMaterial_reflection")
-offset_top = 800.0
+offset_top = 720.0
 offset_right = 1920.0
 offset_bottom = 1080.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0)
 
-[node name="StreetLampProp" type="Sprite2D" parent="."]
-texture_filter = 1
-position = Vector2(1300, 600)
-scale = Vector2(3.5, 3.5)
-texture = ExtResource("9_lamp_prop")
-
-[node name="StreetLampLight" type="PointLight2D" parent="StreetLampProp"]
-position = Vector2(0, -60)
-scale = Vector2(1.2, 1.2)
-color = Color(0.996078, 0.890196, 0.545098, 1)
-energy = 1.8
-shadow_enabled = true
+[node name="TavernLight" type="PointLight2D" parent="."]
+position = Vector2(755, 590)
+scale = Vector2(1.5, 1.45)
+color = Color(0.45, 0.78, 0.57, 1)
+energy = 0.86
 texture = SubResource("GradientTexture2D_light")
-script = ExtResource("8_flicker")
-min_energy = 0.9
-max_energy = 1.6
-speed = 10.0
+script = ExtResource("6_flicker")
+min_energy = 0.65
+max_energy = 0.9
+speed = 3.0
+
+[node name="StreetLight" type="PointLight2D" parent="."]
+position = Vector2(1040, 465)
+scale = Vector2(1.65, 1.8)
+color = Color(0.96, 0.73, 0.38, 1)
+energy = 0.84
+texture = SubResource("GradientTexture2D_light")
+script = ExtResource("6_flicker")
+min_energy = 0.62
+max_energy = 0.9
+speed = 5.0
 
 [node name="HotspotsLayer" type="Node2D" parent="."]
 
 [node name="DoorBack" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("3_hotspot")
-hotspot_name = "Puerta del Despacho"
+hotspot_name = "Estación de policía"
 walk_to_point = NodePath("WalkToPoint")
-
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/DoorBack"]
-polygon = PackedVector2Array(100, 450, 300, 450, 300, 800, 100, 800)
-
+polygon = PackedVector2Array(70, 465, 250, 465, 250, 770, 70, 770)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/DoorBack"]
-position = Vector2(200, 750)
-
-[node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/DoorBack"]
-texture_filter = 1
-position = Vector2(200, 600)
-scale = Vector2(3.0, 3.0)
-texture = ExtResource("5_door")
-
-[node name="LightOccluder2D" type="LightOccluder2D" parent="HotspotsLayer/DoorBack"]
-occluder = SubResource("OccluderPolygon2D_doorback")
+position = Vector2(175, 805)
 
 [node name="TavernDoor" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("3_hotspot")
-hotspot_name = "Taberna 'El Pez Dorado'"
+hotspot_name = "El Pez Dorado"
 walk_to_point = NodePath("WalkToPoint")
-
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/TavernDoor"]
-polygon = PackedVector2Array(600, 450, 800, 450, 800, 800, 600, 800)
-
+polygon = PackedVector2Array(500, 420, 685, 420, 685, 775, 500, 775)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/TavernDoor"]
-position = Vector2(700, 750)
-
-[node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/TavernDoor"]
-texture_filter = 1
-position = Vector2(700, 600)
-scale = Vector2(3.0, 3.0)
-texture = ExtResource("6_house_b")
-
-[node name="LightOccluder2D" type="LightOccluder2D" parent="HotspotsLayer/TavernDoor"]
-occluder = SubResource("OccluderPolygon2D_tavern")
+position = Vector2(600, 810)
 
 [node name="Fisherman" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("3_hotspot")
-hotspot_name = "Pescador Sombrío"
+hotspot_name = "Silas, pescador"
 walk_to_point = NodePath("WalkToPoint")
-
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Fisherman"]
-polygon = PackedVector2Array(1150, 600, 1250, 600, 1250, 800, 1150, 800)
-
+polygon = PackedVector2Array(885, 575, 1015, 575, 1015, 835, 885, 835)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Fisherman"]
-position = Vector2(1100, 750)
-
+position = Vector2(875, 820)
 [node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/Fisherman"]
 texture_filter = 1
-position = Vector2(1200, 715)
-scale = Vector2(4.0, 4.0)
-texture = ExtResource("7_oldman")
+position = Vector2(955, 745)
+scale = Vector2(4, 4)
+texture = ExtResource("5_oldman")
 
-[node name="LightOccluder2D" type="LightOccluder2D" parent="HotspotsLayer/Fisherman"]
-occluder = SubResource("OccluderPolygon2D_fisherman")
+[node name="FishMarket" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
+script = ExtResource("3_hotspot")
+hotspot_name = "Mercado de pescado cerrado"
+walk_to_point = NodePath("WalkToPoint")
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/FishMarket"]
+polygon = PackedVector2Array(1030, 465, 1465, 465, 1465, 775, 1030, 775)
+[node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/FishMarket"]
+position = Vector2(1240, 820)
+
+[node name="HarborNotice" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
+script = ExtResource("3_hotspot")
+hotspot_name = "Tablón de avisos del puerto"
+walk_to_point = NodePath("WalkToPoint")
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/HarborNotice"]
+polygon = PackedVector2Array(1430, 460, 1700, 460, 1700, 665, 1430, 665)
+[node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/HarborNotice"]
+position = Vector2(1530, 800)
 
 [node name="DockPath" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("3_hotspot")
-hotspot_name = "Bajada hacia los Muelles"
+hotspot_name = "Bajada a los muelles"
 walk_to_point = NodePath("WalkToPoint")
-
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/DockPath"]
-polygon = PackedVector2Array(1660, 480, 1915, 480, 1915, 830, 1660, 830)
-
+polygon = PackedVector2Array(1660, 625, 1920, 625, 1920, 910, 1660, 910)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/DockPath"]
-position = Vector2(1750, 750)
-
-[node name="Sprite2D" type="Sprite2D" parent="HotspotsLayer/DockPath"]
-texture_filter = 1
-position = Vector2(1780, 675)
-scale = Vector2(2.8, 2.8)
-texture = ExtResource("11_sign")
-modulate = Color(0.52, 0.58, 0.55, 0.85)
+position = Vector2(1770, 830)
 
 [node name="CharactersLayer" type="Node2D" parent="."]
-
+y_sort_enabled = true
 [node name="Player" type="CharacterBody2D" parent="CharactersLayer"]
-position = Vector2(1550, 650)
+position = Vector2(1550, 790)
 script = ExtResource("2_player")
-idle_textures = Array[Texture2D]([])
-walk_textures = Array[Texture2D]([])
-
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CharactersLayer/Player"]
 shape = SubResource("RectangleShape2D_player")
-
 [node name="Sprite2D" type="Sprite2D" parent="CharactersLayer/Player"]
 texture_filter = 1
 position = Vector2(0, 30)
-
 [node name="LanternLight" type="PointLight2D" parent="CharactersLayer/Player"]
-position = Vector2(0, 30)
-scale = Vector2(1.5, 1.5)
-color = Color(0.996078, 0.941176, 0.854902, 1)
-energy = 0.7
+position = Vector2(0, 28)
+scale = Vector2(1.35, 1.35)
+color = Color(0.96, 0.86, 0.67, 1)
+energy = 0.54
 shadow_enabled = true
 texture = SubResource("GradientTexture2D_light")
 
-[node name="DetectiveLabel" type="Label" parent="CharactersLayer/Player"]
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -80.0
-offset_top = -140.0
-offset_right = 80.0
-offset_bottom = -110.0
-grow_horizontal = 2
-text = "Inspector (Player)"
-horizontal_alignment = 1
-vertical_alignment = 1
-
 [node name="ForegroundLayer" type="Node2D" parent="."]
+[node name="ThreatWatcher" type="Polygon2D" parent="ForegroundLayer"]
+visible = false
+position = Vector2(1390, 535)
+polygon = PackedVector2Array(-22, 92, -17, 25, -10, -3, 0, -18, 12, -4, 19, 29, 23, 93, 8, 112, -10, 112)
+color = Color(0.02, 0.027, 0.027, 0.9)
 
 [node name="RainParticles" type="CPUParticles2D" parent="ForegroundLayer"]
-position = Vector2(960, -50)
-amount = 220
-lifetime = 1.8
+position = Vector2(960, -40)
+amount = 260
+lifetime = 1.75
 preprocess = 2.0
 emission_shape = 3
-emission_rect_extents = Vector2(1000, 1)
-direction = Vector2(-0.35, 1.0)
-spread = 3.0
-gravity = Vector2(0, 150)
-initial_velocity_min = 800.0
-initial_velocity_max = 1100.0
-scale_amount_min = 1.5
-scale_amount_max = 3.5
-color = Color(0.6, 0.85, 1.0, 0.3)
+emission_rect_extents = Vector2(1030, 1)
+direction = Vector2(-0.28, 1)
+spread = 4.0
+gravity = Vector2(0, 170)
+initial_velocity_min = 760.0
+initial_velocity_max = 1040.0
+scale_amount_min = 1.2
+scale_amount_max = 3.0
+color = Color(0.68, 0.82, 0.87, 0.25)
+
+[node name="MistParticles" type="CPUParticles2D" parent="ForegroundLayer"]
+position = Vector2(960, 720)
+amount = 20
+lifetime = 9.0
+preprocess = 8.0
+emission_shape = 3
+emission_rect_extents = Vector2(980, 80)
+direction = Vector2(1, 0)
+spread = 12.0
+gravity = Vector2(0, -2)
+initial_velocity_min = 8.0
+initial_velocity_max = 24.0
+scale_amount_min = 12.0
+scale_amount_max = 28.0
+color = Color(0.58, 0.68, 0.7, 0.045)
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 layer = 10
