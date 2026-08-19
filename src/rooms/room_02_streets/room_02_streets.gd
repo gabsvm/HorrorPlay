@@ -11,6 +11,8 @@ extends Room
 @onready var threat_watcher: Polygon2D = $ForegroundLayer/ThreatWatcher
 
 func _ready() -> void:
+	footstep_surface = "stone"
+	walk_bounds = Rect2(30, 720, 1860, 310)
 	super._ready()
 	GameState.set_var("player_location", "streets")
 	door_back.interacted.connect(_on_door_back_interacted)
@@ -124,7 +126,6 @@ func _on_fisherman_interacted(verb: String) -> void:
 			"—Buscá el número [color=#ca8a04]317[/color]. Y si encontrás algo que parezca haber venido del agua... no lo lleves de vuelta al pueblo."
 		], "Pescador Sombrío")
 		return
-	
 	if GameState.get_flag("has_read_necronomicon"):
 		var first_interview = not GameState.get_flag("fisherman_met")
 		if first_interview:
@@ -140,7 +141,6 @@ func _on_fisherman_interacted(verb: String) -> void:
 		else:
 			DialogueManager.show_dialogue(["Barnaby tiene la llave. Yo ya dije demasiado."], "Pescador Sombrío")
 		return
-	
 	if Investigation.has_evidence("coast_guard_reports"):
 		DialogueManager.show_choices(
 			"El viejo evita mi mirada. Quizá pueda hacerlo hablar sin mostrarle todavía el diario.",
