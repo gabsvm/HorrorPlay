@@ -4,6 +4,7 @@ extends Node2D
 
 @export var room_name: String = "Unnamed Room"
 @export var music_theme: AudioStream
+@export var suppress_music: bool = false
 @export var ambience_profile: String = ""
 @export var footstep_surface: String = "wood"
 @export var walk_bounds: Rect2 = Rect2(40, 690, 1840, 320)
@@ -11,7 +12,9 @@ extends Node2D
 
 func _ready() -> void:
 	SceneRouter.current_room = self
-	if music_theme:
+	if suppress_music:
+		AudioBus.stop_music(1.0)
+	elif music_theme:
 		AudioBus.play_music(music_theme)
 	AudioBus.play_ambience(ambience_profile)
 	var ui_layer = get_node_or_null("UILayer")
