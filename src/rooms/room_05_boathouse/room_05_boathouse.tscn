@@ -130,6 +130,12 @@ shadow_enabled = true
 texture = SubResource("GradientTexture2D_light")
 
 [node name="ForegroundLayer" type="Node2D" parent="."]
+[node name="IntruderShadow" type="Polygon2D" parent="ForegroundLayer"]
+visible = false
+position = Vector2(25, 0)
+polygon = PackedVector2Array(120, 760, 128, 552, 144, 470, 171, 430, 199, 467, 214, 557, 222, 760, 207, 817, 182, 800, 170, 675, 157, 800, 133, 816)
+color = Color(0.015, 0.025, 0.024, 0.94)
+modulate = Color(1, 1, 1, 0)
 [node name="DustParticles" type="CPUParticles2D" parent="ForegroundLayer"]
 position = Vector2(960, 520)
 amount = 55
