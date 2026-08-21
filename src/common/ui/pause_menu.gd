@@ -23,6 +23,21 @@ func _exit_tree() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("ui_cancel"):
 		return
+
+	var inventory_menu = _get_inventory_menu()
+	if inventory_menu and inventory_menu.visible:
+		get_viewport().set_input_as_handled()
+		if inventory_menu.has_method("close_menu"):
+			inventory_menu.close_menu()
+		return
+
+	# Esc first cancels an armed inventory item. A second Esc opens Pause. This
+	# prevents item-use mode from unexpectedly becoming a pause action.
+	if Inventory.active_item:
+		get_viewport().set_input_as_handled()
+		Inventory.set_active_item(null)
+		return
+
 	get_viewport().set_input_as_handled()
 	var casebook = _get_casebook()
 	if casebook and casebook.visible:
@@ -37,9 +52,14 @@ func _unhandled_input(event: InputEvent) -> void:
 func open_menu() -> void:
 	if visible or DialogueManager.current_balloon:
 		return
+	var inventory_menu = _get_inventory_menu()
+	if inventory_menu and inventory_menu.visible:
+		return
 	var casebook = _get_casebook()
 	if casebook and casebook.visible:
 		return
+	if Inventory.active_item:
+		Inventory.set_active_item(null)
 	visible = true
 	status_label.text = ""
 	_refresh_state()
@@ -57,6 +77,12 @@ func _get_casebook() -> CanvasItem:
 	var parent_node = get_parent()
 	if parent_node:
 		return parent_node.get_node_or_null("CasebookBackdrop") as CanvasItem
+	return null
+
+func _get_inventory_menu():
+	var parent_node = get_parent()
+	if parent_node:
+		return parent_node.get_node_or_null("InventoryMenu")
 	return null
 
 func _refresh_state() -> void:
