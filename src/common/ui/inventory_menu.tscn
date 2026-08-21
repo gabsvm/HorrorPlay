@@ -1,0 +1,220 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/common/ui/inventory_menu.gd" id="1_script"]
+
+[node name="InventoryMenu" type="Control"]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.004, 0.007, 0.01, 0.93)
+
+[node name="InventoryPanel" type="Panel" parent="Backdrop"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -760.0
+offset_top = -410.0
+offset_right = 760.0
+offset_bottom = 410.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Eyebrow" type="Label" parent="Backdrop/InventoryPanel"]
+layout_mode = 0
+offset_left = 52.0
+offset_top = 34.0
+offset_right = 720.0
+offset_bottom = 62.0
+theme_override_colors/font_color = Color(0.58, 0.66, 0.63, 1)
+theme_override_font_sizes/font_size = 14
+text = "EXPEDIENTE 47-B · EQUIPO DEL INVESTIGADOR"
+
+[node name="Title" type="Label" parent="Backdrop/InventoryPanel"]
+layout_mode = 0
+offset_left = 50.0
+offset_top = 65.0
+offset_right = 700.0
+offset_bottom = 118.0
+theme_override_colors/font_color = Color(0.9, 0.87, 0.78, 1)
+theme_override_font_sizes/font_size = 38
+text = "INVENTARIO"
+
+[node name="Divider" type="HSeparator" parent="Backdrop/InventoryPanel"]
+layout_mode = 0
+offset_left = 50.0
+offset_top = 132.0
+offset_right = 1470.0
+offset_bottom = 136.0
+
+[node name="ItemsSection" type="VBoxContainer" parent="Backdrop/InventoryPanel"]
+layout_mode = 0
+offset_left = 50.0
+offset_top = 164.0
+offset_right = 520.0
+offset_bottom = 748.0
+theme_override_constants/separation = 12
+
+[node name="SectionTitle" type="Label" parent="Backdrop/InventoryPanel/ItemsSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.57, 0.32, 1)
+theme_override_font_sizes/font_size = 16
+text = "OBJETOS DE CAMPO"
+
+[node name="ItemsScroll" type="ScrollContainer" parent="Backdrop/InventoryPanel/ItemsSection"]
+custom_minimum_size = Vector2(0, 510)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="ItemsList" type="VBoxContainer" parent="Backdrop/InventoryPanel/ItemsSection/ItemsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="EmptyLabel" type="Label" parent="Backdrop/InventoryPanel/ItemsSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.52, 0.53, 0.51, 1)
+theme_override_font_sizes/font_size = 17
+text = "No llevás objetos de campo."
+autowrap_mode = 2
+
+[node name="VerticalDivider" type="VSeparator" parent="Backdrop/InventoryPanel"]
+layout_mode = 0
+offset_left = 548.0
+offset_top = 164.0
+offset_right = 552.0
+offset_bottom = 750.0
+
+[node name="DetailSection" type="Control" parent="Backdrop/InventoryPanel"]
+layout_mode = 0
+offset_left = 590.0
+offset_top = 164.0
+offset_right = 1470.0
+offset_bottom = 750.0
+
+[node name="ItemIcon" type="TextureRect" parent="Backdrop/InventoryPanel/DetailSection"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 300.0
+offset_bottom = 300.0
+texture_filter = 1
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ItemMeta" type="Label" parent="Backdrop/InventoryPanel/DetailSection"]
+layout_mode = 0
+offset_left = 340.0
+offset_top = 8.0
+offset_right = 840.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(0.52, 0.63, 0.6, 1)
+theme_override_font_sizes/font_size = 14
+text = "INVENTARIO DE CAMPO"
+
+[node name="ItemName" type="Label" parent="Backdrop/InventoryPanel/DetailSection"]
+layout_mode = 0
+offset_left = 338.0
+offset_top = 48.0
+offset_right = 840.0
+offset_bottom = 104.0
+theme_override_colors/font_color = Color(0.9, 0.85, 0.72, 1)
+theme_override_font_sizes/font_size = 30
+text = "SIN OBJETO SELECCIONADO"
+autowrap_mode = 2
+
+[node name="DescriptionHeading" type="Label" parent="Backdrop/InventoryPanel/DetailSection"]
+layout_mode = 0
+offset_left = 338.0
+offset_top = 138.0
+offset_right = 700.0
+offset_bottom = 170.0
+theme_override_colors/font_color = Color(0.69, 0.55, 0.31, 1)
+theme_override_font_sizes/font_size = 14
+text = "OBSERVACIONES"
+
+[node name="ItemDescription" type="Label" parent="Backdrop/InventoryPanel/DetailSection"]
+layout_mode = 0
+offset_left = 338.0
+offset_top = 178.0
+offset_right = 840.0
+offset_bottom = 320.0
+theme_override_colors/font_color = Color(0.79, 0.8, 0.76, 1)
+theme_override_font_sizes/font_size = 18
+text = "Los objetos recogidos durante la investigación aparecerán aquí."
+autowrap_mode = 2
+
+[node name="Rule" type="HSeparator" parent="Backdrop/InventoryPanel/DetailSection"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 354.0
+offset_right = 840.0
+offset_bottom = 358.0
+
+[node name="HintLabel" type="Label" parent="Backdrop/InventoryPanel/DetailSection"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 382.0
+offset_right = 840.0
+offset_bottom = 450.0
+theme_override_colors/font_color = Color(0.55, 0.58, 0.56, 1)
+theme_override_font_sizes/font_size = 16
+text = ""
+autowrap_mode = 2
+
+[node name="Actions" type="HBoxContainer" parent="Backdrop/InventoryPanel/DetailSection"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 480.0
+offset_right = 840.0
+offset_bottom = 544.0
+theme_override_constants/separation = 14
+
+[node name="UseButton" type="Button" parent="Backdrop/InventoryPanel/DetailSection/Actions"]
+custom_minimum_size = Vector2(265, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 19
+text = "USAR"
+
+[node name="ExamineButton" type="Button" parent="Backdrop/InventoryPanel/DetailSection/Actions"]
+custom_minimum_size = Vector2(265, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 19
+text = "EXAMINAR"
+
+[node name="CloseButton" type="Button" parent="Backdrop/InventoryPanel/DetailSection/Actions"]
+custom_minimum_size = Vector2(265, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 19
+text = "CERRAR"
+
+[node name="Footer" type="Label" parent="Backdrop/InventoryPanel"]
+layout_mode = 0
+offset_left = 52.0
+offset_top = 770.0
+offset_right = 1468.0
+offset_bottom = 800.0
+theme_override_colors/font_color = Color(0.43, 0.46, 0.45, 1)
+theme_override_font_sizes/font_size = 13
+text = "Seleccioná un objeto y preparalo con USAR. El inspector caminará automáticamente hasta el punto de interacción."
+
+[connection signal="pressed" from="Backdrop/InventoryPanel/DetailSection/Actions/UseButton" to="." method="_on_use_pressed"]
+[connection signal="pressed" from="Backdrop/InventoryPanel/DetailSection/Actions/ExamineButton" to="." method="_on_examine_pressed"]
+[connection signal="pressed" from="Backdrop/InventoryPanel/DetailSection/Actions/CloseButton" to="." method="_on_close_pressed"]
