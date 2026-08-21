@@ -60,9 +60,6 @@ func _on_interaction_requested(action_type: String, viewport_pos: Vector2) -> vo
 		_show_item_use_hint("No hay ningún objeto interactuable en ese punto.")
 
 func _viewport_to_world(viewport_pos: Vector2) -> Vector2:
-	# Mouse/touch arrive in viewport coordinates. Convert through the canvas
-	# transform before comparing them against authored 2D hotspot geometry.
-	# This keeps hit-testing correct with stretch, resized windows and fullscreen.
 	return get_viewport().get_canvas_transform().affine_inverse() * viewport_pos
 
 func _clamp_floor_target(pos: Vector2) -> Vector2:
@@ -81,14 +78,12 @@ func _walk_and_execute(hotspot: Hotspot, verb: String) -> void:
 		await player.walk_to(hotspot.walk_to_point.global_position)
 		InputController.block_input(false)
 
-	# Inventory use is an explicit mode: after pressing USAR, the next target is
-	# resolved only once the inspector has walked to its interaction marker.
 	if armed_item != null and verb == "interact":
 		if hotspot.required_item == null:
 			_show_item_use_hint("%s no parece tener ningún uso en %s." % [armed_item.name, hotspot.hotspot_name])
 			return
 
-		var correct_item = hotspot.required_item == armed_item
+		var correct_item = hotspot.accepts_item(armed_item)
 		hotspot.execute_interaction("use_item")
 		if correct_item and Inventory.active_item == armed_item:
 			Inventory.set_active_item(null)
