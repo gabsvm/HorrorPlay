@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://df71hudb83c7"]
+[gd_scene load_steps=7 format=3 uid="uid://df71hudb83c7"]
 
 [ext_resource type="Script" path="res://src/common/ui/ui_hud.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://src/common/ui/pause_menu.tscn" id="2_pause"]
+[ext_resource type="PackedScene" path="res://src/common/ui/inventory_menu.tscn" id="3_inventory"]
 
 [sub_resource type="Gradient" id="Gradient_vignette"]
 colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 0.95)
@@ -64,10 +65,10 @@ show_percentage = false
 layout_mode = 0
 offset_left = 535.0
 offset_top = 12.0
-offset_right = 1190.0
+offset_right = 1115.0
 offset_bottom = 68.0
 theme_override_colors/font_color = Color(0.82, 0.78, 0.67, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 17
 text = "CASO — Revisar el expediente y preparar la salida hacia Innsmouth."
 autowrap_mode = 2
 vertical_alignment = 1
@@ -78,27 +79,32 @@ anchors_preset = 11
 anchor_left = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -610.0
+offset_left = -785.0
 offset_top = 15.0
 offset_right = -30.0
 offset_bottom = -15.0
 grow_horizontal = 0
 grow_vertical = 2
-theme_override_constants/separation = 15
+theme_override_constants/separation = 12
 alignment = 2
 
-[node name="CaseButton" type="Button" parent="TopBar/ButtonContainer"]
+[node name="InventoryButton" type="Button" parent="TopBar/ButtonContainer"]
 custom_minimum_size = Vector2(165, 0)
+layout_mode = 2
+text = "Inventario"
+
+[node name="CaseButton" type="Button" parent="TopBar/ButtonContainer"]
+custom_minimum_size = Vector2(155, 0)
 layout_mode = 2
 text = "Expediente"
 
 [node name="RevealButton" type="Button" parent="TopBar/ButtonContainer"]
-custom_minimum_size = Vector2(145, 0)
+custom_minimum_size = Vector2(135, 0)
 layout_mode = 2
 text = "Revelar"
 
 [node name="PauseButton" type="Button" parent="TopBar/ButtonContainer"]
-custom_minimum_size = Vector2(125, 0)
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 text = "Pausa"
 
@@ -107,56 +113,62 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -600.0
-offset_top = 110.0
-offset_right = 600.0
-offset_bottom = 160.0
+offset_left = -620.0
+offset_top = 102.0
+offset_right = 620.0
+offset_bottom = 154.0
 grow_horizontal = 2
 mouse_filter = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 25
 text = ""
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="InventoryPanel" type="Panel" parent="."]
+[node name="UseModeBar" type="Panel" parent="."]
+visible = false
 layout_mode = 1
-anchors_preset = 12
+anchors_preset = 7
+anchor_left = 0.5
 anchor_top = 1.0
-anchor_right = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
-offset_top = -140.0
+offset_left = -430.0
+offset_top = -104.0
+offset_right = 430.0
+offset_bottom = -28.0
 grow_horizontal = 2
 grow_vertical = 0
 
-[node name="ActiveItemLabel" type="Label" parent="InventoryPanel"]
+[node name="Kicker" type="Label" parent="UseModeBar"]
 layout_mode = 0
-offset_left = 30.0
-offset_top = 50.0
-offset_right = 250.0
-offset_bottom = 90.0
-theme_override_font_sizes/font_size = 20
-text = "Sin selección"
-vertical_alignment = 1
+offset_left = 22.0
+offset_top = 12.0
+offset_right = 180.0
+offset_bottom = 34.0
+theme_override_colors/font_color = Color(0.74, 0.6, 0.34, 1)
+theme_override_font_sizes/font_size = 12
+text = "OBJETO PREPARADO"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="InventoryPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 300.0
-offset_top = 20.0
-offset_right = -30.0
-offset_bottom = -20.0
-grow_horizontal = 2
-grow_vertical = 2
-vertical_scroll_mode = 0
+[node name="ItemLabel" type="Label" parent="UseModeBar"]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 34.0
+offset_right = 560.0
+offset_bottom = 62.0
+theme_override_colors/font_color = Color(0.9, 0.88, 0.8, 1)
+theme_override_font_sizes/font_size = 17
+text = "Llave Oxidada · Tocá dónde querés usarla"
 
-[node name="SlotsContainer" type="HBoxContainer" parent="InventoryPanel/ScrollContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 20
+[node name="CancelUseButton" type="Button" parent="UseModeBar"]
+layout_mode = 0
+offset_left = 650.0
+offset_top = 14.0
+offset_right = 835.0
+offset_bottom = 62.0
+theme_override_font_sizes/font_size = 15
+text = "Cancelar"
 
 [node name="CasebookBackdrop" type="ColorRect" parent="."]
 visible = false
@@ -254,10 +266,15 @@ offset_right = 1245.0
 offset_bottom = 765.0
 text = "Cerrar"
 
+[node name="InventoryMenu" parent="." instance=ExtResource("3_inventory")]
+layout_mode = 1
+
 [node name="PauseMenu" parent="." instance=ExtResource("2_pause")]
 layout_mode = 1
 
+[connection signal="pressed" from="TopBar/ButtonContainer/InventoryButton" to="." method="_on_inventory_pressed"]
 [connection signal="pressed" from="TopBar/ButtonContainer/CaseButton" to="." method="_on_case_pressed"]
 [connection signal="pressed" from="TopBar/ButtonContainer/RevealButton" to="." method="_on_reveal_pressed"]
 [connection signal="pressed" from="TopBar/ButtonContainer/PauseButton" to="PauseMenu" method="open_menu"]
+[connection signal="pressed" from="UseModeBar/CancelUseButton" to="." method="_on_cancel_item_use_pressed"]
 [connection signal="pressed" from="CasebookBackdrop/CasebookPanel/CloseButton" to="." method="_on_case_close_pressed"]
