@@ -6,14 +6,15 @@ extends Control
 @onready var sanity_label: Label = $TopBar/SanityLabel
 @onready var sanity_bar: ProgressBar = $TopBar/SanityBar
 @onready var objective_label: Label = $TopBar/ObjectiveLabel
-@onready var inventory_panel: Panel = $InventoryPanel
-@onready var slots_container: HBoxContainer = $InventoryPanel/ScrollContainer/SlotsContainer
-@onready var active_item_label: Label = $InventoryPanel/ActiveItemLabel
 @onready var vignette: TextureRect = $Vignette
+@onready var use_mode_bar: Panel = $UseModeBar
+@onready var use_mode_item_label: Label = $UseModeBar/ItemLabel
 @onready var casebook_backdrop: ColorRect = $CasebookBackdrop
 @onready var casebook_panel: Panel = $CasebookBackdrop/CasebookPanel
 @onready var casebook_objective: Label = $CasebookBackdrop/CasebookPanel/CaseObjective
 @onready var evidence_list: VBoxContainer = $CasebookBackdrop/CasebookPanel/EvidenceScroll/EvidenceList
+@onready var inventory_menu: Control = $InventoryMenu
+@onready var pause_menu: Control = $PauseMenu
 
 var cached_sfx: Dictionary = {}
 var custom_font: Font = null
@@ -28,7 +29,9 @@ func _ready() -> void:
 	_apply_hud_styles()
 	_create_feedback_stack()
 	casebook_backdrop.visible = false
+	use_mode_bar.visible = false
 	sanity_bar.show_percentage = false
+
 	Inventory.item_added.connect(_on_item_added)
 	Inventory.item_removed.connect(_on_item_removed)
 	Inventory.active_item_changed.connect(_on_active_item_changed)
@@ -36,7 +39,9 @@ func _ready() -> void:
 	Sanity.sanity_tier_changed.connect(_on_sanity_tier_changed)
 	Investigation.objective_changed.connect(_on_objective_changed)
 	Investigation.evidence_discovered.connect(_on_evidence_discovered)
-	_update_inventory_ui()
+	if inventory_menu.has_signal("item_armed"):
+		inventory_menu.item_armed.connect(_on_inventory_item_armed)
+
 	_update_sanity_ui(Sanity.current_sanity)
 	_on_active_item_changed(Inventory.active_item)
 	_on_objective_changed(Investigation.current_objective_id, Investigation.get_current_objective_text())
@@ -44,19 +49,25 @@ func _ready() -> void:
 	_setup_safe_area()
 	hud_initialized = true
 
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_I:
+		if DialogueManager.current_balloon or casebook_backdrop.visible or pause_menu.visible:
+			return
+		get_viewport().set_input_as_handled()
+		if inventory_menu.visible:
+			inventory_menu.close_menu()
+		else:
+			_on_inventory_pressed()
+
 func _apply_hud_styles() -> void:
 	var top_style = StyleBoxFlat.new()
-	top_style.bg_color = Color(0.012, 0.016, 0.021, 0.9)
+	top_style.bg_color = Color(0.01, 0.014, 0.018, 0.92)
 	top_style.border_width_bottom = 1
 	top_style.border_color = Color(0.38, 0.3, 0.19, 0.68)
 	top_style.content_margin_left = 18
 	top_style.content_margin_right = 18
 	top_bar.add_theme_stylebox_override("panel", top_style)
-	var inventory_style = StyleBoxFlat.new()
-	inventory_style.bg_color = Color(0.012, 0.016, 0.021, 0.92)
-	inventory_style.border_width_top = 1
-	inventory_style.border_color = Color(0.38, 0.3, 0.19, 0.62)
-	inventory_panel.add_theme_stylebox_override("panel", inventory_style)
+
 	var case_style = StyleBoxFlat.new()
 	case_style.bg_color = Color(0.035, 0.032, 0.029, 0.985)
 	case_style.border_width_left = 2
@@ -69,6 +80,19 @@ func _apply_hud_styles() -> void:
 	case_style.corner_radius_bottom_left = 6
 	case_style.corner_radius_bottom_right = 6
 	casebook_panel.add_theme_stylebox_override("panel", case_style)
+
+	var use_style = StyleBoxFlat.new()
+	use_style.bg_color = Color(0.015, 0.02, 0.022, 0.97)
+	use_style.border_width_left = 2
+	use_style.border_width_top = 1
+	use_style.border_width_right = 1
+	use_style.border_width_bottom = 1
+	use_style.border_color = Color(0.66, 0.52, 0.29, 0.85)
+	use_style.corner_radius_top_left = 4
+	use_style.corner_radius_top_right = 4
+	use_style.corner_radius_bottom_left = 4
+	use_style.corner_radius_bottom_right = 4
+	use_mode_bar.add_theme_stylebox_override("panel", use_style)
 
 func _create_feedback_stack() -> void:
 	feedback_stack = VBoxContainer.new()
@@ -90,9 +114,7 @@ func _setup_safe_area() -> void:
 		$TopBar.offset_top = max(0, safe_area.position.y)
 		$TopBar.offset_left = max(0, safe_area.position.x)
 		$TopBar.offset_right = -max(0, window_size.x - safe_area.end.x)
-		$InventoryPanel.offset_bottom = -max(0, window_size.y - safe_area.end.y)
-		$InventoryPanel.offset_left = max(0, safe_area.position.x)
-		$InventoryPanel.offset_right = -max(0, window_size.x - safe_area.end.x)
+		$UseModeBar.offset_bottom = -28.0 - max(0, window_size.y - safe_area.end.y)
 		feedback_stack.offset_top = 105.0 + max(0, safe_area.position.y)
 
 func _apply_theme_font_recursive(node: Node, font: Font) -> void:
@@ -103,15 +125,52 @@ func _apply_theme_font_recursive(node: Node, font: Font) -> void:
 
 func show_hover_text(text: String) -> void:
 	if Inventory.active_item:
-		hover_label.text = "Usar " + Inventory.active_item.name + " en " + text
+		hover_label.text = "USAR · %s → %s" % [Inventory.active_item.name, text]
 	else:
 		hover_label.text = text
 
 func clear_hover_text() -> void:
 	if Inventory.active_item:
-		hover_label.text = "Objeto activo: " + Inventory.active_item.name
+		hover_label.text = ""
 	else:
 		hover_label.text = ""
+
+func show_item_use_feedback(message: String) -> void:
+	_show_feedback("NO SE PUEDE USAR AHÍ", message, Color(0.68, 0.46, 0.32, 1))
+	_play_cached_sfx("error", 0.9)
+
+func _on_inventory_pressed() -> void:
+	if DialogueManager.current_balloon or casebook_backdrop.visible or pause_menu.visible:
+		return
+	if inventory_menu.has_method("open_menu"):
+		inventory_menu.open_menu()
+		_play_cached_sfx("open", 0.95)
+
+func _on_inventory_item_armed(item: ItemData) -> void:
+	_show_feedback("OBJETO PREPARADO", "%s · Elegí en el escenario dónde usarlo." % item.name, Color(0.74, 0.6, 0.34, 1))
+	_play_select_sfx()
+
+func _on_cancel_item_use_pressed() -> void:
+	if Inventory.active_item:
+		var item_name = Inventory.active_item.name
+		Inventory.set_active_item(null)
+		_show_feedback("USO CANCELADO", item_name, Color(0.52, 0.57, 0.55, 1))
+
+func _on_active_item_changed(item: ItemData) -> void:
+	use_mode_bar.visible = item != null
+	if item:
+		use_mode_item_label.text = "%s · Tocá dónde querés usarlo" % item.name
+	else:
+		use_mode_item_label.text = ""
+		clear_hover_text()
+
+func _on_item_added(item: ItemData) -> void:
+	_play_pickup_sfx()
+	if hud_initialized:
+		_show_feedback("OBJETO RECOGIDO", item.name, Color(0.72, 0.57, 0.32, 1))
+
+func _on_item_removed(_item: ItemData) -> void:
+	pass
 
 func _on_sanity_changed(new_val: int) -> void:
 	_update_sanity_ui(new_val)
@@ -206,63 +265,11 @@ func _show_feedback(kicker: String, message: String, accent: Color) -> void:
 	tween.tween_property(card, "modulate:a", 0.0, 0.35)
 	tween.finished.connect(func(): card.queue_free())
 
-func _on_item_added(_item: ItemData) -> void:
-	_update_inventory_ui()
-	_play_pickup_sfx()
-
-func _on_item_removed(_item: ItemData) -> void:
-	_update_inventory_ui()
-
-func _on_active_item_changed(item: ItemData) -> void:
-	if item:
-		active_item_label.text = "Seleccionado: " + item.name
-		hover_label.text = "Objeto activo: " + item.name
-		_play_select_sfx()
-	else:
-		active_item_label.text = "Sin selección"
-		clear_hover_text()
-
-func _update_inventory_ui() -> void:
-	inventory_panel.visible = not Inventory.items.is_empty()
-	for child in slots_container.get_children():
-		child.queue_free()
-	for item in Inventory.items:
-		var slot_btn = TextureButton.new()
-		slot_btn.pivot_offset = Vector2(70, 50)
-		slot_btn.scale = Vector2.ZERO
-		var panel = Panel.new()
-		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		slot_btn.add_child(panel)
-		slot_btn.custom_minimum_size = Vector2(140, 100)
-		if item.icon:
-			slot_btn.texture_normal = item.icon
-			slot_btn.ignore_texture_size = true
-			slot_btn.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
-		else:
-			var label = Label.new()
-			label.text = item.name
-			label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-			label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-			slot_btn.add_child(label)
-		slot_btn.pressed.connect(func(): _on_slot_pressed(item))
-		if custom_font:
-			_apply_theme_font_recursive(slot_btn, custom_font)
-		slots_container.add_child(slot_btn)
-		var tween = create_tween()
-		tween.tween_property(slot_btn, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-
-func _on_slot_pressed(item: ItemData) -> void:
-	if Inventory.active_item == item:
-		Inventory.set_active_item(null)
-	else:
-		Inventory.set_active_item(item)
-
 func _on_case_pressed() -> void:
-	if DialogueManager.current_balloon:
+	if DialogueManager.current_balloon or inventory_menu.visible or pause_menu.visible:
 		return
+	if Inventory.active_item:
+		Inventory.set_active_item(null)
 	casebook_backdrop.visible = true
 	InputController.block_input(true)
 	_refresh_casebook()
@@ -312,25 +319,39 @@ func _refresh_casebook() -> void:
 		if custom_font:
 			_apply_theme_font_recursive(entry, custom_font)
 
-func _init_sfx_cache() -> void:
-	cached_sfx["pickup_1"] = _generate_sfx_stream(0.12, 80)
-	cached_sfx["pickup_2"] = _generate_sfx_stream(0.18, 110)
-	cached_sfx["select"] = _generate_sfx_stream(0.3, 30)
-	cached_sfx["reveal"] = _generate_sfx_stream(0.15, 95)
-	cached_sfx["evidence"] = _generate_sfx_stream(0.08, 170)
+func _on_reveal_pressed() -> void:
+	if inventory_menu.visible or casebook_backdrop.visible or pause_menu.visible:
+		return
+	_play_cached_sfx("reveal", 1.1)
+	if OS.get_name() in ["Android", "iOS"]:
+		Input.vibrate_handheld(120)
+	for hs in get_tree().get_nodes_in_group("hotspots"):
+		if hs is Hotspot and hs.has_method("reveal_feedback"):
+			hs.reveal_feedback()
 
-func _generate_sfx_stream(phase_step: float, duration_ms: int) -> AudioStreamWAV:
+func _init_sfx_cache() -> void:
+	cached_sfx["pickup_1"] = _generate_sfx_stream(520.0, 105)
+	cached_sfx["pickup_2"] = _generate_sfx_stream(710.0, 135)
+	cached_sfx["select"] = _generate_sfx_stream(330.0, 90)
+	cached_sfx["reveal"] = _generate_sfx_stream(240.0, 160)
+	cached_sfx["evidence"] = _generate_sfx_stream(440.0, 180)
+	cached_sfx["error"] = _generate_sfx_stream(135.0, 150)
+	cached_sfx["open"] = _generate_sfx_stream(280.0, 120)
+
+func _generate_sfx_stream(freq: float, duration_ms: int) -> AudioStreamWAV:
 	var stream = AudioStreamWAV.new()
 	stream.format = AudioStreamWAV.FORMAT_16_BITS
 	stream.mix_rate = 11025
 	stream.stereo = false
-	var sample_count = duration_ms * 11
+	var sample_count = int(float(stream.mix_rate) * float(duration_ms) / 1000.0)
 	var data = PackedByteArray()
 	data.resize(sample_count * 2)
 	for i in range(sample_count):
-		var envelope = pow(max(0.0, 1.0 - float(i) / float(sample_count)), 2.0)
-		var value = sin(float(i) * phase_step) * 0.16 * envelope
-		var sample = int(value * 32767.0)
+		var t = float(i) / float(stream.mix_rate)
+		var duration = max(0.001, float(duration_ms) / 1000.0)
+		var envelope = pow(max(0.0, 1.0 - t / duration), 2.2)
+		var value = (sin(TAU * freq * t) * 0.56 + sin(TAU * freq * 1.51 * t) * 0.16) * envelope
+		var sample = int(clamp(value, -1.0, 1.0) * 32767.0)
 		data[i * 2] = sample & 0xff
 		data[i * 2 + 1] = (sample >> 8) & 0xff
 	stream.data = data
@@ -339,30 +360,12 @@ func _generate_sfx_stream(phase_step: float, duration_ms: int) -> AudioStreamWAV
 func _play_cached_sfx(key: String, pitch: float = 1.0) -> void:
 	if not cached_sfx.has(key):
 		return
-	var sfx_player = AudioStreamPlayer.new()
-	for i in AudioServer.bus_count:
-		if AudioServer.get_bus_name(i) == "SFX":
-			sfx_player.bus = &"SFX"
-			break
-	add_child(sfx_player)
-	sfx_player.stream = cached_sfx[key]
-	sfx_player.pitch_scale = pitch
-	sfx_player.volume_db = -9.0
-	sfx_player.play()
-	sfx_player.finished.connect(func(): sfx_player.queue_free())
-
-func _on_reveal_pressed() -> void:
-	_play_cached_sfx("reveal", 1.6)
-	if OS.get_name() in ["Android", "iOS"]:
-		Input.vibrate_handheld(120)
-	for hs in get_tree().get_nodes_in_group("hotspots"):
-		if hs is Hotspot and hs.has_method("reveal_feedback"):
-			hs.reveal_feedback()
+	AudioBus.play_sfx(cached_sfx[key], -10.0, pitch)
 
 func _play_pickup_sfx() -> void:
 	_play_cached_sfx("pickup_1", 1.0)
-	await get_tree().create_timer(0.06).timeout
-	_play_cached_sfx("pickup_2", 1.18)
+	await get_tree().create_timer(0.055).timeout
+	_play_cached_sfx("pickup_2", 1.05)
 
 func _play_select_sfx() -> void:
-	_play_cached_sfx("select", 0.85)
+	_play_cached_sfx("select", 0.95)
