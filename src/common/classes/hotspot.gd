@@ -26,21 +26,23 @@ func _ready() -> void:
 func execute_interaction(verb: String) -> void:
 	if not is_active:
 		return
-	
+
 	if verb == "use_item":
 		var active_item = Inventory.active_item
-		# A selected inventory item must not make every ordinary hotspot feel dead.
-		# Only item-gated hotspots consume the item-use verb; everything else falls
-		# back to its normal interaction while preserving the current selection.
+		if active_item == null:
+			return
 		if required_item == null:
 			interacted.emit("interact")
-		elif active_item == required_item:
+		elif active_item.id == required_item.id:
 			_on_successful_item_use(active_item)
 		else:
 			_on_failed_item_use(active_item)
 		return
-	
+
 	interacted.emit(verb)
+
+func accepts_item(item: ItemData) -> bool:
+	return item != null and required_item != null and item.id == required_item.id
 
 func _on_successful_item_use(item: ItemData) -> void:
 	item_used_successfully.emit(item)
@@ -65,7 +67,7 @@ func is_point_inside(global_pos: Vector2) -> bool:
 	if poly_node and poly_node is CollisionPolygon2D:
 		var local_pos = poly_node.to_local(global_pos)
 		return Geometry2D.is_point_in_polygon(local_pos, poly_node.polygon)
-	
+
 	var shape_node = get_node_or_null("CollisionShape2D")
 	if shape_node and shape_node is CollisionShape2D and shape_node.shape:
 		var local_pos = shape_node.to_local(global_pos)
@@ -74,7 +76,7 @@ func is_point_inside(global_pos: Vector2) -> bool:
 			return abs(local_pos.x) <= rect_size.x / 2.0 and abs(local_pos.y) <= rect_size.y / 2.0
 		elif shape_node.shape is CircleShape2D:
 			return local_pos.length() <= shape_node.shape.radius
-	
+
 	return false
 
 func reveal_feedback() -> void:
@@ -82,7 +84,7 @@ func reveal_feedback() -> void:
 		return
 	if reveal_tween and reveal_tween.is_valid():
 		reveal_tween.kill()
-	
+
 	reveal_container.visible = true
 	reveal_container.modulate.a = 0.0
 	reveal_tween = create_tween()
@@ -97,19 +99,19 @@ func _build_reveal_geometry() -> void:
 	var points = _get_collision_points()
 	if points.size() < 3:
 		return
-	
+
 	reveal_container = Node2D.new()
 	reveal_container.name = "RevealOverlay"
 	reveal_container.z_index = 100
 	reveal_container.visible = false
 	reveal_container.modulate.a = 0.0
 	add_child(reveal_container)
-	
+
 	var fill = Polygon2D.new()
 	fill.polygon = points
 	fill.color = Color(0.05, 0.88, 1.0, 0.14)
 	reveal_container.add_child(fill)
-	
+
 	var outline = Line2D.new()
 	outline.points = points
 	outline.closed = true
@@ -125,11 +127,11 @@ func _get_collision_points() -> PackedVector2Array:
 		for point in poly_node.polygon:
 			result.append(poly_node.transform * point)
 		return result
-	
+
 	var shape_node = get_node_or_null("CollisionShape2D")
 	if not shape_node or not shape_node is CollisionShape2D or not shape_node.shape:
 		return result
-	
+
 	if shape_node.shape is RectangleShape2D:
 		var half = shape_node.shape.size / 2.0
 		for point in [
@@ -144,5 +146,5 @@ func _get_collision_points() -> PackedVector2Array:
 		for i in range(24):
 			var angle = TAU * float(i) / 24.0
 			result.append(shape_node.transform * Vector2(cos(angle), sin(angle)) * radius)
-	
+
 	return result
