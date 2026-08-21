@@ -37,22 +37,33 @@ func _save_room_checkpoint() -> void:
 	if is_inside_tree():
 		SaveSystem.save_checkpoint(1)
 
-func _on_interaction_requested(action_type: String, pos: Vector2) -> void:
+func _on_interaction_requested(action_type: String, viewport_pos: Vector2) -> void:
 	if InputController.is_input_blocked:
 		return
+
+	var world_pos = _viewport_to_world(viewport_pos)
 	var clicked_hotspot: Hotspot = null
 	var hotspots_parent = get_node_or_null("HotspotsLayer")
 	if hotspots_parent:
 		for hs in hotspots_parent.get_children():
-			if hs is Hotspot and hs.is_active and hs.is_point_inside(pos):
+			if hs is Hotspot and hs.is_active and hs.is_point_inside(world_pos):
 				clicked_hotspot = hs
 				break
+
 	if clicked_hotspot:
 		_walk_and_execute(clicked_hotspot, action_type)
 	elif action_type == "interact" and Inventory.active_item == null:
 		var player = _get_player()
 		if player:
-			player.walk_to(_clamp_floor_target(pos))
+			player.walk_to(_clamp_floor_target(world_pos))
+	elif action_type == "interact" and Inventory.active_item != null:
+		_show_item_use_hint("No hay ningún objeto interactuable en ese punto.")
+
+func _viewport_to_world(viewport_pos: Vector2) -> Vector2:
+	# Mouse/touch arrive in viewport coordinates. Convert through the canvas
+	# transform before comparing them against authored 2D hotspot geometry.
+	# This keeps hit-testing correct with stretch, resized windows and fullscreen.
+	return get_viewport().get_canvas_transform().affine_inverse() * viewport_pos
 
 func _clamp_floor_target(pos: Vector2) -> Vector2:
 	var min_x = walk_bounds.position.x
@@ -63,14 +74,36 @@ func _clamp_floor_target(pos: Vector2) -> Vector2:
 
 func _walk_and_execute(hotspot: Hotspot, verb: String) -> void:
 	var player = _get_player()
+	var armed_item = Inventory.active_item
+
 	if hotspot.walk_to_point and player:
 		InputController.block_input(true)
 		await player.walk_to(hotspot.walk_to_point.global_position)
 		InputController.block_input(false)
-	if Inventory.active_item != null and verb == "interact":
+
+	# Inventory use is an explicit mode: after pressing USAR, the next target is
+	# resolved only once the inspector has walked to its interaction marker.
+	if armed_item != null and verb == "interact":
+		if hotspot.required_item == null:
+			_show_item_use_hint("%s no parece tener ningún uso en %s." % [armed_item.name, hotspot.hotspot_name])
+			return
+
+		var correct_item = hotspot.required_item == armed_item
 		hotspot.execute_interaction("use_item")
-	else:
-		hotspot.execute_interaction(verb)
+		if correct_item and Inventory.active_item == armed_item:
+			Inventory.set_active_item(null)
+		return
+
+	hotspot.execute_interaction(verb)
+
+func _show_item_use_hint(message: String) -> void:
+	var scene = get_tree().current_scene
+	if scene:
+		var hud = scene.find_child("UI_HUD*", true, false)
+		if hud and hud.has_method("show_item_use_feedback"):
+			hud.show_item_use_feedback(message)
+			return
+	DialogueManager.show_dialogue([message], "Inspector")
 
 func _get_player() -> Player:
 	var chars_layer = get_node_or_null("CharactersLayer")
