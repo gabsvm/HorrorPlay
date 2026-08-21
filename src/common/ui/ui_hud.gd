@@ -13,7 +13,7 @@ extends Control
 @onready var casebook_panel: Panel = $CasebookBackdrop/CasebookPanel
 @onready var casebook_objective: Label = $CasebookBackdrop/CasebookPanel/CaseObjective
 @onready var evidence_list: VBoxContainer = $CasebookBackdrop/CasebookPanel/EvidenceScroll/EvidenceList
-@onready var inventory_menu: Control = $InventoryMenu
+@onready var inventory_menu = $InventoryMenu
 @onready var pause_menu: Control = $PauseMenu
 
 var cached_sfx: Dictionary = {}
@@ -40,7 +40,7 @@ func _ready() -> void:
 	Investigation.objective_changed.connect(_on_objective_changed)
 	Investigation.evidence_discovered.connect(_on_evidence_discovered)
 	if inventory_menu.has_signal("item_armed"):
-		inventory_menu.item_armed.connect(_on_inventory_item_armed)
+		inventory_menu.connect("item_armed", Callable(self, "_on_inventory_item_armed"))
 
 	_update_sanity_ui(Sanity.current_sanity)
 	_on_active_item_changed(Inventory.active_item)
@@ -55,7 +55,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 		get_viewport().set_input_as_handled()
 		if inventory_menu.visible:
-			inventory_menu.close_menu()
+			inventory_menu.call("close_menu")
 		else:
 			_on_inventory_pressed()
 
@@ -130,10 +130,7 @@ func show_hover_text(text: String) -> void:
 		hover_label.text = text
 
 func clear_hover_text() -> void:
-	if Inventory.active_item:
-		hover_label.text = ""
-	else:
-		hover_label.text = ""
+	hover_label.text = ""
 
 func show_item_use_feedback(message: String) -> void:
 	_show_feedback("NO SE PUEDE USAR AHÍ", message, Color(0.68, 0.46, 0.32, 1))
@@ -143,7 +140,7 @@ func _on_inventory_pressed() -> void:
 	if DialogueManager.current_balloon or casebook_backdrop.visible or pause_menu.visible:
 		return
 	if inventory_menu.has_method("open_menu"):
-		inventory_menu.open_menu()
+		inventory_menu.call("open_menu")
 		_play_cached_sfx("open", 0.95)
 
 func _on_inventory_item_armed(item: ItemData) -> void:
