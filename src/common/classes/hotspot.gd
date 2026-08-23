@@ -11,7 +11,7 @@ signal item_used_failed(item: ItemData)
 @export var required_item: ItemData = null
 @export var walk_to_point: Marker2D
 @export_enum("auto", "left", "right", "none") var interaction_facing: String = "auto"
-@export_enum("default", "mid", "low", "inspect", "none") var interaction_pose: String = "default"
+@export_enum("none", "inspect", "mid", "low", "default") var interaction_pose: String = "none"
 
 var reveal_container: Node2D = null
 var reveal_tween: Tween = null
@@ -147,7 +147,8 @@ func _get_collision_points() -> PackedVector2Array:
 		var radius = shape_node.shape.radius
 		for i in range(24):
 			var angle = TAU * float(i) / 24.0
-			result.append(shape_node.transform * Vector2(cos(angle), sin(angle)) * radius)
+			var local_point = Vector2(cos(angle), sin(angle)) * radius
+			result.append(shape_node.transform * local_point)
 
 	return result
 
