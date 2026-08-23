@@ -9,5 +9,5 @@ id = "brass_fuse"
 name = "Fusible de Latón"
 description = "Un fusible industrial de alto amperaje. El vidrio está intacto y los contactos siguen secos."
 icon = ExtResource("1_icon")
-world_use_animation = "none"
+world_use_animation = "generic_reach"
 combinable_with = Array[ExtResource("2_script")]([])
