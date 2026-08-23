@@ -109,7 +109,7 @@ polygon = PackedVector2Array(845, 235, 1170, 235, 1170, 750, 845, 750)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Bookcase"]
 position = Vector2(1040, 805)
 
-[node name="Drawer" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point", "required_item")]
+[node name="Drawer" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("5_hotspot")
 hotspot_name = "Archivador de evidencias"
 required_item = ExtResource("2_key")
