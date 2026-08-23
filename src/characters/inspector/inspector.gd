@@ -15,12 +15,15 @@ signal state_changed(old_state: State, new_state: State)
 signal movement_started(target: Vector2)
 signal movement_finished(target: Vector2)
 signal interaction_finished()
+signal facing_finished(direction: int)
 
 @export_group("Locomotion")
 @export var max_speed: float = 315.0
 @export var acceleration: float = 1500.0
 @export var deceleration: float = 2000.0
 @export var arrival_radius: float = 6.0
+@export var walk_speed_scale_min: float = 0.68
+@export var walk_speed_scale_max: float = 1.12
 
 @export_group("Visuals")
 @export var base_scale: float = 1.0
@@ -42,16 +45,20 @@ var target_light_energy: float = 0.52
 var last_footstep_frame: int = -1
 var depth_scale_factor: float = 1.0
 
+var _pending_facing: int = 1
+var _resume_state_after_turn: State = State.IDLE
+var _turn_flip_applied: bool = false
+
 func _ready() -> void:
 	add_to_group("Player")
 	target_position = global_position
 	if animated_sprite:
 		animated_sprite.frame_changed.connect(_on_sprite_frame_changed)
 		animated_sprite.animation_finished.connect(_on_sprite_animation_finished)
-	
+
 	if not Sanity.sanity_changed.is_connected(_on_sanity_changed):
 		Sanity.sanity_changed.connect(_on_sanity_changed)
-	
+
 	_play_appropriate_idle()
 	var debug_label = get_node_or_null("DetectiveLabel")
 	if debug_label:
@@ -63,7 +70,7 @@ func _exit_tree() -> void:
 
 func _physics_process(delta: float) -> void:
 	_update_light(delta)
-	
+
 	match current_state:
 		State.IDLE:
 			_process_idle(delta)
@@ -75,50 +82,61 @@ func _physics_process(delta: float) -> void:
 			velocity = velocity.move_toward(Vector2.ZERO, deceleration * delta)
 			move_and_slide()
 
-func _process_idle(_delta: float) -> void:
+func _process_idle(delta: float) -> void:
 	if velocity.length() > 0.0:
-		velocity = velocity.move_toward(Vector2.ZERO, deceleration * _delta)
+		velocity = velocity.move_toward(Vector2.ZERO, deceleration * delta)
 		move_and_slide()
-	
+
 	if global_position.distance_to(target_position) > arrival_radius:
 		_transition_to(State.WALKING)
 	else:
 		_play_appropriate_idle()
 
 func _process_walking(delta: float) -> void:
-	var to_target = target_position - global_position
-	var dist = to_target.length()
-	
+	var to_target := target_position - global_position
+	var dist := to_target.length()
+
 	if dist <= arrival_radius:
 		velocity = Vector2.ZERO
 		global_position = target_position
 		is_moving = false
+		_reset_animation_speed()
 		_transition_to(State.IDLE)
 		movement_finished.emit(global_position)
 		return
-	
-	var desired_direction = to_target.normalized()
-	var desired_facing = -1 if desired_direction.x < -0.05 else (1 if desired_direction.x > 0.05 else facing_direction)
+
+	var desired_direction := to_target.normalized()
+	var desired_facing := facing_direction
+	if desired_direction.x < -0.05:
+		desired_facing = -1
+	elif desired_direction.x > 0.05:
+		desired_facing = 1
+
 	if desired_facing != facing_direction:
-		_set_facing(desired_facing)
-	
-	var target_velocity = desired_direction * max_speed
+		_begin_turn(desired_facing, State.WALKING)
+		return
+
+	var target_velocity := desired_direction * max_speed
 	velocity = velocity.move_toward(target_velocity, acceleration * delta)
 	move_and_slide()
-	
-	is_moving = velocity.length() > 15.0
-	if animated_sprite and animated_sprite.animation != &"walk":
-		animated_sprite.play(&"walk")
 
-func _process_turning(_delta: float) -> void:
-	velocity = velocity.move_toward(Vector2.ZERO, deceleration * _delta)
+	is_moving = velocity.length() > 15.0
+	if animated_sprite:
+		if animated_sprite.animation != &"walk":
+			animated_sprite.play(&"walk")
+		var speed_ratio := clamp(velocity.length() / max(1.0, max_speed), 0.0, 1.0)
+		animated_sprite.speed_scale = lerp(walk_speed_scale_min, walk_speed_scale_max, speed_ratio)
+
+func _process_turning(delta: float) -> void:
+	velocity = velocity.move_toward(Vector2.ZERO, deceleration * delta)
 	move_and_slide()
 
 func _play_appropriate_idle() -> void:
 	if not animated_sprite or current_state != State.IDLE:
 		return
-	var is_uneasy = Sanity.current_sanity <= 55
-	var target_anim = &"idle_uneasy" if is_uneasy else &"idle"
+	_reset_animation_speed()
+	var is_uneasy := Sanity.current_sanity <= 55
+	var target_anim: StringName = &"idle_uneasy" if is_uneasy else &"idle"
 	if animated_sprite.animation != target_anim:
 		animated_sprite.play(target_anim)
 
@@ -129,28 +147,44 @@ func _on_sanity_changed(_new_val: int) -> void:
 func _on_sprite_frame_changed() -> void:
 	if not animated_sprite:
 		return
+
+	if current_state == State.TURNING and animated_sprite.animation == &"turn":
+		if not _turn_flip_applied and animated_sprite.frame >= 2:
+			_apply_facing_immediate(_pending_facing)
+			_turn_flip_applied = true
+		return
+
 	if animated_sprite.animation == &"walk":
-		var frame = animated_sprite.frame
+		var frame := animated_sprite.frame
 		if frame != last_footstep_frame and (frame == 1 or frame == 5):
 			last_footstep_frame = frame
 			if velocity.length() > 30.0:
 				_play_footstep()
 
 func _play_footstep() -> void:
-	var surface = current_surface
+	var surface := current_surface
 	if SceneRouter.current_room is Room:
 		surface = SceneRouter.current_room.footstep_surface
 	AudioBus.play_footstep(surface, 0.72)
 
 func _on_sprite_animation_finished() -> void:
-	if current_state == State.INTERACTING or current_state == State.REACTING or current_state == State.TURNING:
+	if current_state == State.TURNING:
+		if not _turn_flip_applied:
+			_apply_facing_immediate(_pending_facing)
+			_turn_flip_applied = true
+		var resume_state := _resume_state_after_turn
+		_transition_to(resume_state)
+		facing_finished.emit(facing_direction)
+		return
+
+	if current_state == State.INTERACTING or current_state == State.REACTING:
 		_transition_to(State.IDLE)
 		interaction_finished.emit()
 
 func _update_light(delta: float) -> void:
 	if personal_light and personal_light.visible:
 		light_time += delta
-		var noise = sin(light_time * 0.8) * cos(light_time * 0.43) + sin(light_time * 1.5) * cos(light_time * 0.9)
+		var noise := sin(light_time * 0.8) * cos(light_time * 0.43) + sin(light_time * 1.5) * cos(light_time * 0.9)
 		personal_light.energy = lerp(target_light_energy * 0.85, target_light_energy * 1.15, (noise + 2.0) / 4.0)
 
 func configure_light(enabled: bool, energy: float = 0.52, color: Color = Color(0.96, 0.84, 0.65, 1.0), light_scale: float = 1.35) -> void:
@@ -165,37 +199,71 @@ func set_depth_scale(scale_val: float) -> void:
 	depth_scale_factor = scale_val
 	_apply_visual_transform()
 
-func _set_facing(new_facing: int) -> void:
-	facing_direction = new_facing
+func _apply_facing_immediate(new_facing: int) -> void:
+	facing_direction = -1 if new_facing < 0 else 1
 	_apply_visual_transform()
 
 func _apply_visual_transform() -> void:
 	if visual_root:
 		visual_root.scale = Vector2(float(facing_direction) * depth_scale_factor * base_scale, depth_scale_factor * base_scale)
 
+func _begin_turn(new_facing: int, resume_state: State = State.IDLE) -> void:
+	var normalized_facing := -1 if new_facing < 0 else 1
+	if normalized_facing == facing_direction:
+		return
+
+	_pending_facing = normalized_facing
+	_resume_state_after_turn = resume_state
+	_turn_flip_applied = false
+	velocity = Vector2.ZERO
+	is_moving = false
+	_transition_to(State.TURNING)
+	_reset_animation_speed()
+
+	if animated_sprite and animated_sprite.sprite_frames.has_animation(&"turn"):
+		animated_sprite.play(&"turn")
+	else:
+		_apply_facing_immediate(_pending_facing)
+		_turn_flip_applied = true
+		_transition_to(_resume_state_after_turn)
+		facing_finished.emit(facing_direction)
+
+func face_direction(direction: int) -> void:
+	var normalized_facing := -1 if direction < 0 else 1
+	if normalized_facing == facing_direction:
+		return
+	if current_state == State.INTERACTING or current_state == State.REACTING or current_state == State.LOCKED:
+		return
+	_begin_turn(normalized_facing, State.IDLE)
+	await facing_finished
+
 func face_position(world_pos: Vector2) -> void:
-	var dir = 1 if world_pos.x >= global_position.x else -1
-	_set_facing(dir)
+	var dir := 1 if world_pos.x >= global_position.x else -1
+	await face_direction(dir)
 
 func _transition_to(new_state: State) -> void:
 	if current_state == new_state:
 		return
-	var old_state = current_state
+	var old_state := current_state
 	current_state = new_state
 	last_footstep_frame = -1
 	state_changed.emit(old_state, new_state)
-	
+
 	if new_state == State.IDLE:
 		_play_appropriate_idle()
 
 func set_target_position(new_target: Vector2) -> void:
 	target_position = new_target
 	if global_position.distance_to(target_position) > arrival_radius:
-		if current_state != State.WALKING and current_state != State.LOCKED:
+		if current_state == State.IDLE:
 			_transition_to(State.WALKING)
+			movement_started.emit(target_position)
+		elif current_state == State.WALKING:
 			movement_started.emit(target_position)
 
 func walk_to(dest_position: Vector2) -> void:
+	if current_state == State.LOCKED or current_state == State.INTERACTING or current_state == State.REACTING:
+		return
 	if global_position.distance_to(dest_position) <= arrival_radius:
 		target_position = dest_position
 		return
@@ -203,24 +271,52 @@ func walk_to(dest_position: Vector2) -> void:
 	await movement_finished
 
 func play_interaction_animation(anim_name: StringName) -> void:
+	if anim_name == &"" or anim_name == &"none":
+		return
 	if not animated_sprite or not animated_sprite.sprite_frames.has_animation(anim_name):
 		return
+	_reset_animation_speed()
 	_transition_to(State.INTERACTING)
 	animated_sprite.play(anim_name)
 	await interaction_finished
 
+func play_item_interaction(item: ItemData, fallback_animation: StringName = &"none") -> void:
+	var animation_to_play := fallback_animation
+	if item and item.world_use_animation != "":
+		animation_to_play = StringName(item.world_use_animation)
+	await play_interaction_animation(animation_to_play)
+
 func play_reaction() -> void:
 	if not animated_sprite or not animated_sprite.sprite_frames.has_animation(&"react"):
 		return
+	_reset_animation_speed()
 	_transition_to(State.REACTING)
 	animated_sprite.play(&"react")
 	await interaction_finished
+
+func enter_hide() -> void:
+	if animated_sprite and animated_sprite.sprite_frames.has_animation(&"hide_enter"):
+		await play_interaction_animation(&"hide_enter")
+	_transition_to(State.LOCKED)
+	if animated_sprite and animated_sprite.sprite_frames.has_animation(&"hide_hold"):
+		animated_sprite.play(&"hide_hold")
+
+func exit_hide() -> void:
+	if current_state != State.LOCKED:
+		return
+	_transition_to(State.INTERACTING)
+	if animated_sprite and animated_sprite.sprite_frames.has_animation(&"hide_exit"):
+		animated_sprite.play(&"hide_exit")
+		await interaction_finished
+	else:
+		_transition_to(State.IDLE)
 
 func stop_movement() -> void:
 	target_position = global_position
 	velocity = Vector2.ZERO
 	is_moving = false
-	if current_state == State.WALKING:
+	_reset_animation_speed()
+	if current_state == State.WALKING or current_state == State.TURNING:
 		_transition_to(State.IDLE)
 		movement_finished.emit(global_position)
 
@@ -231,3 +327,7 @@ func lock_actor(locked: bool) -> void:
 	else:
 		if current_state == State.LOCKED:
 			_transition_to(State.IDLE)
+
+func _reset_animation_speed() -> void:
+	if animated_sprite:
+		animated_sprite.speed_scale = 1.0
