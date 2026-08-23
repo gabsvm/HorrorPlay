@@ -19,6 +19,8 @@ func _ready() -> void:
 	door_back.interacted.connect(_on_door_back_interacted)
 	service_lockers.interacted.connect(_on_lockers_interacted)
 	fuse_box.interacted.connect(_on_fuse_box_interacted)
+	fuse_box.item_used_successfully.connect(_on_fuse_item_used)
+	fuse_box.item_used_failed.connect(_on_fuse_item_failed)
 	radio.interacted.connect(_on_radio_interacted)
 	floor_drain.interacted.connect(_on_floor_drain_interacted)
 	boat_317.interacted.connect(_on_boat_interacted)
@@ -149,6 +151,19 @@ func _on_fuse_box_interacted(verb: String) -> void:
 		"Inspector"
 	)
 
+func _on_fuse_item_used(item: ItemData) -> void:
+	if GameState.get_flag("boathouse_power_on") or GameState.get_flag("boathouse_fuse_installed"):
+		return
+	Inventory.remove_item(item)
+	GameState.set_flag("boathouse_fuse_installed", true)
+	await DialogueManager.show_dialogue([
+		"Encajo el fusible de latón en el receptáculo. Los contactos muerden con un golpe seco.",
+		"La instalación vuelve a estar completa. Solo falta subir el interruptor principal."
+	], "Inspector")
+
+func _on_fuse_item_failed(_item: ItemData) -> void:
+	DialogueManager.show_dialogue(["Eso no encaja en el receptáculo del pescante."], "Inspector")
+
 func _on_install_fuse() -> void:
 	var fuse = Inventory.get_item_by_id("brass_fuse")
 	if fuse:
@@ -174,7 +189,7 @@ func _on_restore_power() -> void:
 		"Entonces la radio, que no he tocado, se enciende sola.",
 		"Entre la estática escucho tres golpes de campana... [wave amp=15 freq=2]desde muy abajo.[/wave]"
 	], "Inspector")
-	_play_radio_log()
+	await _play_radio_log()
 
 func _on_radio_interacted(verb: String) -> void:
 	if not GameState.get_flag("boathouse_power_on"):
@@ -184,7 +199,7 @@ func _on_radio_interacted(verb: String) -> void:
 		DialogueManager.show_dialogue(["El dial permanece clavado en la frecuencia del 317. No quiero volver a escuchar esa grabación."], "Inspector")
 		return
 	if verb == "interact" or verb == "examine":
-		_play_radio_log()
+		await _play_radio_log()
 
 func _play_radio_log() -> void:
 	if GameState.get_flag("reef_radio_heard"):
@@ -213,7 +228,7 @@ func _trigger_intrusion() -> void:
 	AudioBus.play_horror_stinger(0.82)
 	AtmosphereController.horror_pulse(0.8)
 	if player:
-		player.play_reaction()
+		await player.play_reaction()
 	await _flicker_main_light()
 	_show_intruder_shadow()
 	await DialogueManager.show_dialogue([
@@ -283,11 +298,15 @@ func _on_intrusion_stay_still() -> void:
 
 func _on_intrusion_locker() -> void:
 	GameState.set_var("boathouse_intrusion_outcome", "locker")
+	if player:
+		await player.enter_hide()
 	await DialogueManager.show_dialogue([
 		"Me comprimo dentro del casillero 317, entre el abrigo mojado y el metal helado.",
 		"La puerta exterior se sacude una vez. Dos. A través de la ranura veo una mano larga apoyarse contra el vidrio: cinco dedos unidos por membrana.",
 		"Algo huele el aire dentro del cobertizo. Luego desaparece sin abrir la puerta."
 	], "Inspector")
+	if player:
+		await player.exit_hide()
 	Sanity.drain_sanity(8)
 	_complete_intrusion()
 
