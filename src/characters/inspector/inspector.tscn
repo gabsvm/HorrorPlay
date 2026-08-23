@@ -55,7 +55,7 @@ texture = SubResource("GradientTexture2D_shadow")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="VisualRoot"]
 material = SubResource("ShaderMaterial_inspector_paint")
-texture_filter = 1
+texture_filter = 2
 position = Vector2(0, -107)
 scale = Vector2(0.5, 0.5)
 sprite_frames = ExtResource("2_frames")
