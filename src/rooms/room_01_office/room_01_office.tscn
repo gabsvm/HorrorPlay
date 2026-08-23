@@ -40,6 +40,9 @@ book_item = ExtResource("3_diary")
 room_name = "Oficina del Inspector"
 music_theme = ExtResource("8_music")
 ambience_profile = "office"
+personal_light_energy = 0.45
+personal_light_color = Color(0.96, 0.84, 0.65, 1)
+personal_light_scale = 1.2
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_office")

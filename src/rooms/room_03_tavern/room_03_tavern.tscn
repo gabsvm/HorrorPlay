@@ -39,6 +39,9 @@ room_name = "El Pez Dorado"
 dock_key_item = ExtResource("7_dock_key")
 music_theme = ExtResource("8_music")
 ambience_profile = "tavern"
+personal_light_energy = 0.34
+personal_light_color = Color(0.96, 0.84, 0.65, 1)
+personal_light_scale = 1.25
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_tavern")

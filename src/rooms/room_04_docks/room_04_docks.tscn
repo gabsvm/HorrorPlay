@@ -38,6 +38,14 @@ room_name = "Muelles de Innsmouth"
 music_theme = ExtResource("8_music")
 suppress_music = true
 ambience_profile = "docks"
+character_depth_scaling_enabled = true
+character_depth_y_min = 720.0
+character_depth_y_max = 850.0
+character_scale_far = 0.88
+character_scale_near = 1.02
+personal_light_energy = 0.62
+personal_light_color = Color(0.98, 0.92, 0.78, 1)
+personal_light_scale = 1.6
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_docks")

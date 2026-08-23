@@ -10,6 +10,19 @@ extends Node2D
 @export var walk_bounds: Rect2 = Rect2(40, 690, 1840, 320)
 @export var checkpoint_on_ready: bool = true
 
+@export_group("Character Depth Scaling")
+@export var character_depth_scaling_enabled: bool = false
+@export var character_depth_y_min: float = 650.0
+@export var character_depth_y_max: float = 900.0
+@export var character_scale_far: float = 0.85
+@export var character_scale_near: float = 1.0
+
+@export_group("Personal Light Configuration")
+@export var personal_light_enabled: bool = true
+@export var personal_light_energy: float = 0.52
+@export var personal_light_color: Color = Color(0.96, 0.84, 0.65, 1.0)
+@export var personal_light_scale: float = 1.35
+
 func _ready() -> void:
 	SceneRouter.current_room = self
 	if suppress_music:
@@ -26,8 +39,26 @@ func _ready() -> void:
 			ui_layer.add_child(hud_instance)
 	if not InputController.interaction_requested.is_connected(_on_interaction_requested):
 		InputController.interaction_requested.connect(_on_interaction_requested)
+	
+	var player = _get_player()
+	if player:
+		player.configure_light(
+			personal_light_enabled,
+			personal_light_energy,
+			personal_light_color,
+			personal_light_scale
+		)
+	
 	if checkpoint_on_ready:
 		call_deferred("_save_room_checkpoint")
+
+func _process(_delta: float) -> void:
+	if character_depth_scaling_enabled:
+		var player = _get_player()
+		if player:
+			var t = clamp((player.global_position.y - character_depth_y_min) / max(1.0, character_depth_y_max - character_depth_y_min), 0.0, 1.0)
+			var scale_factor = lerp(character_scale_far, character_scale_near, t)
+			player.set_depth_scale(scale_factor)
 
 func _exit_tree() -> void:
 	if InputController.interaction_requested.is_connected(_on_interaction_requested):

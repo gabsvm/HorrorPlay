@@ -212,6 +212,8 @@ func _trigger_intrusion() -> void:
 	await get_tree().create_timer(0.65).timeout
 	AudioBus.play_horror_stinger(0.82)
 	AtmosphereController.horror_pulse(0.8)
+	if player:
+		player.play_reaction()
 	await _flicker_main_light()
 	_show_intruder_shadow()
 	await DialogueManager.show_dialogue([

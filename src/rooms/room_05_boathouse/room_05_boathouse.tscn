@@ -38,6 +38,9 @@ suppress_music = true
 ambience_profile = "boathouse"
 footstep_surface = "wet_wood"
 walk_bounds = Rect2(60, 700, 1800, 330)
+personal_light_energy = 0.68
+personal_light_color = Color(0.98, 0.92, 0.78, 1)
+personal_light_scale = 1.6
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_boathouse")

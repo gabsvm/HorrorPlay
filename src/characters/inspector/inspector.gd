@@ -23,9 +23,10 @@ signal interaction_finished()
 @export var arrival_radius: float = 6.0
 
 @export_group("Visuals")
-@export var default_scale: Vector2 = Vector2(0.5, 0.5)
+@export var base_scale: float = 1.0
 
 @onready var visual_root: Node2D = $VisualRoot
+@onready var contact_shadow: Sprite2D = $VisualRoot/ContactShadow
 @onready var animated_sprite: AnimatedSprite2D = $VisualRoot/AnimatedSprite2D
 @onready var personal_light: PointLight2D = $PersonalLight
 @onready var interaction_anchor: Marker2D = $InteractionAnchor
@@ -37,7 +38,9 @@ var facing_direction: int = 1 # 1 = right, -1 = left
 var is_moving: bool = false
 var current_surface: String = "wood"
 var light_time: float = 0.0
+var target_light_energy: float = 0.52
 var last_footstep_frame: int = -1
+var depth_scale_factor: float = 1.0
 
 func _ready() -> void:
 	add_to_group("Player")
@@ -45,10 +48,18 @@ func _ready() -> void:
 	if animated_sprite:
 		animated_sprite.frame_changed.connect(_on_sprite_frame_changed)
 		animated_sprite.animation_finished.connect(_on_sprite_animation_finished)
-		_play_appropriate_idle()
+	
+	if not Sanity.sanity_changed.is_connected(_on_sanity_changed):
+		Sanity.sanity_changed.connect(_on_sanity_changed)
+	
+	_play_appropriate_idle()
 	var debug_label = get_node_or_null("DetectiveLabel")
 	if debug_label:
 		debug_label.queue_free()
+
+func _exit_tree() -> void:
+	if Sanity.sanity_changed.is_connected(_on_sanity_changed):
+		Sanity.sanity_changed.disconnect(_on_sanity_changed)
 
 func _physics_process(delta: float) -> void:
 	_update_light(delta)
@@ -111,6 +122,10 @@ func _play_appropriate_idle() -> void:
 	if animated_sprite.animation != target_anim:
 		animated_sprite.play(target_anim)
 
+func _on_sanity_changed(_new_val: int) -> void:
+	if current_state == State.IDLE:
+		_play_appropriate_idle()
+
 func _on_sprite_frame_changed() -> void:
 	if not animated_sprite:
 		return
@@ -136,12 +151,27 @@ func _update_light(delta: float) -> void:
 	if personal_light and personal_light.visible:
 		light_time += delta
 		var noise = sin(light_time * 0.8) * cos(light_time * 0.43) + sin(light_time * 1.5) * cos(light_time * 0.9)
-		personal_light.energy = lerp(0.48, 0.74, (noise + 2.0) / 4.0)
+		personal_light.energy = lerp(target_light_energy * 0.85, target_light_energy * 1.15, (noise + 2.0) / 4.0)
+
+func configure_light(enabled: bool, energy: float = 0.52, color: Color = Color(0.96, 0.84, 0.65, 1.0), light_scale: float = 1.35) -> void:
+	if personal_light:
+		personal_light.visible = enabled
+		target_light_energy = energy
+		personal_light.energy = energy
+		personal_light.color = color
+		personal_light.scale = Vector2(light_scale, light_scale)
+
+func set_depth_scale(scale_val: float) -> void:
+	depth_scale_factor = scale_val
+	_apply_visual_transform()
 
 func _set_facing(new_facing: int) -> void:
 	facing_direction = new_facing
+	_apply_visual_transform()
+
+func _apply_visual_transform() -> void:
 	if visual_root:
-		visual_root.scale.x = float(facing_direction)
+		visual_root.scale = Vector2(float(facing_direction) * depth_scale_factor * base_scale, depth_scale_factor * base_scale)
 
 func face_position(world_pos: Vector2) -> void:
 	var dir = 1 if world_pos.x >= global_position.x else -1

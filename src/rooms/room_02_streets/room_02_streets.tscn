@@ -47,6 +47,14 @@ script = ExtResource("1_script")
 room_name = "Marsh Street · Innsmouth"
 music_theme = ExtResource("7_music")
 ambience_profile = "streets"
+character_depth_scaling_enabled = true
+character_depth_y_min = 720.0
+character_depth_y_max = 840.0
+character_scale_far = 0.9
+character_scale_near = 1.05
+personal_light_energy = 0.54
+personal_light_color = Color(0.96, 0.86, 0.67, 1)
+personal_light_scale = 1.35
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_streets")
