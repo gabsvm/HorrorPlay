@@ -39,7 +39,7 @@ func _ready() -> void:
 			ui_layer.add_child(hud_instance)
 	if not InputController.interaction_requested.is_connected(_on_interaction_requested):
 		InputController.interaction_requested.connect(_on_interaction_requested)
-	
+
 	var player = _get_player()
 	if player:
 		player.configure_light(
@@ -48,7 +48,7 @@ func _ready() -> void:
 			personal_light_color,
 			personal_light_scale
 		)
-	
+
 	if checkpoint_on_ready:
 		call_deferred("_save_room_checkpoint")
 
@@ -108,17 +108,7 @@ func _walk_and_execute(hotspot: Hotspot, verb: String) -> void:
 		InputController.block_input(true)
 		if hotspot.walk_to_point:
 			await player.walk_to(hotspot.walk_to_point.global_position)
-		
-		# Orient player towards hotspot or authored facing
-		match hotspot.interaction_facing:
-			"left":
-				player._set_facing(-1)
-			"right":
-				player._set_facing(1)
-			"auto":
-				player.face_position(hotspot.get_center_position())
-			"none":
-				pass
+		await _orient_player_for_hotspot(player, hotspot)
 
 	if armed_item != null and verb == "interact":
 		if hotspot.required_item == null:
@@ -128,8 +118,8 @@ func _walk_and_execute(hotspot: Hotspot, verb: String) -> void:
 			return
 
 		if player:
-			var item_anim = &"pickup_low" if hotspot.interaction_pose == "low" else &"use_mid"
-			await player.play_interaction_animation(item_anim)
+			var fallback_item_anim = _item_fallback_animation(hotspot.interaction_pose)
+			await player.play_item_interaction(armed_item, fallback_item_anim)
 
 		var correct_item = hotspot.accepts_item(armed_item)
 		hotspot.execute_interaction("use_item")
@@ -139,23 +129,48 @@ func _walk_and_execute(hotspot: Hotspot, verb: String) -> void:
 			InputController.block_input(false)
 		return
 
-	if player and hotspot.interaction_pose != "none":
-		if verb == "examine":
-			await player.play_interaction_animation(&"inspect")
-		elif verb == "interact":
-			match hotspot.interaction_pose:
-				"inspect":
-					await player.play_interaction_animation(&"inspect")
-				"mid", "use_mid":
-					await player.play_interaction_animation(&"use_mid")
-				"low", "pickup_low":
-					await player.play_interaction_animation(&"pickup_low")
-				"default":
-					await player.play_interaction_animation(&"use_mid")
+	if player:
+		var contextual_animation = _animation_for_verb(hotspot.interaction_pose, verb)
+		if contextual_animation != &"none":
+			await player.play_interaction_animation(contextual_animation)
 
 	hotspot.execute_interaction(verb)
 	if player:
 		InputController.block_input(false)
+
+func _orient_player_for_hotspot(player: Player, hotspot: Hotspot) -> void:
+	if not player or not hotspot:
+		return
+	match hotspot.interaction_facing:
+		"left":
+			await player.face_direction(-1)
+		"right":
+			await player.face_direction(1)
+		"auto":
+			await player.face_position(hotspot.get_center_position())
+		"none":
+			pass
+
+func _animation_for_verb(pose: String, verb: String) -> StringName:
+	if pose == "none" or pose == "default":
+		return &"none"
+	if verb == "examine":
+		return &"inspect"
+	match pose:
+		"inspect":
+			return &"inspect"
+		"low":
+			return &"pickup_low"
+		"mid":
+			# The current authored use_mid clip contains the rusty key prop.
+			# Generic mid-height interactions stay neutral until a prop-free clip exists.
+			return &"none"
+	return &"none"
+
+func _item_fallback_animation(pose: String) -> StringName:
+	if pose == "low":
+		return &"pickup_low"
+	return &"none"
 
 func _show_item_use_hint(message: String) -> void:
 	var scene = get_tree().current_scene
@@ -172,6 +187,4 @@ func _get_player() -> Player:
 		for child in chars_layer.get_children():
 			if child is Player:
 				return child
-			if child is CharacterBody2D and child.name == "Player":
-				return child as Player
 	return null
