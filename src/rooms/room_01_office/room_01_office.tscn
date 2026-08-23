@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://src/rooms/room_01_office/room_01_office.gd" id="1_script"]
 [ext_resource type="Resource" uid="uid://cbe7dby376f0s" path="res://src/common/classes/rusty_key.tres" id="2_key"]
 [ext_resource type="Resource" uid="uid://be87db21h836b" path="res://src/common/classes/diary.tres" id="3_diary"]
-[ext_resource type="Script" path="res://src/rooms/player.gd" id="4_player"]
+[ext_resource type="PackedScene" uid="uid://inspector_actor_root" path="res://src/characters/inspector/inspector.tscn" id="4_inspector"]
 [ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="5_hotspot"]
 [ext_resource type="Texture2D" path="res://assets/images/backgrounds/office_bg.svg" id="6_bg"]
 [ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="7_flicker"]
@@ -121,21 +121,9 @@ position = Vector2(1715, 815)
 
 [node name="CharactersLayer" type="Node2D" parent="."]
 y_sort_enabled = true
-[node name="Player" type="CharacterBody2D" parent="CharactersLayer"]
+
+[node name="Player" parent="CharactersLayer" instance=ExtResource("4_inspector")]
 position = Vector2(275, 755)
-script = ExtResource("4_player")
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CharactersLayer/Player"]
-shape = SubResource("RectangleShape2D_player")
-[node name="Sprite2D" type="Sprite2D" parent="CharactersLayer/Player"]
-texture_filter = 1
-position = Vector2(0, 30)
-[node name="LanternLight" type="PointLight2D" parent="CharactersLayer/Player"]
-position = Vector2(0, 25)
-scale = Vector2(1.35, 1.35)
-color = Color(0.96, 0.84, 0.65, 1)
-energy = 0.48
-shadow_enabled = true
-texture = SubResource("GradientTexture2D_light")
 
 [node name="ForegroundLayer" type="Node2D" parent="."]
 [node name="DustParticles" type="CPUParticles2D" parent="ForegroundLayer"]

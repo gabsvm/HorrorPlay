@@ -1,7 +1,7 @@
 [gd_scene load_steps=12 format=3 uid="uid://df72streetsb8b"]
 
 [ext_resource type="Script" path="res://src/rooms/room_02_streets/room_02_streets.gd" id="1_script"]
-[ext_resource type="Script" path="res://src/rooms/player.gd" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://inspector_actor_root" path="res://src/characters/inspector/inspector.tscn" id="2_inspector"]
 [ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="3_hotspot"]
 [ext_resource type="Texture2D" path="res://assets/images/backgrounds/streets_bg.svg" id="4_bg"]
 [ext_resource type="Texture2D" uid="uid://oldman_idle_1" path="res://assets/images/characters/fisherman/idle/oldman-idle-1.png" id="5_oldman"]
@@ -152,21 +152,9 @@ position = Vector2(1770, 830)
 
 [node name="CharactersLayer" type="Node2D" parent="."]
 y_sort_enabled = true
-[node name="Player" type="CharacterBody2D" parent="CharactersLayer"]
+
+[node name="Player" parent="CharactersLayer" instance=ExtResource("2_inspector")]
 position = Vector2(1550, 790)
-script = ExtResource("2_player")
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CharactersLayer/Player"]
-shape = SubResource("RectangleShape2D_player")
-[node name="Sprite2D" type="Sprite2D" parent="CharactersLayer/Player"]
-texture_filter = 1
-position = Vector2(0, 30)
-[node name="LanternLight" type="PointLight2D" parent="CharactersLayer/Player"]
-position = Vector2(0, 28)
-scale = Vector2(1.35, 1.35)
-color = Color(0.96, 0.86, 0.67, 1)
-energy = 0.54
-shadow_enabled = true
-texture = SubResource("GradientTexture2D_light")
 
 [node name="ForegroundLayer" type="Node2D" parent="."]
 [node name="ThreatWatcher" type="Polygon2D" parent="ForegroundLayer"]

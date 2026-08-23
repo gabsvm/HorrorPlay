@@ -1,0 +1,42 @@
+[gd_scene load_steps=5 format=3 uid="uid://inspector_actor_root"]
+
+[ext_resource type="Script" path="res://src/characters/inspector/inspector.gd" id="1_insp"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_inspector"]
+size = Vector2(72, 180)
+
+[sub_resource type="Gradient" id="Gradient_light"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_light"]
+gradient = SubResource("Gradient_light")
+width = 512
+height = 512
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[node name="Player" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 2
+script = ExtResource("1_insp")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_inspector")
+
+[node name="VisualRoot" type="Node2D" parent="."]
+
+[node name="Sprite2D" type="Sprite2D" parent="VisualRoot"]
+texture_filter = 1
+position = Vector2(0, 30)
+
+[node name="InteractionAnchor" type="Marker2D" parent="."]
+position = Vector2(0, 85)
+
+[node name="PersonalLight" type="PointLight2D" parent="."]
+position = Vector2(0, 25)
+scale = Vector2(1.35, 1.35)
+color = Color(0.96, 0.84, 0.65, 1)
+energy = 0.48
+shadow_enabled = true
+texture = SubResource("GradientTexture2D_light")

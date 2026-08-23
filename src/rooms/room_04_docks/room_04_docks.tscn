@@ -1,7 +1,7 @@
 [gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://src/rooms/room_04_docks/room_04_docks.gd" id="1_script"]
-[ext_resource type="Script" path="res://src/rooms/player.gd" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://inspector_actor_root" path="res://src/characters/inspector/inspector.tscn" id="2_inspector"]
 [ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="3_hotspot"]
 [ext_resource type="Texture2D" path="res://assets/images/backgrounds/docks_bg.svg" id="4_bg"]
 [ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="5_flicker"]
@@ -133,21 +133,9 @@ position = Vector2(1480, 790)
 
 [node name="CharactersLayer" type="Node2D" parent="."]
 y_sort_enabled = true
-[node name="Player" type="CharacterBody2D" parent="CharactersLayer"]
+
+[node name="Player" parent="CharactersLayer" instance=ExtResource("2_inspector")]
 position = Vector2(310, 770)
-script = ExtResource("2_player")
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CharactersLayer/Player"]
-shape = SubResource("RectangleShape2D_player")
-[node name="Sprite2D" type="Sprite2D" parent="CharactersLayer/Player"]
-texture_filter = 1
-position = Vector2(0, 30)
-[node name="LanternLight" type="PointLight2D" parent="CharactersLayer/Player"]
-position = Vector2(0, 30)
-scale = Vector2(1.7, 1.7)
-color = Color(0.98, 0.92, 0.78, 1)
-energy = 0.62
-shadow_enabled = true
-texture = SubResource("GradientTexture2D_light")
 
 [node name="ForegroundLayer" type="Node2D" parent="."]
 [node name="RainParticles" type="CPUParticles2D" parent="ForegroundLayer"]

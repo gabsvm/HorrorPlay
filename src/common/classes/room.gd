@@ -106,4 +106,6 @@ func _get_player() -> Player:
 		for child in chars_layer.get_children():
 			if child is Player:
 				return child
+			if child is CharacterBody2D and child.name == "Player":
+				return child as Player
 	return null
