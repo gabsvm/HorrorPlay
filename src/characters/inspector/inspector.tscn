@@ -51,11 +51,29 @@ sprite_frames = ExtResource("2_frames")
 animation = &"idle"
 autoplay = "idle"
 
+[node name="LanternProp" type="Node2D" parent="VisualRoot"]
+position = Vector2(-40, -118)
+z_index = 2
+
+[node name="Handle" type="Line2D" parent="VisualRoot/LanternProp"]
+points = PackedVector2Array(-8, -8, 0, -17, 8, -8)
+width = 3.0
+default_color = Color(0.35, 0.25, 0.13, 1)
+antialiased = true
+
+[node name="Body" type="Polygon2D" parent="VisualRoot/LanternProp"]
+polygon = PackedVector2Array(-11, -7, 11, -7, 13, 14, -13, 14)
+color = Color(0.52, 0.36, 0.14, 1)
+
+[node name="Glass" type="Polygon2D" parent="VisualRoot/LanternProp"]
+polygon = PackedVector2Array(-7, -3, 7, -3, 8, 9, -8, 9)
+color = Color(1, 0.78, 0.36, 0.88)
+
 [node name="InteractionAnchor" type="Marker2D" parent="."]
 position = Vector2(0, 0)
 
 [node name="PersonalLight" type="PointLight2D" parent="."]
-position = Vector2(0, -110)
+position = Vector2(-40, -118)
 scale = Vector2(1.35, 1.35)
 color = Color(0.96, 0.84, 0.65, 1)
 energy = 0.48
