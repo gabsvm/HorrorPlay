@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://df72tavern8b"]
+[gd_scene load_steps=10 format=3 uid="uid://df72tavern8b"]
 
 [ext_resource type="Script" path="res://src/rooms/room_03_tavern/room_03_tavern.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://inspector_actor_root" path="res://src/characters/inspector/inspector.tscn" id="2_inspector"]
@@ -29,9 +29,6 @@ height = 512
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
-size = Vector2(72, 180)
 
 [node name="Room_Tavern" type="Node2D"]
 script = ExtResource("1_script")
@@ -82,6 +79,8 @@ speed = 7.0
 script = ExtResource("3_hotspot")
 hotspot_name = "Salida a Marsh Street"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "left"
+interaction_pose = "none"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/DoorBack"]
 polygon = PackedVector2Array(45, 270, 320, 270, 320, 785, 45, 785)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/DoorBack"]
@@ -91,6 +90,8 @@ position = Vector2(230, 820)
 script = ExtResource("3_hotspot")
 hotspot_name = "Tablón de clientes"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "right"
+interaction_pose = "inspect"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/NoticeBoard"]
 polygon = PackedVector2Array(360, 190, 680, 190, 680, 460, 360, 460)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/NoticeBoard"]
@@ -100,6 +101,8 @@ position = Vector2(500, 700)
 script = ExtResource("3_hotspot")
 hotspot_name = "Mesa de pescadores"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "right"
+interaction_pose = "none"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Patrons"]
 polygon = PackedVector2Array(320, 500, 680, 500, 680, 770, 320, 770)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Patrons"]
@@ -109,6 +112,8 @@ position = Vector2(560, 810)
 script = ExtResource("3_hotspot")
 hotspot_name = "Barnaby"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "right"
+interaction_pose = "none"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Innkeeper"]
 polygon = PackedVector2Array(1035, 500, 1215, 500, 1215, 790, 1035, 790)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Innkeeper"]
