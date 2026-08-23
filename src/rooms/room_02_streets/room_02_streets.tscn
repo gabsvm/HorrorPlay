@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://df72streetsb8b"]
+[gd_scene load_steps=11 format=3 uid="uid://df72streetsb8b"]
 
 [ext_resource type="Script" path="res://src/rooms/room_02_streets/room_02_streets.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://inspector_actor_root" path="res://src/characters/inspector/inspector.tscn" id="2_inspector"]
@@ -38,9 +38,6 @@ shader_parameter/distortion_strength = 0.0025
 shader_parameter/wave_speed = 3.1
 shader_parameter/wave_frequency = 38.0
 shader_parameter/wet_tint = Color(0.045, 0.07, 0.085, 1)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
-size = Vector2(72, 180)
 
 [node name="Room_Streets" type="Node2D"]
 script = ExtResource("1_script")
@@ -126,7 +123,7 @@ script = ExtResource("3_hotspot")
 hotspot_name = "Silas, pescador"
 walk_to_point = NodePath("WalkToPoint")
 interaction_facing = "right"
-interaction_pose = "inspect"
+interaction_pose = "none"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Fisherman"]
 polygon = PackedVector2Array(885, 575, 1015, 575, 1015, 835, 885, 835)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Fisherman"]
