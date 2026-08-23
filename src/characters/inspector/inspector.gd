@@ -27,10 +27,12 @@ signal facing_finished(direction: int)
 
 @export_group("Visuals")
 @export var base_scale: float = 1.0
+@export var lantern_anchor: Vector2 = Vector2(-40.0, -118.0)
 
 @onready var visual_root: Node2D = $VisualRoot
 @onready var contact_shadow: Sprite2D = $VisualRoot/ContactShadow
 @onready var animated_sprite: AnimatedSprite2D = $VisualRoot/AnimatedSprite2D
+@onready var lantern_prop: Node2D = $VisualRoot/LanternProp
 @onready var personal_light: PointLight2D = $PersonalLight
 @onready var interaction_anchor: Marker2D = $InteractionAnchor
 @onready var lantern: PointLight2D = personal_light
@@ -59,6 +61,7 @@ func _ready() -> void:
 	if not Sanity.sanity_changed.is_connected(_on_sanity_changed):
 		Sanity.sanity_changed.connect(_on_sanity_changed)
 
+	_apply_visual_transform()
 	_play_appropriate_idle()
 	var debug_label = get_node_or_null("DetectiveLabel")
 	if debug_label:
@@ -194,6 +197,8 @@ func configure_light(enabled: bool, energy: float = 0.52, color: Color = Color(0
 		personal_light.energy = energy
 		personal_light.color = color
 		personal_light.scale = Vector2(light_scale, light_scale)
+	if lantern_prop:
+		lantern_prop.visible = enabled
 
 func set_depth_scale(scale_val: float) -> void:
 	depth_scale_factor = scale_val
@@ -204,8 +209,14 @@ func _apply_facing_immediate(new_facing: int) -> void:
 	_apply_visual_transform()
 
 func _apply_visual_transform() -> void:
+	var visual_scale := depth_scale_factor * base_scale
 	if visual_root:
-		visual_root.scale = Vector2(float(facing_direction) * depth_scale_factor * base_scale, depth_scale_factor * base_scale)
+		visual_root.scale = Vector2(float(facing_direction) * visual_scale, visual_scale)
+	if personal_light:
+		personal_light.position = Vector2(
+			lantern_anchor.x * float(facing_direction) * visual_scale,
+			lantern_anchor.y * visual_scale
+		)
 
 func _begin_turn(new_facing: int, resume_state: State = State.IDLE) -> void:
 	var normalized_facing := -1 if new_facing < 0 else 1
