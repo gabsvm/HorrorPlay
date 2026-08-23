@@ -1,7 +1,8 @@
-[gd_scene load_steps=7 format=3 uid="uid://inspector_actor_root"]
+[gd_scene load_steps=9 format=3 uid="uid://inspector_actor_root"]
 
 [ext_resource type="Script" path="res://src/characters/inspector/inspector.gd" id="1_insp"]
 [ext_resource type="SpriteFrames" uid="uid://inspector_sprite_frames" path="res://src/characters/inspector/inspector_frames.tres" id="2_frames"]
+[ext_resource type="Shader" path="res://src/characters/inspector/inspector_paint.gdshader" id="3_paint"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_inspector"]
 size = Vector2(50, 190)
@@ -28,6 +29,14 @@ fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_inspector_paint"]
+shader = ExtResource("3_paint")
+shader_parameter/grain_strength = 0.04
+shader_parameter/volume_strength = 0.09
+shader_parameter/rim_strength = 0.12
+shader_parameter/cool_tint = Color(0.48, 0.66, 0.72, 1)
+shader_parameter/warm_tint = Color(0.78, 0.54, 0.3, 1)
+
 [node name="Player" type="CharacterBody2D"]
 collision_layer = 4
 collision_mask = 2
@@ -45,6 +54,8 @@ scale = Vector2(1.2, 0.55)
 texture = SubResource("GradientTexture2D_shadow")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="VisualRoot"]
+material = SubResource("ShaderMaterial_inspector_paint")
+texture_filter = 1
 position = Vector2(0, -107)
 scale = Vector2(0.5, 0.5)
 sprite_frames = ExtResource("2_frames")
