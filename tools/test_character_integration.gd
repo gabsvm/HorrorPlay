@@ -48,10 +48,9 @@ func _start_tests() -> void:
 	Inventory.set_active_item(key_item)
 	_request_hotspot(drawer, "interact")
 
-	if not await _wait_for_animation(player, &"use_mid"):
-		_fail_test("Rusty Key interaction never reached use_mid")
+	if not await _wait_for_animation_frame(player, &"use_mid", 2):
+		_fail_test("Rusty Key interaction never reached the middle of use_mid")
 		return
-	await _wait_frames(2)
 	_capture_screenshot("04_office_using_key_mid.png")
 
 	if not await _wait_for_flag("office_drawer_unlocked"):
@@ -170,7 +169,7 @@ func _request_hotspot(hotspot: Hotspot, verb: String) -> void:
 func _on_drawer_item_success(_item: ItemData) -> void:
 	drawer_success_count += 1
 
-func _on_player_state_changed(_old_state: Player.State, new_state: Player.State) -> void:
+func _on_player_state_changed(_old_state: int, new_state: int) -> void:
 	if new_state == Player.State.TURNING:
 		turn_state_seen = true
 
@@ -191,9 +190,9 @@ func _dismiss_dialogue_cleanly() -> void:
 		await _wait_frames(4)
 	await _wait_frames(4)
 
-func _wait_for_animation(player: Player, animation_name: StringName, max_frames: int = 360) -> bool:
+func _wait_for_animation_frame(player: Player, animation_name: StringName, minimum_frame: int, max_frames: int = 360) -> bool:
 	for _i in range(max_frames):
-		if player and player.animated_sprite and player.animated_sprite.animation == animation_name:
+		if player and player.animated_sprite and player.animated_sprite.animation == animation_name and player.animated_sprite.frame >= minimum_frame:
 			return true
 		await get_tree().process_frame
 	return false
