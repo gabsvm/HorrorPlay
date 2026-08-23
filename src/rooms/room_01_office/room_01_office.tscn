@@ -77,6 +77,8 @@ speed = 2.2
 script = ExtResource("5_hotspot")
 hotspot_name = "Escritorio y expediente"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "left"
+interaction_pose = "inspect"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Desk"]
 polygon = PackedVector2Array(380, 560, 830, 560, 830, 845, 380, 845)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Desk"]
@@ -86,6 +88,8 @@ position = Vector2(620, 820)
 script = ExtResource("5_hotspot")
 hotspot_name = "Tablero del caso 47-B"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "left"
+interaction_pose = "inspect"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/CaseBoard"]
 polygon = PackedVector2Array(405, 90, 770, 90, 770, 390, 405, 390)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/CaseBoard"]
@@ -95,6 +99,8 @@ position = Vector2(590, 670)
 script = ExtResource("5_hotspot")
 hotspot_name = "Biblioteca de casos confiscados"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "right"
+interaction_pose = "inspect"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Bookcase"]
 polygon = PackedVector2Array(845, 235, 1170, 235, 1170, 750, 845, 750)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Bookcase"]
@@ -105,6 +111,8 @@ script = ExtResource("5_hotspot")
 hotspot_name = "Archivador de evidencias"
 required_item = ExtResource("2_key")
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "right"
+interaction_pose = "mid"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Drawer"]
 polygon = PackedVector2Array(1225, 510, 1440, 510, 1440, 790, 1225, 790)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Drawer"]
@@ -114,6 +122,8 @@ position = Vector2(1335, 820)
 script = ExtResource("5_hotspot")
 hotspot_name = "Salida a Innsmouth"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "right"
+interaction_pose = "none"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Door"]
 polygon = PackedVector2Array(1590, 275, 1860, 275, 1860, 810, 1590, 810)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Door"]

@@ -10,6 +10,8 @@ signal item_used_failed(item: ItemData)
 @export var is_active: bool = true
 @export var required_item: ItemData = null
 @export var walk_to_point: Marker2D
+@export_enum("auto", "left", "right", "none") var interaction_facing: String = "auto"
+@export_enum("default", "mid", "low", "inspect", "none") var interaction_pose: String = "default"
 
 var reveal_container: Node2D = null
 var reveal_tween: Tween = null
@@ -148,3 +150,15 @@ func _get_collision_points() -> PackedVector2Array:
 			result.append(shape_node.transform * Vector2(cos(angle), sin(angle)) * radius)
 
 	return result
+
+func get_center_position() -> Vector2:
+	var poly_node = get_node_or_null("CollisionPolygon2D")
+	if poly_node and poly_node is CollisionPolygon2D and poly_node.polygon.size() > 0:
+		var sum = Vector2.ZERO
+		for pt in poly_node.polygon:
+			sum += pt
+		return poly_node.to_global(sum / float(poly_node.polygon.size()))
+	var shape_node = get_node_or_null("CollisionShape2D")
+	if shape_node and shape_node is CollisionShape2D:
+		return shape_node.global_position
+	return global_position

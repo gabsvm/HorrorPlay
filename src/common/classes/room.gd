@@ -73,23 +73,58 @@ func _walk_and_execute(hotspot: Hotspot, verb: String) -> void:
 	var player = _get_player()
 	var armed_item = Inventory.active_item
 
-	if hotspot.walk_to_point and player:
+	if player:
 		InputController.block_input(true)
-		await player.walk_to(hotspot.walk_to_point.global_position)
-		InputController.block_input(false)
+		if hotspot.walk_to_point:
+			await player.walk_to(hotspot.walk_to_point.global_position)
+		
+		# Orient player towards hotspot or authored facing
+		match hotspot.interaction_facing:
+			"left":
+				player._set_facing(-1)
+			"right":
+				player._set_facing(1)
+			"auto":
+				player.face_position(hotspot.get_center_position())
+			"none":
+				pass
 
 	if armed_item != null and verb == "interact":
 		if hotspot.required_item == null:
+			if player:
+				InputController.block_input(false)
 			_show_item_use_hint("%s no parece tener ningún uso en %s." % [armed_item.name, hotspot.hotspot_name])
 			return
+
+		if player:
+			var item_anim = &"pickup_low" if hotspot.interaction_pose == "low" else &"use_mid"
+			await player.play_interaction_animation(item_anim)
 
 		var correct_item = hotspot.accepts_item(armed_item)
 		hotspot.execute_interaction("use_item")
 		if correct_item and Inventory.active_item == armed_item:
 			Inventory.set_active_item(null)
+		if player:
+			InputController.block_input(false)
 		return
 
+	if player and hotspot.interaction_pose != "none":
+		if verb == "examine":
+			await player.play_interaction_animation(&"inspect")
+		elif verb == "interact":
+			match hotspot.interaction_pose:
+				"inspect":
+					await player.play_interaction_animation(&"inspect")
+				"mid", "use_mid":
+					await player.play_interaction_animation(&"use_mid")
+				"low", "pickup_low":
+					await player.play_interaction_animation(&"pickup_low")
+				"default":
+					await player.play_interaction_animation(&"use_mid")
+
 	hotspot.execute_interaction(verb)
+	if player:
+		InputController.block_input(false)
 
 func _show_item_use_hint(message: String) -> void:
 	var scene = get_tree().current_scene

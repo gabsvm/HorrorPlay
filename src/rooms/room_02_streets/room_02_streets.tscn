@@ -95,6 +95,8 @@ speed = 5.0
 script = ExtResource("3_hotspot")
 hotspot_name = "Estación de policía"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "left"
+interaction_pose = "none"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/DoorBack"]
 polygon = PackedVector2Array(70, 465, 250, 465, 250, 770, 70, 770)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/DoorBack"]
@@ -104,6 +106,8 @@ position = Vector2(175, 805)
 script = ExtResource("3_hotspot")
 hotspot_name = "El Pez Dorado"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "left"
+interaction_pose = "none"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/TavernDoor"]
 polygon = PackedVector2Array(500, 420, 685, 420, 685, 775, 500, 775)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/TavernDoor"]
@@ -113,6 +117,8 @@ position = Vector2(600, 810)
 script = ExtResource("3_hotspot")
 hotspot_name = "Silas, pescador"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "right"
+interaction_pose = "inspect"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Fisherman"]
 polygon = PackedVector2Array(885, 575, 1015, 575, 1015, 835, 885, 835)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Fisherman"]
@@ -127,6 +133,8 @@ texture = ExtResource("5_oldman")
 script = ExtResource("3_hotspot")
 hotspot_name = "Mercado de pescado cerrado"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "right"
+interaction_pose = "inspect"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/FishMarket"]
 polygon = PackedVector2Array(1030, 465, 1465, 465, 1465, 775, 1030, 775)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/FishMarket"]
@@ -136,6 +144,8 @@ position = Vector2(1240, 820)
 script = ExtResource("3_hotspot")
 hotspot_name = "Tablón de avisos del puerto"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "right"
+interaction_pose = "inspect"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/HarborNotice"]
 polygon = PackedVector2Array(1430, 460, 1700, 460, 1700, 665, 1430, 665)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/HarborNotice"]
@@ -145,6 +155,8 @@ position = Vector2(1530, 800)
 script = ExtResource("3_hotspot")
 hotspot_name = "Bajada a los muelles"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "right"
+interaction_pose = "none"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/DockPath"]
 polygon = PackedVector2Array(1660, 625, 1920, 625, 1920, 910, 1660, 910)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/DockPath"]
