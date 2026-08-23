@@ -295,7 +295,29 @@ func play_item_interaction(item: ItemData, fallback_animation: StringName = &"no
 	var animation_to_play := fallback_animation
 	if item and item.world_use_animation != "":
 		animation_to_play = StringName(item.world_use_animation)
+	if animation_to_play == &"generic_reach":
+		await play_generic_use_motion()
+		return
 	await play_interaction_animation(animation_to_play)
+
+func play_generic_use_motion() -> void:
+	if not visual_root:
+		return
+	_reset_animation_speed()
+	_transition_to(State.INTERACTING)
+	if animated_sprite:
+		animated_sprite.play(&"idle")
+	var start_position := visual_root.position
+	var reach_offset := Vector2(10.0 * float(facing_direction), -2.0)
+	var tween := create_tween()
+	tween.tween_property(visual_root, "position", start_position + reach_offset, 0.16).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(0.16)
+	tween.tween_property(visual_root, "position", start_position, 0.22).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	await tween.finished
+	if visual_root:
+		visual_root.position = start_position
+	_transition_to(State.IDLE)
+	interaction_finished.emit()
 
 func play_reaction() -> void:
 	if not animated_sprite or not animated_sprite.sprite_frames.has_animation(&"react"):
