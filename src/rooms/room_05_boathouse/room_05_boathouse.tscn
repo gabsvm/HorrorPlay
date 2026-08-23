@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://src/rooms/room_05_boathouse/room_05_boathouse.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://inspector_actor_root" path="res://src/characters/inspector/inspector.tscn" id="2_inspector"]
@@ -26,8 +26,6 @@ height = 512
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
-size = Vector2(72, 180)
 
 [node name="Room_Boathouse" type="Node2D"]
 script = ExtResource("1_script")
@@ -70,10 +68,13 @@ texture = SubResource("GradientTexture2D_light")
 script = ExtResource("3_hotspot")
 hotspot_name = "Puerta al muelle"
 walk_to_point = NodePath("WalkToPoint")
+interaction_facing = "left"
+interaction_pose = "none"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/DoorBack"]
 polygon = PackedVector2Array(70, 250, 350, 250, 350, 805, 70, 805)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/DoorBack"]
 position = Vector2(365, 790)
+
 [node name="ServiceLockers" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("3_hotspot")
 hotspot_name = "Casilleros de servicio"
@@ -84,6 +85,7 @@ interaction_pose = "inspect"
 polygon = PackedVector2Array(880, 205, 1340, 205, 1340, 810, 880, 810)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/ServiceLockers"]
 position = Vector2(910, 800)
+
 [node name="FuseBox" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("3_hotspot")
 hotspot_name = "Caja eléctrica del pescante"
@@ -95,16 +97,18 @@ interaction_pose = "mid"
 polygon = PackedVector2Array(640, 540, 850, 540, 850, 790, 640, 790)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/FuseBox"]
 position = Vector2(620, 800)
+
 [node name="Radio" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("3_hotspot")
 hotspot_name = "Radio de guardia"
 walk_to_point = NodePath("WalkToPoint")
 interaction_facing = "right"
-interaction_pose = "mid"
+interaction_pose = "inspect"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Radio"]
 polygon = PackedVector2Array(1340, 420, 1810, 420, 1810, 735, 1340, 735)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Radio"]
 position = Vector2(1330, 790)
+
 [node name="FloorDrain" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("3_hotspot")
 hotspot_name = "Desagüe del piso"
@@ -115,12 +119,13 @@ interaction_pose = "low"
 polygon = PackedVector2Array(335, 825, 690, 825, 690, 1005, 335, 1005)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/FloorDrain"]
 position = Vector2(520, 830)
+
 [node name="Boat317" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
 script = ExtResource("3_hotspot")
 hotspot_name = "Bote 317 y pescante"
 walk_to_point = NodePath("WalkToPoint")
 interaction_facing = "right"
-interaction_pose = "mid"
+interaction_pose = "inspect"
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="HotspotsLayer/Boat317"]
 polygon = PackedVector2Array(1040, 690, 1850, 690, 1850, 1040, 1040, 1040)
 [node name="WalkToPoint" type="Marker2D" parent="HotspotsLayer/Boat317"]
