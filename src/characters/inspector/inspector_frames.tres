@@ -1,0 +1,383 @@
+[gd_resource type="SpriteFrames" load_steps=61 format=3 uid="uid://inspector_sprite_frames"]
+
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/idle/inspector_idle_01.png" id="1_idle_1"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/idle/inspector_idle_02.png" id="2_idle_2"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/idle/inspector_idle_03.png" id="3_idle_3"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/idle/inspector_idle_04.png" id="4_idle_4"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/idle/inspector_idle_05.png" id="5_idle_5"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/idle/inspector_idle_06.png" id="6_idle_6"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/idle_uneasy/inspector_idle_uneasy_01.png" id="7_idle_uneasy_1"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/idle_uneasy/inspector_idle_uneasy_02.png" id="8_idle_uneasy_2"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/idle_uneasy/inspector_idle_uneasy_03.png" id="9_idle_uneasy_3"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/idle_uneasy/inspector_idle_uneasy_04.png" id="10_idle_uneasy_4"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/idle_uneasy/inspector_idle_uneasy_05.png" id="11_idle_uneasy_5"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/idle_uneasy/inspector_idle_uneasy_06.png" id="12_idle_uneasy_6"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/walk/inspector_walk_01.png" id="13_walk_1"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/walk/inspector_walk_02.png" id="14_walk_2"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/walk/inspector_walk_03.png" id="15_walk_3"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/walk/inspector_walk_04.png" id="16_walk_4"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/walk/inspector_walk_05.png" id="17_walk_5"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/walk/inspector_walk_06.png" id="18_walk_6"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/walk/inspector_walk_07.png" id="19_walk_7"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/walk/inspector_walk_08.png" id="20_walk_8"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/turn/inspector_turn_01.png" id="21_turn_1"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/turn/inspector_turn_02.png" id="22_turn_2"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/turn/inspector_turn_03.png" id="23_turn_3"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/turn/inspector_turn_04.png" id="24_turn_4"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/inspect/inspector_inspect_01.png" id="25_inspect_1"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/inspect/inspector_inspect_02.png" id="26_inspect_2"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/inspect/inspector_inspect_03.png" id="27_inspect_3"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/inspect/inspector_inspect_04.png" id="28_inspect_4"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/inspect/inspector_inspect_05.png" id="29_inspect_5"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/inspect/inspector_inspect_06.png" id="30_inspect_6"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/use_mid/inspector_use_mid_01.png" id="31_use_mid_1"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/use_mid/inspector_use_mid_02.png" id="32_use_mid_2"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/use_mid/inspector_use_mid_03.png" id="33_use_mid_3"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/use_mid/inspector_use_mid_04.png" id="34_use_mid_4"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/use_mid/inspector_use_mid_05.png" id="35_use_mid_5"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/use_mid/inspector_use_mid_06.png" id="36_use_mid_6"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/pickup_low/inspector_pickup_low_01.png" id="37_pickup_low_1"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/pickup_low/inspector_pickup_low_02.png" id="38_pickup_low_2"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/pickup_low/inspector_pickup_low_03.png" id="39_pickup_low_3"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/pickup_low/inspector_pickup_low_04.png" id="40_pickup_low_4"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/pickup_low/inspector_pickup_low_05.png" id="41_pickup_low_5"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/pickup_low/inspector_pickup_low_06.png" id="42_pickup_low_6"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/react/inspector_react_01.png" id="43_react_1"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/react/inspector_react_02.png" id="44_react_2"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/react/inspector_react_03.png" id="45_react_3"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/react/inspector_react_04.png" id="46_react_4"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/react/inspector_react_05.png" id="47_react_5"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/react/inspector_react_06.png" id="48_react_6"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/hide_enter/inspector_hide_enter_01.png" id="49_hide_enter_1"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/hide_enter/inspector_hide_enter_02.png" id="50_hide_enter_2"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/hide_enter/inspector_hide_enter_03.png" id="51_hide_enter_3"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/hide_enter/inspector_hide_enter_04.png" id="52_hide_enter_4"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/hide_hold/inspector_hide_hold_01.png" id="53_hide_hold_1"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/hide_hold/inspector_hide_hold_02.png" id="54_hide_hold_2"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/hide_hold/inspector_hide_hold_03.png" id="55_hide_hold_3"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/hide_hold/inspector_hide_hold_04.png" id="56_hide_hold_4"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/hide_exit/inspector_hide_exit_01.png" id="57_hide_exit_1"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/hide_exit/inspector_hide_exit_02.png" id="58_hide_exit_2"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/hide_exit/inspector_hide_exit_03.png" id="59_hide_exit_3"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/inspector_production/hide_exit/inspector_hide_exit_04.png" id="60_hide_exit_4"]
+
+[resource]
+animations = [
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": ExtResource("1_idle_1")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("2_idle_2")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("3_idle_3")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("4_idle_4")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("5_idle_5")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("6_idle_6")
+}
+],
+"loop": true,
+"name": &"idle",
+"speed": 6.0
+},
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": ExtResource("7_idle_uneasy_1")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("8_idle_uneasy_2")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("9_idle_uneasy_3")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("10_idle_uneasy_4")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("11_idle_uneasy_5")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("12_idle_uneasy_6")
+}
+],
+"loop": true,
+"name": &"idle_uneasy",
+"speed": 6.0
+},
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": ExtResource("13_walk_1")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("14_walk_2")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("15_walk_3")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("16_walk_4")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("17_walk_5")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("18_walk_6")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("19_walk_7")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("20_walk_8")
+}
+],
+"loop": true,
+"name": &"walk",
+"speed": 9.0
+},
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": ExtResource("21_turn_1")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("22_turn_2")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("23_turn_3")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("24_turn_4")
+}
+],
+"loop": false,
+"name": &"turn",
+"speed": 12.0
+},
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": ExtResource("25_inspect_1")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("26_inspect_2")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("27_inspect_3")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("28_inspect_4")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("29_inspect_5")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("30_inspect_6")
+}
+],
+"loop": false,
+"name": &"inspect",
+"speed": 6.0
+},
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": ExtResource("31_use_mid_1")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("32_use_mid_2")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("33_use_mid_3")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("34_use_mid_4")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("35_use_mid_5")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("36_use_mid_6")
+}
+],
+"loop": false,
+"name": &"use_mid",
+"speed": 7.0
+},
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": ExtResource("37_pickup_low_1")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("38_pickup_low_2")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("39_pickup_low_3")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("40_pickup_low_4")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("41_pickup_low_5")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("42_pickup_low_6")
+}
+],
+"loop": false,
+"name": &"pickup_low",
+"speed": 6.0
+},
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": ExtResource("43_react_1")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("44_react_2")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("45_react_3")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("46_react_4")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("47_react_5")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("48_react_6")
+}
+],
+"loop": false,
+"name": &"react",
+"speed": 8.0
+},
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": ExtResource("49_hide_enter_1")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("50_hide_enter_2")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("51_hide_enter_3")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("52_hide_enter_4")
+}
+],
+"loop": false,
+"name": &"hide_enter",
+"speed": 8.0
+},
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": ExtResource("53_hide_hold_1")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("54_hide_hold_2")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("55_hide_hold_3")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("56_hide_hold_4")
+}
+],
+"loop": true,
+"name": &"hide_hold",
+"speed": 4.0
+},
+{
+"frames": [
+{
+"duration": 1.0,
+"texture": ExtResource("57_hide_exit_1")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("58_hide_exit_2")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("59_hide_exit_3")
+},
+{
+"duration": 1.0,
+"texture": ExtResource("60_hide_exit_4")
+}
+],
+"loop": false,
+"name": &"hide_exit",
+"speed": 8.0
+}
+]

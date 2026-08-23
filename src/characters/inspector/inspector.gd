@@ -23,12 +23,10 @@ signal interaction_finished()
 @export var arrival_radius: float = 6.0
 
 @export_group("Visuals")
-@export var frame_rate: float = 8.0
-@export var idle_textures: Array[Texture2D] = []
-@export var walk_textures: Array[Texture2D] = []
+@export var default_scale: Vector2 = Vector2(0.5, 0.5)
 
 @onready var visual_root: Node2D = $VisualRoot
-@onready var sprite: Sprite2D = $VisualRoot/Sprite2D
+@onready var animated_sprite: AnimatedSprite2D = $VisualRoot/AnimatedSprite2D
 @onready var personal_light: PointLight2D = $PersonalLight
 @onready var interaction_anchor: Marker2D = $InteractionAnchor
 @onready var lantern: PointLight2D = personal_light
@@ -37,42 +35,20 @@ var current_state: State = State.IDLE
 var target_position: Vector2 = Vector2.ZERO
 var facing_direction: int = 1 # 1 = right, -1 = left
 var is_moving: bool = false
-var anim_time: float = 0.0
-var last_walk_frame: int = -1
 var current_surface: String = "wood"
 var light_time: float = 0.0
+var last_footstep_frame: int = -1
 
 func _ready() -> void:
 	add_to_group("Player")
 	target_position = global_position
-	_load_default_animation_frames()
+	if animated_sprite:
+		animated_sprite.frame_changed.connect(_on_sprite_frame_changed)
+		animated_sprite.animation_finished.connect(_on_sprite_animation_finished)
+		_play_appropriate_idle()
 	var debug_label = get_node_or_null("DetectiveLabel")
 	if debug_label:
 		debug_label.queue_free()
-
-func _load_default_animation_frames() -> void:
-	if idle_textures.is_empty():
-		for path in [
-			"res://assets/images/characters/inspector/idle/hat-man-idle-1.png",
-			"res://assets/images/characters/inspector/idle/hat-man-idle-2.png",
-			"res://assets/images/characters/inspector/idle/hat-man-idle-3.png",
-			"res://assets/images/characters/inspector/idle/hat-man-idle-4.png"
-		]:
-			var texture = load(path) as Texture2D
-			if texture:
-				idle_textures.append(texture)
-	if walk_textures.is_empty():
-		for path in [
-			"res://assets/images/characters/inspector/walk/hat-man-walk-1.png",
-			"res://assets/images/characters/inspector/walk/hat-man-walk-2.png",
-			"res://assets/images/characters/inspector/walk/hat-man-walk-3.png",
-			"res://assets/images/characters/inspector/walk/hat-man-walk-4.png",
-			"res://assets/images/characters/inspector/walk/hat-man-walk-5.png",
-			"res://assets/images/characters/inspector/walk/hat-man-walk-6.png"
-		]:
-			var texture = load(path) as Texture2D
-			if texture:
-				walk_textures.append(texture)
 
 func _physics_process(delta: float) -> void:
 	_update_light(delta)
@@ -96,7 +72,7 @@ func _process_idle(_delta: float) -> void:
 	if global_position.distance_to(target_position) > arrival_radius:
 		_transition_to(State.WALKING)
 	else:
-		_update_sprite_animation(_delta, false)
+		_play_appropriate_idle()
 
 func _process_walking(delta: float) -> void:
 	var to_target = target_position - global_position
@@ -120,41 +96,41 @@ func _process_walking(delta: float) -> void:
 	move_and_slide()
 	
 	is_moving = velocity.length() > 15.0
-	_update_sprite_animation(delta, is_moving)
+	if animated_sprite and animated_sprite.animation != &"walk":
+		animated_sprite.play(&"walk")
 
 func _process_turning(_delta: float) -> void:
 	velocity = velocity.move_toward(Vector2.ZERO, deceleration * _delta)
 	move_and_slide()
 
-func _update_sprite_animation(delta: float, moving: bool) -> void:
-	var current_textures = walk_textures if (moving and not walk_textures.is_empty()) else idle_textures
-	if current_textures.is_empty():
+func _play_appropriate_idle() -> void:
+	if not animated_sprite or current_state != State.IDLE:
 		return
-	
-	var speed_ratio = (velocity.length() / max_speed) if moving else 1.0
-	var effective_rate = frame_rate * clamp(speed_ratio, 0.6, 1.3) if moving else frame_rate
-	anim_time += delta * effective_rate
-	
-	var frame = int(anim_time) % current_textures.size()
-	if sprite:
-		sprite.texture = current_textures[frame]
-		sprite.position = Vector2(0, 30)
-		sprite.rotation = 0.0
-		sprite.scale = Vector2(4.0, 4.0)
-	
-	if moving and velocity.length() > 30.0:
-		_handle_footstep_frame(frame)
+	var is_uneasy = Sanity.current_sanity <= 55
+	var target_anim = &"idle_uneasy" if is_uneasy else &"idle"
+	if animated_sprite.animation != target_anim:
+		animated_sprite.play(target_anim)
 
-func _handle_footstep_frame(frame: int) -> void:
-	if frame == last_walk_frame:
+func _on_sprite_frame_changed() -> void:
+	if not animated_sprite:
 		return
-	last_walk_frame = frame
-	# Play footstep on stride contact frames
-	if frame == 1 or frame == 4:
-		var surface = current_surface
-		if SceneRouter.current_room is Room:
-			surface = SceneRouter.current_room.footstep_surface
-		AudioBus.play_footstep(surface, 0.72)
+	if animated_sprite.animation == &"walk":
+		var frame = animated_sprite.frame
+		if frame != last_footstep_frame and (frame == 1 or frame == 5):
+			last_footstep_frame = frame
+			if velocity.length() > 30.0:
+				_play_footstep()
+
+func _play_footstep() -> void:
+	var surface = current_surface
+	if SceneRouter.current_room is Room:
+		surface = SceneRouter.current_room.footstep_surface
+	AudioBus.play_footstep(surface, 0.72)
+
+func _on_sprite_animation_finished() -> void:
+	if current_state == State.INTERACTING or current_state == State.REACTING or current_state == State.TURNING:
+		_transition_to(State.IDLE)
+		interaction_finished.emit()
 
 func _update_light(delta: float) -> void:
 	if personal_light and personal_light.visible:
@@ -166,8 +142,6 @@ func _set_facing(new_facing: int) -> void:
 	facing_direction = new_facing
 	if visual_root:
 		visual_root.scale.x = float(facing_direction)
-	elif sprite:
-		sprite.flip_h = (facing_direction < 0)
 
 func face_position(world_pos: Vector2) -> void:
 	var dir = 1 if world_pos.x >= global_position.x else -1
@@ -178,9 +152,11 @@ func _transition_to(new_state: State) -> void:
 		return
 	var old_state = current_state
 	current_state = new_state
-	anim_time = 0.0
-	last_walk_frame = -1
+	last_footstep_frame = -1
 	state_changed.emit(old_state, new_state)
+	
+	if new_state == State.IDLE:
+		_play_appropriate_idle()
 
 func set_target_position(new_target: Vector2) -> void:
 	target_position = new_target
@@ -195,6 +171,20 @@ func walk_to(dest_position: Vector2) -> void:
 		return
 	set_target_position(dest_position)
 	await movement_finished
+
+func play_interaction_animation(anim_name: StringName) -> void:
+	if not animated_sprite or not animated_sprite.sprite_frames.has_animation(anim_name):
+		return
+	_transition_to(State.INTERACTING)
+	animated_sprite.play(anim_name)
+	await interaction_finished
+
+func play_reaction() -> void:
+	if not animated_sprite or not animated_sprite.sprite_frames.has_animation(&"react"):
+		return
+	_transition_to(State.REACTING)
+	animated_sprite.play(&"react")
+	await interaction_finished
 
 func stop_movement() -> void:
 	target_position = global_position
