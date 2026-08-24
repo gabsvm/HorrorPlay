@@ -10,12 +10,20 @@ extends Node2D
 @export var walk_bounds: Rect2 = Rect2(40, 690, 1840, 320)
 @export var checkpoint_on_ready: bool = true
 
+@export_group("Character Presentation")
+@export var character_base_scale: float = 1.0
+@export var character_max_speed: float = 300.0
+@export var character_acceleration: float = 1450.0
+@export var character_deceleration: float = 2050.0
+@export var character_walk_bob: float = 2.2
+@export var character_walk_sway: float = 1.5
+
 @export_group("Character Depth Scaling")
 @export var character_depth_scaling_enabled: bool = false
 @export var character_depth_y_min: float = 650.0
 @export var character_depth_y_max: float = 900.0
-@export var character_scale_far: float = 0.85
-@export var character_scale_near: float = 1.0
+@export var character_scale_far: float = 0.96
+@export var character_scale_near: float = 1.06
 
 @export_group("Personal Light Configuration")
 @export var personal_light_enabled: bool = true
@@ -42,6 +50,13 @@ func _ready() -> void:
 
 	var player = _get_player()
 	if player:
+		player.base_scale = character_base_scale
+		player.max_speed = character_max_speed
+		player.acceleration = character_acceleration
+		player.deceleration = character_deceleration
+		player.walk_bob_amount = character_walk_bob
+		player.walk_sway_amount = character_walk_sway
+		player.set_depth_scale(1.0)
 		player.configure_light(
 			personal_light_enabled,
 			personal_light_energy,
@@ -162,8 +177,6 @@ func _animation_for_verb(pose: String, verb: String) -> StringName:
 		"low":
 			return &"pickup_low"
 		"mid":
-			# The current authored use_mid clip contains the rusty key prop.
-			# Generic mid-height interactions stay neutral until a prop-free clip exists.
 			return &"none"
 	return &"none"
 
