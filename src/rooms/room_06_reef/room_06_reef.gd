@@ -16,6 +16,7 @@ func _ready() -> void:
 	room_name = "Arrecife del Diablo"
 	ambience_profile = "reef"
 	checkpoint_on_ready = true
+	personal_light_enabled = true
 	super._ready()
 	GameState.set_var("player_location", "devils_reef")
 	end_shade.visible = false
@@ -34,20 +35,20 @@ func _apply_font_recursive(node: Node) -> void:
 
 func _begin_approach() -> void:
 	if GameState.get_flag("reef_sequence_seen"):
-		var previous_title = str(GameState.get_var("reef_ending_title", "EL ARRECIFE RECUERDA"))
-		_show_end_panel(previous_title, "La aproximación al Arrecife del Diablo ya forma parte del expediente. El 317 permanece junto a la estructura negra.")
+		var previous_title = str(GameState.get_var("reef_ending_title", "PROJECT LANTERN"))
+		_show_end_panel(previous_title, "La llegada al Arrecife del Diablo ya forma parte del expediente. Ahora sé que alguien esperaba mi presencia antes de que yo recibiera el caso.")
 		return
 	await get_tree().create_timer(0.7).timeout
 	AudioBus.play_horror_stinger(0.45)
 	AtmosphereController.horror_pulse(0.55)
 	await DialogueManager.show_dialogue([
 		"El pueblo desaparece detrás de la niebla antes de que el 317 complete la primera milla.",
-		"Las coordenadas del diario y la última ruta de los guardacostas señalan el mismo punto: una línea de roca negra que apenas sobresale del agua.",
-		"La brújula empieza a oscilar.",
-		"Entonces la radio pronuncia mi apellido con la voz de un hombre muerto hace tres días."
+		"Las coordenadas del diario, la ruta del 317 y el cableado L-17 señalan el mismo punto: una línea de roca negra que apenas sobresale del agua.",
+		"La brújula empieza a oscilar. La radio, con la batería desconectada, pronuncia mi apellido con la voz de un hombre muerto.",
+		"Después reproduce durante medio segundo el sonido del cajón de mi oficina."
 	], "Inspector")
 	DialogueManager.show_choices(
-		"Una luz verdosa se mueve bajo el bote. Algo está siguiendo al 317.",
+		"Una luz verdosa se mueve bajo el bote. Algo está siguiendo al 317 mientras, desde la roca, aparece una débil luz eléctrica que no debería seguir funcionando.",
 		[
 			{
 				"text": "[Investigación] Apagar la lámpara y navegar por las coordenadas del diario.",
@@ -69,53 +70,91 @@ func _begin_approach() -> void:
 	)
 
 func _on_dark_navigation() -> void:
+	GameState.set_var("reef_route", "investigation")
 	Sanity.drain_sanity(6)
 	await DialogueManager.show_dialogue([
 		"Apago la lámpara. La oscuridad cae de golpe sobre el 317.",
-		"Sin la luz, la presencia bajo el casco deja de seguirme... pero ahora puedo ver lo que la lámpara ocultaba.",
-		"[wave amp=10 freq=2]Docenas de luces verdes se abren bajo la superficie, demasiado separadas para pertenecer a un solo animal.[/wave]"
+		"Sin mi luz, la presencia bajo el casco deja de seguirme... pero ahora puedo ver lo que la lámpara ocultaba.",
+		"[wave amp=10 freq=2]Docenas de luces verdes se abren bajo la superficie, demasiado separadas para pertenecer a un solo animal.[/wave]",
+		"Entre ellas corre una línea recta de pequeños aisladores de porcelana: un cable humano desciende desde el arrecife hacia las profundidades."
 	], "Inspector")
 	await _play_creature_pass(0.75)
-	await DialogueManager.show_dialogue([
-		"Entre dos bancos de niebla aparece una estructura de piedra en el arrecife. No figura en ninguna carta náutica.",
-		"La entrada está por debajo de la línea de marea.",
-		"Los guardacostas no desaparecieron en el mar. Encontraron algo construido dentro de él."
-	], "Inspector")
-	_finish_slice("RUMBO A LO PROFUNDO", "Seguiste las pistas sin atraer por completo la atención de aquello que vive bajo el arrecife.")
+	await _reveal_lantern_station("Llegué siguiendo evidencia y descubrí que la estructura antigua fue rodeada por una estación humana de escucha.")
 
 func _on_hold_course() -> void:
+	GameState.set_var("reef_route", "discipline")
 	Sanity.drain_sanity(15)
 	AudioBus.play_horror_stinger(0.8)
 	AtmosphereController.horror_pulse(0.9)
 	await DialogueManager.show_dialogue([
 		"Mantengo el faro encendido y fijo la vista al frente.",
 		"La luz bajo el agua cambia de dirección inmediatamente.",
-		"Algo enorme golpea la quilla. El 317 se inclina hasta que el agua entra por estribor."
+		"Algo enorme golpea la quilla. El 317 se inclina hasta que el agua entra por estribor.",
+		"No respondo a la radio. Entre dos destellos alcanzo a ver postes, cable y una baranda de acero incrustada en la roca. Esto no es solo una ruina antigua. Alguien construyó aquí."
 	], "Inspector")
 	await _play_creature_pass(1.0)
-	await DialogueManager.show_dialogue([
-		"No respondo a la radio. No reduzco el motor.",
-		"Después de veinte segundos eternos, la presión bajo el casco desaparece.",
-		"Frente a mí emerge una construcción negra entre las rocas. La ruta termina allí."
-	], "Inspector")
-	_finish_slice("BAJO SU MIRADA", "Llegaste al Arrecife del Diablo, pero algo en las profundidades ya sabe exactamente dónde estás.")
+	await _reveal_lantern_station("Llegué sin responder a las voces. La disciplina me permitió reconocer infraestructura federal escondida entre la roca negra.")
 
 func _on_answer_voice() -> void:
+	GameState.set_var("reef_route", "answered")
 	Sanity.drain_sanity(30)
 	AudioBus.play_horror_stinger(1.25)
 	AtmosphereController.horror_pulse(1.35)
 	await DialogueManager.show_dialogue([
 		"—¿Quién está ahí?",
 		"La radio deja de emitir estática.",
-		"Mi propia voz responde desde el altavoz: [shake rate=22 level=10]—Mirá abajo.[/shake]"
+		"Mi propia voz responde desde el altavoz: [shake rate=22 level=10]—Todavía no.[/shake]",
+		"No recuerdo haber pronunciado esas palabras."
 	], "Inspector")
 	await _play_creature_pass(1.35)
 	await DialogueManager.show_dialogue([
-		"Miro.",
+		"Miro abajo.",
 		"Por un instante entiendo la forma completa bajo el 317 y comprendo por qué el cerebro humano la fragmenta en aletas, ojos y extremidades.",
-		"Cuando vuelvo a levantar la cabeza, estoy frente al arrecife. No recuerdo haber navegado hasta aquí."
+		"Después veo algo aún peor: cables humanos entrando directamente en esa forma, como electrodos colocados sobre un órgano vivo."
 	], "Inspector")
-	_finish_slice("LA VOZ DEL ARRECIFE", "Respondiste. Algo respondió también, y una parte de la investigación ya no puede separarse de tu propia mente.")
+	await _reveal_lantern_station("Respondí a la señal. Algo utilizó mi propia voz antes de que yo supiera qué palabras iba a decir.")
+
+func _reveal_lantern_station(route_note: String) -> void:
+	await DialogueManager.show_dialogue([
+		"El 317 toca piedra. Encuentro una escalera de hierro instalada sobre escalones mucho más antiguos y desciendo a una cámara excavada en el arrecife.",
+		"La mitad del lugar no pertenece a ninguna ruina. Hay mesas de trabajo, válvulas, auriculares, rollos de cable y cajas federales cubiertas por décadas de sal.",
+		"En una placa de bronce todavía puede leerse: [color=#06b6d4]PROJECT LANTERN — DEVIL'S REEF LISTENING STATION[/color].",
+		"Sobre la mesa central hay un receptor conectado a una piedra negra atravesada por filamentos de cobre. El receptor está encendido.",
+		"Desconecto el cable de alimentación. Sigue encendido.",
+		"Abro la carcasa: no hay cilindro, disco, hilo ni mecanismo de registro. Solo un circuito de recepción que termina dentro de la roca."
+	], "Inspector")
+	AudioBus.play_horror_stinger(0.72)
+	AtmosphereController.horror_pulse(0.9)
+	await DialogueManager.show_dialogue([
+		"Me coloco los auriculares.",
+		"Primero escucho a Hale. Después a Mercer. Después a Ward.",
+		"Luego oigo una cuarta voz.",
+		"Es la mía.",
+		"[wave amp=10 freq=2]—No abras el archivo todavía.[/wave]",
+		"La misma frase incompleta que atravesó la radio del 317 cuatro noches antes. Una frase que todavía no recuerdo haber dicho."
+	], "Inspector")
+	GameState.set_flag("lantern_roster_found", true)
+	Investigation.discover_evidence("lantern_roster")
+	await DialogueManager.show_dialogue([
+		"Junto al receptor hay una hoja mecanografiada, fechada antes de la desaparición:",
+		"PROJECT LANTERN — ANÁLISIS DE FIRMA 317.",
+		"SIGNAL 01: HALE. SIGNAL 02: MERCER. SIGNAL 03: WARD.",
+		"SIGNAL 04: UNKNOWN.",
+		"Debajo, una anotación agregada en tinta roja: [color=#ca8a04]«MATCH SOURCE: CASE 47-B INVESTIGATOR»[/color].",
+		"La última línea contiene la fecha de esta noche y una hora estimada de llegada al arrecife. Faltan once minutos.",
+		"Miro el reloj de la estación.",
+		"Faltan once minutos."
+	], "Inspector")
+	await DialogueManager.show_dialogue([
+		route_note,
+		"No me asignaron el expediente porque tres hombres desaparecieron.",
+		"Alguien conservó este caso porque el 317 ya contenía una cuarta señal que todavía no existía.",
+		"La mía."
+	], "Inspector")
+	_finish_slice(
+		"PROJECT LANTERN",
+		"El expediente 47-B no empezó con tu llegada a Innsmouth. Un registro anterior a la tragedia ya esperaba que llegaras al arrecife. La investigación acaba de convertirse en parte de la evidencia."
+	)
 
 func _play_creature_pass(intensity: float) -> void:
 	AudioBus.play_horror_stinger(intensity)
@@ -144,10 +183,10 @@ func _show_end_panel(title: String, body: String) -> void:
 	ending_title.text = title
 	ending_body.text = body
 	var optional_count = 0
-	for evidence_id in ["pathology_monograph", "harbor_notice", "black_scale"]:
+	for evidence_id in ["pathology_monograph", "harbor_notice", "black_scale", "signal_without_recording"]:
 		if Investigation.has_evidence(evidence_id):
 			optional_count += 1
-	stats_label.text = "Evidencias: %d / %d    ·    Opcionales: %d / 3    ·    Cordura: %d%%" % [
+	stats_label.text = "Evidencias: %d / %d    ·    Anomalías opcionales: %d / 4    ·    Cordura: %d%%" % [
 		Investigation.discovered_evidence.size(),
 		Investigation.EVIDENCE_CATALOG.size(),
 		optional_count,
