@@ -8,7 +8,7 @@
 size = Vector2(50, 190)
 
 [sub_resource type="Gradient" id="Gradient_shadow"]
-colors = PackedColorArray(0.015, 0.025, 0.035, 0.58, 0.015, 0.025, 0.035, 0)
+colors = PackedColorArray(0.015, 0.025, 0.035, 0.62, 0.015, 0.025, 0.035, 0)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_shadow"]
 gradient = SubResource("Gradient_shadow")
@@ -49,21 +49,21 @@ shape = SubResource("RectangleShape2D_inspector")
 [node name="VisualRoot" type="Node2D" parent="."]
 
 [node name="ContactShadow" type="Sprite2D" parent="VisualRoot"]
-position = Vector2(0, -2)
-scale = Vector2(1.2, 0.55)
+position = Vector2(0, 1)
+scale = Vector2(1.35, 0.5)
 texture = SubResource("GradientTexture2D_shadow")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="VisualRoot"]
 material = SubResource("ShaderMaterial_inspector_paint")
 texture_filter = 2
-position = Vector2(0, -107)
+position = Vector2(0, -104)
 scale = Vector2(0.5, 0.5)
 sprite_frames = ExtResource("2_frames")
 animation = &"idle"
 autoplay = "idle"
 
 [node name="LanternProp" type="Node2D" parent="VisualRoot"]
-position = Vector2(-40, -118)
+position = Vector2(-40, -115)
 z_index = 2
 
 [node name="Handle" type="Line2D" parent="VisualRoot/LanternProp"]
@@ -84,7 +84,7 @@ color = Color(1, 0.78, 0.36, 0.88)
 position = Vector2(0, 0)
 
 [node name="PersonalLight" type="PointLight2D" parent="."]
-position = Vector2(-40, -118)
+position = Vector2(-40, -115)
 scale = Vector2(1.35, 1.35)
 color = Color(0.96, 0.84, 0.65, 1)
 energy = 0.48
