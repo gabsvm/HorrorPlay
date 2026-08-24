@@ -15,6 +15,16 @@ extends Room
 @export var brass_fuse_item: ItemData
 
 func _ready() -> void:
+	character_base_scale = 1.10
+	character_max_speed = 275.0
+	character_acceleration = 1380.0
+	character_deceleration = 2150.0
+	character_walk_bob = 1.8
+	character_walk_sway = 1.2
+	character_depth_scaling_enabled = false
+	personal_light_enabled = true
+	personal_light_energy = 0.52
+	personal_light_scale = 1.32
 	super._ready()
 	door_back.interacted.connect(_on_door_back_interacted)
 	service_lockers.interacted.connect(_on_lockers_interacted)
@@ -36,8 +46,8 @@ func _ready() -> void:
 func _show_entry_beat() -> void:
 	var lines: Array[String] = [
 		"El cobertizo está más frío que el muelle. No debería ser posible: todas las ventanas están cerradas.",
-		"El pescante sostiene al 317 sobre la rampa, inmóvil. La instalación eléctrica está muerta.",
-		"En la pared hay tres casilleros de servicio: 315, 316 y 317."
+		"El pescante sostiene al 317 sobre la rampa. Junto al cableado naval normal hay conductores de cobre más nuevos que desaparecen bajo las tablas hacia el mar.",
+		"En la pared hay tres casilleros de servicio: 315, 316 y 317. La instalación eléctrica principal está muerta, pero uno de los conductores L-17 conserva una vibración casi imperceptible."
 	]
 	if GameState.get_flag("barnaby_threatened"):
 		lines.append("Detrás de mí, afuera, una tabla cruje bajo un peso que no es el mío. Cuando miro por la ventana no hay nadie.")
@@ -72,13 +82,13 @@ func _on_lockers_interacted(verb: String) -> void:
 	if verb == "examine":
 		DialogueManager.show_dialogue([
 			"Tres casilleros de acero castigados por la sal: 315, 316 y 317.",
-			"Todos están cerrados. El 317 tiene marcas de uñas alrededor del tirador."
+			"Todos están cerrados. El 317 tiene marcas de uñas alrededor del tirador y una capa de pintura reciente sobre un sello azul."
 		], "Inspector")
 		return
 	if verb != "interact":
 		return
 	if GameState.get_flag("service_locker_opened"):
-		DialogueManager.show_dialogue(["El casillero 317 está abierto. Solo quedan un abrigo mojado, una caja vacía y el hueco donde encontré el fusible."], "Inspector")
+		DialogueManager.show_dialogue(["El casillero 317 está abierto. Quedan un abrigo mojado, una caja vacía y una etiqueta federal que alguien intentó arrancar del interior."], "Inspector")
 		return
 	DialogueManager.show_choices(
 		"Los cierres son de combinación simple. ¿Qué casillero reviso?",
@@ -106,22 +116,27 @@ func _on_leave_lockers() -> void:
 
 func _on_open_locker_317() -> void:
 	GameState.set_flag("service_locker_opened", true)
+	GameState.set_flag("lantern_field_tag_found", true)
+	GameState.set_flag("lantern_code_seen", true)
+	Investigation.discover_evidence("lantern_field_tag")
 	if brass_fuse_item and not Inventory.has_item(brass_fuse_item.id):
 		Inventory.add_item(brass_fuse_item)
 	await DialogueManager.show_dialogue([
 		"La anotación del manifiesto era literal. El seguro del 317 cede al alinear los números de servicio.",
-		"Dentro encuentro un abrigo de guardacostas todavía húmedo... y una caja de mantenimiento sellada con grasa.",
-		"El [color=#ca8a04]fusible de latón[/color] del pescante está intacto. Alguien lo retiró deliberadamente antes de abandonar el cobertizo."
+		"Dentro encuentro un abrigo todavía húmedo. En el bolsillo interior está bordado WARD.",
+		"Detrás del abrigo hay una caja de mantenimiento y una etiqueta federal: [color=#06b6d4]PROJECT LANTERN — FIELD ASSET L-17 — DO NOT ENTER IN PUBLIC MANIFEST[/color].",
+		"Ward había escrito a lápiz sobre la etiqueta: «NO ES UN RECEPTOR. RESPONDE». La última palabra está subrayada tres veces.",
+		"El [color=#ca8a04]fusible de latón[/color] del pescante está guardado dentro de la misma caja. Ward no perdió el fusible. Lo retiró y lo escondió deliberadamente."
 	], "Inspector")
 
 func _on_fuse_box_interacted(verb: String) -> void:
 	if verb == "examine":
 		if GameState.get_flag("boathouse_power_on"):
-			DialogueManager.show_dialogue(["La caja zumba bajo carga. El fusible nuevo está caliente pero estable."], "Inspector")
+			DialogueManager.show_dialogue(["La caja zumba bajo carga. Ahora veo que el circuito alimenta tanto el pescante como una línea L-17 que baja hacia la costa."], "Inspector")
 		elif GameState.get_flag("boathouse_fuse_installed"):
-			DialogueManager.show_dialogue(["El fusible ya está colocado. Solo falta subir el interruptor principal."], "Inspector")
+			DialogueManager.show_dialogue(["El fusible ya está colocado. Solo falta subir el interruptor. Ward había hecho exactamente lo contrario: sacarlo y esconderlo."], "Inspector")
 		else:
-			DialogueManager.show_dialogue(["Falta el fusible principal del pescante. El receptáculo coincide con una pieza industrial de latón."], "Inspector")
+			DialogueManager.show_dialogue(["Falta el fusible principal. Sin él no funciona el pescante ni la derivación marcada L-17. Ward quiso impedir que ambas cosas pudieran encenderse de nuevo."], "Inspector")
 		return
 	if verb != "interact":
 		return
@@ -130,7 +145,7 @@ func _on_fuse_box_interacted(verb: String) -> void:
 		return
 	if GameState.get_flag("boathouse_fuse_installed"):
 		DialogueManager.show_choices(
-			"El fusible está asentado. El interruptor principal sigue abajo.",
+			"El fusible está asentado. El interruptor principal sigue abajo. Ward murió intentando dejarlo de ese modo.",
 			[
 				{"text": "Subir el interruptor principal.", "callback": _on_restore_power},
 				{"text": "Dejarlo apagado por ahora.", "callback": _on_leave_fuse_box}
@@ -139,7 +154,7 @@ func _on_fuse_box_interacted(verb: String) -> void:
 		)
 		return
 	DialogueManager.show_choices(
-		"El receptáculo está vacío.",
+		"El receptáculo está vacío. Ahora sé que no fue una avería.",
 		[
 			{
 				"text": "Instalar el fusible de latón.",
@@ -158,7 +173,7 @@ func _on_fuse_item_used(item: ItemData) -> void:
 	GameState.set_flag("boathouse_fuse_installed", true)
 	await DialogueManager.show_dialogue([
 		"Encajo el fusible de latón en el receptáculo. Los contactos muerden con un golpe seco.",
-		"La instalación vuelve a estar completa. Solo falta subir el interruptor principal."
+		"Acabo de deshacer deliberadamente la última acción de Ward. Si intentaba proteger a quien viniera después, ya crucé esa línea."
 	], "Inspector")
 
 func _on_fuse_item_failed(_item: ItemData) -> void:
@@ -171,11 +186,11 @@ func _on_install_fuse() -> void:
 	GameState.set_flag("boathouse_fuse_installed", true)
 	DialogueManager.show_dialogue([
 		"Los contactos encajan con un golpe seco.",
-		"Ahora entiendo por qué el circuito estaba muerto: alguien no cortó la corriente. [i]Se llevó la única pieza que podía devolverla.[/i]"
+		"Ward no cortó la corriente por accidente. [i]Se llevó la única pieza que podía devolverla.[/i] Y yo acabo de colocarla otra vez."
 	], "Inspector")
 
 func _on_leave_fuse_box() -> void:
-	DialogueManager.show_dialogue(["Todavía no."], "Inspector")
+	DialogueManager.show_dialogue(["Todavía no. Por primera vez desde que empezó el caso, no hacer algo parece una decisión razonable."], "Inspector")
 
 func _on_restore_power() -> void:
 	GameState.set_flag("boathouse_power_on", true)
@@ -185,7 +200,7 @@ func _on_restore_power() -> void:
 	AtmosphereController.horror_pulse(1.0)
 	await DialogueManager.show_dialogue([
 		"El interruptor sube.",
-		"[shake rate=18 level=7]THUNK—THUNK—THUNK.[/shake] Las lámparas despiertan una detrás de otra y el motor del pescante empieza a vibrar sobre mi cabeza.",
+		"[shake rate=18 level=7]THUNK—THUNK—THUNK.[/shake] Las lámparas despiertan una detrás de otra. Bajo el suelo, la derivación L-17 responde con un zumbido grave.",
 		"Entonces la radio, que no he tocado, se enciende sola.",
 		"Entre la estática escucho tres golpes de campana... [wave amp=15 freq=2]desde muy abajo.[/wave]"
 	], "Inspector")
@@ -193,10 +208,13 @@ func _on_restore_power() -> void:
 
 func _on_radio_interacted(verb: String) -> void:
 	if not GameState.get_flag("boathouse_power_on"):
-		DialogueManager.show_dialogue(["La radio está completamente muerta. Sin corriente no puedo saber si conserva algo en el receptor."], "Inspector")
+		DialogueManager.show_dialogue(["La radio está completamente muerta. Sin corriente no puedo comprobar qué hacía el equipo L-17 con ella."], "Inspector")
 		return
 	if verb == "examine" and GameState.get_flag("reef_radio_heard"):
-		DialogueManager.show_dialogue(["El dial permanece clavado en la frecuencia del 317. No quiero volver a escuchar esa grabación."], "Inspector")
+		DialogueManager.show_dialogue([
+			"Desmonto la tapa otra vez. Es un receptor, nada más: válvulas, bobinas, transformador. No hay cilindro fonográfico, hilo magnético ni ningún dispositivo capaz de almacenar audio.",
+			"Lo que escuché no estaba grabado aquí. Este aparato lo recibió."
+		], "Inspector")
 		return
 	if verb == "interact" or verb == "examine":
 		await _play_radio_log()
@@ -204,7 +222,8 @@ func _on_radio_interacted(verb: String) -> void:
 func _play_radio_log() -> void:
 	if GameState.get_flag("reef_radio_heard"):
 		DialogueManager.show_dialogue([
-			"Solo queda estática. Por debajo todavía creo escuchar un ritmo... tres campanadas, pausa, tres campanadas."
+			"Solo queda estática. Por debajo todavía creo escuchar un ritmo... tres campanadas, pausa, tres campanadas.",
+			"A veces aparece el clic metálico de mi archivador. Estoy a kilómetros de mi oficina."
 		], "Inspector")
 		return
 	GameState.set_flag("reef_radio_heard", true)
@@ -215,9 +234,17 @@ func _play_radio_log() -> void:
 	await DialogueManager.show_dialogue([
 		"[wave amp=8 freq=5]—Unidad 317 a estación... tenemos una luz debajo del agua. Repito: debajo del agua.[/wave]",
 		"[wave amp=12 freq=4]—Hay campanas. Dios... no son campanas. No respondan si oyen sus nombres. NO RESP—[/wave]",
-		"La grabación se corta con un ruido húmedo, demasiado cerca del micrófono.",
-		"Reconozco las palabras. Son las últimas frases del registro que abrió el expediente 47-B."
+		"La señal se rompe. Debajo de la voz de Hale escucho otra cosa: el mismo [i]CLACK[/i] de mi archivador al abrirlo esta noche.",
+		"Barnaby aparece durante menos de un segundo diciendo: «la última vez que dejaron un sello...». Esa conversación ocurrió horas después de la desaparición del 317.",
+		"Apago el aparato y retiro la tapa. No hay nada que pueda haber grabado una sola palabra."
 	], "Transmisión 317")
+	GameState.set_flag("signal_without_recording_found", true)
+	Investigation.discover_evidence("signal_without_recording")
+	await DialogueManager.show_dialogue([
+		"No estoy reproduciendo el pasado.",
+		"Estoy escuchando una señal que mezcla momentos que nunca coexistieron.",
+		"PROJECT LANTERN no construyó un archivo de audio. Construyó una forma de llamar a algo que recuerda."
+	], "Inspector")
 	await _trigger_intrusion()
 
 func _trigger_intrusion() -> void:
@@ -234,7 +261,8 @@ func _trigger_intrusion() -> void:
 	await DialogueManager.show_dialogue([
 		"Algo pisa el muelle justo afuera.",
 		"No son botas. Cada paso termina con un roce húmedo contra las tablas.",
-		"La manija de la puerta baja muy despacio. El cerrojo que abrí con la llave de Barnaby es lo único que la mantiene cerrada."
+		"La manija de la puerta baja muy despacio. El cerrojo es lo único que la mantiene cerrada.",
+		"Desde la radio apagada, una voz infantil susurra un nombre que no escuchaba desde mi juventud."
 	], "Inspector")
 	DialogueManager.show_choices(
 		"No tengo arma larga ni refuerzos. Tengo segundos para decidir.",
@@ -289,9 +317,9 @@ func _on_intrusion_stay_still() -> void:
 	main_light.energy = 0.0
 	canvas_modulate.color = Color(0.11, 0.16, 0.17, 1)
 	await DialogueManager.show_dialogue([
-		"Las huellas del muelle apuntaban desde el agua hacia tierra. Si esa cosa ve peor que nosotros fuera del agua, la luz me delataría.",
+		"Las huellas del muelle apuntaban desde el agua hacia tierra. Si esa cosa ve peor fuera del agua, la luz me delataría.",
 		"Apago la linterna. La manija deja de moverse.",
-		"Una sombra cruza la ventana a una altura imposible. Después escucho el mismo roce húmedo alejándose hacia el mar."
+		"Una sombra cruza la ventana a una altura imposible. Antes de irse, golpea tres veces el vidrio con los nudillos."
 	], "Inspector")
 	Sanity.drain_sanity(4)
 	_complete_intrusion()
@@ -301,13 +329,13 @@ func _on_intrusion_locker() -> void:
 	if player:
 		await player.enter_hide()
 	await DialogueManager.show_dialogue([
-		"Me comprimo dentro del casillero 317, entre el abrigo mojado y el metal helado.",
+		"Me comprimo dentro del casillero 317, entre el abrigo de Ward y el metal helado.",
 		"La puerta exterior se sacude una vez. Dos. A través de la ranura veo una mano larga apoyarse contra el vidrio: cinco dedos unidos por membrana.",
-		"Algo huele el aire dentro del cobertizo. Luego desaparece sin abrir la puerta."
+		"Luego la criatura gira la cabeza hacia el casillero y, con la voz exacta de Ward, susurra: «yo saqué el fusible»."
 	], "Inspector")
+	Sanity.drain_sanity(8)
 	if player:
 		await player.exit_hide()
-	Sanity.drain_sanity(8)
 	_complete_intrusion()
 
 func _on_intrusion_confront() -> void:
@@ -317,8 +345,8 @@ func _on_intrusion_confront() -> void:
 	await DialogueManager.show_dialogue([
 		"Me acerco a la puerta y apoyo una mano sobre el cerrojo.",
 		"Del otro lado algo deja de respirar.",
-		"Por la ventana veo un rostro pálido, húmedo, con ojos enormes que no parpadean. Lleva restos de una chaqueta de pescador.",
-		"Nos miramos. Entonces sonríe con demasiados dientes y corre hacia el agua en cuatro apoyos."
+		"Por la ventana veo un rostro pálido con restos de una chaqueta de pescador. No parpadea.",
+		"Entonces dice el nombre de una mujer que figura en una esquela de 1919 y sonríe como si recordara exactamente quién era. Después corre hacia el agua en cuatro apoyos."
 	], "Inspector")
 	Sanity.drain_sanity(12)
 	_complete_intrusion()
@@ -342,14 +370,15 @@ func _on_floor_drain_interacted(verb: String) -> void:
 	DialogueManager.show_dialogue([
 		"Algo refleja la luz entre las ranuras del desagüe.",
 		"Lo saco con la punta de un lápiz: una escama negra, gruesa como una uña y todavía húmeda.",
-		"No pertenece a ningún pez que haya visto. Y hay marcas más grandes debajo de las tablas."
+		"En la cara interior hay una pequeña cicatriz lineal demasiado regular para ser natural. Por un instante parece la marca de una vieja sutura.",
+		"No sé si estoy mirando una especie desconocida o algo que alguna vez tuvo otra forma."
 	], "Inspector")
 
 func _on_boat_interacted(verb: String) -> void:
 	if verb == "examine":
 		DialogueManager.show_dialogue([
 			"El 317 cuelga del pescante exactamente como figura en el manifiesto. Tiene combustible, una lámpara y espacio para cuatro hombres.",
-			"Hay arañazos profundos en la quilla. Ninguno parece hecho por roca."
+			"Tres hombres salieron. El equipo de LANTERN registró algo más. Todavía no sé qué."
 		], "Inspector")
 		return
 	if verb != "interact":
@@ -358,10 +387,10 @@ func _on_boat_interacted(verb: String) -> void:
 		DialogueManager.show_dialogue(["El pescante no responde. Necesito restaurar la energía antes de intentar bajar el bote."], "Inspector")
 		return
 	DialogueManager.show_choices(
-		"El pescante está operativo y la ruta del 317 termina en el Arrecife del Diablo.",
+		"El pescante está operativo. Los cables L-17 y la última ruta del 317 terminan en el mismo punto del Arrecife del Diablo.",
 		[
 			{
-				"text": "Botar el 317 y seguir la última ruta de los guardacostas.",
+				"text": "Botar el 317 y seguir la ruta de PROJECT LANTERN.",
 				"required_flag": ["reef_radio_heard", "boathouse_intrusion_survived"],
 				"callback": _on_launch_boat
 			},
@@ -382,6 +411,7 @@ func _on_launch_boat() -> void:
 	await DialogueManager.show_dialogue([
 		"Libero el freno del pescante. Las poleas chillan y el 317 desciende hacia el agua negra.",
 		"La radio portátil chisporrotea en cuanto piso el bote, aunque su batería está desconectada.",
+		"Durante un instante oigo mi archivador, la voz de Barnaby y las tres campanadas superpuestas en el mismo segundo.",
 		"Desde el muelle llega un último sonido: tres golpes lentos contra la puerta del cobertizo.",
 		"No miro atrás."
 	], "Inspector")
