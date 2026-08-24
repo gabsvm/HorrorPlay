@@ -13,6 +13,18 @@ extends Room
 func _ready() -> void:
 	footstep_surface = "stone"
 	walk_bounds = Rect2(30, 720, 1860, 310)
+	character_base_scale = 1.14
+	character_max_speed = 295.0
+	character_acceleration = 1450.0
+	character_deceleration = 2050.0
+	character_walk_bob = 2.0
+	character_walk_sway = 1.35
+	character_depth_scaling_enabled = true
+	character_depth_y_min = 720.0
+	character_depth_y_max = 840.0
+	character_scale_far = 0.98
+	character_scale_near = 1.06
+	personal_light_enabled = false
 	super._ready()
 	GameState.set_var("player_location", "streets")
 	door_back.interacted.connect(_on_door_back_interacted)
@@ -39,7 +51,7 @@ func _run_after_threat_beat() -> void:
 	await DialogueManager.show_dialogue([
 		"Al salir de la taberna, la calle se ha vaciado demasiado rápido.",
 		"Silas ya no está bajo el farol. Su colilla sigue encendida en un charco.",
-		"En una ventana del mercado una silueta se aparta apenas giro la cabeza. Barnaby cumplió su advertencia: ahora Innsmouth sabe que estoy preguntando."
+		"En una ventana del mercado una silueta se aparta apenas giro la cabeza. No parece un culto protegiendo un secreto; parece un pueblo ejecutando un protocolo aprendido a golpes."
 	], "Inspector")
 	threat_watcher.visible = true
 	threat_watcher.modulate.a = 0.0
@@ -59,7 +71,7 @@ func _on_door_back_interacted(verb: String) -> void:
 		await DialogueManager.show_dialogue(["La oficina sigue siendo el único lugar del pueblo donde puedo cerrar una puerta y fingir que estoy solo."], "Inspector")
 		SceneRouter.change_room("res://src/rooms/room_01_office/room_01_office.tscn")
 	elif verb == "examine":
-		DialogueManager.show_dialogue(["La estación de policía ocupa un edificio demasiado grande para la cantidad de agentes que vi trabajando."], "Inspector")
+		DialogueManager.show_dialogue(["La estación ocupa un edificio demasiado grande para la cantidad de agentes que vi trabajando. Tal vez nunca se construyó solo para policía local."], "Inspector")
 
 func _on_tavern_door_interacted(verb: String) -> void:
 	if verb == "interact":
@@ -76,7 +88,8 @@ func _on_fish_market_interacted(verb: String) -> void:
 		await DialogueManager.show_dialogue([
 			"El mercado está cerrado y las persianas tienen candado.",
 			"Detrás de los barrotes, uno de los peces sobre hielo abre y cierra la boca.",
-			"Parpadeo. Está congelado. Lleva horas muerto."
+			"Durante un segundo escucho mi nombre dentro del ruido de la lluvia. No provino de ninguna boca humana.",
+			"Parpadeo. El pez está congelado. Lleva horas muerto."
 		], "Inspector")
 	else:
 		DialogueManager.show_dialogue([
@@ -86,7 +99,7 @@ func _on_fish_market_interacted(verb: String) -> void:
 
 func _on_harbor_notice_interacted(verb: String) -> void:
 	if verb == "examine":
-		DialogueManager.show_dialogue(["Un tablón municipal inclinado por la humedad. Entre anuncios de mareas hay una orden de cierre reciente."], "Inspector")
+		DialogueManager.show_dialogue(["Un tablón municipal inclinado por la humedad. Entre anuncios de mareas hay una orden de cierre reciente y un rectángulo arrancado donde debería estar el sello de autorización."], "Inspector")
 		return
 	if verb != "interact":
 		return
@@ -94,11 +107,13 @@ func _on_harbor_notice_interacted(verb: String) -> void:
 	if first_read:
 		await DialogueManager.show_dialogue([
 			"ORDEN PORTUARIA: navegación nocturna suspendida en un radio de dos millas alrededor del Arrecife del Diablo.",
-			"Motivo: «tres incidentes de señalización no autorizada y riesgo de encallamiento». La fecha es anterior a la desaparición de los guardacostas.",
-			"El sello de la autoridad que emitió la orden fue arrancado con una cuchilla. Alguien sabía del peligro antes de enviar al 317."
+			"La fecha es [color=#ca8a04]dos días anterior[/color] a la desaparición del 317. Esto no fue una reacción al desastre. El desastre ocurrió dentro de una zona ya clausurada.",
+			"En el reverso quedan marcas de papel carbón: «perímetro acústico», «ventana de prueba» y el mismo código que vi en mi archivador: [color=#06b6d4]L-17[/color].",
+			"Alguien sabía exactamente cuándo no debía haber civiles cerca del arrecife. Y aun así envió al 317."
 		], "Inspector")
+		GameState.set_flag("lantern_code_seen", true)
 	else:
-		DialogueManager.show_dialogue(["La orden de cierre prueba que el riesgo del arrecife era conocido antes de la última patrulla."], "Inspector")
+		DialogueManager.show_dialogue(["El cierre no protege al pueblo de un accidente pasado. Protegía una operación que todavía no había ocurrido."], "Inspector")
 
 func _on_dock_path_interacted(verb: String) -> void:
 	if verb == "interact":
@@ -110,20 +125,21 @@ func _on_dock_path_interacted(verb: String) -> void:
 		SceneRouter.change_room("res://src/rooms/room_04_docks/room_04_docks.tscn")
 	elif verb == "examine":
 		if GameState.get_flag("has_dock_key"):
-			DialogueManager.show_dialogue(["La bajada termina en los muelles. La llave de Barnaby pesa más de lo que debería."], "Inspector")
+			DialogueManager.show_dialogue(["La bajada termina en los muelles. La llave de Barnaby pesa más por lo que representa que por el hierro."], "Inspector")
 		else:
-			DialogueManager.show_dialogue(["Desde aquí se ve el cobertizo de los guardacostas. La puerta tiene una cerradura naval."], "Inspector")
+			DialogueManager.show_dialogue(["Desde aquí se ve el cobertizo de los guardacostas. La puerta tiene una cerradura naval y demasiadas capas de pintura federal debajo de la sal."], "Inspector")
 
 func _on_fisherman_interacted(verb: String) -> void:
 	if verb == "examine":
-		DialogueManager.show_dialogue(["Silas parece tener setenta años hasta que levanta la vista. Sus ojos son demasiado claros para su cara castigada por el mar."], "Inspector")
+		DialogueManager.show_dialogue(["Silas parece tener setenta años hasta que levanta la vista. Sus ojos son demasiado claros para su cara castigada por el mar. No me mira como a un extraño; me mira como a alguien que ya vio llegar antes."], "Inspector")
 		return
 	if verb != "interact":
 		return
 	if GameState.get_flag("has_dock_key"):
 		DialogueManager.show_dialogue([
 			"Silas mira la llave y pierde el poco color que tenía. —Entonces vas en serio.",
-			"—Buscá el número [color=#ca8a04]317[/color]. Y si encontrás algo que parezca haber venido del agua... no lo lleves de vuelta al pueblo."
+			"—Buscá el número 317. Y si encontrás cables donde deberían haber redes, no los enciendas por curiosidad.",
+			"—No sos el primero que llega convencido de que esta vez sí va a entenderlo."
 		], "Pescador Sombrío")
 		return
 	if GameState.get_flag("has_read_necronomicon"):
@@ -131,21 +147,23 @@ func _on_fisherman_interacted(verb: String) -> void:
 		if first_interview:
 			await DialogueManager.show_dialogue([
 				"¿Ese cuaderno de cuero...? Reconozco las coordenadas. [color=#06b6d4]Arrecife del Diablo[/color].",
-				"Los guardacostas fueron ahí porque alguien encendía luces bajo la niebla. Después la radio quedó muda.",
-				"Barnaby conserva la llave del cobertizo. Uno de esos hombres se la dejó como garantía de una deuda la noche antes de salir.",
-				"[wave amp=12 freq=2.5]No contestes si escuchás tu nombre desde el agua, oficial.[/wave]"
+				"—No sos el primero que llega con papeles. Antes vinieron hombres de Boston con cajas negras, auriculares y la misma seguridad en la cara.",
+				"—Siempre dicen que vienen a estudiar la costa. Siempre terminamos nosotros cerrando las puertas cuando se van.",
+				"Barnaby conserva la llave del cobertizo. Uno de los hombres del 317 se la dejó la noche antes de salir.",
+				"[wave amp=12 freq=2.5]No contestes si escuchás tu nombre desde el agua, oficial. No importa quién tenga la voz.[/wave]"
 			], "Pescador Sombrío")
 			GameState.set_flag("fisherman_met", true)
 			Investigation.discover_evidence("reef_testimony")
 			Investigation.set_objective("get_dock_access")
 		else:
-			DialogueManager.show_dialogue(["Barnaby tiene la llave. Yo ya dije demasiado."], "Pescador Sombrío")
+			DialogueManager.show_dialogue(["—Barnaby tiene la llave. Y si encontrás el código L-17, dejá de pensar que esto empezó con esos tres muchachos."], "Pescador Sombrío")
 		return
 	if Investigation.has_evidence("coast_guard_reports"):
 		DialogueManager.show_choices(
 			"El viejo evita mi mirada. Quizá pueda hacerlo hablar sin mostrarle todavía el diario.",
 			[
 				{"text": "Preguntar por la patrulla desaparecida.", "callback": _on_ask_silas_patrol},
+				{"text": "Preguntar si otros investigadores vinieron antes.", "callback": _on_ask_silas_previous_teams},
 				{"text": "Dejarlo tranquilo.", "callback": _on_leave_silas}
 			],
 			"Inspector"
@@ -159,8 +177,17 @@ func _on_ask_silas_patrol() -> void:
 	Investigation.set_objective("get_dock_access")
 	DialogueManager.show_dialogue([
 		"—Tres guardacostas. Sí. Uno bebía en El Pez Dorado y dejó una llave con Barnaby.",
-		"Silas frota las manos. —No sé qué buscaban mar adentro. Pero el pueblo ya había cerrado esa zona antes de que los mandaran.",
-		"No menciona el arrecife por nombre. Todavía."
+		"Silas frota las manos. —El pueblo ya había cerrado esa zona antes de que los mandaran. Después llegaron hombres a retirar sellos y papeles antes del amanecer.",
+		"—No escondemos lo que ocurrió. Escondemos el camino para que no vuelva a ocurrir."
+	], "Pescador Sombrío")
+
+func _on_ask_silas_previous_teams() -> void:
+	GameState.set_flag("fisherman_met", true)
+	Investigation.discover_evidence("reef_testimony")
+	DialogueManager.show_dialogue([
+		"Silas tarda demasiado en responder. —1919. Después 1922. Hombres distintos, mismos cajones de equipo, mismas preguntas sobre voces de muertos.",
+		"—La última vez prometieron que el aparato solo escuchaba. Tres días después una mujer oyó a su hijo ahogado llamarla desde un pozo seco.",
+		"—Así que cuando te decimos que te vayas, inspector, no es porque queramos conservar un secreto. Es porque ya sabemos cuánto cuesta abrirlo."
 	], "Pescador Sombrío")
 
 func _on_leave_silas() -> void:
