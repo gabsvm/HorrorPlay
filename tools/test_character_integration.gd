@@ -14,6 +14,11 @@ func _start_tests() -> void:
 	SaveSystem.reset_runtime_state()
 	Investigation.start_case()
 
+	for evidence_id in ["lantern_field_tag", "signal_without_recording", "lantern_roster"]:
+		if not Investigation.EVIDENCE_CATALOG.has(evidence_id):
+			_fail_test("Narrative overhaul evidence missing: %s" % evidence_id)
+			return
+
 	print("[TEST] 1. Loading Office Room...")
 	var office_scene = load("res://src/rooms/room_01_office/room_01_office.tscn").instantiate()
 	get_tree().root.add_child(office_scene)
@@ -24,6 +29,15 @@ func _start_tests() -> void:
 	var player = office_scene.get_node_or_null("CharactersLayer/Player") as Player
 	if not player:
 		_fail_test("Player not found in Office scene")
+		return
+	if player.base_scale < 1.20:
+		_fail_test("Office Inspector is still underscaled: %.2f" % player.base_scale)
+		return
+	if player.personal_light.visible:
+		_fail_test("Office Inspector lantern/light must be disabled indoors")
+		return
+	if player.max_speed > 275.0:
+		_fail_test("Office Inspector still moves too fast for an interior: %.1f" % player.max_speed)
 		return
 	player.state_changed.connect(_on_player_state_changed)
 
@@ -39,6 +53,9 @@ func _start_tests() -> void:
 	var key_item: ItemData = office_scene.key_item
 	if not key_item or not Inventory.has_item(key_item.id):
 		_fail_test("Desk did not naturally award the Rusty Key")
+		return
+	if not GameState.get_flag("inspector_water_memory_seen"):
+		_fail_test("Office report failed to seed Inspector water-memory foreshadowing")
 		return
 	_capture_screenshot("02_office_at_desk.png")
 
@@ -69,6 +86,9 @@ func _start_tests() -> void:
 	if drawer_success_count != 1:
 		_fail_test("Drawer success callback fired %d times; expected exactly once" % drawer_success_count)
 		return
+	if not GameState.get_flag("lantern_code_seen"):
+		_fail_test("Office drawer failed to seed L-17 foreshadowing")
+		return
 	_capture_screenshot("05_office_drawer_unlocked.png")
 
 	print("[TEST] 4. Verifying authored turn state and retargeting...")
@@ -98,11 +118,15 @@ func _start_tests() -> void:
 	office_scene.queue_free()
 	await _wait_frames(8)
 
-	print("[TEST] 6. Loading Streets and Tavern metadata acceptance scenes...")
+	print("[TEST] 6. Loading Streets and Tavern presentation acceptance scenes...")
 	var streets_scene = load("res://src/rooms/room_02_streets/room_02_streets.tscn").instantiate()
 	get_tree().root.add_child(streets_scene)
 	get_tree().current_scene = streets_scene
 	await _wait_frames(12)
+	var streets_player = streets_scene.get_node("CharactersLayer/Player") as Player
+	if streets_player.base_scale < 1.10:
+		_fail_test("Streets Inspector is underscaled")
+		return
 	_capture_screenshot("06_streets_room.png")
 	streets_scene.queue_free()
 	await _wait_frames(6)
@@ -112,8 +136,15 @@ func _start_tests() -> void:
 	get_tree().current_scene = tavern_scene
 	await _wait_frames(12)
 	var barnaby = tavern_scene.get_node("HotspotsLayer/Innkeeper") as Hotspot
+	var tavern_player = tavern_scene.get_node("CharactersLayer/Player") as Player
 	if barnaby.interaction_pose != "none":
 		_fail_test("Barnaby must not trigger a generic item-use animation")
+		return
+	if tavern_player.base_scale < 1.16:
+		_fail_test("Tavern Inspector is underscaled")
+		return
+	if tavern_player.personal_light.visible:
+		_fail_test("Tavern Inspector lantern/light must be disabled indoors")
 		return
 	_capture_screenshot("07_tavern_room.png")
 	tavern_scene.queue_free()
@@ -124,6 +155,10 @@ func _start_tests() -> void:
 	get_tree().root.add_child(docks_scene)
 	get_tree().current_scene = docks_scene
 	await _wait_frames(12)
+	var docks_player = docks_scene.get_node("CharactersLayer/Player") as Player
+	if not docks_player.personal_light.visible:
+		_fail_test("Docks Inspector lantern/light should be available outdoors")
+		return
 	_capture_screenshot("08_docks_room.png")
 	docks_scene.queue_free()
 	await _wait_frames(6)
@@ -159,7 +194,7 @@ func _start_tests() -> void:
 		return
 	_capture_screenshot("09_boathouse_room.png")
 
-	print("[TEST] ALL CHARACTER INTEGRATION TESTS PASSED SUCCESSFULLY!")
+	print("[TEST] ALL CHARACTER/NARRATIVE INTEGRATION TESTS PASSED SUCCESSFULLY!")
 	get_tree().quit(0)
 
 func _request_hotspot(hotspot: Hotspot, verb: String) -> void:
@@ -182,7 +217,7 @@ func _wait_for_dialogue(max_frames: int = 300) -> bool:
 
 func _dismiss_dialogue_cleanly() -> void:
 	var safety_counter = 0
-	while DialogueManager.current_balloon != null and safety_counter < 40:
+	while DialogueManager.current_balloon != null and safety_counter < 60:
 		safety_counter += 1
 		var balloon = DialogueManager.current_balloon
 		if balloon and is_instance_valid(balloon) and balloon.has_method("advance_dialogue"):
