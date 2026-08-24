@@ -9,6 +9,7 @@ const DEFAULT_FLAGS = {
 	"has_read_necronomicon": false,
 	"inspector_met": false,
 	"office_drawer_unlocked": false,
+	"inspector_water_memory_seen": false,
 	"fisherman_met": false,
 	"heard_barnaby_key_rumor": false,
 	"has_dock_key": false,
@@ -17,17 +18,21 @@ const DEFAULT_FLAGS = {
 	"docks_visited": false,
 	"dock_tracks_examined": false,
 	"dock_manifest_read": false,
+	"lantern_code_seen": false,
 	"boathouse_unlocked": false,
 	"boathouse_entered": false,
 	"service_locker_opened": false,
+	"lantern_field_tag_found": false,
 	"boathouse_fuse_installed": false,
 	"boathouse_power_on": false,
 	"reef_radio_heard": false,
+	"signal_without_recording_found": false,
 	"boathouse_intrusion_started": false,
 	"boathouse_intrusion_survived": false,
 	"black_scale_found": false,
 	"boat_317_launched": false,
-	"reef_sequence_seen": false
+	"reef_sequence_seen": false,
+	"lantern_roster_found": false
 }
 
 const DEFAULT_VARIABLES = {
@@ -36,7 +41,8 @@ const DEFAULT_VARIABLES = {
 	"barnaby_attitude": 0,
 	"dock_tension": 0,
 	"boathouse_intrusion_outcome": "",
-	"reef_ending_title": ""
+	"reef_ending_title": "",
+	"reef_route": ""
 }
 
 var story_flags: Dictionary = DEFAULT_FLAGS.duplicate(true)
