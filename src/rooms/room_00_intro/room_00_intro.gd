@@ -29,7 +29,7 @@ var beats: Array[Dictionary] = [
 	},
 	{
 		"speaker": "RADIO · SEÑAL DESCONOCIDA",
-		"text": "[wave amp=13 freq=3]...Hale... Mercer... Ward...[/wave]"
+		"text": "[wave amp=13 freq=3]...Hale... Mercer... Ward... archivo... todavía no...[/wave]"
 	},
 	{
 		"speaker": "GUARDACOSTAS HALE",
@@ -37,7 +37,11 @@ var beats: Array[Dictionary] = [
 	},
 	{
 		"speaker": "RADIO · UNIDAD 317",
-		"text": "[wave amp=18 freq=4]—Estación... tenemos una entrada en la roca. Hay escalones. Están bajo la línea de marea. NO RESPONDAN SI OYEN SUS NOMB—[/wave]"
+		"text": "[wave amp=18 freq=4]—Estación... tenemos una entrada en la roca. Hay escalones. Están bajo la línea de marea. Ward dice que el L-17 no debería estar respondiendo. NO RESPONDAN SI OYEN SUS NOMB—[/wave]"
+	},
+	{
+		"speaker": "RADIO · SEÑAL DESCONOCIDA",
+		"text": "[wave amp=10 freq=2]...no abras el archivo todavía...[/wave]"
 	}
 ]
 
@@ -108,6 +112,9 @@ func _apply_beat_fx(index: int) -> void:
 		6:
 			AudioBus.play_horror_stinger(1.05)
 			AtmosphereController.horror_pulse(1.05)
+		7:
+			AudioBus.play_horror_stinger(0.88)
+			AtmosphereController.horror_pulse(0.7)
 
 func _play_shadow_pass() -> void:
 	creature_shadow.position = Vector2(-500, 70)
