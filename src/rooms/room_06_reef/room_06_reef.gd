@@ -141,9 +141,9 @@ func _reveal_lantern_station(route_note: String) -> void:
 		"SIGNAL 01: HALE. SIGNAL 02: MERCER. SIGNAL 03: WARD.",
 		"SIGNAL 04: UNKNOWN.",
 		"Debajo, una anotación agregada en tinta roja: [color=#ca8a04]«MATCH SOURCE: CASE 47-B INVESTIGATOR»[/color].",
-		"La última línea contiene la fecha de esta noche y una hora estimada de llegada al arrecife. Faltan once minutos.",
+		"La última línea indica una fecha y una hora previstas para la llegada de esa cuarta firma al arrecife.",
 		"Miro el reloj de la estación.",
-		"Faltan once minutos."
+		"Coincide al minuto."
 	], "Inspector")
 	await DialogueManager.show_dialogue([
 		route_note,
