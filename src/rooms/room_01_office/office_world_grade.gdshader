@@ -2,27 +2,17 @@ shader_type canvas_item;
 render_mode unshaded;
 
 uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_nearest;
-uniform float pixel_block : hint_range(1.0, 4.0, 1.0) = 2.0;
-uniform float contrast : hint_range(0.8, 1.35) = 1.10;
-uniform float saturation : hint_range(0.0, 1.4) = 0.88;
-uniform float palette_steps : hint_range(12.0, 64.0, 1.0) = 36.0;
-uniform float dither_strength : hint_range(0.0, 1.0) = 0.22;
-uniform float vignette_strength : hint_range(0.0, 0.5) = 0.16;
+uniform float pixel_block : hint_range(1.0, 4.0, 1.0) = 3.0;
+uniform float contrast : hint_range(0.8, 1.35) = 1.06;
+uniform float saturation : hint_range(0.0, 1.4) = 0.90;
+uniform float palette_steps : hint_range(12.0, 64.0, 1.0) = 48.0;
+uniform float dither_strength : hint_range(0.0, 1.0) = 0.10;
+uniform float vignette_strength : hint_range(0.0, 0.5) = 0.10;
 uniform vec3 shadow_tint = vec3(0.035, 0.075, 0.095);
 uniform vec3 highlight_tint = vec3(0.92, 0.78, 0.58);
 
-float bayer4(vec2 p) {
-	ivec2 q = ivec2(mod(floor(p), 4.0));
-	int x = q.x;
-	int y = q.y;
-	int i = x + y * 4;
-	float values[16] = float[16](
-		0.0, 8.0, 2.0, 10.0,
-		12.0, 4.0, 14.0, 6.0,
-		3.0, 11.0, 1.0, 9.0,
-		15.0, 7.0, 13.0, 5.0
-	);
-	return values[i] / 16.0;
+float stable_dither(vec2 p) {
+	return fract(52.9829189 * fract(dot(floor(p), vec2(0.06711056, 0.00583715))));
 }
 
 void fragment() {
@@ -40,7 +30,7 @@ void fragment() {
 	c = mix(c, c * (vec3(0.78) + shadow_tint * 2.2), shadow_mix * 0.24);
 	c = mix(c, c * highlight_tint * 1.08, highlight_mix * 0.12);
 
-	float dither = (bayer4(pixel_coord / pixel_block) - 0.5) * dither_strength;
+	float dither = (stable_dither(pixel_coord / pixel_block) - 0.5) * dither_strength;
 	c = floor(clamp(c, 0.0, 1.0) * palette_steps + dither) / palette_steps;
 
 	vec2 centered = SCREEN_UV * 2.0 - 1.0;
