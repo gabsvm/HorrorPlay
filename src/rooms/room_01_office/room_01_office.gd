@@ -12,15 +12,22 @@ extends Room
 @export var book_item: ItemData
 
 func _ready() -> void:
-	character_base_scale = 1.25
-	character_max_speed = 260.0
-	character_acceleration = 1300.0
-	character_deceleration = 2200.0
-	character_walk_bob = 1.45
-	character_walk_sway = 1.0
+	character_base_scale = 1.33
+	character_max_speed = 252.0
+	character_acceleration = 1180.0
+	character_deceleration = 1850.0
+	character_walk_bob = 0.35
+	character_walk_sway = 0.25
 	character_depth_scaling_enabled = false
 	personal_light_enabled = false
 	super._ready()
+	# Office uses a heavier, faster leg cadence than the old prototype walk.
+	# The reduced procedural bob prevents the sprite from looking like it is
+	# floating while the authored frame cycle carries the body motion.
+	if player:
+		player.walk_speed_scale_min = 0.82
+		player.walk_speed_scale_max = 1.38
+		player.arrival_radius = 4.0
 	GameState.set_var("player_location", "office")
 	desk.interacted.connect(_on_desk_interacted)
 	case_board.interacted.connect(_on_case_board_interacted)
