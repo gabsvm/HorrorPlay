@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#475158"/><stop offset=".42" stop-color="#222a2e"/><stop offset="1" stop-color="#0f1417"/></linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d7c9a8"/><stop offset="1" stop-color="#8f8066"/></linearGradient>
+    <linearGradient id="wood2" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#694129"/><stop offset=".45" stop-color="#342116"/><stop offset="1" stop-color="#17100b"/></linearGradient>
+    <radialGradient id="warm" cx="50%" cy="50%" r="50%"><stop stop-color="#ffc773" stop-opacity=".42"/><stop offset="1" stop-color="#b16b31" stop-opacity="0"/></radialGradient>
+    <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".08" numOctaves="2" seed="31" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.2"/></filter>
+  </defs>
+
+  <!-- wall seams / water damage / conduit -->
+  <g opacity=".72">
+    <path d="M0 414 C130 382 248 452 356 407 C490 351 612 440 756 398" fill="none" stroke="#52606a" stroke-width="3" opacity=".18"/>
+    <path d="M1450 86v150h74v122" fill="none" stroke="#11191d" stroke-width="13"/>
+    <path d="M1450 86v150h74v122" fill="none" stroke="#56646a" stroke-width="3" opacity=".5"/>
+    <g fill="#0d1215" stroke="#46545a" stroke-width="2">
+      <circle cx="1450" cy="126" r="9"/><circle cx="1450" cy="208" r="9"/><circle cx="1524" cy="278" r="9"/>
+    </g>
+    <path d="M1177 116c42 18 71 4 103 26m-82 28c32 16 58 7 91 20" stroke="#090d10" stroke-width="5" opacity=".7"/>
+  </g>
+
+  <!-- radiator beneath window -->
+  <g transform="translate(102 560)">
+    <rect x="0" y="0" width="265" height="105" rx="8" fill="#151b1e" stroke="#070a0c" stroke-width="8"/>
+    <g fill="url(#metal)" stroke="#0b1012" stroke-width="4">
+      <rect x="15" y="12" width="24" height="79" rx="6"/><rect x="46" y="12" width="24" height="79" rx="6"/><rect x="77" y="12" width="24" height="79" rx="6"/><rect x="108" y="12" width="24" height="79" rx="6"/><rect x="139" y="12" width="24" height="79" rx="6"/><rect x="170" y="12" width="24" height="79" rx="6"/><rect x="201" y="12" width="24" height="79" rx="6"/><rect x="232" y="12" width="18" height="79" rx="6"/>
+    </g>
+    <path d="M252 80h42v28" fill="none" stroke="#2c383d" stroke-width="9"/>
+  </g>
+
+  <!-- secondary wall photographs and police notices -->
+  <g transform="translate(1190 150)">
+    <rect width="210" height="125" fill="#101417" stroke="#07090b" stroke-width="8"/>
+    <rect x="16" y="15" width="178" height="94" fill="#88806d" opacity=".55"/>
+    <path d="M30 87l42-30 31 18 31-28 44 40" fill="none" stroke="#24292b" stroke-width="6" opacity=".75"/>
+  </g>
+  <g transform="translate(1432 412) rotate(-2)">
+    <rect width="117" height="86" fill="url(#paper)" stroke="#594f3e" stroke-width="3"/>
+    <path d="M12 16h92M12 27h72M12 38h88M12 52h65M12 64h82" stroke="#514c41" stroke-width="3"/>
+    <circle cx="94" cy="68" r="12" fill="none" stroke="#723930" stroke-width="4"/>
+  </g>
+
+  <!-- desk production props: typewriter, phone, folders, ashtray -->
+  <g transform="translate(535 562)">
+    <g transform="translate(82 2)">
+      <path d="M0 58h132l-12 63H12Z" fill="#12191d" stroke="#06090b" stroke-width="7"/>
+      <path d="M18 49h97l-9-44H27Z" fill="#28343a" stroke="#090d10" stroke-width="6"/>
+      <rect x="35" y="-16" width="76" height="55" fill="#c2b38f" transform="rotate(-3 73 12)"/>
+      <g fill="#5e6669"><circle cx="28" cy="79" r="6"/><circle cx="43" cy="79" r="6"/><circle cx="58" cy="79" r="6"/><circle cx="73" cy="79" r="6"/><circle cx="88" cy="79" r="6"/><circle cx="103" cy="79" r="6"/></g>
+      <path d="M18 95h95" stroke="#a5926c" stroke-width="4" opacity=".55"/>
+    </g>
+    <g transform="translate(250 36)">
+      <path d="M14 54c0-29 18-46 45-46s45 17 45 46v18H14Z" fill="#151b1f" stroke="#070a0c" stroke-width="7"/>
+      <circle cx="59" cy="45" r="26" fill="#20282d" stroke="#080b0d" stroke-width="5"/>
+      <g stroke="#8c7a5d" stroke-width="4"><path d="M59 25v11M76 32l-8 8M83 48H72M42 32l8 8M35 48h11"/></g>
+      <path d="M12 12c18-20 72-20 94 2" fill="none" stroke="#292f31" stroke-width="12" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(-58 82)"><ellipse cx="32" cy="10" rx="33" ry="9" fill="#384044"/><ellipse cx="32" cy="8" rx="22" ry="5" fill="#111719"/><path d="M26 4l34-25" stroke="#b2a58b" stroke-width="4"/><path d="M58-21c18-20 9-42-3-52" fill="none" stroke="#a9b7b9" stroke-width="4" opacity=".22"/></g>
+    <g transform="translate(370 72) rotate(4)"><rect width="92" height="54" fill="#533326" stroke="#1b110d" stroke-width="5"/><rect x="9" y="9" width="74" height="36" fill="#b8a57f" opacity=".7"/><path d="M17 18h56M17 28h44" stroke="#5c5244" stroke-width="3"/></g>
+  </g>
+
+  <!-- chair silhouette behind desk -->
+  <g transform="translate(690 728)">
+    <path d="M-52 0h104l18 120H-70Z" fill="#14191b" stroke="#080b0d" stroke-width="8"/>
+    <path d="M-36 113l-18 92M36 113l20 92" stroke="#0b0f11" stroke-width="14"/>
+    <path d="M-38 22h76" stroke="#3a2c22" stroke-width="7" opacity=".8"/>
+  </g>
+
+  <!-- filing cabinet production labels / wear -->
+  <g transform="translate(1240 530)" opacity=".86">
+    <path d="M16 34h153M16 109h153M16 184h153" stroke="#788178" stroke-width="2" opacity=".32"/>
+    <g fill="#c0aa7c" opacity=".72"><rect x="58" y="31" width="69" height="21"/><rect x="58" y="106" width="69" height="21"/><rect x="58" y="181" width="69" height="21"/></g>
+    <g stroke="#5b5140" stroke-width="2"><path d="M65 41h55"/><path d="M65 116h55"/><path d="M65 191h55"/></g>
+    <path d="M18 222c34-13 66 8 102-5 27-10 44 0 59 4" fill="none" stroke="#846848" stroke-width="3" opacity=".48"/>
+  </g>
+
+  <!-- floor evidence clutter and wet shoe marks -->
+  <g opacity=".65">
+    <g transform="translate(1075 876) rotate(-8)"><rect width="105" height="73" fill="#84765e"/><path d="M10 14h78M10 26h62M10 38h84M10 50h53" stroke="#443f35" stroke-width="3"/></g>
+    <g transform="translate(1160 910) rotate(6)"><rect width="80" height="56" fill="#65594a"/><path d="M9 13h58M9 24h48M9 35h62" stroke="#332f29" stroke-width="3"/></g>
+    <path d="M1532 863c21-5 34 9 31 21-4 14-33 15-42 2-7-10-1-19 11-23Zm86 31c19-4 30 8 27 19-3 13-29 13-37 2-6-9-1-17 10-21Z" fill="#0a0e10" opacity=".58"/>
+  </g>
+
+  <!-- warm pooled highlight over work area -->
+  <ellipse cx="760" cy="640" rx="330" ry="220" fill="url(#warm)"/>
+</svg>
