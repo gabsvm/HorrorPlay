@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://df72fdby37c8b"]
+[gd_scene load_steps=13 format=3 uid="uid://df72fdby37c8b"]
 
 [ext_resource type="Script" path="res://src/rooms/room_01_office/room_01_office.gd" id="1_script"]
 [ext_resource type="Resource" uid="uid://cbe7dby376f0s" path="res://src/common/classes/rusty_key.tres" id="2_key"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://src/rooms/room_01_office/office_pixel_backdrop.gd" id="9_backdrop"]
 [ext_resource type="Script" path="res://src/rooms/room_01_office/office_rain_fx.gd" id="10_rain"]
 [ext_resource type="Script" path="res://src/rooms/room_01_office/office_foreground_fx.gd" id="11_foreground"]
+[ext_resource type="Script" path="res://src/rooms/room_01_office/office_soundscape.gd" id="12_soundscape"]
 
 [sub_resource type="Environment" id="Environment_office"]
 background_mode = 3
@@ -60,6 +61,9 @@ script = ExtResource("9_backdrop")
 scale = Vector2(3, 3)
 z_index = -18
 script = ExtResource("10_rain")
+
+[node name="OfficeSoundscape" type="Node" parent="."]
+script = ExtResource("12_soundscape")
 
 [node name="WindowMoonlight" type="PointLight2D" parent="."]
 position = Vector2(282, 385)
