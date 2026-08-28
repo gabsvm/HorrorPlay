@@ -7,7 +7,7 @@
 [ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="5_hotspot"]
 [ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="7_flicker"]
 [ext_resource type="AudioStream" uid="uid://gothic_music" path="res://assets/audio/music/gothic_village.ogg" id="8_music"]
-[ext_resource type="Script" path="res://src/rooms/room_01_office/office_pixel_backdrop.gd" id="9_backdrop"]
+[ext_resource type="Script" path="res://src/rooms/room_01_office/office_pixel_backdrop_safe.gd" id="9_backdrop"]
 [ext_resource type="Script" path="res://src/rooms/room_01_office/office_rain_fx.gd" id="10_rain"]
 [ext_resource type="Script" path="res://src/rooms/room_01_office/office_foreground_fx.gd" id="11_foreground"]
 [ext_resource type="Script" path="res://src/rooms/room_01_office/office_soundscape.gd" id="12_soundscape"]
