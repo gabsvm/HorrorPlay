@@ -209,7 +209,7 @@ func _start_tests() -> void:
 		return
 	_capture_screenshot("09_boathouse_room.png")
 
-	print("[TEST] ALL CHARACTER/NARRATIVE/BEENCHMARK INTEGRATION TESTS PASSED SUCCESSFULLY!")
+	print("[TEST] ALL CHARACTER/NARRATIVE/BENCHMARK INTEGRATION TESTS PASSED SUCCESSFULLY!")
 	get_tree().quit(0)
 
 func _request_hotspot(hotspot: Hotspot, verb: String) -> void:
