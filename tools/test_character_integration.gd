@@ -30,14 +30,29 @@ func _start_tests() -> void:
 	if not player:
 		_fail_test("Player not found in Office scene")
 		return
-	if player.base_scale < 1.20:
-		_fail_test("Office Inspector is still underscaled: %.2f" % player.base_scale)
+	if player.base_scale < 1.30:
+		_fail_test("Office Inspector is still underscaled for benchmark staging: %.2f" % player.base_scale)
 		return
 	if player.personal_light.visible:
 		_fail_test("Office Inspector lantern/light must be disabled indoors")
 		return
-	if player.max_speed > 275.0:
+	if player.max_speed > 265.0:
 		_fail_test("Office Inspector still moves too fast for an interior: %.1f" % player.max_speed)
+		return
+	if player.walk_speed_scale_max < 1.30:
+		_fail_test("Office walk cadence is still too slow for physical speed: %.2f" % player.walk_speed_scale_max)
+		return
+	if player.walk_bob_amount > 0.60:
+		_fail_test("Office still uses excessive procedural walk bob: %.2f" % player.walk_bob_amount)
+		return
+	for required_node in ["PixelBackdrop", "PixelDetail", "CinematicCamera", "NearCameraLayer", "WorldGrade", "OfficeSoundscape"]:
+		if not office_scene.has_node(required_node):
+			_fail_test("Office production benchmark node missing: %s" % required_node)
+			return
+	var grade_layer := office_scene.get_node("WorldGrade") as CanvasLayer
+	var ui_layer := office_scene.get_node("UILayer") as CanvasLayer
+	if not grade_layer or not ui_layer or grade_layer.layer >= ui_layer.layer:
+		_fail_test("Office world grade must remain below the HUD/UI layer")
 		return
 	player.state_changed.connect(_on_player_state_changed)
 
@@ -194,7 +209,7 @@ func _start_tests() -> void:
 		return
 	_capture_screenshot("09_boathouse_room.png")
 
-	print("[TEST] ALL CHARACTER/NARRATIVE INTEGRATION TESTS PASSED SUCCESSFULLY!")
+	print("[TEST] ALL CHARACTER/NARRATIVE/BEENCHMARK INTEGRATION TESTS PASSED SUCCESSFULLY!")
 	get_tree().quit(0)
 
 func _request_hotspot(hotspot: Hotspot, verb: String) -> void:
