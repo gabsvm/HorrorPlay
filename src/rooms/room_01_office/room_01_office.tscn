@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://df72fdby37c8b"]
+[gd_scene load_steps=18 format=3 uid="uid://df72fdby37c8b"]
 
 [ext_resource type="Script" path="res://src/rooms/room_01_office/room_01_office.gd" id="1_script"]
 [ext_resource type="Resource" uid="uid://cbe7dby376f0s" path="res://src/common/classes/rusty_key.tres" id="2_key"]
@@ -11,6 +11,9 @@
 [ext_resource type="Script" path="res://src/rooms/room_01_office/office_rain_fx.gd" id="10_rain"]
 [ext_resource type="Script" path="res://src/rooms/room_01_office/office_foreground_fx.gd" id="11_foreground"]
 [ext_resource type="Script" path="res://src/rooms/room_01_office/office_soundscape.gd" id="12_soundscape"]
+[ext_resource type="Script" path="res://src/rooms/room_01_office/office_pixel_detail.gd" id="13_detail"]
+[ext_resource type="Script" path="res://src/rooms/room_01_office/office_cinematic_camera.gd" id="14_camera"]
+[ext_resource type="Shader" path="res://src/rooms/room_01_office/office_world_grade.gdshader" id="15_grade"]
 
 [sub_resource type="Environment" id="Environment_office"]
 background_mode = 3
@@ -37,6 +40,17 @@ fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_world_grade"]
+shader = ExtResource("15_grade")
+shader_parameter/pixel_block = 3.0
+shader_parameter/contrast = 1.06
+shader_parameter/saturation = 0.9
+shader_parameter/palette_steps = 48.0
+shader_parameter/dither_strength = 0.1
+shader_parameter/vignette_strength = 0.1
+shader_parameter/shadow_tint = Vector3(0.035, 0.075, 0.095)
+shader_parameter/highlight_tint = Vector3(0.92, 0.78, 0.58)
+
 [node name="Room_Office" type="Node2D"]
 script = ExtResource("1_script")
 key_item = ExtResource("2_key")
@@ -45,6 +59,15 @@ room_name = "Oficina del Inspector"
 music_theme = ExtResource("8_music")
 ambience_profile = "office"
 personal_light_enabled = false
+
+[node name="CinematicCamera" type="Camera2D" parent="."]
+position = Vector2(960, 540)
+enabled = true
+script = ExtResource("14_camera")
+drift_x = 3.0
+drift_y = 3.0
+drift_speed = 0.1
+pixel_step = 3.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_office")
@@ -56,6 +79,11 @@ color = Color(0.67, 0.70, 0.73, 1)
 scale = Vector2(3, 3)
 z_index = -20
 script = ExtResource("9_backdrop")
+
+[node name="PixelDetail" type="Node2D" parent="."]
+scale = Vector2(3, 3)
+z_index = -19
+script = ExtResource("13_detail")
 
 [node name="RainLayer" type="Node2D" parent="."]
 scale = Vector2(3, 3)
@@ -180,10 +208,19 @@ scale_amount_min = 0.7
 scale_amount_max = 1.5
 color = Color(0.78, 0.82, 0.80, 0.08)
 
-[node name="PixelForeground" type="Node2D" parent="ForegroundLayer"]
+[node name="NearCameraLayer" type="CanvasLayer" parent="."]
+layer = 2
+[node name="PixelForeground" type="Node2D" parent="NearCameraLayer"]
 scale = Vector2(3, 3)
-z_index = 20
 script = ExtResource("11_foreground")
+
+[node name="WorldGrade" type="CanvasLayer" parent="."]
+layer = 8
+[node name="Grade" type="ColorRect" parent="WorldGrade"]
+material = SubResource("ShaderMaterial_world_grade")
+offset_right = 1920.0
+offset_bottom = 1080.0
+mouse_filter = 2
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 layer = 10
