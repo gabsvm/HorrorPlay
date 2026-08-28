@@ -12,7 +12,9 @@ extends Room
 @export var book_item: ItemData
 
 func _ready() -> void:
-	character_base_scale = 1.33
+	# The frame canvas contains large transparent margins; this value is tuned
+	# against the visible human silhouette and the 1926 door, not the PNG bounds.
+	character_base_scale = 1.58
 	character_max_speed = 252.0
 	character_acceleration = 1180.0
 	character_deceleration = 1850.0
@@ -20,6 +22,8 @@ func _ready() -> void:
 	character_walk_sway = 0.25
 	character_depth_scaling_enabled = false
 	personal_light_enabled = false
+	footstep_surface = "wood"
+	walk_bounds = Rect2(55, 755, 1810, 150)
 	super._ready()
 	# Office uses a heavier, faster leg cadence than the old prototype walk.
 	# The reduced procedural bob prevents the sprite from looking like it is
