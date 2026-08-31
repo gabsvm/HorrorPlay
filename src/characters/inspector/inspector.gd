@@ -105,8 +105,8 @@ func _process_idle(delta: float) -> void:
 		_play_appropriate_idle()
 
 func _process_walking(delta: float) -> void:
-	var to_target := target_position - global_position
-	var dist := to_target.length()
+	var to_target: Vector2 = target_position - global_position
+	var dist: float = to_target.length()
 
 	if dist <= arrival_radius:
 		velocity = Vector2.ZERO
@@ -118,8 +118,8 @@ func _process_walking(delta: float) -> void:
 		movement_finished.emit(global_position)
 		return
 
-	var desired_direction := to_target.normalized()
-	var desired_facing := facing_direction
+	var desired_direction: Vector2 = to_target.normalized()
+	var desired_facing: int = facing_direction
 	if desired_direction.x < -0.05:
 		desired_facing = -1
 	elif desired_direction.x > 0.05:
@@ -129,13 +129,13 @@ func _process_walking(delta: float) -> void:
 		_begin_turn(desired_facing, State.WALKING)
 		return
 
-	var braking_distance := max(26.0, velocity.length() * velocity.length() / max(1.0, 2.0 * deceleration))
-	var desired_speed := max_speed
+	var braking_distance: float = maxf(26.0, velocity.length() * velocity.length() / maxf(1.0, 2.0 * deceleration))
+	var desired_speed: float = max_speed
 	if dist < braking_distance:
-		desired_speed = max_speed * clamp(dist / braking_distance, 0.28, 1.0)
+		desired_speed = max_speed * clampf(dist / braking_distance, 0.28, 1.0)
 
-	var target_velocity := desired_direction * desired_speed
-	var rate := acceleration if target_velocity.length() > velocity.length() else deceleration
+	var target_velocity: Vector2 = desired_direction * desired_speed
+	var rate: float = acceleration if target_velocity.length() > velocity.length() else deceleration
 	velocity = velocity.move_toward(target_velocity, rate * delta)
 	move_and_slide()
 
@@ -143,8 +143,8 @@ func _process_walking(delta: float) -> void:
 	if animated_sprite:
 		if animated_sprite.animation != &"walk":
 			animated_sprite.play(&"walk")
-		var speed_ratio := clamp(velocity.length() / max(1.0, max_speed), 0.0, 1.0)
-		animated_sprite.speed_scale = lerp(walk_speed_scale_min, walk_speed_scale_max, speed_ratio)
+		var speed_ratio: float = clampf(velocity.length() / maxf(1.0, max_speed), 0.0, 1.0)
+		animated_sprite.speed_scale = lerpf(walk_speed_scale_min, walk_speed_scale_max, speed_ratio)
 		_apply_walk_motion(speed_ratio)
 
 func _process_turning(delta: float) -> void:
@@ -155,10 +155,10 @@ func _process_turning(delta: float) -> void:
 func _apply_walk_motion(speed_ratio: float) -> void:
 	if not animated_sprite or animated_sprite.animation != &"walk":
 		return
-	var frame_count := max(1, animated_sprite.sprite_frames.get_frame_count(&"walk"))
-	var phase := (float(animated_sprite.frame) / float(frame_count)) * TAU
-	var bob := sin(phase * 2.0) * walk_bob_amount * speed_ratio
-	var sway := sin(phase) * walk_sway_amount * speed_ratio
+	var frame_count: int = maxi(1, animated_sprite.sprite_frames.get_frame_count(&"walk"))
+	var phase: float = (float(animated_sprite.frame) / float(frame_count)) * TAU
+	var bob: float = sin(phase * 2.0) * walk_bob_amount * speed_ratio
+	var sway: float = sin(phase) * walk_sway_amount * speed_ratio
 	animated_sprite.position = _sprite_base_position + Vector2(sway, bob)
 	if lantern_prop:
 		lantern_prop.position = _lantern_base_position + Vector2(sway * 0.55, bob * 0.7)
@@ -174,7 +174,7 @@ func _play_appropriate_idle() -> void:
 		return
 	_reset_animation_speed()
 	_reset_pose_offsets()
-	var is_uneasy := Sanity.current_sanity <= 55
+	var is_uneasy: bool = Sanity.current_sanity <= 55
 	var target_anim: StringName = &"idle_uneasy" if is_uneasy else &"idle"
 	if animated_sprite.animation != target_anim:
 		animated_sprite.play(target_anim)
@@ -194,25 +194,25 @@ func _on_sprite_frame_changed() -> void:
 		return
 
 	if animated_sprite.animation == &"walk":
-		var frame := animated_sprite.frame
+		var frame: int = animated_sprite.frame
 		if frame != last_footstep_frame and (frame == 1 or frame == 5):
 			last_footstep_frame = frame
 			if velocity.length() > 45.0:
 				_play_footstep()
 
 func _play_footstep() -> void:
-	var surface := current_surface
+	var surface: String = current_surface
 	if SceneRouter.current_room is Room:
 		surface = SceneRouter.current_room.footstep_surface
-	var speed_ratio := clamp(velocity.length() / max(1.0, max_speed), 0.0, 1.0)
-	AudioBus.play_footstep(surface, lerp(0.48, 0.72, speed_ratio))
+	var speed_ratio: float = clampf(velocity.length() / maxf(1.0, max_speed), 0.0, 1.0)
+	AudioBus.play_footstep(surface, lerpf(0.48, 0.72, speed_ratio))
 
 func _on_sprite_animation_finished() -> void:
 	if current_state == State.TURNING:
 		if not _turn_flip_applied:
 			_apply_facing_immediate(_pending_facing)
 			_turn_flip_applied = true
-		var resume_state := _resume_state_after_turn
+		var resume_state: State = _resume_state_after_turn
 		_transition_to(resume_state)
 		facing_finished.emit(facing_direction)
 		return
@@ -224,8 +224,8 @@ func _on_sprite_animation_finished() -> void:
 func _update_light(delta: float) -> void:
 	if personal_light and personal_light.visible:
 		light_time += delta
-		var noise := sin(light_time * 0.8) * cos(light_time * 0.43) + sin(light_time * 1.5) * cos(light_time * 0.9)
-		personal_light.energy = lerp(target_light_energy * 0.85, target_light_energy * 1.15, (noise + 2.0) / 4.0)
+		var noise: float = sin(light_time * 0.8) * cos(light_time * 0.43) + sin(light_time * 1.5) * cos(light_time * 0.9)
+		personal_light.energy = lerpf(target_light_energy * 0.85, target_light_energy * 1.15, (noise + 2.0) / 4.0)
 
 func configure_light(enabled: bool, energy: float = 0.52, color: Color = Color(0.96, 0.84, 0.65, 1.0), light_scale: float = 1.35) -> void:
 	if personal_light:
@@ -246,7 +246,7 @@ func _apply_facing_immediate(new_facing: int) -> void:
 	_apply_visual_transform()
 
 func _apply_visual_transform() -> void:
-	var visual_scale := depth_scale_factor * base_scale
+	var visual_scale: float = depth_scale_factor * base_scale
 	if visual_root:
 		visual_root.scale = Vector2(float(facing_direction) * visual_scale, visual_scale)
 	if personal_light:
@@ -256,7 +256,7 @@ func _apply_visual_transform() -> void:
 		)
 
 func _begin_turn(new_facing: int, resume_state: State = State.IDLE) -> void:
-	var normalized_facing := -1 if new_facing < 0 else 1
+	var normalized_facing: int = -1 if new_facing < 0 else 1
 	if normalized_facing == facing_direction:
 		return
 
@@ -278,7 +278,7 @@ func _begin_turn(new_facing: int, resume_state: State = State.IDLE) -> void:
 		facing_finished.emit(facing_direction)
 
 func face_direction(direction: int) -> void:
-	var normalized_facing := -1 if direction < 0 else 1
+	var normalized_facing: int = -1 if direction < 0 else 1
 	if normalized_facing == facing_direction:
 		return
 	if current_state == State.INTERACTING or current_state == State.REACTING or current_state == State.LOCKED:
@@ -287,13 +287,13 @@ func face_direction(direction: int) -> void:
 	await facing_finished
 
 func face_position(world_pos: Vector2) -> void:
-	var dir := 1 if world_pos.x >= global_position.x else -1
+	var dir: int = 1 if world_pos.x >= global_position.x else -1
 	await face_direction(dir)
 
 func _transition_to(new_state: State) -> void:
 	if current_state == new_state:
 		return
-	var old_state := current_state
+	var old_state: State = current_state
 	current_state = new_state
 	last_footstep_frame = -1
 	state_changed.emit(old_state, new_state)
@@ -331,7 +331,7 @@ func play_interaction_animation(anim_name: StringName) -> void:
 	await interaction_finished
 
 func play_item_interaction(item: ItemData, fallback_animation: StringName = &"none") -> void:
-	var animation_to_play := fallback_animation
+	var animation_to_play: StringName = fallback_animation
 	if item and item.world_use_animation != "":
 		animation_to_play = StringName(item.world_use_animation)
 	if animation_to_play == &"generic_reach":
@@ -346,9 +346,9 @@ func play_generic_use_motion() -> void:
 	_transition_to(State.INTERACTING)
 	if animated_sprite:
 		animated_sprite.play(&"idle")
-	var start_position := visual_root.position
-	var reach_offset := Vector2(10.0 * float(facing_direction), -2.0)
-	var tween := create_tween()
+	var start_position: Vector2 = visual_root.position
+	var reach_offset: Vector2 = Vector2(10.0 * float(facing_direction), -2.0)
+	var tween: Tween = create_tween()
 	tween.tween_property(visual_root, "position", start_position + reach_offset, 0.16).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_interval(0.16)
 	tween.tween_property(visual_root, "position", start_position, 0.22).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
