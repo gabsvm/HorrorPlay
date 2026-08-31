@@ -63,6 +63,7 @@ animation = &"idle"
 autoplay = "idle"
 
 [node name="LanternProp" type="Node2D" parent="VisualRoot"]
+visible = false
 position = Vector2(-40, -115)
 z_index = 2
 
@@ -84,6 +85,7 @@ color = Color(1, 0.78, 0.36, 0.88)
 position = Vector2(0, 0)
 
 [node name="PersonalLight" type="PointLight2D" parent="."]
+visible = false
 position = Vector2(-40, -115)
 scale = Vector2(1.35, 1.35)
 color = Color(0.96, 0.84, 0.65, 1)
