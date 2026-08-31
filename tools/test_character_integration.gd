@@ -227,7 +227,7 @@ func _wait_for_dialogue(max_frames: int = 300) -> bool:
 	for _i in range(max_frames):
 		if DialogueManager.current_balloon != null:
 			return true
-		await get_tree().process_frame
+		await get_tree().physics_frame
 	return false
 
 func _dismiss_dialogue_cleanly() -> void:
@@ -244,21 +244,21 @@ func _wait_for_animation_frame(player: Player, animation_name: StringName, minim
 	for _i in range(max_frames):
 		if player and player.animated_sprite and player.animated_sprite.animation == animation_name and player.animated_sprite.frame >= minimum_frame:
 			return true
-		await get_tree().process_frame
+		await get_tree().physics_frame
 	return false
 
 func _wait_for_flag(flag_name: String, max_frames: int = 480) -> bool:
 	for _i in range(max_frames):
 		if GameState.get_flag(flag_name):
 			return true
-		await get_tree().process_frame
+		await get_tree().physics_frame
 	return false
 
 func _wait_for_position(player: Player, target: Vector2, max_frames: int = 600) -> bool:
 	for _i in range(max_frames):
 		if player.global_position.distance_to(target) <= player.arrival_radius + 1.0:
 			return true
-		await get_tree().process_frame
+		await get_tree().physics_frame
 	return false
 
 func _wait_frames(count: int) -> void:
@@ -266,6 +266,8 @@ func _wait_frames(count: int) -> void:
 		await get_tree().process_frame
 
 func _capture_screenshot(filename: String) -> void:
+	if DisplayServer.get_name() == "headless":
+		return
 	var img = get_viewport().get_texture().get_image()
 	if img and not img.is_empty():
 		var save_path = ProjectSettings.globalize_path(screenshots_dir.path_join(filename))
