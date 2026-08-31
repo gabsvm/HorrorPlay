@@ -53,6 +53,12 @@ func _on_desk_interacted(verb: String) -> void:
 
 	var first_read = Investigation.discover_evidence("coast_guard_reports")
 	if first_read:
+		# World state must not depend on the dialogue coroutine resuming on a later
+		# frame. The interaction discovers the evidence/key immediately; the balloon
+		# only presents that already-committed discovery to the player.
+		GameState.set_flag("inspector_water_memory_seen", true)
+		if key_item and not Inventory.has_item(key_item.id):
+			Inventory.add_item(key_item)
 		await DialogueManager.show_dialogue([
 			"EXPEDIENTE 47-B. Tres guardacostas desaparecidos durante una patrulla nocturna frente a Innsmouth.",
 			"El forense estima que Hale murió entre las 22:00 y las 22:20. La estación, sin embargo, registró su voz en la transmisión del 317 a las 23:03.",
@@ -60,9 +66,6 @@ func _on_desk_interacted(verb: String) -> void:
 			"En una declaración adjunta, un pescador escribió: «la voz siguió llamándolo por su nombre desde el agua». Cierro el expediente un segundo. Esa frase ya la escuché una vez, hace muchos años, y jamás la puse en un informe.",
 			"Bajo la carpeta encuentro una [color=#ca8a04]llave de bronce[/color] etiquetada «ARCHIVO DE EVIDENCIAS»."
 		], "Inspector")
-		GameState.set_flag("inspector_water_memory_seen", true)
-		if key_item and not Inventory.has_item(key_item.id):
-			Inventory.add_item(key_item)
 	else:
 		DialogueManager.show_dialogue([
 			"Hale: muerte estimada antes de las 22:20. Última voz atribuida a Hale: 23:03.",
