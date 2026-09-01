@@ -122,7 +122,11 @@ func _walk_and_execute(hotspot: Hotspot, verb: String) -> void:
 	if player:
 		InputController.block_input(true)
 		if hotspot.walk_to_point:
-			await player.walk_to(hotspot.walk_to_point.global_position)
+			var destination := hotspot.walk_to_point.global_position
+			await player.walk_to(destination)
+			if player.global_position.distance_to(destination) > player.arrival_radius + 1.0:
+				InputController.block_input(false)
+				return
 		await _orient_player_for_hotspot(player, hotspot)
 
 	if armed_item != null and verb == "interact":
