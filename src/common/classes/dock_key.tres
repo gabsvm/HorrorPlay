@@ -9,4 +9,3 @@ id = "dock_key"
 name = "Llave del Muelle"
 description = "Una llave de hierro pesada con incrustaciones de sal marina."
 icon = ExtResource("1_icon")
-combinable_with = Array[ExtResource("2_script")]([])
