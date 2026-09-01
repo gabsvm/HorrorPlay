@@ -10,4 +10,3 @@ name = "Llave Oxidada"
 description = "Una pequeña llave de bronce corroída."
 icon = ExtResource("1_icon")
 world_use_animation = "use_mid"
-combinable_with = Array[ExtResource("2_script")]([])
