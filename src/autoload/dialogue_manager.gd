@@ -4,6 +4,8 @@ extends Node
 signal dialogue_started
 signal dialogue_ended
 
+const INPUT_LOCK_OWNER: StringName = &"dialogue"
+
 var balloon_scene: PackedScene = preload("res://src/common/ui/dialogue_balloon.tscn")
 var current_balloon: Node = null
 
@@ -12,7 +14,7 @@ func show_dialogue(lines: Array[String], speaker: String = "Inspector") -> void:
 		return
 		
 	dialogue_started.emit()
-	InputController.block_input(true)
+	InputController.acquire_input_lock(INPUT_LOCK_OWNER)
 	
 	current_balloon = balloon_scene.instantiate()
 	get_tree().root.add_child(current_balloon)
@@ -23,7 +25,7 @@ func show_dialogue(lines: Array[String], speaker: String = "Inspector") -> void:
 	current_balloon.queue_free()
 	current_balloon = null
 	
-	InputController.block_input(false)
+	InputController.release_input_lock(INPUT_LOCK_OWNER)
 	dialogue_ended.emit()
 
 func show_choices(prompt: String, choices: Array[Dictionary], speaker: String = "Inspector") -> void:
@@ -31,7 +33,7 @@ func show_choices(prompt: String, choices: Array[Dictionary], speaker: String = 
 		return
 		
 	dialogue_started.emit()
-	InputController.block_input(true)
+	InputController.acquire_input_lock(INPUT_LOCK_OWNER)
 	
 	current_balloon = balloon_scene.instantiate()
 	get_tree().root.add_child(current_balloon)
@@ -47,7 +49,7 @@ func show_choices(prompt: String, choices: Array[Dictionary], speaker: String = 
 	current_balloon.queue_free()
 	current_balloon = null
 	
-	InputController.block_input(false)
+	InputController.release_input_lock(INPUT_LOCK_OWNER)
 	dialogue_ended.emit()
 	
 	if selected_choice.has("callback") and selected_choice["callback"] is Callable:
