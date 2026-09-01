@@ -2,7 +2,13 @@ extends Node
 
 signal interaction_requested(action_type: String, viewport_pos: Vector2)
 
-var is_input_blocked: bool = false
+const LEGACY_INPUT_LOCK: StringName = &"legacy"
+
+var _input_locks: Dictionary = {}
+var is_input_blocked: bool:
+	get:
+		return not _input_locks.is_empty()
+
 var long_press_duration: float = 0.65
 var touch_timer: Timer
 
@@ -19,8 +25,28 @@ func _ready() -> void:
 	touch_timer.timeout.connect(_on_touch_timer_timeout)
 	add_child(touch_timer)
 
+func acquire_input_lock(owner: StringName) -> void:
+	if owner == &"":
+		push_warning("InputController: refusing an anonymous input lock")
+		return
+	_input_locks[owner] = true
+
+func release_input_lock(owner: StringName) -> void:
+	_input_locks.erase(owner)
+
+func is_input_locked_by(owner: StringName) -> bool:
+	return _input_locks.has(owner)
+
+func clear_input_locks() -> void:
+	_input_locks.clear()
+
+# Backwards-compatible adapter for older callers. New modal/sequence code must
+# use owner-scoped locks so one subsystem cannot release another one's lock.
 func block_input(status: bool) -> void:
-	is_input_blocked = status
+	if status:
+		acquire_input_lock(LEGACY_INPUT_LOCK)
+	else:
+		release_input_lock(LEGACY_INPUT_LOCK)
 
 func vibrate_device(duration_ms: int) -> void:
 	if OS.get_name() in ["Android", "iOS"]:
