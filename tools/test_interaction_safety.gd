@@ -166,6 +166,30 @@ func _run() -> void:
 	player.stop_movement()
 	await _wait_physics_frames(4)
 	Inventory.set_active_item(null)
+	if InputController.is_input_blocked:
+		_fail("Unexpected input lock remained before casebook escape probe")
+		return
+
+	hud._on_case_pressed()
+	await _wait_physics_frames(1)
+	if not casebook or not casebook.visible:
+		_fail("Casebook escape probe could not open the casebook")
+		return
+	if not InputController.is_input_locked_by(&"casebook"):
+		_fail("Casebook did not acquire its owner-scoped input lock")
+		return
+	pause_menu._unhandled_input(cancel_event)
+	await _wait_physics_frames(1)
+	if casebook.visible:
+		_fail("Esc did not close the open casebook")
+		return
+	if InputController.is_input_locked_by(&"casebook"):
+		_fail("Esc closed the casebook visually but leaked the casebook input lock")
+		return
+	if InputController.is_input_blocked:
+		_fail("Input remained blocked after closing casebook with Esc")
+		return
+	print("[SAFETY TEST] PASS: Esc closes casebook and releases its owner lock")
 
 	var dialogue_hotspot := Hotspot.new()
 	dialogue_hotspot.hotspot_name = "Dialogue Lock Probe"
