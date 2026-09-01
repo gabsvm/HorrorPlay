@@ -163,6 +163,20 @@ func _run() -> void:
 		return
 	print("[SAFETY TEST] PASS: Esc cannot interrupt a Room-owned world interaction")
 
+	var desk_hotspot := office.get_node_or_null("HotspotsLayer/Desk") as Hotspot
+	if not desk_hotspot or not desk_hotspot.reveal_container:
+		_fail("Desk reveal overlay missing for reveal lock probe")
+		return
+	if desk_hotspot.reveal_container.visible:
+		_fail("Desk reveal overlay unexpectedly visible before reveal lock probe")
+		return
+	hud._on_reveal_pressed()
+	await _wait_physics_frames(1)
+	if desk_hotspot.reveal_container.visible:
+		_fail("Reveal fired while a Room-owned world interaction was in progress")
+		return
+	print("[SAFETY TEST] PASS: reveal cannot fire during a Room-owned world interaction")
+
 	player.stop_movement()
 	await _wait_physics_frames(4)
 	Inventory.set_active_item(null)
