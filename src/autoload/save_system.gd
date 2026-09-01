@@ -60,6 +60,9 @@ func load_game(slot_index: int) -> Error:
 	var save_data = json.data
 	if not save_data is Dictionary:
 		return ERR_FILE_CORRUPT
+	if not _is_valid_save_schema(save_data):
+		return ERR_FILE_CORRUPT
+
 	reset_runtime_state()
 	if save_data.has("game_state"):
 		var gs_data = save_data["game_state"]
@@ -86,6 +89,59 @@ func load_game(slot_index: int) -> Error:
 		if ResourceLoader.exists(target_room):
 			SceneRouter.change_room(target_room)
 	return OK
+
+func _is_valid_save_schema(save_data: Dictionary) -> bool:
+	if save_data.has("save_version") and not save_data["save_version"] is int:
+		return false
+
+	if save_data.has("game_state"):
+		var game_state_data = save_data["game_state"]
+		if not game_state_data is Dictionary:
+			return false
+		if game_state_data.has("flags"):
+			var flags = game_state_data["flags"]
+			if not flags is Dictionary:
+				return false
+			for flag_name in flags:
+				if not flags[flag_name] is bool:
+					return false
+		if game_state_data.has("variables") and not game_state_data["variables"] is Dictionary:
+			return false
+
+	if save_data.has("investigation"):
+		var investigation_data = save_data["investigation"]
+		if not investigation_data is Dictionary:
+			return false
+		if investigation_data.has("case_active") and not investigation_data["case_active"] is bool:
+			return false
+		if investigation_data.has("discovered_evidence") and not investigation_data["discovered_evidence"] is Array:
+			return false
+		if investigation_data.has("completed_objectives") and not investigation_data["completed_objectives"] is Array:
+			return false
+		if investigation_data.has("current_objective_id") and not investigation_data["current_objective_id"] is String:
+			return false
+
+	if save_data.has("inventory"):
+		var inventory_data = save_data["inventory"]
+		if not inventory_data is Dictionary:
+			return false
+		if inventory_data.has("items"):
+			var item_paths = inventory_data["items"]
+			if not item_paths is Array:
+				return false
+			for item_path in item_paths:
+				if not item_path is String:
+					return false
+
+	if save_data.has("sanity"):
+		var sanity_value = save_data["sanity"]
+		if not sanity_value is int and not sanity_value is float:
+			return false
+
+	if save_data.has("current_room_path") and not save_data["current_room_path"] is String:
+		return false
+
+	return true
 
 func _restore_legacy_investigation_state() -> void:
 	Investigation.reset_case()
