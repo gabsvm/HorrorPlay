@@ -72,6 +72,13 @@ func _start_tests() -> void:
 	if not GameState.get_flag("inspector_water_memory_seen"):
 		_fail_test("Office report failed to seed Inspector water-memory foreshadowing")
 		return
+	if InputController.is_input_blocked:
+		_fail_test("Input remained blocked after Desk dialogue: dialogue=%s room=%s legacy=%s" % [
+			InputController.is_input_locked_by(&"dialogue"),
+			InputController.is_input_locked_by(&"room_interaction"),
+			InputController.is_input_locked_by(&"legacy")
+		])
+		return
 	_capture_screenshot("02_office_at_desk.png")
 
 	print("[TEST] 3. Arming key and using the real world interaction flow...")
@@ -81,7 +88,14 @@ func _start_tests() -> void:
 	_request_hotspot(drawer, "interact")
 
 	if not await _wait_for_animation_frame(player, &"use_mid", 2):
-		_fail_test("Rusty Key interaction never reached the middle of use_mid")
+		_fail_test("Rusty Key interaction never reached use_mid; state=%d pos=%s active_item=%s locks(dialogue=%s room=%s legacy=%s)" % [
+			player.current_state,
+			player.global_position,
+			Inventory.active_item.id if Inventory.active_item else "none",
+			InputController.is_input_locked_by(&"dialogue"),
+			InputController.is_input_locked_by(&"room_interaction"),
+			InputController.is_input_locked_by(&"legacy")
+		])
 		return
 	_capture_screenshot("04_office_using_key_mid.png")
 
