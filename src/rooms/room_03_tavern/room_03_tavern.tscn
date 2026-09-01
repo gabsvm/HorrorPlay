@@ -4,10 +4,10 @@
 [ext_resource type="PackedScene" uid="uid://inspector_actor_root" path="res://src/characters/inspector/inspector.tscn" id="2_inspector"]
 [ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="3_hotspot"]
 [ext_resource type="Texture2D" path="res://assets/images/backgrounds/tavern_bg.svg" id="4_bg"]
-[ext_resource type="Texture2D" uid="uid://bearded_idle_1" path="res://assets/images/characters/innkeeper/idle/bearded-idle-1.png" id="5_bearded"]
+[ext_resource type="Texture2D" path="res://assets/images/characters/innkeeper/idle/bearded-idle-1.png" id="5_bearded"]
 [ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="6_flicker"]
 [ext_resource type="Resource" uid="uid://item_dock_key" path="res://src/common/classes/dock_key.tres" id="7_dock_key"]
-[ext_resource type="AudioStream" uid="uid://gothic_music" path="res://assets/audio/music/gothic_village.ogg" id="8_music"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/gothic_village.ogg" id="8_music"]
 
 [sub_resource type="Environment" id="Environment_tavern"]
 background_mode = 3
