@@ -37,8 +37,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	var casebook = _get_casebook()
 	if casebook and casebook.visible:
 		get_viewport().set_input_as_handled()
-		casebook.visible = false
-		InputController.block_input(false)
+		var parent_node = get_parent()
+		if parent_node and parent_node.has_method("_on_case_close_pressed"):
+			parent_node.call("_on_case_close_pressed")
+		else:
+			casebook.visible = false
+			InputController.release_input_lock(&"casebook")
 		return
 
 	if visible:
