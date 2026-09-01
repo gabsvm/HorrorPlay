@@ -2,6 +2,8 @@
 class_name Room
 extends Node2D
 
+const INPUT_LOCK_OWNER: StringName = &"room_interaction"
+
 @export var room_name: String = "Unnamed Room"
 @export var music_theme: AudioStream
 @export var suppress_music: bool = false
@@ -76,6 +78,7 @@ func _process(_delta: float) -> void:
 			player.set_depth_scale(scale_factor)
 
 func _exit_tree() -> void:
+	InputController.release_input_lock(INPUT_LOCK_OWNER)
 	if InputController.interaction_requested.is_connected(_on_interaction_requested):
 		InputController.interaction_requested.disconnect(_on_interaction_requested)
 
@@ -123,19 +126,19 @@ func _walk_and_execute(hotspot: Hotspot, verb: String) -> void:
 		return
 
 	if player:
-		InputController.block_input(true)
+		InputController.acquire_input_lock(INPUT_LOCK_OWNER)
 		if hotspot.walk_to_point:
 			var destination := hotspot.walk_to_point.global_position
 			await player.walk_to(destination)
 			if player.global_position.distance_to(destination) > player.arrival_radius + 1.0:
-				InputController.block_input(false)
+				InputController.release_input_lock(INPUT_LOCK_OWNER)
 				return
 		await _orient_player_for_hotspot(player, hotspot)
 
 	if armed_item != null and verb == "interact":
 		if hotspot.required_item == null:
 			if player:
-				InputController.block_input(false)
+				InputController.release_input_lock(INPUT_LOCK_OWNER)
 			_show_item_use_hint("%s no parece tener ningún uso en %s." % [armed_item.name, hotspot.hotspot_name])
 			return
 
@@ -148,7 +151,7 @@ func _walk_and_execute(hotspot: Hotspot, verb: String) -> void:
 		if correct_item and Inventory.active_item == armed_item:
 			Inventory.set_active_item(null)
 		if player:
-			InputController.block_input(false)
+			InputController.release_input_lock(INPUT_LOCK_OWNER)
 		return
 
 	if player:
@@ -158,7 +161,7 @@ func _walk_and_execute(hotspot: Hotspot, verb: String) -> void:
 
 	hotspot.execute_interaction(verb)
 	if player:
-		InputController.block_input(false)
+		InputController.release_input_lock(INPUT_LOCK_OWNER)
 
 func _orient_player_for_hotspot(player: Player, hotspot: Hotspot) -> void:
 	if not player or not hotspot:
