@@ -66,3 +66,12 @@ jobs:
             --headless \
             --path . \
             res://tools/test_interaction_safety_runner.tscn
+
+      - name: Run scene transition input ownership regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./Godot_v4.6.3-stable_linux.x86_64 \
+            --headless \
+            --path . \
+            res://tools/test_scene_transition_lock_runner.tscn
