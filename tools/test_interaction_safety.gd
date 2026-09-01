@@ -3,7 +3,7 @@ extends Node
 var trigger_count: int = 0
 
 func _ready() -> void:
-	print("[SAFETY TEST] Initializing interaction cancellation regression...")
+	print("[SAFETY TEST] Initializing interaction safety regressions...")
 	call_deferred("_run")
 
 func _run() -> void:
@@ -48,8 +48,30 @@ func _run() -> void:
 	if trigger_count != 0:
 		_fail("Canceled movement still executed the distant hotspot (%d callback(s))" % trigger_count)
 		return
-
 	print("[SAFETY TEST] PASS: canceled movement cannot execute its pending hotspot")
+
+	trigger_count = 0
+	var reaction_hotspot := Hotspot.new()
+	reaction_hotspot.hotspot_name = "Reaction Probe"
+	reaction_hotspot.interaction_facing = "none"
+	reaction_hotspot.interaction_pose = "none"
+	office.get_node("HotspotsLayer").add_child(reaction_hotspot)
+	reaction_hotspot.interacted.connect(_on_probe_interacted)
+
+	player.play_reaction()
+	await _wait_physics_frames(1)
+	if player.current_state != Player.State.REACTING:
+		_fail("Reaction setup did not enter REACTING")
+		return
+
+	office._walk_and_execute(reaction_hotspot, "interact")
+	await _wait_physics_frames(3)
+	if trigger_count != 0:
+		_fail("REACTING actor still executed a world hotspot (%d callback(s))" % trigger_count)
+		return
+	print("[SAFETY TEST] PASS: reacting actor rejects world hotspots")
+
+	print("[SAFETY TEST] ALL INTERACTION SAFETY REGRESSIONS PASSED")
 	get_tree().quit(0)
 
 func _on_probe_interacted(_verb: String) -> void:
