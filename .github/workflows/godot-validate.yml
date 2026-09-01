@@ -64,6 +64,10 @@ jobs:
           set -e
           echo "--- Godot verbose tail ---"
           tail -n 160 /tmp/godot-validator-verbose.log
+          if grep -Fq "Resource still in use: res://src/common/classes/item_data.gd" /tmp/godot-validator-verbose.log; then
+            echo "::error::ItemData script resource leaked at validator shutdown"
+            exit 1
+          fi
           exit "$status"
 
       - name: Run character integration acceptance test
