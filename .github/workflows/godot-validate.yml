@@ -49,6 +49,23 @@ jobs:
             --path . \
             --script res://tools/validate_project.gd
 
+      - name: Diagnose validator exit leaks
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          ./Godot_v4.6.3-stable_linux.x86_64 \
+            --verbose \
+            --headless \
+            --path . \
+            --script res://tools/validate_project.gd \
+            > /tmp/godot-validator-verbose.log 2>&1
+          status=$?
+          set -e
+          echo "--- Godot verbose tail ---"
+          tail -n 160 /tmp/godot-validator-verbose.log
+          exit "$status"
+
       - name: Run character integration acceptance test
         shell: bash
         run: |
