@@ -58,6 +58,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_I:
 		if DialogueManager.current_balloon or casebook_backdrop.visible or pause_menu.visible:
 			return
+		if not inventory_menu.visible and InputController.is_input_blocked:
+			return
 		get_viewport().set_input_as_handled()
 		if inventory_menu.visible:
 			inventory_menu.call("close_menu")
@@ -144,9 +146,12 @@ func show_item_use_feedback(message: String) -> void:
 func _on_inventory_pressed() -> void:
 	if DialogueManager.current_balloon or casebook_backdrop.visible or pause_menu.visible:
 		return
+	if InputController.is_input_blocked:
+		return
 	if inventory_menu.has_method("open_menu"):
 		inventory_menu.call("open_menu")
-		_play_cached_sfx("open", 0.95)
+		if inventory_menu.visible:
+			_play_cached_sfx("open", 0.95)
 
 func _on_inventory_item_armed(item: ItemData) -> void:
 	_show_feedback("OBJETO PREPARADO", "%s · Elegí en el escenario dónde usarlo." % item.name, Color(0.74, 0.6, 0.34, 1))
