@@ -227,6 +227,8 @@ func _run() -> void:
 		_fail("Input remained blocked after the dialogue ended")
 		return
 
+	await _cleanup_scene_for_shutdown(office)
+	await _settle_audio_for_shutdown()
 	print("[SAFETY TEST] ALL INTERACTION SAFETY REGRESSIONS PASSED")
 	get_tree().quit(0)
 
@@ -259,6 +261,36 @@ func _dismiss_dialogue_cleanly() -> void:
 			balloon.advance_dialogue()
 		await _wait_physics_frames(2)
 	await _wait_physics_frames(2)
+
+func _cleanup_scene_for_shutdown(scene: Node) -> void:
+	if scene and is_instance_valid(scene):
+		if get_tree().current_scene == scene:
+			get_tree().current_scene = null
+		scene.queue_free()
+	await _wait_physics_frames(6)
+
+func _settle_audio_for_shutdown() -> void:
+	if AudioBus.music_tween and AudioBus.music_tween.is_valid():
+		AudioBus.music_tween.kill()
+	AudioBus.music_tween = null
+	if AudioBus.ambience_tween and AudioBus.ambience_tween.is_valid():
+		AudioBus.ambience_tween.kill()
+	AudioBus.ambience_tween = null
+
+	var managed_players: Array[AudioStreamPlayer] = []
+	for audio_player in AudioBus.music_players:
+		managed_players.append(audio_player)
+		audio_player.stop()
+		audio_player.stream = null
+	for audio_player in AudioBus.ambience_players:
+		managed_players.append(audio_player)
+		audio_player.stop()
+		audio_player.stream = null
+	for child in AudioBus.get_children():
+		if child is AudioStreamPlayer and not managed_players.has(child):
+			child.stop()
+			child.queue_free()
+	await _wait_physics_frames(12)
 
 func _wait_physics_frames(count: int) -> void:
 	for _i in range(count):
