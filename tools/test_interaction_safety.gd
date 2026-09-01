@@ -71,11 +71,40 @@ func _run() -> void:
 		return
 	print("[SAFETY TEST] PASS: reacting actor rejects world hotspots")
 
+	if not await _wait_for_state(player, Player.State.IDLE, 180):
+		_fail("Player did not return to IDLE after reaction")
+		return
+
+	var dialogue_hotspot := Hotspot.new()
+	dialogue_hotspot.hotspot_name = "Dialogue Lock Probe"
+	dialogue_hotspot.interaction_facing = "none"
+	dialogue_hotspot.interaction_pose = "none"
+	office.get_node("HotspotsLayer").add_child(dialogue_hotspot)
+	dialogue_hotspot.interacted.connect(_on_dialogue_probe_interacted)
+
+	office._walk_and_execute(dialogue_hotspot, "interact")
+	await _wait_physics_frames(1)
+	if DialogueManager.current_balloon == null:
+		_fail("Dialogue lock probe failed to open its dialogue")
+		return
+	if not InputController.is_input_blocked:
+		_fail("Room released input while DialogueManager still owns an active balloon")
+		return
+	print("[SAFETY TEST] PASS: active dialogue retains the input lock")
+
+	await _dismiss_dialogue_cleanly()
+	if InputController.is_input_blocked:
+		_fail("Input remained blocked after the dialogue ended")
+		return
+
 	print("[SAFETY TEST] ALL INTERACTION SAFETY REGRESSIONS PASSED")
 	get_tree().quit(0)
 
 func _on_probe_interacted(_verb: String) -> void:
 	trigger_count += 1
+
+func _on_dialogue_probe_interacted(_verb: String) -> void:
+	DialogueManager.show_dialogue(["Input ownership probe."], "Inspector")
 
 func _wait_for_state(player: Player, expected_state: int, max_frames: int) -> bool:
 	for _i in range(max_frames):
@@ -90,6 +119,16 @@ func _wait_until_moved(player: Player, start_position: Vector2, min_distance: fl
 			return true
 		await get_tree().physics_frame
 	return false
+
+func _dismiss_dialogue_cleanly() -> void:
+	var safety_counter := 0
+	while DialogueManager.current_balloon != null and safety_counter < 30:
+		safety_counter += 1
+		var balloon = DialogueManager.current_balloon
+		if balloon and is_instance_valid(balloon) and balloon.has_method("advance_dialogue"):
+			balloon.advance_dialogue()
+		await _wait_physics_frames(2)
+	await _wait_physics_frames(2)
 
 func _wait_physics_frames(count: int) -> void:
 	for _i in range(count):
