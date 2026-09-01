@@ -326,6 +326,8 @@ func _refresh_casebook() -> void:
 func _on_reveal_pressed() -> void:
 	if inventory_menu.visible or casebook_backdrop.visible or pause_menu.visible:
 		return
+	if InputController.is_input_blocked:
+		return
 	_play_cached_sfx("reveal", 1.1)
 	if OS.get_name() in ["Android", "iOS"]:
 		Input.vibrate_handheld(120)
