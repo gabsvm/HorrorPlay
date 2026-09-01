@@ -210,6 +210,20 @@ func _on_choice_selected(choice: Dictionary) -> void:
 	selected_choice = choice
 	dialogue_finished.emit()
 
+func advance_dialogue() -> void:
+	if is_choice_mode and choices_container.visible:
+		return
+	if is_typing:
+		typing_canceled = true
+		text_label.visible_characters = text_label.get_parsed_text().length()
+		_on_typing_finished()
+		return
+	current_line_index += 1
+	if current_line_index < dialog_lines.size():
+		_show_current_line()
+	else:
+		dialogue_finished.emit()
+
 func _input(event: InputEvent) -> void:
 	if is_choice_mode and choices_container.visible:
 		return
@@ -220,13 +234,4 @@ func _input(event: InputEvent) -> void:
 		is_advance_input = true
 	if is_advance_input:
 		get_viewport().set_input_as_handled()
-		if is_typing:
-			typing_canceled = true
-			text_label.visible_characters = text_label.get_parsed_text().length()
-			_on_typing_finished()
-		else:
-			current_line_index += 1
-			if current_line_index < dialog_lines.size():
-				_show_current_line()
-			else:
-				dialogue_finished.emit()
+		advance_dialogue()
