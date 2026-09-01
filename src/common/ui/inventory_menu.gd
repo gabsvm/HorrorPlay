@@ -2,6 +2,8 @@ extends Control
 
 signal item_armed(item: ItemData)
 
+const INPUT_LOCK_OWNER: StringName = &"inventory"
+
 @onready var inventory_panel: Panel = $Backdrop/InventoryPanel
 @onready var items_list: VBoxContainer = $Backdrop/InventoryPanel/ItemsSection/ItemsScroll/ItemsList
 @onready var empty_label: Label = $Backdrop/InventoryPanel/ItemsSection/EmptyLabel
@@ -26,22 +28,26 @@ func _ready() -> void:
 	Inventory.item_added.connect(_on_inventory_changed)
 	Inventory.item_removed.connect(_on_inventory_changed)
 
+func _exit_tree() -> void:
+	InputController.release_input_lock(INPUT_LOCK_OWNER)
+
 func open_menu() -> void:
-	if visible or DialogueManager.current_balloon:
+	if visible or DialogueManager.current_balloon or InputController.is_input_blocked:
 		return
 	# Opening the inventory cancels a previously armed object so browsing and
-	# world-use mode remain two explicit states.
+	# world-use mode remain two explicit states. Never do this while another
+	# subsystem owns input: that would invalidate an in-flight world interaction.
 	if Inventory.active_item:
 		Inventory.set_active_item(null)
 	visible = true
-	InputController.block_input(true)
+	InputController.acquire_input_lock(INPUT_LOCK_OWNER)
 	_refresh_items()
 
 func close_menu() -> void:
 	if not visible:
 		return
 	visible = false
-	InputController.block_input(false)
+	InputController.release_input_lock(INPUT_LOCK_OWNER)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not visible:
@@ -107,7 +113,7 @@ func _on_use_pressed() -> void:
 		return
 	var armed_item = selected_item
 	visible = false
-	InputController.block_input(false)
+	InputController.release_input_lock(INPUT_LOCK_OWNER)
 	Inventory.set_active_item(armed_item)
 	item_armed.emit(armed_item)
 
