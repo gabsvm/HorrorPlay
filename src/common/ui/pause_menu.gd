@@ -1,6 +1,8 @@
 # res://src/common/ui/pause_menu.gd
 extends Control
 
+const INPUT_LOCK_OWNER: StringName = &"pause"
+
 @onready var panel: Panel = $Backdrop/Panel
 @onready var status_label: Label = $Backdrop/Panel/Content/StatusLabel
 @onready var load_button: Button = $Backdrop/Panel/Content/LoadButton
@@ -17,6 +19,7 @@ func _ready() -> void:
 	_refresh_state()
 
 func _exit_tree() -> void:
+	InputController.release_input_lock(INPUT_LOCK_OWNER)
 	if get_tree() and get_tree().paused:
 		get_tree().paused = false
 
@@ -31,26 +34,34 @@ func _unhandled_input(event: InputEvent) -> void:
 			inventory_menu.close_menu()
 		return
 
-	# Esc first cancels an armed inventory item. A second Esc opens Pause. This
-	# prevents item-use mode from unexpectedly becoming a pause action.
+	var casebook = _get_casebook()
+	if casebook and casebook.visible:
+		get_viewport().set_input_as_handled()
+		casebook.visible = false
+		InputController.block_input(false)
+		return
+
+	if visible:
+		get_viewport().set_input_as_handled()
+		close_menu()
+		return
+
+	# A world interaction, dialogue, transition, or other modal owns input.
+	# Esc must not cancel an armed item or open Pause underneath that owner.
+	if InputController.is_input_blocked:
+		return
+
+	# With no modal/sequence active, Esc first cancels an armed inventory item.
 	if Inventory.active_item:
 		get_viewport().set_input_as_handled()
 		Inventory.set_active_item(null)
 		return
 
 	get_viewport().set_input_as_handled()
-	var casebook = _get_casebook()
-	if casebook and casebook.visible:
-		casebook.visible = false
-		InputController.block_input(false)
-		return
-	if visible:
-		close_menu()
-	else:
-		open_menu()
+	open_menu()
 
 func open_menu() -> void:
-	if visible or DialogueManager.current_balloon:
+	if visible or DialogueManager.current_balloon or InputController.is_input_blocked:
 		return
 	var inventory_menu = _get_inventory_menu()
 	if inventory_menu and inventory_menu.visible:
@@ -63,7 +74,7 @@ func open_menu() -> void:
 	visible = true
 	status_label.text = ""
 	_refresh_state()
-	InputController.block_input(true)
+	InputController.acquire_input_lock(INPUT_LOCK_OWNER)
 	get_tree().paused = true
 
 func close_menu() -> void:
@@ -71,7 +82,7 @@ func close_menu() -> void:
 		return
 	get_tree().paused = false
 	visible = false
-	InputController.block_input(false)
+	InputController.release_input_lock(INPUT_LOCK_OWNER)
 
 func _get_casebook() -> CanvasItem:
 	var parent_node = get_parent()
@@ -125,18 +136,17 @@ func _on_load_pressed() -> void:
 		load_button.disabled = true
 		return
 	get_tree().paused = false
-	InputController.block_input(true)
 	var err = SaveSystem.load_game(1)
 	if err != OK:
 		get_tree().paused = true
 		status_label.text = "No se pudo cargar la partida."
 		return
 	visible = false
-	InputController.block_input(false)
+	InputController.release_input_lock(INPUT_LOCK_OWNER)
 
 func _on_main_menu_pressed() -> void:
 	SaveSystem.save_checkpoint(1)
 	get_tree().paused = false
 	visible = false
-	InputController.block_input(false)
+	InputController.release_input_lock(INPUT_LOCK_OWNER)
 	SceneRouter.change_room("res://src/menu/main_menu.tscn")
