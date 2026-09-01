@@ -146,6 +146,23 @@ func _run() -> void:
 		return
 	print("[SAFETY TEST] PASS: casebook cannot interrupt a Room-owned world interaction")
 
+	var pause_menu = hud.get_node_or_null("PauseMenu")
+	if not pause_menu:
+		_fail("PauseMenu not found for escape reentry probe")
+		return
+	var cancel_event := InputEventAction.new()
+	cancel_event.action = &"ui_cancel"
+	cancel_event.pressed = true
+	pause_menu._unhandled_input(cancel_event)
+	await _wait_physics_frames(1)
+	if Inventory.active_item != key_item:
+		_fail("Esc canceled the armed item while a Room-owned world interaction was in progress")
+		return
+	if pause_menu.visible or get_tree().paused:
+		_fail("Pause opened while a Room-owned world interaction was in progress")
+		return
+	print("[SAFETY TEST] PASS: Esc cannot interrupt a Room-owned world interaction")
+
 	player.stop_movement()
 	await _wait_physics_frames(4)
 	Inventory.set_active_item(null)
