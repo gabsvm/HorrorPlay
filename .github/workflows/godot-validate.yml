@@ -123,8 +123,9 @@ jobs:
             [character]="res://tools/test_runner.tscn"
             [interaction]="res://tools/test_interaction_safety_runner.tscn"
             [transition]="res://tools/test_scene_transition_lock_runner.tscn"
+            [hud]="res://tools/test_hud_input_safety_runner.tscn"
           )
-          for name in character interaction transition; do
+          for name in character interaction transition hud; do
             log="/tmp/${name}-verbose.log"
             set +e
             ./Godot_v4.6.3-stable_linux.x86_64 \
