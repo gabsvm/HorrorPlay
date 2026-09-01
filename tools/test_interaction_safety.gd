@@ -75,6 +75,54 @@ func _run() -> void:
 		_fail("Player did not return to IDLE after reaction")
 		return
 
+	var key_item: ItemData = office.key_item
+	if not key_item:
+		_fail("Office Rusty Key resource missing for inventory reentry probe")
+		return
+	Inventory.add_item(key_item)
+	Inventory.set_active_item(key_item)
+
+	var item_hotspot := Hotspot.new()
+	item_hotspot.hotspot_name = "Inventory Reentry Probe"
+	item_hotspot.interaction_facing = "none"
+	item_hotspot.interaction_pose = "none"
+	item_hotspot.required_item = key_item
+	office.get_node("HotspotsLayer").add_child(item_hotspot)
+	var item_marker := Marker2D.new()
+	item_marker.position = Vector2(1600, 825)
+	item_hotspot.add_child(item_marker)
+	item_hotspot.walk_to_point = item_marker
+
+	office._walk_and_execute(item_hotspot, "interact")
+	if not await _wait_for_state(player, Player.State.WALKING, 120):
+		_fail("Inventory reentry probe never entered WALKING")
+		return
+	if not InputController.is_input_locked_by(&"room_interaction"):
+		_fail("Room interaction lock was not acquired before inventory reentry probe")
+		return
+
+	var hud = office.find_child("UI_HUD*", true, false)
+	if not hud:
+		_fail("HUD not found for inventory reentry probe")
+		return
+	var inventory_menu = hud.get_node_or_null("InventoryMenu")
+	if not inventory_menu:
+		_fail("InventoryMenu not found for inventory reentry probe")
+		return
+	inventory_menu.open_menu()
+	await _wait_physics_frames(1)
+	if inventory_menu.visible:
+		_fail("Inventory opened while a Room-owned world interaction was in progress")
+		return
+	if Inventory.active_item != key_item:
+		_fail("Inventory reentry canceled/replaced the item armed for an in-progress world interaction")
+		return
+	print("[SAFETY TEST] PASS: inventory cannot interrupt a Room-owned world interaction")
+
+	player.stop_movement()
+	await _wait_physics_frames(4)
+	Inventory.set_active_item(null)
+
 	var dialogue_hotspot := Hotspot.new()
 	dialogue_hotspot.hotspot_name = "Dialogue Lock Probe"
 	dialogue_hotspot.interaction_facing = "none"
