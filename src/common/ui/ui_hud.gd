@@ -1,6 +1,8 @@
 # res://src/common/ui/ui_hud.gd
 extends Control
 
+const CASEBOOK_INPUT_LOCK: StringName = &"casebook"
+
 @onready var hover_label: Label = $HoverLabel
 @onready var top_bar: Panel = $TopBar
 @onready var sanity_label: Label = $TopBar/SanityLabel
@@ -48,6 +50,9 @@ func _ready() -> void:
 	clear_hover_text()
 	_setup_safe_area()
 	hud_initialized = true
+
+func _exit_tree() -> void:
+	InputController.release_input_lock(CASEBOOK_INPUT_LOCK)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_I:
@@ -265,15 +270,17 @@ func _show_feedback(kicker: String, message: String, accent: Color) -> void:
 func _on_case_pressed() -> void:
 	if DialogueManager.current_balloon or inventory_menu.visible or pause_menu.visible:
 		return
+	if InputController.is_input_blocked:
+		return
 	if Inventory.active_item:
 		Inventory.set_active_item(null)
 	casebook_backdrop.visible = true
-	InputController.block_input(true)
+	InputController.acquire_input_lock(CASEBOOK_INPUT_LOCK)
 	_refresh_casebook()
 
 func _on_case_close_pressed() -> void:
 	casebook_backdrop.visible = false
-	InputController.block_input(false)
+	InputController.release_input_lock(CASEBOOK_INPUT_LOCK)
 
 func _refresh_casebook() -> void:
 	casebook_objective.text = Investigation.get_current_objective_text()
