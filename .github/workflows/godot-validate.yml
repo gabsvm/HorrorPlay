@@ -114,3 +114,32 @@ jobs:
             --headless \
             --path . \
             res://tools/test_hud_input_safety_runner.tscn
+
+      - name: Diagnose scene-test shutdown leaks
+        shell: bash
+        run: |
+          set -euo pipefail
+          declare -A suites=(
+            [character]="res://tools/test_runner.tscn"
+            [interaction]="res://tools/test_interaction_safety_runner.tscn"
+            [transition]="res://tools/test_scene_transition_lock_runner.tscn"
+          )
+          for name in character interaction transition; do
+            log="/tmp/${name}-verbose.log"
+            set +e
+            ./Godot_v4.6.3-stable_linux.x86_64 \
+              --verbose \
+              --headless \
+              --path . \
+              "${suites[$name]}" \
+              > "$log" 2>&1
+            status=$?
+            set -e
+            echo "--- ${name} shutdown diagnostics ---"
+            grep -E "Leaked instance|Resource still in use|ObjectDB instances leaked|resources still in use|RID allocations" "$log" || true
+            echo "--- ${name} tail ---"
+            tail -n 80 "$log"
+            if [ "$status" -ne 0 ]; then
+              exit "$status"
+            fi
+          done
