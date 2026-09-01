@@ -77,13 +77,13 @@ func _run() -> void:
 
 	var key_item: ItemData = office.key_item
 	if not key_item:
-		_fail("Office Rusty Key resource missing for inventory reentry probe")
+		_fail("Office Rusty Key resource missing for modal reentry probes")
 		return
 	Inventory.add_item(key_item)
 	Inventory.set_active_item(key_item)
 
 	var item_hotspot := Hotspot.new()
-	item_hotspot.hotspot_name = "Inventory Reentry Probe"
+	item_hotspot.hotspot_name = "Modal Reentry Probe"
 	item_hotspot.interaction_facing = "none"
 	item_hotspot.interaction_pose = "none"
 	item_hotspot.required_item = key_item
@@ -103,7 +103,7 @@ func _run() -> void:
 
 	var hud = office.find_child("UI_HUD*", true, false)
 	if not hud:
-		_fail("HUD not found for inventory reentry probe")
+		_fail("HUD not found for modal reentry probes")
 		return
 	var inventory_menu = hud.get_node_or_null("InventoryMenu")
 	if not inventory_menu:
@@ -118,6 +118,33 @@ func _run() -> void:
 		_fail("Inventory reentry canceled/replaced the item armed for an in-progress world interaction")
 		return
 	print("[SAFETY TEST] PASS: inventory cannot interrupt a Room-owned world interaction")
+
+	player.stop_movement()
+	await _wait_physics_frames(4)
+	if InputController.is_input_locked_by(&"room_interaction"):
+		_fail("Room interaction lock remained after stopping inventory probe movement")
+		return
+
+	Inventory.set_active_item(key_item)
+	item_marker.position = Vector2(1450, 825)
+	office._walk_and_execute(item_hotspot, "interact")
+	if not await _wait_for_state(player, Player.State.WALKING, 120):
+		_fail("Casebook reentry probe never entered WALKING")
+		return
+	if not InputController.is_input_locked_by(&"room_interaction"):
+		_fail("Room interaction lock was not acquired before casebook reentry probe")
+		return
+
+	hud._on_case_pressed()
+	await _wait_physics_frames(1)
+	var casebook = hud.get_node_or_null("CasebookBackdrop")
+	if casebook and casebook.visible:
+		_fail("Casebook opened while a Room-owned world interaction was in progress")
+		return
+	if Inventory.active_item != key_item:
+		_fail("Casebook reentry canceled/replaced the item armed for an in-progress world interaction")
+		return
+	print("[SAFETY TEST] PASS: casebook cannot interrupt a Room-owned world interaction")
 
 	player.stop_movement()
 	await _wait_physics_frames(4)
