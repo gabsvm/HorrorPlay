@@ -119,6 +119,9 @@ func _walk_and_execute(hotspot: Hotspot, verb: String) -> void:
 	var player = _get_player()
 	var armed_item = Inventory.active_item
 
+	if player and player.current_state in [Player.State.INTERACTING, Player.State.REACTING, Player.State.LOCKED]:
+		return
+
 	if player:
 		InputController.block_input(true)
 		if hotspot.walk_to_point:
