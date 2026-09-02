@@ -1,7 +1,8 @@
 """
-Inspector Character Illustrated Sprite Generator
+Inspector Character Illustrated Production Sprite Generator
 Generates high-resolution (384x512) 2D illustrated neo-noir production frames
 for the playable protagonist in HorrorPlay.
+Guarantees mathematically grounded stance feet across all frames at BASELINE_Y = 412.
 """
 import os
 import math
@@ -9,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFilter
 
 CANVAS_WIDTH = 384
 CANVAS_HEIGHT = 512
-BASELINE_Y = 470
+BASELINE_Y = 412
 PIVOT_X = 192
 
 # Palette - Neo-noir 1926 Lovecraftian Detective
@@ -17,10 +18,11 @@ COLOR_COAT_MAIN = (32, 38, 50, 255)
 COLOR_COAT_DARK = (20, 25, 34, 255)
 COLOR_COAT_LIGHT = (48, 56, 72, 255)
 COLOR_COAT_SHADOW = (14, 18, 24, 255)
+COLOR_COAT_HIGHLIGHT = (62, 72, 92, 255)
 
 COLOR_HAT_MAIN = (24, 28, 38, 255)
 COLOR_HAT_DARK = (15, 18, 26, 255)
-COLOR_HAT_LIGHT = (38, 44, 58, 255)
+COLOR_HAT_LIGHT = (40, 48, 64, 255)
 COLOR_HAT_BAND = (95, 28, 38, 255)
 COLOR_HAT_BUCKLE = (180, 130, 60, 255)
 
@@ -39,9 +41,7 @@ COLOR_PANTS = (24, 28, 36, 255)
 COLOR_PANTS_DARK = (16, 18, 24, 255)
 COLOR_BOOTS = (14, 16, 20, 255)
 COLOR_BOOTS_HIGHLIGHT = (35, 40, 50, 255)
-
-def draw_polygon_smooth(draw, points, fill, outline=None, width=1):
-    draw.polygon(points, fill=fill, outline=outline)
+COLOR_BOOTS_SOLE = (10, 11, 14, 255)
 
 def create_frame(
     pose_name="idle",
@@ -65,25 +65,26 @@ def create_frame(
     eyes_closed=False,
     tense_posture=False,
     recoil_shift=(0, 0),
-    opacity=1.0
+    force_ground_y=BASELINE_Y
 ):
     img = Image.new("RGBA", (CANVAS_WIDTH, CANVAS_HEIGHT), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
 
     cx = PIVOT_X + torso_offset[0] + recoil_shift[0]
-    cy = BASELINE_Y - 240 + torso_offset[1] + recoil_shift[1]
-
-    # Torso dimensions
-    shoulder_y = cy - 65 * breathing_scale
-    hip_y = cy + 50
-    waist_y = cy + 10
+    base_hip_y = 280.0
+    hip_y = base_hip_y + torso_offset[1] + recoil_shift[1]
+    shoulder_y = hip_y - 115.0 * breathing_scale
+    waist_y = hip_y - 40.0
 
     # 1. Back Leg (Left Leg)
     l_hip = (cx - 15, hip_y)
-    l_knee_x = l_hip[0] + math.sin(math.radians(left_leg_angle)) * 60
-    l_knee_y = l_hip[1] + math.cos(math.radians(left_leg_angle)) * 60
-    l_foot_x = l_knee_x + math.sin(math.radians(left_leg_angle + left_knee_bend)) * 65
-    l_foot_y = min(BASELINE_Y, l_knee_y + math.cos(math.radians(left_leg_angle + left_knee_bend)) * 65)
+    r1, r2 = 60.0, 68.0
+    rad_l1 = math.radians(left_leg_angle)
+    rad_l2 = math.radians(left_leg_angle + left_knee_bend)
+    l_knee_x = l_hip[0] + math.sin(rad_l1) * r1
+    l_knee_y = l_hip[1] + math.cos(rad_l1) * r1
+    l_foot_x = l_knee_x + math.sin(rad_l2) * r2
+    l_foot_y = l_knee_y + math.cos(rad_l2) * r2
 
     # Draw Back Leg
     draw.line([l_hip, (l_knee_x, l_knee_y)], fill=COLOR_PANTS_DARK, width=22)
@@ -95,6 +96,8 @@ def create_frame(
         (l_foot_x + 22, l_foot_y + 4),
         (l_foot_x - 14, l_foot_y + 4)
     ], fill=COLOR_BOOTS)
+    # Sole line
+    draw.line([(l_foot_x - 14, l_foot_y + 4), (l_foot_x + 22, l_foot_y + 4)], fill=COLOR_BOOTS_SOLE, width=2)
 
     # 2. Back Arm (Left Arm)
     l_shoulder = (cx - 28, shoulder_y + 8)
@@ -105,7 +108,6 @@ def create_frame(
 
     draw.line([l_shoulder, (l_elbow_x, l_elbow_y)], fill=COLOR_COAT_DARK, width=20)
     draw.line([(l_elbow_x, l_elbow_y), (l_hand_x, l_hand_y)], fill=COLOR_COAT_DARK, width=16)
-    # Left Hand / Glove
     draw.ellipse([l_hand_x - 7, l_hand_y - 7, l_hand_x + 7, l_hand_y + 7], fill=COLOR_SKIN_SHADOW)
     if left_hand_prop == "notebook":
         draw.rectangle([l_hand_x - 10, l_hand_y - 15, l_hand_x + 12, l_hand_y + 10], fill=(60, 45, 35, 255), outline=(30, 20, 15, 255))
@@ -113,10 +115,12 @@ def create_frame(
 
     # 3. Front Leg (Right Leg)
     r_hip = (cx + 12, hip_y)
-    r_knee_x = r_hip[0] + math.sin(math.radians(right_leg_angle)) * 60
-    r_knee_y = r_hip[1] + math.cos(math.radians(right_leg_angle)) * 60
-    r_foot_x = r_knee_x + math.sin(math.radians(right_leg_angle + right_knee_bend)) * 65
-    r_foot_y = min(BASELINE_Y, r_knee_y + math.cos(math.radians(right_leg_angle + right_knee_bend)) * 65)
+    rad_r1 = math.radians(right_leg_angle)
+    rad_r2 = math.radians(right_leg_angle + right_knee_bend)
+    r_knee_x = r_hip[0] + math.sin(rad_r1) * r1
+    r_knee_y = r_hip[1] + math.cos(rad_r1) * r1
+    r_foot_x = r_knee_x + math.sin(rad_r2) * r2
+    r_foot_y = r_knee_y + math.cos(rad_r2) * r2
 
     draw.line([r_hip, (r_knee_x, r_knee_y)], fill=COLOR_PANTS, width=24)
     draw.line([(r_knee_x, r_knee_y), (r_foot_x, r_foot_y)], fill=COLOR_PANTS, width=20)
@@ -128,9 +132,11 @@ def create_frame(
         (r_foot_x - 16, r_foot_y + 4)
     ], fill=COLOR_BOOTS)
     draw.line([(r_foot_x - 10, r_foot_y - 10), (r_foot_x + 18, r_foot_y - 4)], fill=COLOR_BOOTS_HIGHLIGHT, width=2)
+    # Sole line
+    draw.line([(r_foot_x - 16, r_foot_y + 4), (r_foot_x + 26, r_foot_y + 4)], fill=COLOR_BOOTS_SOLE, width=2)
 
     # 4. Trenchcoat Lower Flaps / Skirt
-    coat_bottom_y = hip_y + 80
+    coat_bottom_y = hip_y + 82
     c_left = cx - 35 + coat_flutter * 12
     c_right = cx + 38 + coat_flutter * 8
     draw.polygon([
@@ -139,9 +145,10 @@ def create_frame(
         (c_right, coat_bottom_y),
         (c_left, coat_bottom_y)
     ], fill=COLOR_COAT_MAIN)
-    # Coat shadow crease
+    # Coat shadow crease & fabric folds
     draw.line([(cx - 5, waist_y), (cx + coat_flutter * 5, coat_bottom_y)], fill=COLOR_COAT_SHADOW, width=3)
     draw.line([(c_left, coat_bottom_y), (cx - 15, waist_y)], fill=COLOR_COAT_LIGHT, width=2)
+    draw.line([(cx + 10, waist_y + 15), (cx + 18 + coat_flutter * 4, coat_bottom_y - 10)], fill=COLOR_COAT_SHADOW, width=2)
 
     # 5. Torso & Trenchcoat Upper
     torso_points = [
@@ -174,10 +181,10 @@ def create_frame(
     draw.rectangle([cx - 29, waist_y - 2, cx + 29, waist_y + 8], fill=COLOR_BELT)
     draw.rectangle([cx - 8, waist_y - 4, cx + 8, waist_y + 10], fill=COLOR_BRASS, outline=(40, 30, 15, 255), width=2)
 
-    # Buttons
+    # Buttons (antique brass/bone)
     for by in [shoulder_y + 30, shoulder_y + 50]:
-        draw.ellipse([cx - 16, by, cx - 10, by + 6], fill=(15, 18, 22, 255))
-        draw.ellipse([cx + 12, by, cx + 18, by + 6], fill=(15, 18, 22, 255))
+        draw.ellipse([cx - 16, by, cx - 10, by + 6], fill=(18, 22, 28, 255))
+        draw.ellipse([cx + 12, by, cx + 18, by + 6], fill=(18, 22, 28, 255))
 
     # 6. Head & Fedora
     hx = cx + head_offset[0]
@@ -196,16 +203,12 @@ def create_frame(
         (hx + 3, hy + 26),
         (hx - 10, hy + 24)
     ], fill=COLOR_SKIN_BASE)
-    # Jaw / cheek shadow
     draw.polygon([(hx - 12, hy + 5), (hx + 2, hy + 26), (hx - 10, hy + 24)], fill=COLOR_SKIN_SHADOW)
-
-    # Ear
     draw.ellipse([hx - 16, hy + 2, hx - 11, hy + 14], fill=COLOR_SKIN_SHADOW)
 
     # Eyes & Nose in noir shadow
     draw.line([(hx + 2, hy + 4), (hx + 6, hy + 15)], fill=COLOR_SKIN_DARK, width=2)
     draw.line([(hx + 1, hy + 15), (hx + 6, hy + 15)], fill=COLOR_SKIN_DARK, width=2)
-    # Eyes glint (human, subtle)
     if not eyes_closed:
         draw.point((hx + 1, hy + 6), fill=(40, 30, 25, 255))
         draw.point((hx + 8, hy + 6), fill=(40, 30, 25, 255))
@@ -214,7 +217,6 @@ def create_frame(
 
     # Fedora Hat
     hat_y = hy - 12
-    # Crown
     draw.polygon([
         (hx - 22, hat_y),
         (hx + 24, hat_y),
@@ -222,7 +224,6 @@ def create_frame(
         (hx - 2, hat_y - 36 + hat_tilt),
         (hx - 18, hat_y - 30 + hat_tilt)
     ], fill=COLOR_HAT_MAIN)
-    # Crown crease shadow
     draw.polygon([
         (hx - 8, hat_y - 34 + hat_tilt),
         (hx + 8, hat_y - 33 + hat_tilt),
@@ -237,10 +238,9 @@ def create_frame(
         (hx + 23, hat_y - 8),
         (hx - 21, hat_y - 8)
     ], fill=COLOR_HAT_BAND)
-    # Ribbon buckle
     draw.rectangle([hx - 6, hat_y - 9, hx - 1, hat_y + 1], fill=COLOR_HAT_BUCKLE)
 
-    # Hat Brim (wide noir fedora brim angled down)
+    # Hat Brim
     draw.polygon([
         (hx - 42, hat_y + 3),
         (hx + 44, hat_y + 1),
@@ -258,24 +258,15 @@ def create_frame(
 
     draw.line([r_shoulder, (r_elbow_x, r_elbow_y)], fill=COLOR_COAT_MAIN, width=22)
     draw.line([(r_elbow_x, r_elbow_y), (r_hand_x, r_hand_y)], fill=COLOR_COAT_MAIN, width=18)
-    # Shoulder seam highlight
     draw.arc([r_shoulder[0] - 12, r_shoulder[1] - 8, r_shoulder[0] + 12, r_shoulder[1] + 12], 180, 360, fill=COLOR_COAT_LIGHT, width=2)
 
-    # Right Hand / Glove / Prop
     draw.ellipse([r_hand_x - 8, r_hand_y - 8, r_hand_x + 8, r_hand_y + 8], fill=COLOR_SKIN_BASE)
 
     if right_hand_prop == "key":
-        # Brass key in fingers
         draw.line([(r_hand_x, r_hand_y), (r_hand_x + 18, r_hand_y - 4)], fill=COLOR_BRASS, width=3)
         draw.ellipse([r_hand_x + 14, r_hand_y - 8, r_hand_x + 22, r_hand_y], outline=COLOR_BRASS, width=2)
         draw.line([(r_hand_x + 8, r_hand_y - 3), (r_hand_x + 8, r_hand_y + 3)], fill=COLOR_BRASS, width=2)
-    elif right_hand_prop == "lantern":
-        # Small brass detective lantern hanging from hand
-        draw.line([(r_hand_x, r_hand_y), (r_hand_x + 2, r_hand_y + 12)], fill=(40, 30, 20, 255), width=2)
-        draw.rectangle([r_hand_x - 8, r_hand_y + 12, r_hand_x + 12, r_hand_y + 32], fill=(160, 120, 50, 255), outline=(50, 35, 20, 255))
-        draw.rectangle([r_hand_x - 5, r_hand_y + 16, r_hand_x + 9, r_hand_y + 28], fill=(255, 230, 160, 220))
     elif right_hand_prop == "recoil_guard":
-        # Defensive raised palm
         draw.polygon([
             (r_hand_x - 4, r_hand_y - 12),
             (r_hand_x + 12, r_hand_y - 10),
@@ -289,92 +280,92 @@ def generate_all_inspector_animations(output_base_dir):
     animations = {
         "idle": [
             {"head_offset": (0, 0), "torso_offset": (0, 0), "left_arm_angle": 12, "right_arm_angle": -8, "breathing_scale": 1.0},
-            {"head_offset": (0, 0.5), "torso_offset": (0, 0.5), "left_arm_angle": 13, "right_arm_angle": -7, "breathing_scale": 1.01},
-            {"head_offset": (0, 1.2), "torso_offset": (0, 1.0), "left_arm_angle": 14, "right_arm_angle": -6, "breathing_scale": 1.025},
-            {"head_offset": (0, 1.5), "torso_offset": (0, 1.2), "left_arm_angle": 15, "right_arm_angle": -6, "breathing_scale": 1.03},
-            {"head_offset": (0, 0.8), "torso_offset": (0, 0.6), "left_arm_angle": 13, "right_arm_angle": -7, "breathing_scale": 1.015},
-            {"head_offset": (0, 0.2), "torso_offset": (0, 0.1), "left_arm_angle": 12, "right_arm_angle": -8, "breathing_scale": 1.005},
+            {"head_offset": (0, 0.4), "torso_offset": (0, 0), "left_arm_angle": 13, "right_arm_angle": -7, "breathing_scale": 1.01},
+            {"head_offset": (0, 0.8), "torso_offset": (0, 0), "left_arm_angle": 14, "right_arm_angle": -6, "breathing_scale": 1.02},
+            {"head_offset": (0, 1.0), "torso_offset": (0, 0), "left_arm_angle": 15, "right_arm_angle": -6, "breathing_scale": 1.025},
+            {"head_offset": (0, 0.6), "torso_offset": (0, 0), "left_arm_angle": 13, "right_arm_angle": -7, "breathing_scale": 1.012},
+            {"head_offset": (0, 0.2), "torso_offset": (0, 0), "left_arm_angle": 12, "right_arm_angle": -8, "breathing_scale": 1.004},
         ],
         "idle_uneasy": [
-            {"head_offset": (2, -1), "hat_tilt": 2, "torso_offset": (1, 0), "left_arm_angle": 25, "left_elbow_bend": -30, "right_arm_angle": -15, "tense_posture": True, "breathing_scale": 1.03},
-            {"head_offset": (2.5, -0.5), "hat_tilt": 2, "torso_offset": (1, 0.5), "left_arm_angle": 26, "left_elbow_bend": -32, "right_arm_angle": -14, "tense_posture": True, "breathing_scale": 1.04},
-            {"head_offset": (3, 0), "hat_tilt": 1, "torso_offset": (1, 1), "left_arm_angle": 28, "left_elbow_bend": -35, "right_arm_angle": -12, "tense_posture": True, "breathing_scale": 1.05},
-            {"head_offset": (1, -0.5), "hat_tilt": 0, "torso_offset": (0.5, 0.8), "left_arm_angle": 26, "left_elbow_bend": -32, "right_arm_angle": -14, "tense_posture": True, "breathing_scale": 1.035},
-            {"head_offset": (-1, -1), "hat_tilt": -2, "torso_offset": (0, 0.2), "left_arm_angle": 24, "left_elbow_bend": -28, "right_arm_angle": -16, "tense_posture": True, "breathing_scale": 1.02},
-            {"head_offset": (0, -1), "hat_tilt": 0, "torso_offset": (0.5, 0), "left_arm_angle": 25, "left_elbow_bend": -30, "right_arm_angle": -15, "tense_posture": True, "breathing_scale": 1.025},
+            {"head_offset": (2, -1), "hat_tilt": 2, "torso_offset": (0, 0), "left_arm_angle": 25, "left_elbow_bend": -30, "right_arm_angle": -15, "tense_posture": True, "breathing_scale": 1.02},
+            {"head_offset": (2.5, -0.5), "hat_tilt": 2, "torso_offset": (0, 0), "left_arm_angle": 26, "left_elbow_bend": -32, "right_arm_angle": -14, "tense_posture": True, "breathing_scale": 1.03},
+            {"head_offset": (3, 0), "hat_tilt": 1, "torso_offset": (0, 0), "left_arm_angle": 28, "left_elbow_bend": -35, "right_arm_angle": -12, "tense_posture": True, "breathing_scale": 1.04},
+            {"head_offset": (1, -0.5), "hat_tilt": 0, "torso_offset": (0, 0), "left_arm_angle": 26, "left_elbow_bend": -32, "right_arm_angle": -14, "tense_posture": True, "breathing_scale": 1.03},
+            {"head_offset": (-1, -1), "hat_tilt": -2, "torso_offset": (0, 0), "left_arm_angle": 24, "left_elbow_bend": -28, "right_arm_angle": -16, "tense_posture": True, "breathing_scale": 1.015},
+            {"head_offset": (0, -1), "hat_tilt": 0, "torso_offset": (0, 0), "left_arm_angle": 25, "left_elbow_bend": -30, "right_arm_angle": -15, "tense_posture": True, "breathing_scale": 1.02},
         ],
         "walk": [
-            # Frame 0: Contact Right
-            {"torso_offset": (0, 0), "right_leg_angle": -24, "right_knee_bend": 5, "left_leg_angle": 22, "left_knee_bend": 15, "right_arm_angle": 22, "left_arm_angle": -20, "coat_flutter": 2.5},
-            # Frame 1: Down Right (Foot contact planting)
-            {"torso_offset": (0, 3.5), "right_leg_angle": -14, "right_knee_bend": 10, "left_leg_angle": 12, "left_knee_bend": 35, "right_arm_angle": 15, "left_arm_angle": -12, "coat_flutter": 3.0},
-            # Frame 2: Passing Right
-            {"torso_offset": (0, 1.0), "right_leg_angle": 0, "right_knee_bend": 4, "left_leg_angle": -5, "left_knee_bend": 45, "right_arm_angle": 0, "left_arm_angle": 0, "coat_flutter": 1.0},
-            # Frame 3: High Point Right
-            {"torso_offset": (0, -2.5), "right_leg_angle": 16, "right_knee_bend": 2, "left_leg_angle": -20, "left_knee_bend": 20, "right_arm_angle": -18, "left_arm_angle": 16, "coat_flutter": -1.5},
-            # Frame 4: Contact Left
-            {"torso_offset": (0, 0), "right_leg_angle": 22, "right_knee_bend": 15, "left_leg_angle": -24, "left_knee_bend": 5, "right_arm_angle": -22, "left_arm_angle": 20, "coat_flutter": -2.5},
-            # Frame 5: Down Left (Foot contact planting)
-            {"torso_offset": (0, 3.5), "right_leg_angle": 12, "right_knee_bend": 35, "left_leg_angle": -14, "left_knee_bend": 10, "right_arm_angle": -15, "left_arm_angle": 12, "coat_flutter": -3.0},
-            # Frame 6: Passing Left
-            {"torso_offset": (0, 1.0), "right_leg_angle": -5, "right_knee_bend": 45, "left_leg_angle": 0, "left_knee_bend": 4, "right_arm_angle": 0, "left_arm_angle": 0, "coat_flutter": -1.0},
-            # Frame 7: High Point Left
-            {"torso_offset": (0, -2.5), "right_leg_angle": -20, "right_knee_bend": 20, "left_leg_angle": 16, "left_knee_bend": 2, "right_arm_angle": 18, "left_arm_angle": -16, "coat_flutter": 1.5},
+            # Frame 0: Contact Right (lead heel strikes baseline 412, trail toe pushes off)
+            {"torso_offset": (0, 4.8), "right_leg_angle": -18, "right_knee_bend": 4, "left_leg_angle": 18, "left_knee_bend": 10, "right_arm_angle": 22, "left_arm_angle": -20, "coat_flutter": 2.5},
+            # Frame 1: Down Right (full foot flat on baseline 412, weight absorbed)
+            {"torso_offset": (0, 1.0), "right_leg_angle": -8, "right_knee_bend": 2, "left_leg_angle": 8, "left_knee_bend": 35, "right_arm_angle": 15, "left_arm_angle": -12, "coat_flutter": 3.0},
+            # Frame 2: Passing Right (stance leg upright supporting body on 412, swing leg passing)
+            {"torso_offset": (0, 0.0), "right_leg_angle": 0, "right_knee_bend": 0, "left_leg_angle": -8, "left_knee_bend": 48, "right_arm_angle": 0, "left_arm_angle": 0, "coat_flutter": 1.0},
+            # Frame 3: High Point Right (heel lifts, ball of foot pushes off 412, swing leg reaches)
+            {"torso_offset": (0, 3.3), "right_leg_angle": 12, "right_knee_bend": 2, "left_leg_angle": -20, "left_knee_bend": 18, "right_arm_angle": -18, "left_arm_angle": 16, "coat_flutter": -1.5},
+            # Frame 4: Contact Left (lead heel strikes baseline 412, trail toe pushes off)
+            {"torso_offset": (0, 4.8), "right_leg_angle": 18, "right_knee_bend": 10, "left_leg_angle": -18, "left_knee_bend": 4, "right_arm_angle": -22, "left_arm_angle": 20, "coat_flutter": -2.5},
+            # Frame 5: Down Left (full foot flat on baseline 412, weight absorbed)
+            {"torso_offset": (0, 1.0), "right_leg_angle": 8, "right_knee_bend": 35, "left_leg_angle": -8, "left_knee_bend": 2, "right_arm_angle": -15, "left_arm_angle": 12, "coat_flutter": -3.0},
+            # Frame 6: Passing Left (stance leg upright supporting body on 412, swing leg passing)
+            {"torso_offset": (0, 0.0), "right_leg_angle": -8, "right_knee_bend": 48, "left_leg_angle": 0, "left_knee_bend": 0, "right_arm_angle": 0, "left_arm_angle": 0, "coat_flutter": -1.0},
+            # Frame 7: High Point Left (heel lifts, ball of foot pushes off 412, swing leg reaches)
+            {"torso_offset": (0, 3.3), "right_leg_angle": -20, "right_knee_bend": 18, "left_leg_angle": 12, "left_knee_bend": 2, "right_arm_angle": 18, "left_arm_angle": -16, "coat_flutter": 1.5},
         ],
         "turn": [
             {"torso_offset": (0, 0), "head_offset": (0, 0), "left_arm_angle": 10, "right_arm_angle": -10},
-            {"torso_offset": (-2, 1), "head_offset": (-4, 1), "hat_tilt": -4, "left_arm_angle": 5, "right_arm_angle": -5, "coat_flutter": -2.0},
-            {"torso_offset": (-1, 0.5), "head_offset": (-2, 0.5), "hat_tilt": -2, "left_arm_angle": 8, "right_arm_angle": -8, "coat_flutter": -1.0},
+            {"torso_offset": (-2, 0), "head_offset": (-4, 1), "hat_tilt": -4, "left_arm_angle": 5, "right_arm_angle": -5, "coat_flutter": -2.0},
+            {"torso_offset": (-1, 0), "head_offset": (-2, 0.5), "hat_tilt": -2, "left_arm_angle": 8, "right_arm_angle": -8, "coat_flutter": -1.0},
             {"torso_offset": (0, 0), "head_offset": (0, 0), "left_arm_angle": 12, "right_arm_angle": -8},
         ],
         "inspect": [
-            {"torso_offset": (4, 1), "head_offset": (6, 4), "hat_tilt": 4, "left_arm_angle": 25, "left_elbow_bend": -60, "right_arm_angle": -10, "left_hand_prop": "notebook"},
-            {"torso_offset": (8, 2), "head_offset": (10, 8), "hat_tilt": 6, "left_arm_angle": 30, "left_elbow_bend": -85, "right_arm_angle": 15, "right_elbow_bend": -40, "left_hand_prop": "notebook"},
-            {"torso_offset": (10, 3), "head_offset": (12, 10), "hat_tilt": 8, "left_arm_angle": 32, "left_elbow_bend": -90, "right_arm_angle": 20, "right_elbow_bend": -50, "left_hand_prop": "notebook"},
-            {"torso_offset": (10, 3), "head_offset": (12, 10), "hat_tilt": 8, "left_arm_angle": 32, "left_elbow_bend": -90, "right_arm_angle": 20, "right_elbow_bend": -50, "left_hand_prop": "notebook"},
-            {"torso_offset": (6, 2), "head_offset": (8, 6), "hat_tilt": 5, "left_arm_angle": 28, "left_elbow_bend": -70, "right_arm_angle": 5, "left_hand_prop": "notebook"},
+            {"torso_offset": (4, 0), "head_offset": (6, 4), "hat_tilt": 4, "left_arm_angle": 25, "left_elbow_bend": -60, "right_arm_angle": -10, "left_hand_prop": "notebook"},
+            {"torso_offset": (6, 0), "head_offset": (10, 8), "hat_tilt": 6, "left_arm_angle": 30, "left_elbow_bend": -85, "right_arm_angle": 15, "right_elbow_bend": -40, "left_hand_prop": "notebook"},
+            {"torso_offset": (8, 0), "head_offset": (12, 10), "hat_tilt": 8, "left_arm_angle": 32, "left_elbow_bend": -90, "right_arm_angle": 20, "right_elbow_bend": -50, "left_hand_prop": "notebook"},
+            {"torso_offset": (8, 0), "head_offset": (12, 10), "hat_tilt": 8, "left_arm_angle": 32, "left_elbow_bend": -90, "right_arm_angle": 20, "right_elbow_bend": -50, "left_hand_prop": "notebook"},
+            {"torso_offset": (5, 0), "head_offset": (8, 6), "hat_tilt": 5, "left_arm_angle": 28, "left_elbow_bend": -70, "right_arm_angle": 5, "left_hand_prop": "notebook"},
             {"torso_offset": (0, 0), "head_offset": (0, 0), "left_arm_angle": 12, "right_arm_angle": -8},
         ],
         "use_mid": [
             {"torso_offset": (3, 0), "head_offset": (4, 2), "right_arm_angle": 35, "right_elbow_bend": -30, "left_arm_angle": 10},
-            {"torso_offset": (6, 1), "head_offset": (8, 3), "right_arm_angle": 65, "right_elbow_bend": -50, "left_arm_angle": 8, "right_hand_prop": "key"},
-            {"torso_offset": (8, 1.5), "head_offset": (10, 4), "right_arm_angle": 80, "right_elbow_bend": -60, "left_arm_angle": 6, "right_hand_prop": "key"},
-            {"torso_offset": (8, 1.5), "head_offset": (10, 4), "right_arm_angle": 80, "right_elbow_bend": -60, "left_arm_angle": 6, "right_hand_prop": "key"},
-            {"torso_offset": (4, 1), "head_offset": (5, 2), "right_arm_angle": 50, "right_elbow_bend": -35, "left_arm_angle": 10},
+            {"torso_offset": (5, 0), "head_offset": (8, 3), "right_arm_angle": 65, "right_elbow_bend": -50, "left_arm_angle": 8, "right_hand_prop": "key"},
+            {"torso_offset": (7, 0), "head_offset": (10, 4), "right_arm_angle": 80, "right_elbow_bend": -60, "left_arm_angle": 6, "right_hand_prop": "key"},
+            {"torso_offset": (7, 0), "head_offset": (10, 4), "right_arm_angle": 80, "right_elbow_bend": -60, "left_arm_angle": 6, "right_hand_prop": "key"},
+            {"torso_offset": (4, 0), "head_offset": (5, 2), "right_arm_angle": 50, "right_elbow_bend": -35, "left_arm_angle": 10},
             {"torso_offset": (0, 0), "head_offset": (0, 0), "right_arm_angle": -8, "left_arm_angle": 12},
         ],
         "pickup_low": [
-            {"torso_offset": (6, 15), "head_offset": (10, 12), "hat_tilt": 12, "right_leg_angle": 15, "right_knee_bend": 35, "left_leg_angle": -10, "left_knee_bend": 40, "right_arm_angle": 45, "right_elbow_bend": -20},
-            {"torso_offset": (12, 38), "head_offset": (16, 25), "hat_tilt": 20, "right_leg_angle": 25, "right_knee_bend": 60, "left_leg_angle": -15, "left_knee_bend": 70, "right_arm_angle": 70, "right_elbow_bend": -15},
-            {"torso_offset": (15, 52), "head_offset": (20, 32), "hat_tilt": 24, "right_leg_angle": 30, "right_knee_bend": 80, "left_leg_angle": -20, "left_knee_bend": 85, "right_arm_angle": 85, "right_elbow_bend": 5},
-            {"torso_offset": (14, 45), "head_offset": (18, 28), "hat_tilt": 20, "right_leg_angle": 28, "right_knee_bend": 70, "left_leg_angle": -18, "left_knee_bend": 75, "right_arm_angle": 75, "right_elbow_bend": -20},
-            {"torso_offset": (8, 22), "head_offset": (12, 15), "hat_tilt": 14, "right_leg_angle": 18, "right_knee_bend": 45, "left_leg_angle": -12, "left_knee_bend": 50, "right_arm_angle": 40, "right_elbow_bend": -40},
+            {"torso_offset": (4, 4), "head_offset": (6, 6), "hat_tilt": 6, "right_leg_angle": 10, "right_knee_bend": 5, "left_leg_angle": -10, "left_knee_bend": 15, "right_arm_angle": 35, "right_elbow_bend": -20},
+            {"torso_offset": (8, 8), "head_offset": (10, 10), "hat_tilt": 10, "right_leg_angle": 16, "right_knee_bend": 8, "left_leg_angle": -16, "left_knee_bend": 20, "right_arm_angle": 55, "right_elbow_bend": -15},
+            {"torso_offset": (10, 10), "head_offset": (14, 14), "hat_tilt": 14, "right_leg_angle": 18, "right_knee_bend": 10, "left_leg_angle": -18, "left_knee_bend": 25, "right_arm_angle": 75, "right_elbow_bend": 5},
+            {"torso_offset": (8, 8), "head_offset": (10, 10), "hat_tilt": 10, "right_leg_angle": 16, "right_knee_bend": 8, "left_leg_angle": -16, "left_knee_bend": 20, "right_arm_angle": 60, "right_elbow_bend": -20},
+            {"torso_offset": (4, 4), "head_offset": (6, 6), "hat_tilt": 6, "right_leg_angle": 10, "right_knee_bend": 5, "left_leg_angle": -10, "left_knee_bend": 15, "right_arm_angle": 35, "right_elbow_bend": -40},
             {"torso_offset": (0, 0), "head_offset": (0, 0), "right_leg_angle": 0, "left_leg_angle": 0, "right_arm_angle": -8, "left_arm_angle": 12},
         ],
         "react": [
-            {"recoil_shift": (-6, -4), "head_offset": (-8, -6), "hat_tilt": -8, "right_arm_angle": 40, "right_elbow_bend": -60, "left_arm_angle": -20, "coat_flutter": -4.0, "right_hand_prop": "recoil_guard"},
-            {"recoil_shift": (-16, -6), "head_offset": (-18, -10), "hat_tilt": -14, "right_arm_angle": 60, "right_elbow_bend": -80, "left_arm_angle": -35, "coat_flutter": -8.0, "right_hand_prop": "recoil_guard"},
-            {"recoil_shift": (-18, -4), "head_offset": (-20, -8), "hat_tilt": -12, "right_arm_angle": 55, "right_elbow_bend": -75, "left_arm_angle": -30, "coat_flutter": -6.0, "right_hand_prop": "recoil_guard"},
-            {"recoil_shift": (-10, -2), "head_offset": (-12, -4), "hat_tilt": -6, "right_arm_angle": 35, "right_elbow_bend": -50, "left_arm_angle": -15, "coat_flutter": -3.0},
+            {"recoil_shift": (-6, 0), "head_offset": (-8, -6), "hat_tilt": -8, "right_arm_angle": 40, "right_elbow_bend": -60, "left_arm_angle": -20, "coat_flutter": -4.0, "right_hand_prop": "recoil_guard"},
+            {"recoil_shift": (-14, 0), "head_offset": (-18, -10), "hat_tilt": -14, "right_arm_angle": 60, "right_elbow_bend": -80, "left_arm_angle": -35, "coat_flutter": -8.0, "right_hand_prop": "recoil_guard"},
+            {"recoil_shift": (-16, 0), "head_offset": (-20, -8), "hat_tilt": -12, "right_arm_angle": 55, "right_elbow_bend": -75, "left_arm_angle": -30, "coat_flutter": -6.0, "right_hand_prop": "recoil_guard"},
+            {"recoil_shift": (-10, 0), "head_offset": (-12, -4), "hat_tilt": -6, "right_arm_angle": 35, "right_elbow_bend": -50, "left_arm_angle": -15, "coat_flutter": -3.0},
             {"recoil_shift": (-4, 0), "head_offset": (-4, -1), "hat_tilt": -2, "right_arm_angle": 10, "right_elbow_bend": -25, "left_arm_angle": 5, "coat_flutter": -1.0},
             {"recoil_shift": (0, 0), "head_offset": (0, 0), "right_arm_angle": -8, "left_arm_angle": 12},
         ],
         "hide_enter": [
             {"torso_offset": (-4, 0), "head_offset": (-6, 0), "hat_tilt": -4, "left_arm_angle": 20, "right_arm_angle": -15},
-            {"torso_offset": (-8, 6), "head_offset": (-10, 6), "hat_tilt": 8, "left_arm_angle": 25, "left_elbow_bend": -40, "right_arm_angle": -20},
-            {"torso_offset": (-12, 14), "head_offset": (-14, 12), "hat_tilt": 14, "left_arm_angle": 30, "left_elbow_bend": -60, "right_arm_angle": -25},
-            {"torso_offset": (-14, 18), "head_offset": (-16, 16), "hat_tilt": 18, "left_arm_angle": 35, "left_elbow_bend": -70, "right_arm_angle": -28},
+            {"torso_offset": (-8, 0), "head_offset": (-10, 4), "hat_tilt": 8, "left_arm_angle": 25, "left_elbow_bend": -40, "right_arm_angle": -20},
+            {"torso_offset": (-12, 0), "head_offset": (-14, 8), "hat_tilt": 14, "left_arm_angle": 30, "left_elbow_bend": -60, "right_arm_angle": -25},
+            {"torso_offset": (-14, 0), "head_offset": (-16, 12), "hat_tilt": 18, "left_arm_angle": 35, "left_elbow_bend": -70, "right_arm_angle": -28},
         ],
         "hide_hold": [
-            {"torso_offset": (-14, 18), "head_offset": (-16, 16), "hat_tilt": 18, "left_arm_angle": 35, "left_elbow_bend": -70, "right_arm_angle": -28, "breathing_scale": 1.0},
-            {"torso_offset": (-14, 18.5), "head_offset": (-16, 16.5), "hat_tilt": 18, "left_arm_angle": 36, "left_elbow_bend": -71, "right_arm_angle": -28, "breathing_scale": 1.015},
-            {"torso_offset": (-14, 19), "head_offset": (-16, 17), "hat_tilt": 18, "left_arm_angle": 37, "left_elbow_bend": -72, "right_arm_angle": -27, "breathing_scale": 1.03},
-            {"torso_offset": (-14, 18.3), "head_offset": (-16, 16.3), "hat_tilt": 18, "left_arm_angle": 35, "left_elbow_bend": -70, "right_arm_angle": -28, "breathing_scale": 1.01},
+            {"torso_offset": (-14, 0), "head_offset": (-16, 12), "hat_tilt": 18, "left_arm_angle": 35, "left_elbow_bend": -70, "right_arm_angle": -28, "breathing_scale": 1.0},
+            {"torso_offset": (-14, 0), "head_offset": (-16, 12.3), "hat_tilt": 18, "left_arm_angle": 36, "left_elbow_bend": -71, "right_arm_angle": -28, "breathing_scale": 1.015},
+            {"torso_offset": (-14, 0), "head_offset": (-16, 12.6), "hat_tilt": 18, "left_arm_angle": 37, "left_elbow_bend": -72, "right_arm_angle": -27, "breathing_scale": 1.03},
+            {"torso_offset": (-14, 0), "head_offset": (-16, 12.2), "hat_tilt": 18, "left_arm_angle": 35, "left_elbow_bend": -70, "right_arm_angle": -28, "breathing_scale": 1.01},
         ],
         "hide_exit": [
-            {"torso_offset": (-12, 14), "head_offset": (-14, 12), "hat_tilt": 14, "left_arm_angle": 30, "left_elbow_bend": -50, "right_arm_angle": -20},
-            {"torso_offset": (-6, 6), "head_offset": (-8, 4), "hat_tilt": 6, "left_arm_angle": 20, "left_elbow_bend": -25, "right_arm_angle": -15},
-            {"torso_offset": (-2, 2), "head_offset": (-3, 1), "hat_tilt": 2, "left_arm_angle": 15, "right_arm_angle": -10},
+            {"torso_offset": (-12, 0), "head_offset": (-14, 8), "hat_tilt": 14, "left_arm_angle": 30, "left_elbow_bend": -50, "right_arm_angle": -20},
+            {"torso_offset": (-6, 0), "head_offset": (-8, 4), "hat_tilt": 6, "left_arm_angle": 20, "left_elbow_bend": -25, "right_arm_angle": -15},
+            {"torso_offset": (-2, 0), "head_offset": (-3, 1), "hat_tilt": 2, "left_arm_angle": 15, "right_arm_angle": -10},
             {"torso_offset": (0, 0), "head_offset": (0, 0), "left_arm_angle": 12, "right_arm_angle": -8},
         ]
     }
@@ -389,7 +380,7 @@ def generate_all_inspector_animations(output_base_dir):
             img.save(frame_path, "PNG")
             total_frames += 1
 
-    print(f"Successfully generated {total_frames} production frames across {len(animations)} animation states.")
+    print(f"Successfully generated {total_frames} production frames across {len(animations)} animation states at BASELINE_Y={BASELINE_Y}.")
 
 if __name__ == "__main__":
     output_dir = os.path.abspath(r"assets/images/characters/inspector_production")

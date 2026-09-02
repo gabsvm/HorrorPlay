@@ -18,18 +18,18 @@ signal interaction_finished()
 signal facing_finished(direction: int)
 
 @export_group("Locomotion")
-@export var max_speed: float = 300.0
-@export var acceleration: float = 1450.0
-@export var deceleration: float = 2050.0
+@export var max_speed: float = 275.0
+@export var acceleration: float = 1350.0
+@export var deceleration: float = 2100.0
 @export var arrival_radius: float = 6.0
-@export var walk_speed_scale_min: float = 0.72
-@export var walk_speed_scale_max: float = 1.08
-@export var walk_bob_amount: float = 2.2
-@export var walk_sway_amount: float = 1.5
+@export var walk_speed_scale_min: float = 0.85
+@export var walk_speed_scale_max: float = 1.15
+@export var walk_bob_amount: float = 0.0
+@export var walk_sway_amount: float = 0.0
 
 @export_group("Visuals")
 @export var base_scale: float = 1.0
-@export var lantern_anchor: Vector2 = Vector2(-40.0, -118.0)
+@export var lantern_anchor: Vector2 = Vector2(-36.0, -95.0)
 
 @onready var visual_root: Node2D = $VisualRoot
 @onready var contact_shadow: Sprite2D = $VisualRoot/ContactShadow
@@ -64,6 +64,9 @@ func _ready() -> void:
 		animated_sprite.animation_finished.connect(_on_sprite_animation_finished)
 	if lantern_prop:
 		_lantern_base_position = lantern_prop.position
+		lantern_prop.visible = false
+	if personal_light:
+		personal_light.visible = false
 
 	if not Sanity.sanity_changed.is_connected(_on_sanity_changed):
 		Sanity.sanity_changed.connect(_on_sanity_changed)
@@ -152,16 +155,11 @@ func _process_turning(delta: float) -> void:
 	move_and_slide()
 	_reset_pose_offsets()
 
-func _apply_walk_motion(speed_ratio: float) -> void:
-	if not animated_sprite or animated_sprite.animation != &"walk":
-		return
-	var frame_count: int = maxi(1, animated_sprite.sprite_frames.get_frame_count(&"walk"))
-	var phase: float = (float(animated_sprite.frame) / float(frame_count)) * TAU
-	var bob: float = sin(phase * 2.0) * walk_bob_amount * speed_ratio
-	var sway: float = sin(phase) * walk_sway_amount * speed_ratio
-	animated_sprite.position = _sprite_base_position + Vector2(sway, bob)
-	if lantern_prop:
-		lantern_prop.position = _lantern_base_position + Vector2(sway * 0.55, bob * 0.7)
+func _apply_walk_motion(_speed_ratio: float) -> void:
+	# Weight and footstep timing are transmitted directly via the authored frames.
+	# Leaving the sprite firmly anchored at _sprite_base_position keeps the soles
+	# flush with the floor and ContactShadow at all times without artificial jitter.
+	pass
 
 func _reset_pose_offsets() -> void:
 	if animated_sprite:
