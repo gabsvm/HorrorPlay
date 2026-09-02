@@ -29,7 +29,7 @@ signal facing_finished(direction: int)
 
 @export_group("Visuals")
 @export var base_scale: float = 1.0
-@export var lantern_anchor: Vector2 = Vector2(-55.0, -155.0)
+@export var lantern_anchor: Vector2 = Vector2(-36.0, -95.0)
 
 @onready var visual_root: Node2D = $VisualRoot
 @onready var contact_shadow: Sprite2D = $VisualRoot/ContactShadow
