@@ -1,10 +1,11 @@
 # res://src/common/ui/dialogue_balloon.gd
-extends Control
+extends CanvasLayer
 
 signal dialogue_finished
 
 @onready var panel: Panel = $Panel
-@onready var speaker_label: Label = $Panel/SpeakerLabel
+@onready var speaker_plate: Panel = $Panel/SpeakerPlate
+@onready var speaker_label: Label = $Panel/SpeakerPlate/SpeakerLabel
 @onready var text_label: RichTextLabel = $Panel/TextLabel
 @onready var choices_container: VBoxContainer = $Panel/ChoicesContainer
 @onready var next_indicator: Label = $Panel/NextIndicator
@@ -22,19 +23,39 @@ var beep_stream: AudioStreamWAV
 var typing_canceled: bool = false
 
 func _ready() -> void:
+	layer = 100
 	next_indicator.visible = false
 	choices_container.visible = false
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	
 	var style_box = StyleBoxFlat.new()
-	style_box.bg_color = Color(0.025, 0.026, 0.031, 0.955)
+	style_box.bg_color = Color(0.032, 0.038, 0.048, 0.94)
+	style_box.border_width_left = 2
+	style_box.border_width_right = 2
 	style_box.border_width_top = 2
 	style_box.border_width_bottom = 2
-	style_box.border_color = Color(0.42, 0.34, 0.23, 0.82)
-	style_box.content_margin_left = 60
-	style_box.content_margin_right = 60
-	style_box.content_margin_top = 28
-	style_box.content_margin_bottom = 28
+	style_box.border_color = Color(0.65, 0.52, 0.32, 0.92)
+	style_box.corner_radius_top_left = 4
+	style_box.corner_radius_top_right = 4
+	style_box.corner_radius_bottom_left = 4
+	style_box.corner_radius_bottom_right = 4
+	style_box.shadow_color = Color(0, 0, 0, 0.7)
+	style_box.shadow_size = 12
 	panel.add_theme_stylebox_override("panel", style_box)
+
+	if speaker_plate:
+		var plate_box = StyleBoxFlat.new()
+		plate_box.bg_color = Color(0.065, 0.060, 0.055, 0.98)
+		plate_box.border_width_left = 1
+		plate_box.border_width_right = 1
+		plate_box.border_width_top = 1
+		plate_box.border_width_bottom = 1
+		plate_box.border_color = Color(0.78, 0.62, 0.38, 0.95)
+		plate_box.corner_radius_top_left = 3
+		plate_box.corner_radius_top_right = 3
+		plate_box.corner_radius_bottom_left = 3
+		plate_box.corner_radius_bottom_right = 3
+		speaker_plate.add_theme_stylebox_override("panel", plate_box)
+
 	var custom_font = load("res://assets/fonts/SpecialElite-Regular.ttf")
 	if custom_font:
 		speaker_label.add_theme_font_override("font", custom_font)

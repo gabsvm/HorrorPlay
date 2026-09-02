@@ -2,33 +2,40 @@
 
 [ext_resource type="Script" path="res://src/common/ui/dialogue_balloon.gd" id="1_script"]
 
-[node name="DialogueBalloon" type="Control"]
-layout_mode = 3
+[node name="DialogueBalloon" type="CanvasLayer"]
+layer = 100
+script = ExtResource("1_script")
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -620.0
+offset_top = -205.0
+offset_right = 620.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="SpeakerPlate" type="Panel" parent="Panel"]
+layout_mode = 0
+offset_left = 28.0
+offset_top = -18.0
+offset_right = 300.0
+offset_bottom = 20.0
+
+[node name="SpeakerLabel" type="Label" parent="Panel/SpeakerPlate"]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_script")
-
-[node name="Panel" type="Panel" parent="."]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -280.0
-grow_horizontal = 2
-grow_vertical = 0
-
-[node name="SpeakerLabel" type="Label" parent="Panel"]
-layout_mode = 0
-offset_left = 60.0
-offset_top = 20.0
-offset_right = 360.0
-offset_bottom = 60.0
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 20
 text = "Inspector"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="TextLabel" type="RichTextLabel" parent="Panel"]
@@ -36,46 +43,51 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 60.0
-offset_top = 70.0
-offset_right = -60.0
-offset_bottom = -40.0
+offset_left = 32.0
+offset_top = 34.0
+offset_right = -36.0
+offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/default_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 8
-theme_override_font_sizes/normal_font_size = 24
+theme_override_colors/default_color = Color(0.95, 0.93, 0.88, 1)
+theme_override_colors/font_outline_color = Color(0.02, 0.02, 0.03, 0.85)
+theme_override_constants/outline_size = 2
+theme_override_constants/line_separation = 6
+theme_override_font_sizes/normal_font_size = 22
 bbcode_enabled = true
-text = "Lorem ipsum odor sit amet..."
+text = "Texto narrativo..."
+scroll_active = false
 
 [node name="ChoicesContainer" type="VBoxContainer" parent="Panel"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 60.0
-offset_top = 70.0
-offset_right = -60.0
-offset_bottom = -20.0
+offset_left = 32.0
+offset_top = 30.0
+offset_right = -36.0
+offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="NextIndicator" type="Label" parent="Panel"]
+visible = false
 layout_mode = 1
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -100.0
-offset_top = -50.0
-offset_right = -60.0
-offset_bottom = -20.0
+offset_left = -60.0
+offset_top = -36.0
+offset_right = -20.0
+offset_bottom = -10.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_font_sizes/font_size = 20
-text = ">>"
+theme_override_colors/font_color = Color(0.88, 0.72, 0.42, 0.95)
+theme_override_font_sizes/font_size = 18
+text = "▼"
 horizontal_alignment = 2
-vertical_alignment = 2
+vertical_alignment = 1
