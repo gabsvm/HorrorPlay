@@ -42,12 +42,12 @@ fill_to = Vector2(1, 0.5)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_world_grade"]
 shader = ExtResource("15_grade")
-shader_parameter/pixel_block = 3.0
-shader_parameter/contrast = 1.06
-shader_parameter/saturation = 0.9
-shader_parameter/palette_steps = 48.0
-shader_parameter/dither_strength = 0.1
-shader_parameter/vignette_strength = 0.1
+shader_parameter/pixel_block = 1.0
+shader_parameter/contrast = 1.05
+shader_parameter/saturation = 0.94
+shader_parameter/palette_steps = 64.0
+shader_parameter/dither_strength = 0.04
+shader_parameter/vignette_strength = 0.08
 shader_parameter/shadow_tint = Vector3(0.035, 0.075, 0.095)
 shader_parameter/highlight_tint = Vector3(0.92, 0.78, 0.58)
 
@@ -76,12 +76,10 @@ environment = SubResource("Environment_office")
 color = Color(0.67, 0.70, 0.73, 1)
 
 [node name="PixelBackdrop" type="Node2D" parent="."]
-scale = Vector2(3, 3)
 z_index = -20
 script = ExtResource("9_backdrop")
 
 [node name="PixelDetail" type="Node2D" parent="."]
-scale = Vector2(3, 3)
 z_index = -19
 script = ExtResource("13_detail")
 
