@@ -74,10 +74,12 @@ func play_music(stream: AudioStream, fade_time: float = 1.5) -> void:
 	music_tween = create_tween().set_parallel(true)
 	music_tween.tween_property(current_player, "volume_db", -80.0, fade_time)
 	music_tween.tween_property(next_player, "volume_db", 0.0, fade_time)
-	await music_tween.finished
-	current_player.stop()
-	active_player_idx = next_idx
-	music_tween = null
+	music_tween.chain().tween_callback(func():
+		current_player.stop()
+		current_player.stream = null
+		active_player_idx = next_idx
+		music_tween = null
+	)
 
 func stop_music(fade_time: float = 1.0) -> void:
 	if music_tween and music_tween.is_valid():
@@ -91,11 +93,13 @@ func stop_music(fade_time: float = 1.0) -> void:
 	music_tween = create_tween().set_parallel(true)
 	for player in playing:
 		music_tween.tween_property(player, "volume_db", -80.0, fade_time)
-	await music_tween.finished
-	for player in playing:
-		player.stop()
-		player.volume_db = 0.0
-	music_tween = null
+	music_tween.chain().tween_callback(func():
+		for player in playing:
+			player.stop()
+			player.stream = null
+			player.volume_db = 0.0
+		music_tween = null
+	)
 
 func play_ambience(profile: String, fade_time: float = 1.25) -> void:
 	if profile.is_empty():
@@ -118,10 +122,13 @@ func play_ambience(profile: String, fade_time: float = 1.25) -> void:
 	ambience_tween = create_tween().set_parallel(true)
 	ambience_tween.tween_property(current_player, "volume_db", -80.0, fade_time)
 	ambience_tween.tween_property(next_player, "volume_db", _ambience_target_db(profile), fade_time)
-	await ambience_tween.finished
-	current_player.stop()
-	active_ambience_idx = next_idx
-	current_ambience_profile = profile
+	ambience_tween.chain().tween_callback(func():
+		current_player.stop()
+		current_player.stream = null
+		active_ambience_idx = next_idx
+		current_ambience_profile = profile
+		ambience_tween = null
+	)
 
 func stop_ambience(fade_time: float = 0.8) -> void:
 	current_ambience_profile = ""
@@ -132,15 +139,17 @@ func stop_ambience(fade_time: float = 0.8) -> void:
 		return
 	ambience_tween = create_tween()
 	ambience_tween.tween_property(current_player, "volume_db", -80.0, fade_time)
-	await ambience_tween.finished
-	current_player.stop()
+	ambience_tween.chain().tween_callback(func():
+		current_player.stop()
+		current_player.stream = null
+		ambience_tween = null
+	)
 
 func _on_sanity_changed(_value: int) -> void:
 	var target_pitch = _sanity_ambience_pitch()
 	for player in ambience_players:
 		if player.playing:
-			var tween = create_tween()
-			tween.tween_property(player, "pitch_scale", target_pitch, 1.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			player.pitch_scale = target_pitch
 
 func _sanity_ambience_pitch() -> float:
 	var distress = 1.0 - clamp(float(Sanity.current_sanity) / 100.0, 0.0, 1.0)
