@@ -49,6 +49,15 @@ jobs:
             --path . \
             --script res://tools/validate_project.gd
 
+      - name: Require Cartoon Detective authored asset integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./Godot_v4.6.3-stable_linux.x86_64 \
+            --headless \
+            --path . \
+            res://tools/test_cartoon_detective_asset_runner.tscn
+
       - name: Diagnose validator exit leaks
         shell: bash
         run: |
