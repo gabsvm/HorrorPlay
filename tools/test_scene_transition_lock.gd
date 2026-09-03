@@ -63,30 +63,11 @@ func _cleanup_loaded_scene() -> void:
 	if loaded_scene and loaded_scene != self and is_instance_valid(loaded_scene):
 		get_tree().current_scene = null
 		loaded_scene.queue_free()
-	for _i in range(6):
+	for _i in range(12):
 		await get_tree().process_frame
 
 func _settle_audio_for_shutdown() -> void:
-	if AudioBus.music_tween and AudioBus.music_tween.is_valid():
-		AudioBus.music_tween.kill()
-	AudioBus.music_tween = null
-	if AudioBus.ambience_tween and AudioBus.ambience_tween.is_valid():
-		AudioBus.ambience_tween.kill()
-	AudioBus.ambience_tween = null
-
-	var managed_players: Array[AudioStreamPlayer] = []
-	for audio_player in AudioBus.music_players:
-		managed_players.append(audio_player)
-		audio_player.stop()
-		audio_player.stream = null
-	for audio_player in AudioBus.ambience_players:
-		managed_players.append(audio_player)
-		audio_player.stop()
-		audio_player.stream = null
-	for child in AudioBus.get_children():
-		if child is AudioStreamPlayer and not managed_players.has(child):
-			child.stop()
-			child.queue_free()
+	AudioBus.cleanup_for_shutdown()
 	for _i in range(12):
 		await get_tree().process_frame
 

@@ -8,6 +8,7 @@ extends Control
 
 var custom_font: Font = null
 var accepting_input: bool = false
+var entrance_tween: Tween = null
 
 func _ready() -> void:
 	InputController.block_input(true)
@@ -25,16 +26,21 @@ func _ready() -> void:
 	_play_menu_entrance()
 
 func _exit_tree() -> void:
+	if entrance_tween and entrance_tween.is_valid():
+		entrance_tween.kill()
+	entrance_tween = null
 	InputController.block_input(false)
 
 func _play_menu_entrance() -> void:
 	menu_panel.modulate.a = 0.0
 	var target_position = menu_panel.position
 	menu_panel.position = target_position + Vector2(-26, 0)
-	var tween = create_tween().set_parallel(true)
-	tween.tween_property(menu_panel, "modulate:a", 1.0, 0.65).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.tween_property(menu_panel, "position", target_position, 0.7).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
-	await tween.finished
+	if entrance_tween and entrance_tween.is_valid():
+		entrance_tween.kill()
+	entrance_tween = create_tween().set_parallel(true)
+	entrance_tween.tween_property(menu_panel, "modulate:a", 1.0, 0.65).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	entrance_tween.tween_property(menu_panel, "position", target_position, 0.7).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
+	await entrance_tween.finished
 	accepting_input = true
 
 func _apply_font_recursive(node: Node) -> void:

@@ -10,6 +10,7 @@ var current_room: Node2D = null
 var fade_layer: CanvasLayer
 var fade_rect: ColorRect
 var transition_in_progress: bool = false
+var fade_tween: Tween = null
 
 func _ready() -> void:
 	fade_layer = CanvasLayer.new()
@@ -24,6 +25,9 @@ func _ready() -> void:
 	add_child(fade_layer)
 
 func _exit_tree() -> void:
+	if fade_tween and fade_tween.is_valid():
+		fade_tween.kill()
+	fade_tween = null
 	if is_instance_valid(InputController):
 		InputController.release_input_lock(INPUT_LOCK_OWNER)
 	transition_in_progress = false
@@ -40,9 +44,11 @@ func change_room(target_scene_path: String) -> void:
 	transition_started.emit()
 	fade_rect.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var tween := create_tween()
-	tween.tween_property(fade_rect, "color", Color.BLACK, 0.4).set_trans(Tween.TRANS_SINE)
-	await tween.finished
+	if fade_tween and fade_tween.is_valid():
+		fade_tween.kill()
+	fade_tween = create_tween()
+	fade_tween.tween_property(fade_rect, "color", Color.BLACK, 0.4).set_trans(Tween.TRANS_SINE)
+	await fade_tween.finished
 
 	var err := get_tree().change_scene_to_file(target_scene_path)
 	if err != OK:
@@ -52,18 +58,26 @@ func change_room(target_scene_path: String) -> void:
 
 	await get_tree().process_frame
 
-	tween = create_tween()
-	tween.tween_property(fade_rect, "color", Color(0, 0, 0, 0), 0.4).set_trans(Tween.TRANS_SINE)
-	await tween.finished
+	if fade_tween and fade_tween.is_valid():
+		fade_tween.kill()
+	fade_tween = create_tween()
+	fade_tween.tween_property(fade_rect, "color", Color(0, 0, 0, 0), 0.4).set_trans(Tween.TRANS_SINE)
+	await fade_tween.finished
 
 	_finish_transition()
 
 func _finish_transition_immediately() -> void:
+	if fade_tween and fade_tween.is_valid():
+		fade_tween.kill()
+	fade_tween = null
 	if fade_rect:
 		fade_rect.color = Color(0, 0, 0, 0)
 	_finish_transition()
 
 func _finish_transition() -> void:
+	if fade_tween and fade_tween.is_valid():
+		fade_tween.kill()
+	fade_tween = null
 	if fade_rect:
 		fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	InputController.release_input_lock(INPUT_LOCK_OWNER)
