@@ -24,7 +24,8 @@ func _ready() -> void:
 	add_child(fade_layer)
 
 func _exit_tree() -> void:
-	InputController.release_input_lock(INPUT_LOCK_OWNER)
+	if is_instance_valid(InputController):
+		InputController.release_input_lock(INPUT_LOCK_OWNER)
 	transition_in_progress = false
 
 func change_room(target_scene_path: String) -> void:

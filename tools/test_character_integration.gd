@@ -33,6 +33,12 @@ func _start_tests() -> void:
 	if player.base_scale < 1.30:
 		_fail_test("Office Inspector is still underscaled for benchmark staging: %.2f" % player.base_scale)
 		return
+	var visible_height: float = player.get_visible_silhouette_height()
+	var door_opening_height: float = 478.0
+	var door_ratio: float = visible_height / door_opening_height
+	if door_ratio < 0.85 or door_ratio > 0.93:
+		_fail_test("Office Inspector visible height (%.1f px, %.1f%%) must be between 85%% and 92%% of door opening" % [visible_height, door_ratio * 100.0])
+		return
 	if player.personal_light.visible:
 		_fail_test("Office Inspector lantern/light must be disabled indoors")
 		return

@@ -32,6 +32,32 @@ func _ready() -> void:
 	if not Sanity.sanity_changed.is_connected(_on_sanity_changed):
 		Sanity.sanity_changed.connect(_on_sanity_changed)
 
+func _exit_tree() -> void:
+	if is_instance_valid(Sanity) and Sanity.sanity_changed.is_connected(_on_sanity_changed):
+		Sanity.sanity_changed.disconnect(_on_sanity_changed)
+	cleanup_for_shutdown()
+
+func cleanup_for_shutdown() -> void:
+	if music_tween and music_tween.is_valid():
+		music_tween.kill()
+	music_tween = null
+	if ambience_tween and ambience_tween.is_valid():
+		ambience_tween.kill()
+	ambience_tween = null
+	for mp in music_players:
+		if is_instance_valid(mp):
+			mp.stop()
+			mp.stream = null
+	for ap in ambience_players:
+		if is_instance_valid(ap):
+			ap.stop()
+			ap.stream = null
+	for child in get_children():
+		if child is AudioStreamPlayer and not music_players.has(child) and not ambience_players.has(child):
+			child.stop()
+			child.stream = null
+			child.queue_free()
+
 func play_music(stream: AudioStream, fade_time: float = 1.5) -> void:
 	if not stream:
 		return

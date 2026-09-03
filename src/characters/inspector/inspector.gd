@@ -29,7 +29,7 @@ signal facing_finished(direction: int)
 
 @export_group("Visuals")
 @export var base_scale: float = 1.0
-@export var lantern_anchor: Vector2 = Vector2(-36.0, -95.0)
+@export var lantern_anchor: Vector2 = Vector2(-40.0, -210.0)
 
 @onready var visual_root: Node2D = $VisualRoot
 @onready var contact_shadow: Sprite2D = $VisualRoot/ContactShadow
@@ -355,6 +355,10 @@ func play_generic_use_motion() -> void:
 		visual_root.position = start_position
 	_transition_to(State.IDLE)
 	interaction_finished.emit()
+
+func get_visible_silhouette_height() -> float:
+	var sprite_scale_y: float = animated_sprite.scale.y if animated_sprite else 0.85
+	return 386.0 * sprite_scale_y * base_scale
 
 func play_reaction() -> void:
 	if not animated_sprite or not animated_sprite.sprite_frames.has_animation(&"react"):

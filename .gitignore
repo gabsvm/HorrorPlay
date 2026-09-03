@@ -2,6 +2,7 @@
 .godot/
 *.translation
 *.signature
+*.uid
 
 # Android export builds
 *.apk

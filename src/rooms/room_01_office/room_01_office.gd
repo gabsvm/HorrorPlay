@@ -12,14 +12,13 @@ extends Room
 @export var book_item: ItemData
 
 func _ready() -> void:
-	# The frame canvas contains large transparent margins; this value is tuned
-	# against the visible human silhouette and the 1926 door, not the PNG bounds.
-	character_base_scale = 1.58
+	# Physical proportions calibrated against the 1926 Office door, desk, and cabinet.
+	character_base_scale = 1.32
 	character_max_speed = 252.0
 	character_acceleration = 1180.0
 	character_deceleration = 1850.0
-	character_walk_bob = 0.35
-	character_walk_sway = 0.25
+	character_walk_bob = 0.0
+	character_walk_sway = 0.0
 	character_depth_scaling_enabled = false
 	personal_light_enabled = false
 	footstep_surface = "wood"

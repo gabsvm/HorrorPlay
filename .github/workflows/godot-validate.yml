@@ -137,7 +137,10 @@ jobs:
             status=$?
             set -e
             echo "--- ${name} shutdown diagnostics ---"
-            grep -E "Leaked instance|Resource still in use|ObjectDB instances leaked|resources still in use|RID allocations" "$log" || true
+            if grep -E "Leaked instance|Resource still in use: res://.*\.ogg|ObjectDB instances leaked" "$log"; then
+              echo "::error::Shutdown leak detected in ${name}"
+              exit 1
+            fi
             echo "--- ${name} tail ---"
             tail -n 80 "$log"
             if [ "$status" -ne 0 ]; then

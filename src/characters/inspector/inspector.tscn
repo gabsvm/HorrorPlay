@@ -5,7 +5,7 @@
 [ext_resource type="Shader" path="res://src/characters/inspector/inspector_paint.gdshader" id="3_paint"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_inspector"]
-size = Vector2(50, 190)
+size = Vector2(70, 390)
 
 [sub_resource type="Gradient" id="Gradient_shadow"]
 colors = PackedColorArray(0.015, 0.025, 0.035, 0.62, 0.015, 0.025, 0.035, 0)
@@ -43,28 +43,28 @@ collision_mask = 2
 script = ExtResource("1_insp")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -95)
+position = Vector2(0, -195)
 shape = SubResource("RectangleShape2D_inspector")
 
 [node name="VisualRoot" type="Node2D" parent="."]
 
 [node name="ContactShadow" type="Sprite2D" parent="VisualRoot"]
 position = Vector2(0, 0)
-scale = Vector2(1.3, 0.45)
+scale = Vector2(2.1, 0.68)
 texture = SubResource("GradientTexture2D_shadow")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="VisualRoot"]
 material = SubResource("ShaderMaterial_inspector_paint")
 texture_filter = 1
-position = Vector2(0, -80)
-scale = Vector2(0.5, 0.5)
+position = Vector2(0, -173.4)
+scale = Vector2(0.85, 0.85)
 sprite_frames = ExtResource("2_frames")
 animation = &"idle"
 autoplay = "idle"
 
 [node name="LanternProp" type="Node2D" parent="VisualRoot"]
 visible = false
-position = Vector2(-36, -95)
+position = Vector2(-40, -210)
 z_index = 2
 
 [node name="Handle" type="Line2D" parent="VisualRoot/LanternProp"]
@@ -86,7 +86,7 @@ position = Vector2(0, 0)
 
 [node name="PersonalLight" type="PointLight2D" parent="."]
 visible = false
-position = Vector2(-36, -95)
+position = Vector2(-40, -210)
 scale = Vector2(1.35, 1.35)
 color = Color(0.96, 0.84, 0.65, 1)
 energy = 0.48
