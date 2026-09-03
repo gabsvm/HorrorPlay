@@ -43,11 +43,24 @@ jobs:
       - name: Validate scripts scenes and assets
         shell: bash
         run: |
-          set -euo pipefail
+          set +e
           ./Godot_v4.6.3-stable_linux.x86_64 \
             --headless \
             --path . \
-            --script res://tools/validate_project.gd
+            --script res://tools/validate_project.gd \
+            > /tmp/godot-validator.log 2>&1
+          status=$?
+          set -e
+          cat /tmp/godot-validator.log
+          exit "$status"
+
+      - name: Upload validator diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-validator-log
+          path: /tmp/godot-validator.log
+          if-no-files-found: ignore
 
       - name: Require Cartoon Detective authored asset integration
         shell: bash
