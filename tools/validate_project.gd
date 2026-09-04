@@ -36,6 +36,8 @@ func _validate_main_scene() -> void:
 	_validate_resource(main_scene)
 
 func _scan_directory(path: String) -> void:
+	if FileAccess.file_exists(path.path_join(".gdignore")):
+		return
 	var dir = DirAccess.open(path)
 	if dir == null:
 		failures.append("Cannot open directory: %s" % path)
