@@ -27,13 +27,13 @@ void fragment() {
         vec2 mirrored_uv = vec2(screen_uv.x + dist_x, mirrored_y);
         vec4 reflection_color = texture(screen_texture, mirrored_uv);
         
-        // Mix the original background (what's drawn on this ColorRect/Sprite) with reflection and wet tint
-        vec4 floor_color = texture(TEXTURE, UV);
+        // Sample the underlying screen color beneath this overlay
+        vec4 base_color = texture(screen_texture, screen_uv);
         
-        // Blend reflection and wet floor tint
-        vec4 final_reflection = mix(floor_color, reflection_color, reflection_strength);
-        COLOR = mix(final_reflection, wet_tint, 0.15);
+        // Blend mirrored wet reflection and dark wet tint over base
+        vec4 final_reflection = mix(base_color, reflection_color, reflection_strength);
+        COLOR = mix(final_reflection, wet_tint, 0.35);
     } else {
-        COLOR = texture(TEXTURE, UV);
+        COLOR = texture(screen_texture, screen_uv);
     }
 }

@@ -189,19 +189,23 @@ def adapt_tavern():
     
     # Back wall wooden paneling
     wall_tex = Image.open(os.path.join(styloo_dir, "wall_bar.png")).convert("RGBA")
-    wall_tex = grade_image(wall_tex, shadow_mult=(0.85, 0.75, 0.65), mid_tint=(1.05, 0.95, 0.85), contrast=1.15, sat=0.9)
+    wall_tex = grade_image(wall_tex, shadow_mult=(0.58, 0.48, 0.4), mid_tint=(0.78, 0.68, 0.58), contrast=1.2, sat=0.85)
     wall_tile = wall_tex.resize((128, 128), Image.NEAREST)
     for wy in range(0, 760, 128):
         for wx in range(0, 1920, 128):
             canvas.paste(wall_tile, (wx, wy))
             
-    # Wooden Tavern floor
-    floor_tex = Image.open(os.path.join(styloo_dir, "floor_bar.png")).convert("RGBA")
-    floor_tex = grade_image(floor_tex, shadow_mult=(0.8, 0.7, 0.6), mid_tint=(1.0, 0.9, 0.8), contrast=1.15, sat=0.85)
-    floor_tile = floor_tex.resize((128, 128), Image.NEAREST)
-    for fy in range(740, 1080, 128):
-        for fx in range(0, 1920, 128):
-            canvas.paste(floor_tile, (fx, fy))
+    # Dark aged oak tavern floor (Y = 740 to 1080)
+    # Match Office's warm dark aged timber floor
+    draw = ImageDraw.Draw(canvas)
+    draw.rectangle([(0, 740), (1920, 1080)], fill=(34, 26, 20, 255))
+    for fy in range(740, 1080, 28):
+        # Floor plank seam
+        draw.line([(0, fy), (1920, fy)], fill=(20, 15, 11, 255), width=3)
+        draw.line([(0, fy + 1), (1920, fy + 1)], fill=(48, 36, 28, 255), width=1)
+        # Staggered plank joints
+        for fx in range((fy * 67) % 200, 1920, 260):
+            draw.line([(fx, fy), (fx, fy + 28)], fill=(18, 13, 9, 255), width=2)
             
     # Ceiling beams
     beam = Image.open(os.path.join(styloo_dir, "beam.png")).convert("RGBA")
@@ -403,13 +407,13 @@ def adapt_boathouse():
     wh_v1 = Image.open(os.path.join(actg_dir, "warehouse.png")).convert("RGBA")
     
     for state, powered in [("dim", False), ("powered", True)]:
-        canvas = make_canvas(1920, 1080, (18, 22, 26, 255) if not powered else (28, 32, 34, 255))
+        canvas = make_canvas(1920, 1080, (14, 18, 22, 255) if not powered else (22, 26, 28, 255))
         draw = ImageDraw.Draw(canvas)
         
         # Corrugated iron & timber wall background
-        mult = 1.0 if not powered else 1.25
-        sh_mult = (0.5 * mult, 0.55 * mult, 0.65 * mult)
-        graded_v2 = grade_image(wh_v2, shadow_mult=sh_mult, mid_tint=(0.75 * mult, 0.8 * mult, 0.85 * mult), contrast=1.15, sat=0.7)
+        mult = 1.0 if not powered else 1.22
+        sh_mult = (0.35 * mult, 0.40 * mult, 0.48 * mult)
+        graded_v2 = grade_image(wh_v2, shadow_mult=sh_mult, mid_tint=(0.55 * mult, 0.60 * mult, 0.65 * mult), contrast=1.2, sat=0.7)
         
         # Industrial structural beams & roof trusses
         truss = graded_v2.crop((0, 0, 128, 64)).resize((384, 192), Image.NEAREST)
@@ -425,52 +429,53 @@ def adapt_boathouse():
                 
         # Heavy timber dock / warehouse concrete plank floor (Y = 740 to 1080)
         floor_tile = graded_v2.crop((0, 64, 64, 128)).resize((128, 128), Image.NEAREST)
+        floor_tile = grade_image(floor_tile, shadow_mult=(0.4, 0.42, 0.46), mid_tint=(0.58, 0.6, 0.64), contrast=1.15, sat=0.6)
         for fy in range(740, 1080, 128):
             for fx in range(0, 1920, 128):
                 canvas.paste(floor_tile, (fx, fy))
                 
         # Left: Pier exit door (DoorBack at 365, 790)
-        draw.rectangle([(120, 320), (340, 780)], fill=(12, 15, 18, 255), outline=(50, 42, 36, 255), width=8)
+        draw.rectangle([(120, 320), (340, 780)], fill=(10, 13, 16, 255), outline=(42, 36, 30, 255), width=8)
         
         # Service Lockers 317 (ServiceLockers hotspot at 910, 800)
-        draw.rectangle([(840, 320), (1340, 780)], fill=(32, 42, 44, 255), outline=(55, 68, 72, 255), width=6)
+        draw.rectangle([(840, 320), (1340, 780)], fill=(28, 36, 38, 255), outline=(48, 58, 62, 255), width=6)
         for lkx in range(840, 1340, 100):
-            draw.line([(lkx, 320), (lkx, 780)], fill=(22, 28, 30, 255), width=4)
+            draw.line([(lkx, 320), (lkx, 780)], fill=(18, 24, 26, 255), width=4)
             # Locker vent louvers
             for vy in range(350, 420, 12):
-                draw.line([(lkx + 20, vy), (lkx + 80, vy)], fill=(15, 18, 20, 255), width=2)
+                draw.line([(lkx + 20, vy), (lkx + 80, vy)], fill=(12, 16, 18, 255), width=2)
             # Stencil "317" on second locker
             if lkx == 940:
-                draw.rectangle([(lkx + 25, 460), (lkx + 75, 495)], fill=(18, 22, 24, 255))
+                draw.rectangle([(lkx + 25, 460), (lkx + 75, 495)], fill=(15, 18, 20, 255))
                 # Brass latch
                 draw.rectangle([(lkx + 80, 520), (lkx + 92, 545)], fill=(PALETTE["aged_brass"] if not powered else (210, 175, 95)), outline=(40, 32, 20, 255))
                 
         # Fuse Box / Electrical Panel (FuseBox hotspot at 620, 800)
-        fuse_fill = (45, 52, 54, 255) if not powered else (55, 65, 68, 255)
-        draw.rectangle([(620, 480), (800, 720)], fill=fuse_fill, outline=(80, 92, 96, 255), width=5)
-        draw.rectangle([(645, 515), (775, 685)], fill=(25, 30, 32, 255))
+        fuse_fill = (40, 46, 48, 255) if not powered else (50, 60, 62, 255)
+        draw.rectangle([(620, 480), (800, 720)], fill=fuse_fill, outline=(70, 82, 86, 255), width=5)
+        draw.rectangle([(645, 515), (775, 685)], fill=(20, 25, 27, 255))
         # Circular fuse socket
-        socket_color = (90, 75, 50, 255) if not powered else (240, 180, 70, 255)
-        draw.ellipse([(685, 570), (735, 620)], fill=socket_color, outline=(140, 115, 70, 255), width=3)
+        socket_color = (80, 68, 45, 255) if not powered else (240, 180, 70, 255)
+        draw.ellipse([(685, 570), (735, 620)], fill=socket_color, outline=(130, 105, 60, 255), width=3)
         if powered:
             # Indicator pilot light glow
             draw.ellipse([(700, 525), (720, 545)], fill=(255, 80, 50, 255))
             
         # Workbench / Marine Radio / Winch Launch Ramp on Right (X = 1400 to 1920)
-        draw.rectangle([(1380, 560), (1780, 780)], fill=(38, 30, 24, 255), outline=(65, 52, 42, 255), width=6)
+        draw.rectangle([(1380, 560), (1780, 780)], fill=(32, 25, 20, 255), outline=(55, 44, 35, 255), width=6)
         # Marine radio console
-        draw.rectangle([(1420, 440), (1650, 560)], fill=(24, 32, 34, 255), outline=(50, 62, 66, 255), width=4)
+        draw.rectangle([(1420, 440), (1650, 560)], fill=(20, 26, 28, 255), outline=(42, 52, 56, 255), width=4)
         # Dial tuner
-        draw.ellipse([(1450, 470), (1500, 520)], fill=(12, 16, 18, 255), outline=(90, 110, 115, 255), width=2)
-        draw.rectangle([(1520, 480), (1620, 510)], fill=(18, 22, 24, 255))
+        draw.ellipse([(1450, 470), (1500, 520)], fill=(10, 14, 16, 255), outline=(80, 98, 102, 255), width=2)
+        draw.rectangle([(1520, 480), (1620, 510)], fill=(15, 18, 20, 255))
         if powered:
             # Backlit frequency display glow
             draw.rectangle([(1525, 485), (1615, 505)], fill=(60, 180, 130, 200))
             
         # Industrial overhead light fixture (MainLight at 1060, 430)
-        draw.line([(1060, 0), (1060, 360)], fill=(40, 45, 50, 255), width=4)
-        draw.polygon([(980, 400), (1140, 400), (1100, 360), (1020, 360)], fill=(60, 68, 72, 255))
-        bulb_color = (120, 110, 95, 255) if not powered else (255, 240, 180, 255)
+        draw.line([(1060, 0), (1060, 360)], fill=(35, 40, 45, 255), width=4)
+        draw.polygon([(980, 400), (1140, 400), (1100, 360), (1020, 360)], fill=(50, 58, 62, 255))
+        bulb_color = (100, 92, 80, 255) if not powered else (255, 240, 180, 255)
         draw.ellipse([(1035, 395), (1085, 435)], fill=bulb_color)
         
         canvas = add_dither_noise(canvas, 4)
@@ -523,35 +528,38 @@ def adapt_reef():
     
     # Magic Cliffs Tileset: Construct the foreground cyclopean basalt reef platform
     cliffs_tiles = Image.open(os.path.join(cliffs_dir, "tileset.png")).convert("RGBA")
-    cliffs_tiles = grade_image(cliffs_tiles, shadow_mult=(0.35, 0.42, 0.5), mid_tint=(0.5, 0.6, 0.68), highlight_mult=(0.55, 0.85, 0.75), contrast=1.3, sat=0.65)
+    cliffs_tiles = grade_image(cliffs_tiles, shadow_mult=(0.32, 0.40, 0.48), mid_tint=(0.45, 0.55, 0.62), highlight_mult=(0.50, 0.75, 0.68), contrast=1.3, sat=0.65)
     
-    rock_top = cliffs_tiles.crop((16, 16, 64, 64)).resize((128, 128), Image.NEAREST)
-    rock_body = cliffs_tiles.crop((16, 64, 64, 112)).resize((128, 128), Image.NEAREST)
-    rock_spire = cliffs_tiles.crop((64, 16, 112, 112)).resize((160, 320), Image.NEAREST)
+    rock_body = cliffs_tiles.crop((432, 64, 480, 112)).resize((96, 96), Image.NEAREST)
+    rock_pillar = cliffs_tiles.crop((464, 48, 528, 144)).resize((192, 288), Image.NEAREST)
+    rock_cap = cliffs_tiles.crop((600, 60, 650, 100)).resize((128, 102), Image.NEAREST)
     
-    # Jagged sea spires flanking the platform
-    canvas.paste(rock_spire, (-20, 420), rock_spire)
-    canvas.paste(rock_spire, (1740, 390), rock_spire)
+    # Bedrock platform base (Y = 680 to 1080)
+    draw = ImageDraw.Draw(canvas)
+    draw.rectangle([(0, 680), (1920, 1080)], fill=(14, 20, 24, 255))
     
-    # Central ancient stone megaliths / mnemonic altar structure (X = 650 to 1150)
-    for ry in range(720, 1080, 128):
-        for rx in range(0, 1920, 128):
+    for ry in range(700, 1080, 96):
+        for rx in range(0, 1920, 96):
             canvas.paste(rock_body, (rx, ry))
             
-    # Surface cap with ancient worn stone edges
-    for rx in range(0, 1920, 128):
-        canvas.paste(rock_top, (rx, 700), rock_top)
+    # Surface cap along top reef rim (Y = 660)
+    for rx in range(0, 1920, 120):
+        canvas.paste(rock_cap, (rx, 650), rock_cap)
         
+    # Flanking jagged cyclopean basalt spires
+    canvas.paste(rock_pillar, (-20, 420), rock_pillar)
+    pillar_right = ImageOps.mirror(rock_pillar)
+    canvas.paste(pillar_right, (1740, 390), pillar_right)
+    
     # Submerged non-human geometric monoliths in the background
-    draw = ImageDraw.Draw(canvas)
     # Ancient basalt obelisks jutting from deep sea
-    draw.polygon([(780, 460), (840, 320), (880, 460)], fill=(20, 28, 32, 255), outline=(35, 48, 52, 255), width=4)
-    draw.polygon([(1020, 480), (1070, 360), (1110, 480)], fill=(18, 25, 29, 255), outline=(32, 44, 48, 255), width=4)
+    draw.polygon([(780, 460), (840, 320), (880, 460)], fill=(16, 22, 26, 255), outline=(28, 38, 42, 255), width=4)
+    draw.polygon([(1020, 480), (1070, 360), (1110, 480)], fill=(14, 20, 24, 255), outline=(25, 34, 38, 255), width=4)
     
     # Sickly bioluminescent sea foam and phosphorescence surging around reef base
     for y in range(860, 1080, 6):
-        alpha = int(70 * math.sin((y - 860) / 220.0 * math.pi))
-        draw.line([(0, y), (1920, y)], fill=(32, 110, 85, alpha))
+        alpha = int(60 * math.sin((y - 860) / 220.0 * math.pi))
+        draw.line([(0, y), (1920, y)], fill=(28, 95, 75, alpha))
         
     canvas = add_dither_noise(canvas, 4)
     canvas.save(os.path.join(out_dir, "reef_production_bg.png"), optimize=True)
