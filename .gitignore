@@ -17,3 +17,7 @@ Thumbs.db
 android/keystore/*.keystore
 android/keystore/*.jks
 android/keystore/*.keystore.*
+
+# Python cache
+__pycache__/
+*.pyc
