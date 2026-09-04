@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using HorrorPlay.Street;
 using UnityEditor;
 using UnityEditor.Build;
@@ -88,6 +89,32 @@ namespace HorrorPlay.Editor
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.shomer.horrorplay");
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            EnableNewInputSystem();
+        }
+
+        private static void EnableNewInputSystem()
+        {
+            PlayerSettings playerSettings = Resources.FindObjectsOfTypeAll<PlayerSettings>().FirstOrDefault();
+            if (playerSettings == null)
+            {
+                Debug.LogWarning("HorrorPlay: could not locate PlayerSettings to enable the Input System automatically.");
+                return;
+            }
+
+            var serialized = new SerializedObject(playerSettings);
+            SerializedProperty activeInputHandler = serialized.FindProperty("activeInputHandler");
+            if (activeInputHandler == null)
+            {
+                Debug.LogWarning("HorrorPlay: activeInputHandler was not found; verify Active Input Handling is set to Input System Package (New).");
+                return;
+            }
+
+            // Unity PlayerSettings values: 0 = old manager, 1 = new Input System, 2 = both.
+            if (activeInputHandler.intValue != 1)
+            {
+                activeInputHandler.intValue = 1;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
         }
 
         private static void EnsureScene()
