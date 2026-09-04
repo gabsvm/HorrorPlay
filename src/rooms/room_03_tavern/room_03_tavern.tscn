@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://src/rooms/room_03_tavern/room_03_tavern.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://inspector_actor_root" path="res://src/characters/inspector/inspector.tscn" id="2_inspector"]
 [ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="3_hotspot"]
-[ext_resource type="Texture2D" path="res://assets/images/backgrounds/tavern_bg.svg" id="4_bg"]
+[ext_resource type="Texture2D" path="res://assets/images/rooms/tavern/tavern_production_bg.png" id="4_bg"]
 [ext_resource type="Texture2D" path="res://assets/images/characters/innkeeper/idle/bearded-idle-1.png" id="5_bearded"]
 [ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="6_flicker"]
 [ext_resource type="Resource" uid="uid://item_dock_key" path="res://src/common/classes/dock_key.tres" id="7_dock_key"]
