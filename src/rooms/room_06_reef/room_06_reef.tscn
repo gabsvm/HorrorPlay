@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://src/rooms/room_06_reef/room_06_reef.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/images/backgrounds/reef_bg.svg" id="2_bg"]
+[ext_resource type="Texture2D" path="res://assets/images/rooms/reef/reef_production_bg.png" id="2_bg"]
 
 [sub_resource type="Environment" id="Environment_reef"]
 background_mode = 3
