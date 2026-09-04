@@ -3,10 +3,8 @@
 [ext_resource type="Script" path="res://src/rooms/room_04_docks/room_04_docks.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://inspector_actor_root" path="res://src/characters/inspector/inspector.tscn" id="2_inspector"]
 [ext_resource type="Script" path="res://src/common/classes/hotspot.gd" id="3_hotspot"]
-[ext_resource type="Texture2D" path="res://assets/images/backgrounds/docks_bg.svg" id="4_bg"]
+[ext_resource type="Texture2D" path="res://assets/images/rooms/docks/docks_production_bg.png" id="4_bg"]
 [ext_resource type="Script" path="res://src/common/classes/flickering_light.gd" id="5_flicker"]
-[ext_resource type="Texture2D" path="res://assets/images/props/barrel.png" id="6_barrel"]
-[ext_resource type="Texture2D" path="res://assets/images/props/crate-stack.png" id="7_crates"]
 [ext_resource type="AudioStream" path="res://assets/audio/music/gothic_village.ogg" id="8_music"]
 
 [sub_resource type="Environment" id="Environment_docks"]
@@ -76,20 +74,6 @@ script = ExtResource("5_flicker")
 min_energy = 0.12
 max_energy = 0.42
 speed = 3.5
-
-[node name="PropsLayer" type="Node2D" parent="."]
-[node name="Crates" type="Sprite2D" parent="PropsLayer"]
-texture_filter = 1
-position = Vector2(525, 735)
-scale = Vector2(3.5, 3.5)
-texture = ExtResource("7_crates")
-modulate = Color(0.62, 0.64, 0.58, 0.9)
-[node name="Barrel" type="Sprite2D" parent="PropsLayer"]
-texture_filter = 1
-position = Vector2(820, 760)
-scale = Vector2(3.0, 3.0)
-texture = ExtResource("6_barrel")
-modulate = Color(0.55, 0.59, 0.56, 0.9)
 
 [node name="HotspotsLayer" type="Node2D" parent="."]
 [node name="BackPath" type="Area2D" parent="HotspotsLayer" node_paths=PackedStringArray("walk_to_point")]
