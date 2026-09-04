@@ -1,0 +1,38 @@
+name: Unity Street Static Contracts
+
+on:
+  push:
+    branches: [ "reboot/unity-innsmouth-street-v1" ]
+  pull_request:
+    paths:
+      - 'unity/HorrorPlay/**'
+      - '.github/workflows/unity-street-static.yml'
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Required Unity project files
+        run: |
+          test -f unity/HorrorPlay/ProjectSettings/ProjectVersion.txt
+          test -f unity/HorrorPlay/Packages/manifest.json
+          test -f unity/HorrorPlay/Assets/HorrorPlay/Runtime/Street/StreetBootstrap.cs
+          grep -q '6000.3.15f1' unity/HorrorPlay/ProjectSettings/ProjectVersion.txt
+          grep -q '17.3.0' unity/HorrorPlay/Packages/manifest.json
+          grep -q '1.17.0' unity/HorrorPlay/Packages/manifest.json
+      - name: No generated Unity cache committed
+        run: |
+          test ! -d unity/HorrorPlay/Library
+          test ! -d unity/HorrorPlay/Temp
+      - name: No legacy room art references in Unity reboot
+        run: |
+          if grep -RniE 'gothicvania|production_bg|assets/images/backgrounds|src/rooms/room_' unity/HorrorPlay/Assets/HorrorPlay --include='*.cs'; then
+            echo 'Legacy Godot art/runtime reference found in Unity reboot.'
+            exit 1
+          fi
+      - name: Required narrative contracts
+        run: |
+          grep -q 'harbor_closure_notice' unity/HorrorPlay/Assets/HorrorPlay/Runtime/Street/StreetBootstrap.cs
+          grep -q 'local_resident' unity/HorrorPlay/Assets/HorrorPlay/Runtime/Street/StreetBootstrap.cs
+          grep -q 'tavern_door' unity/HorrorPlay/Assets/HorrorPlay/Runtime/Street/StreetBootstrap.cs

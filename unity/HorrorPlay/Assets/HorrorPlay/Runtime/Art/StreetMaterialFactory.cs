@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace HorrorPlay.Art
 {
@@ -16,6 +17,7 @@ namespace HorrorPlay.Art
             {
                 material.EnableKeyword("_EMISSION");
                 material.SetColor("_EmissionColor", emission.Value * emissionIntensity);
+                material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
             }
             return material;
         }
@@ -23,10 +25,13 @@ namespace HorrorPlay.Art
         public static Material Transparent(string name, Color color)
         {
             Shader shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
-            var material = new Material(shader) { name = name, renderQueue = 3000 };
+            var material = new Material(shader) { name = name, renderQueue = (int)RenderQueue.Transparent };
             if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", color);
             else material.color = color;
             if (material.HasProperty("_Surface")) material.SetFloat("_Surface", 1f);
+            if (material.HasProperty("_SrcBlend")) material.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+            if (material.HasProperty("_DstBlend")) material.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+            if (material.HasProperty("_ZWrite")) material.SetFloat("_ZWrite", 0f);
             material.SetOverrideTag("RenderType", "Transparent");
             material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
             return material;

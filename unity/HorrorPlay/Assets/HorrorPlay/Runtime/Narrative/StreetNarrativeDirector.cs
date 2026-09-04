@@ -39,7 +39,7 @@ namespace HorrorPlay.Narrative
 
         private void ScheduleIfEligible()
         {
-            if (!IsAtmosphereSequenceEligible || sequenceStarted || sequenceScheduled) return;
+            if (!Application.isPlaying || !IsAtmosphereSequenceEligible || sequenceStarted || sequenceScheduled) return;
             sequenceScheduled = true;
             StartCoroutine(DelayedStart());
         }
