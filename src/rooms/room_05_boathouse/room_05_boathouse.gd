@@ -11,6 +11,10 @@ extends Room
 @onready var main_light: PointLight2D = $MainLight
 @onready var canvas_modulate: CanvasModulate = $CanvasModulate
 @onready var intruder_shadow: Polygon2D = $ForegroundLayer/IntruderShadow
+@onready var background_node: Sprite2D = $Background
+
+const BG_DIM = preload("res://assets/images/rooms/boathouse/boathouse_production_bg.png")
+const BG_POWERED = preload("res://assets/images/rooms/boathouse/boathouse_production_powered_bg.png")
 
 @export var brass_fuse_item: ItemData
 
@@ -56,6 +60,8 @@ func _show_entry_beat() -> void:
 
 func _apply_power_state(animate: bool) -> void:
 	var power_on = GameState.get_flag("boathouse_power_on")
+	if background_node:
+		background_node.texture = BG_POWERED if power_on else BG_DIM
 	if power_on:
 		main_light.energy = 1.25
 		canvas_modulate.color = Color(0.52, 0.5, 0.42, 1)
