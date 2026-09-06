@@ -63,9 +63,8 @@ namespace HorrorPlay.Atmosphere
 
         private void BuildFog(Transform parent)
         {
-            Material fog = StreetMaterialFactory.Transparent("Fog", new Color(0.18f, 0.25f, 0.27f, 0.11f));
-            StreetGeometryFactory.Box("FarFog", parent, new Vector3(-8f, 3.2f, 7.5f), new Vector3(36f, 5f, 0.08f), fog);
-            StreetGeometryFactory.Box("NearFog", parent, new Vector3(12f, 2.1f, -1.8f), new Vector3(22f, 2.2f, 0.06f), fog);
+            StreetV2AssetLibrary.Sprite("FarFog", parent, StreetV2AssetLibrary.CloudResource, new Vector3(-8f, 4.6f, 6.6f), new Vector3(2.4f, 2.4f, 1f), new Color(0.35f, 0.45f, 0.47f, 0.18f), 55);
+            StreetV2AssetLibrary.Sprite("NearFog", parent, StreetV2AssetLibrary.CloudResource, new Vector3(12f, 2.4f, -1.8f), new Vector3(1.7f, 1.7f, 1f), new Color(0.36f, 0.46f, 0.47f, 0.13f), 58);
         }
 
         private void BuildAnomaly(Transform parent)
