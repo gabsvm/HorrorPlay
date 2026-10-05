@@ -52,7 +52,7 @@ export function makeChapters() {
       await G.say('Voz al otro lado de la puerta', '¡Inspector Ashgrove! El sargento Pike le manda llamar. Han encontrado a una mujer en Buck\'s Row.');
       await G.say('Ashgrove', 'Voy.');
       await G.think('Estoy en camisa y tengo los pantalones mojados hasta las rodillas. Me he dormido vestido otra vez.');
-      G.objective('Coger el abrigo, las botas y la linterna, y salir hacia Buck's Row.');
+      G.objective('Coger el abrigo, las botas y la linterna, y salir hacia Buck\'s Row.');
     },
 
     async c2(G) {

@@ -42,10 +42,11 @@ void main(){
   uv.y += sin(uv.x * 9.0 + uTime * 0.6) * 0.0016 * m;
   vec2 c = uv - 0.5;
   float ca = 0.0007 + 0.0045 * m;
-  vec3 col;
-  col.r = compose(uv + c * ca).r;
-  col.g = compose(uv).g;
-  col.b = compose(uv - c * ca).b;
+  vec3 col = compose(uv);
+  if (m > 0.02) {
+    col.r = compose(uv + c * ca).r;
+    col.b = compose(uv - c * ca).b;
+  }
   // grading: teal shadows, warm highlights, gentle filmic shoulder
   float lum = dot(col, vec3(0.299, 0.587, 0.114));
   col += vec3(-0.004, 0.012, 0.018) * (1.0 - smoothstep(0.0, 0.35, lum));
@@ -73,6 +74,7 @@ function mk2d(w, h) {
 }
 
 export class Renderer {
+  static uid = 0;
   constructor(view) {
     this.view = view;
     this.gl = view.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false, preserveDrawingBuffer: true });
@@ -137,6 +139,7 @@ export class Renderer {
     this.fog = mk2d(640, 360);
     this.glow = mk2d(640, 360);
     this.cFar = this.far.getContext('2d'); this.cNear = this.near.getContext('2d'); this.cFg = this.fg.getContext('2d');
+    this._staticKey = null;
     this.cLight = this.light.getContext('2d'); this.cFog = this.fog.getContext('2d'); this.cGlow = this.glow.getContext('2d');
   }
 
@@ -155,12 +158,18 @@ export class Renderer {
     const camX = Math.round((this.cam.x + (Math.random() - 0.5) * this.cam.shake) * rs) / rs;
     const camY = (Math.random() - 0.5) * this.cam.shake * 0.5;
 
-    // far
+    // far and foreground only change when the camera moves
+    if (scene.built && !scene.built._uid) scene.built._uid = ++Renderer.uid;
+    const staticKey = `${scene.id}|${scene.built?._uid}|${camX.toFixed(2)}|${camY.toFixed(2)}|${this.far.width}`;
+    this.staticDirty = staticKey !== this._staticKey || !!scene.drawFar;
+    this._staticKey = staticKey;
     const cf = this.cFar;
-    cf.setTransform(1, 0, 0, 1, 0, 0);
-    cf.fillStyle = '#000'; cf.fillRect(0, 0, this.far.width, this.far.height);
-    for (const L of scene.layers) if (L.kind === 'far') cf.drawImage(L.canvas, Math.round(-camX * L.parallax * rs), Math.round(camY * rs));
-    if (scene.drawFar) { cf.setTransform(rs, 0, 0, rs, 0, 0); scene.drawFar(cf, camX, t); }
+    if (this.staticDirty) {
+      cf.setTransform(1, 0, 0, 1, 0, 0);
+      cf.fillStyle = '#000'; cf.fillRect(0, 0, this.far.width, this.far.height);
+      for (const L of scene.layers) if (L.kind === 'far') cf.drawImage(L.canvas, Math.round(-camX * L.parallax * rs), Math.round(camY * rs));
+      if (scene.drawFar) { cf.setTransform(rs, 0, 0, rs, 0, 0); scene.drawFar(cf, camX, t); }
+    }
 
     // near (albedo)
     const cn = this.cNear;
@@ -176,9 +185,11 @@ export class Renderer {
 
     // foreground
     const cg = this.cFg;
-    cg.setTransform(1, 0, 0, 1, 0, 0);
-    cg.clearRect(0, 0, this.fg.width, this.fg.height);
-    for (const L of scene.layers) if (L.kind === 'fg') cg.drawImage(L.canvas, Math.round(-camX * L.parallax * rs), 0);
+    if (this.staticDirty) {
+      cg.setTransform(1, 0, 0, 1, 0, 0);
+      cg.clearRect(0, 0, this.fg.width, this.fg.height);
+      for (const L of scene.layers) if (L.kind === 'fg') cg.drawImage(L.canvas, Math.round(-camX * L.parallax * rs), 0);
+    }
 
     // lightmap
     const cl = this.cLight, ls = 320 / W;
@@ -303,7 +314,8 @@ export class Renderer {
 
   present(scene) {
     const gl = this.gl, u = this.u, fx = this.fx;
-    this.upload('tFar', this.far); this.upload('tNear', this.near); this.upload('tFg', this.fg);
+    if (this.staticDirty) { this.upload('tFar', this.far); this.upload('tFg', this.fg); }
+    this.upload('tNear', this.near);
     this.upload('tLight', this.light); this.upload('tFog', this.fog); this.upload('tGlow', this.glow);
     gl.uniform2f(u.uRes, this.view.width, this.view.height);
     gl.uniform1f(u.uTime, this.time);

@@ -258,12 +258,14 @@ export class UI {
     let finish;
     const p = new Promise((r) => { finish = r; });
     nameInput.addEventListener('keydown', onKey);
-    nameInput.addEventListener('beforeinput', (e) => { e.preventDefault(); type(); });
+    const onBefore = (e) => { e.preventDefault(); const n = Math.max(1, (e.data || '').length); for (let k = 0; k < n; k++) type(); };
+    nameInput.addEventListener('beforeinput', onBefore);
     const okHandler = () => { if (i < forced.length) { type(); return; } finish(); };
     nameOk.addEventListener('click', okHandler);
     setTimeout(() => nameInput.focus(), 100);
     await p;
     nameInput.removeEventListener('keydown', onKey);
+    nameInput.removeEventListener('beforeinput', onBefore);
     nameOk.removeEventListener('click', okHandler);
     nameEntry.classList.add('hidden');
     return forced;
