@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#05070a">
+<title>El Huésped — Whitechapel, 1888</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Special+Elite&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="stage">
+  <canvas id="view"></canvas>
+  <div id="ui">
+    <div id="hud" class="hidden">
+      <div id="datecard"><span id="date"></span><span id="clock"></span></div>
+      <div id="sanity" title="Cordura"><div id="sanity-fill"></div></div>
+      <div id="hud-buttons">
+        <button id="btn-notebook" class="hud-btn" title="Cuaderno (N)">Cuaderno</button>
+        <button id="btn-menu" class="hud-btn" title="Menú (Esc)">Menú</button>
+      </div>
+    </div>
+    <div id="inventory" class="hidden"></div>
+    <div id="hover-label" class="hidden"></div>
+    <div id="cursor"></div>
+    <div id="dialogue" class="hidden">
+      <div id="dlg-name"></div>
+      <div id="dlg-text"></div>
+      <div id="dlg-next">▾</div>
+    </div>
+    <div id="choices" class="hidden"></div>
+    <div id="toast"></div>
+    <div id="notebook" class="hidden">
+      <div class="book">
+        <div class="page left">
+          <h2>Pistas</h2>
+          <p class="hint">Selecciona dos pistas para relacionarlas.</p>
+          <ul id="clue-list"></ul>
+        </div>
+        <div class="page right">
+          <h2>Deducciones</h2>
+          <ul id="deduction-list"></ul>
+          <h2 id="profile-title">Perfil del asesino</h2>
+          <ul id="profile-list"></ul>
+          <div id="nb-feedback"></div>
+        </div>
+        <button id="nb-close" class="close">Cerrar</button>
+      </div>
+    </div>
+    <div id="document" class="hidden">
+      <div class="doc-paper"><div id="doc-body"></div><button id="doc-close" class="close">Dejar</button></div>
+    </div>
+    <div id="card" class="hidden"><div id="card-kicker"></div><div id="card-title"></div><div id="card-sub"></div></div>
+    <div id="name-entry" class="hidden">
+      <div id="name-prompt"></div>
+      <input id="name-input" autocomplete="off" spellcheck="false">
+      <button id="name-ok">Responder</button>
+    </div>
+    <div id="menu" class="screen">
+      <div class="menu-inner">
+        <h1 class="logo">El Huésped</h1>
+        <div class="tagline">Whitechapel, 1888</div>
+        <div id="menu-buttons"></div>
+        <div class="menu-foot">Se recomienda jugar con auriculares.</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

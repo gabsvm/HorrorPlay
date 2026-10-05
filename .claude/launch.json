@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "el-huesped",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "web/tools/serve.py",
+        "5317"
+      ],
+      "port": 5317
+    }
+  ]
+}
