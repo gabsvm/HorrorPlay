@@ -35,6 +35,7 @@ export function makeChapters() {
       await G.narrate('Hacía tres semanas que el río se había llevado a Nat.');
       await G.narrate('Desde entonces bajaba cada tarde con la marea baja a buscarlo. Mamá decía que ya no iba a volver, pero yo bajaba igual.');
       await G.think('Hoy encontraré algo suyo. Lo sé.');
+      G.objective('Buscar en el barro algo de Nat.');
     },
 
     async c1(G) {
@@ -51,6 +52,7 @@ export function makeChapters() {
       await G.say('Voz al otro lado de la puerta', '¡Inspector Ashgrove! El sargento Pike le manda llamar. Han encontrado a una mujer en Buck\'s Row.');
       await G.say('Ashgrove', 'Voy.');
       await G.think('Estoy en camisa y tengo los pantalones mojados hasta las rodillas. Me he dormido vestido otra vez.');
+      G.objective('Coger el abrigo, las botas y la linterna, y salir hacia Buck's Row.');
     },
 
     async c2(G) {
@@ -74,6 +76,7 @@ export function makeChapters() {
       await G.goto('room', { x: 1000, facing: 1, fade: false });
       await G.fade(0, 1500);
       await G.think('Tengo informes atrasados de tres semanas. Esta noche no salgo: escribo y me acuesto.');
+      G.objective('Terminar los informes en el escritorio.');
     },
 
     async c4(G) {
@@ -84,6 +87,7 @@ export function makeChapters() {
       await G.card('', 'Octubre', 'No hay crímenes en todo el mes.', 3400);
       await G.card('', '', 'Duermo de día. De noche camino. Pike ya no me saluda.', 3400);
       await G.card('Capítulo IV', 'Huésped', 'London Hospital, 8 de noviembre de 1888', 4200);
+      G.objective('Encontrar lo que Greaves sabe de mí: el cajón, la vitrina.');
       await G.goto('greaves', { x: 230, facing: 1, fade: false });
       await G.fade(0, 1500);
     },
@@ -97,6 +101,7 @@ export function makeChapters() {
       G.player.pose = null;
       G.flag('boat', true);
       G.flag('water_light', true);
+      G.objective('Acercarse al río.');
       G.audio.sting(0.1);
       await G.think('Allí, en el río, brilla algo verde, como un farol hundido.');
     },
@@ -150,6 +155,7 @@ export function makeChapters() {
       w.talking = false;
       G.clue('regla');
       G.sanity(-5);
+      G.objective('En el cuaderno: relacionar a Brennan y el bisturí con lo que dijo el forense.');
       await G.think('Brennan es zurdo. El bisturí es del hospital. En el cuaderno tengo que relacionarlo con lo que dijo Llewellyn.');
     },
 
@@ -187,6 +193,7 @@ export function makeChapters() {
         <p class="hand">Esta noche, a las once. Traiga lo que lleva en el bolsillo.</p>
         <p class="hand" style="text-align:right">— O. Wexley</p>`);
       await G.card('', 'Esa misma noche', 'Fournier Street, Spitalfields', 3000);
+      G.objective('Averiguar qué quiere Madame Wexley.');
       await G.goto('seance', { x: 240, facing: 1 });
     },
 
@@ -241,6 +248,7 @@ export function makeChapters() {
       G.sanity(-10);
       G.flag('seance_done', true);
       await G.think('Un truco. Alguien le habló de Nat. ¿Quién sabía lo de Nat?');
+      G.objective('Salir a Fournier Street.');
     },
 
     async leaveSeance(G) {
@@ -324,6 +332,7 @@ export function makeChapters() {
       G.sanity(-8);
       G.player.pose = null;
       await G.think('Tengo que acostarme.');
+      G.objective('Acostarse.');
     },
 
     async sleepC3a(G) {
@@ -332,12 +341,14 @@ export function makeChapters() {
       await G.card('', '', 'Los días siguientes apenas duermo.', 2600);
       await G.card('', '30 de septiembre', '1:46 de la madrugada', 3200);
       await G.narrate('No recuerdo haber salido. Estoy en Aldgate, delante de la iglesia de St. Botolph, y oigo a alguien correr hacia Mitre Square.');
+      G.objective('Entrar en Mitre Square.');
       await G.goto('mitre', { x: 200, facing: 1 });
     },
 
     async toGoulston(G) {
       await G.fade(1, 700);
       G.date(null, '2:55');
+      G.objective('Buscar el trozo de delantal.');
       await G.goto('goulston', { x: 160, facing: 1 });
     },
 
@@ -374,6 +385,7 @@ export function makeChapters() {
       await G.goto('room', { x: 700, facing: -1, fade: false });
       await G.fade(0, 1500);
       await G.think('Me despierto en mi cama. No sé cuánto he dormido. Quizá un día entero.');
+      G.objective('Leer el periódico. Mirar debajo de la cama.');
     },
 
     async readPaper(G) {
@@ -389,6 +401,7 @@ export function makeChapters() {
         <p class="small">Se ruega a quien reconozca la letra que se presente en Scotland Yard.</p>`);
       G.flag('paper_read', true);
       G.clue('carta');
+      G.objective(G.hasClue('estuche') ? 'Salir.' : 'Mirar debajo de la cama.');
       await G.think('El jueves 27. Fue la noche que me dormí sobre el escritorio.');
       await G.think('"Jack the Ripper". Mañana lo dirán en todas las tabernas de Londres.');
       G.audio.whisper(2, 0.14);
@@ -470,6 +483,7 @@ export function makeChapters() {
       G.flag('awake', true);
       G.clue('ficha');
       await G.think('En el cuaderno hay una página nueva, escrita con mi letra: mi propia ficha. Tengo que contrastarla con el perfil.');
+      G.objective('En el cuaderno: relacionar mi ficha con las pistas del asesino (al menos tres).');
     },
 
     async outfall1888(G) {

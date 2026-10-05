@@ -110,7 +110,6 @@ export default {
     }
     const fg = R.paintLayer(WIDTH * 1.25, (ctx) => {
       ctx.fillStyle = '#040404';
-      ctx.fillRect(1180, 0, 34, 720);
       ctx.beginPath(); ctx.moveTo(0, 720); ctx.lineTo(0, 640); ctx.quadraticCurveTo(200, 610, 360, 720); ctx.fill();
       ctx.fillRect(2200, 380, 28, 340); ctx.fillRect(2160, 400, 110, 10);
     });

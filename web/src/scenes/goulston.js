@@ -50,7 +50,7 @@ export default {
     layers.push({ canvas: near, parallax: 1, kind: 'near' });
     const fg = R.paintLayer(WIDTH * 1.3, (ctx) => {
       ctx.fillStyle = '#040405';
-      ctx.fillRect(700, 0, 44, 720); ctx.fillRect(2300, 0, 160, 720);
+      ctx.fillRect(700, 650, 40, 70); ctx.fillRect(692, 642, 56, 12); ctx.fillRect(2300, 0, 160, 720);
     });
     layers.push({ canvas: fg, parallax: 1.3, kind: 'fg' });
     return { layers, lights };
@@ -61,7 +61,16 @@ export default {
       ctx.fillStyle = '#3a2620';
       ctx.beginPath(); ctx.moveTo(920, GROUND - 6); ctx.lineTo(966, GROUND - 14); ctx.lineTo(980, GROUND - 2); ctx.lineTo(930, GROUND + 4); ctx.fill();
     }
-    if (this.G?.flag('chalk_seen')) A.chalk(ctx, 1040, GROUND - 200, 'HERE I AM', { size: 22, rot: 0.04 });
+    if (this.G?.flag('chalk_seen')) A.chalk(ctx, 1040, GROUND - 210, 'HERE I AM', { size: 30, rot: 0.05 });
+  },
+
+  drawGlow(ctx, t) {
+    // the chalk catches the lantern light and seems to hold it
+    if (!this.G?.flag('chalk_seen')) return;
+    ctx.save();
+    ctx.globalAlpha = 0.22 + Math.sin(t * 1.4) * 0.06;
+    A.chalk(ctx, 1040, GROUND - 210, 'HERE I AM', { size: 30, rot: 0.05 });
+    ctx.restore();
   },
 
   async enter(G) {
@@ -70,6 +79,7 @@ export default {
     G.flag('go_intro', true);
     G.date(null, '2:55');
     await G.think('Goulston Street. Hay luz en algunas ventanas de los Wentworth Buildings, y el portal de la escalera está abierto.');
+    G.objective('Examinar el portal de los Wentworth Buildings.');
   },
 
   hotspots: [

@@ -125,7 +125,7 @@ export function wallpaper(ctx, x, y, w, h, { seed = 1, base = '#4a4636', stripe 
   const r = rng(seed + 9);
   for (let i = 0; i < 4; i++) {
     const px = x + r.range(0, w), py = y + r.range(h * 0.1, h * 0.5);
-    ctx.fillStyle = '#6a604c';
+    ctx.fillStyle = 'rgba(40,34,26,0.55)';
     ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + r.range(20, 50), py + r.range(-4, 6)); ctx.lineTo(px + r.range(10, 40), py + r.range(30, 70)); ctx.closePath(); ctx.fill();
     ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(px, py, 2, 30);
   }

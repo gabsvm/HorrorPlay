@@ -15,6 +15,7 @@ export default {
   spawn: 240,
   playerH: 252,
   surface: 'wood',
+  indoor: true,
   lantern: false,
   ambient: [0.025, 0.02, 0.022],
   fog: { density: 0.25, amount: 0.35, color: [0.4, 0.34, 0.3], speed: 2, ground: 0.1 },
@@ -77,8 +78,8 @@ export default {
     ];
   },
 
-  drawNear(ctx, t) {
-    // round table with cloth, three candles
+  drawNearOver(ctx, t) {
+    // round table with cloth, three candles (drawn over the seated figures)
     ctx.fillStyle = '#1a0c0a'; ctx.fillRect(TABLE_X - 12, GROUND - 120, 24, 120);
     ctx.fillStyle = '#3a1814';
     ctx.beginPath(); ctx.ellipse(TABLE_X, GROUND - 124, 150, 18, 0, 0, Math.PI * 2); ctx.fill();
@@ -112,6 +113,7 @@ export default {
     await G.say('Madame Wexley', 'Siéntese. Y ponga sobre la mesa lo que lleva en el bolsillo. Lo de ella.');
     w.talking = false;
     await G.think('El peine. No se lo he enseñado a nadie.');
+    G.objective('Poner el peine de Annie sobre la mesa.');
     G.sanity(-3);
   },
 

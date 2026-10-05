@@ -48,7 +48,7 @@ export default {
     layers.push({ canvas: near, parallax: 1, kind: 'near' });
     const fg = R.paintLayer(WIDTH * 1.3, (ctx) => {
       ctx.fillStyle = '#050506';
-      ctx.fillRect(900, 0, 50, 720);
+      ctx.fillRect(880, 640, 36, 80); ctx.fillRect(872, 632, 52, 12);
       ctx.fillRect(2600, 0, 120, 720);
       A.railing(ctx, 1700, 640, 400, 80, { gap: 14 });
     });
@@ -80,6 +80,7 @@ export default {
     await G.say('Agente Watkins', '¡Alto ahí! Esto es la City. ¿Quién es usted?');
     w.talking = false;
     await G.think('La City de Londres tiene su propia policía. Aquí no soy nadie, salvo que les enseñe la placa.');
+    G.objective('Enseñar la placa al agente de la City (inventario).');
   },
 
   hotspots: [
@@ -126,6 +127,7 @@ export default {
         await G.say('Agente Watkins', '...¿Cómo ha llegado tan rápido? La encontré hace cuatro minutos. Todavía no hemos avisado a nadie de la Metropolitana.');
         w.talking = false;
         G.clue('rapido');
+        G.objective('Averiguar qué encontró Watkins y si alguien vio algo.');
         const c = await G.choice(['Estaba cerca, en Aldgate.', 'Oí los silbatos.']);
         if (c === 0) await G.think('Estaba en Aldgate. Eso creo. ¿Qué hacía yo en Aldgate a las dos menos cuarto?');
         else await G.think('No ha sonado ningún silbato. Watkins no ha llegado a tocar el suyo.');

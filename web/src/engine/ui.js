@@ -190,6 +190,7 @@ export class UI {
   renderNotebook() {
     const g = this.game, st = g.state;
     const { clueList, dedList, profList, profTitle } = this.el;
+    document.getElementById('objective').textContent = st.objective || '';
     clueList.innerHTML = '';
     for (const id of st.clues) {
       const c = g.clues[id];

@@ -87,8 +87,10 @@ export default {
     }
     const fg = R.paintLayer(WIDTH * 1.3, (ctx) => {
       ctx.fillStyle = '#050505';
-      ctx.fillRect(700, 0, 60, 720);
-      ctx.beginPath(); ctx.moveTo(1900, 720); ctx.lineTo(1960, 600); ctx.lineTo(2300, 600); ctx.lineTo(2400, 720); ctx.fill();
+      // barrels and a broken cart wheel along the bottom edge
+      for (const x of [520, 560]) { ctx.beginPath(); ctx.ellipse(x, 690, 22, 50, 0, 0, Math.PI * 2); ctx.fill(); }
+      ctx.lineWidth = 8; ctx.strokeStyle = '#050505'; ctx.beginPath(); ctx.arc(2240, 720, 70, Math.PI, Math.PI * 2); ctx.stroke();
+      for (let i = 0; i < 5; i++) { const a = Math.PI + i * Math.PI / 4; ctx.beginPath(); ctx.moveTo(2240, 720); ctx.lineTo(2240 + Math.cos(a) * 70, 720 + Math.sin(a) * 70); ctx.lineWidth = 4; ctx.stroke(); }
     });
     layers.push({ canvas: fg, parallax: 1.3, kind: 'fg' });
     return { layers, lights };
@@ -154,6 +156,7 @@ export default {
     G.date(null, '4:31');
     await G.walk(1620);
     await G.think('Desde el desolladero llega un olor espeso a cal, a sangre de caballo y a vapor.');
+    G.objective('Hablar con Brennan y con la niña de las cajas.');
   },
 
   hotspots: [
@@ -205,6 +208,7 @@ export default {
           await G.say('Wren', 'Me llamo Wren. Busco cosas en el fango y las vendo. Esta noche he encontrado algo, pero las cosas cuestan.');
           w.talking = false;
           await G.think('Pide un penique. No se va a acercar a mí.');
+          G.objective('Darle un penique a Wren sin acercarse demasiado.');
           return;
         }
         if (G.flag('wren_paid')) {
@@ -245,6 +249,7 @@ export default {
         await w.walkTo(1474);
         w.facing = -1;
         await G.think('Ha dejado algo en el poste a cambio.');
+        G.objective('Recoger lo que Wren ha dejado en el poste.');
         return true;
       },
     },

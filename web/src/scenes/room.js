@@ -15,6 +15,7 @@ export default {
   spawn: 760,
   playerH: 252,
   surface: 'wood',
+  indoor: true,
   ambient: [0.05, 0.05, 0.06],
   fog: { density: 0.18, amount: 0.25, color: [0.3, 0.32, 0.34], speed: 3, ground: 0.2 },
   rain: 0,
@@ -72,7 +73,6 @@ export default {
     const fg = R.paintLayer(WIDTH * 1.2, (ctx) => {
       ctx.fillStyle = '#050403';
       ctx.fillRect(0, 0, 70, 720);
-      ctx.beginPath(); ctx.moveTo(1500, 720); ctx.lineTo(1560, 560); ctx.lineTo(1800, 560); ctx.lineTo(1800, 720); ctx.fill(); // bedpost/armchair silhouette
     });
     return { layers: [{ canvas: near, parallax: 1, kind: 'near' }, { canvas: fg, parallax: 1.2, kind: 'fg' }], lights };
   },
@@ -214,6 +214,7 @@ export default {
           G.player.pose = null;
           G.clue('estuche');
           G.sanity(-4);
+          if (G.flag('paper_read')) G.objective('Salir.');
           return;
         }
         await G.think('Las sábanas están revueltas y hay barro en el borde del colchón.');

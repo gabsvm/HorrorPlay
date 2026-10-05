@@ -65,7 +65,9 @@ export default {
     layers.push({ canvas: near, parallax: 1, kind: 'near' });
     const fg = R.paintLayer(WIDTH * 1.3, (ctx) => {
       ctx.fillStyle = '#060708';
-      ctx.fillRect(300, 0, 46, 720);
+      // a bollard and hanging sign bracket at the left edge, a cart on the right
+      ctx.fillRect(120, 610, 34, 110); ctx.fillRect(112, 600, 50, 14);
+      ctx.fillRect(0, 70, 150, 8); ctx.fillRect(140, 70, 6, 60); ctx.fillRect(110, 128, 70, 46);
       A.cart(ctx, 2600, 760);
       ctx.fillRect(3100, 0, 70, 720);
     });
@@ -102,6 +104,7 @@ export default {
     await G.say('Pike', 'Mary Ann Nichols. La llamaban Polly. Cuarenta y tres años. Ya se la han llevado al depósito de Old Montague Street.');
     await G.say('Pike', 'La encontró un carretero a las tres cuarenta, justo delante del portón del establo. Neil llegó un minuto después, haciendo la ronda.');
     await G.think('Tengo que hablar con todos antes de que se despierte la calle, que luego la gente habla de más.');
+    G.objective('Hablar con Pike, con Neil y con el chico. Examinar la calle.');
   },
 
   hotspots: [
@@ -139,6 +142,7 @@ export default {
           await G.think('Doce minutos desde Thrawl Street. Debí de venir corriendo.');
         } else if (c === 'lead') {
           G.flag('knackers_lead', true);
+          G.objective('Ir al desolladero de Winthrop Street, hacia el oeste.');
           await G.say('Pike', 'El desolladero de Barber, en Winthrop Street, ahí detrás. Matan caballos toda la noche.');
           await G.say('Pike', 'Hombres con cuchillos y delantal de cuero, a cien yardas de aquí. Neil dice que no vieron nada.');
           pike.talking = false;

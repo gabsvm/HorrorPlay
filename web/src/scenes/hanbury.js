@@ -14,7 +14,7 @@ export default {
   walk: [180, 1860],
   spawn: 260,
   lantern: false,
-  ambient: [0.15, 0.17, 0.2],
+  ambient: [0.11, 0.125, 0.15],
   fog: { density: 0.5, amount: 0.45, color: [0.55, 0.6, 0.64], speed: 6, ground: 0.6 },
   rain: 0.08,
   beds: { rain: 0.15, wind: 0.3, crowd: 0.25 },
@@ -37,6 +37,7 @@ export default {
       // the passage to the street on the far left
       ctx.fillStyle = '#060606'; ctx.fillRect(40, GROUND - 240, 110, 230);
       // the fence, about five feet high, between this yard and No. 27
+      ctx.fillStyle = '#121110'; ctx.fillRect(690, GROUND - 160, 870, 160);
       for (let x = 690; x < 1560; x += 22) {
         ctx.fillStyle = shade(P.wood, 0.7 + ((x / 22) % 4) * 0.06);
         ctx.fillRect(x, GROUND - 150 - (x % 3) * 3, 20, 150 + (x % 3) * 3);
@@ -105,6 +106,7 @@ export default {
     await G.say('Pike', 'Annie Chapman. Cuarenta y siete años. Vendía flores y ganchillo cuando estaba sana. Ya no lo estaba.');
     await G.say('Pike', 'La encontró un vecino a las seis menos cuarto, entre los escalones y la valla. Ya se la han llevado.');
     await G.narrate('Pike escribe la hora en la libreta.');
+    G.objective('Examinar el patio y hablar con Pike, con el médico y con la casera.');
   },
 
   hotspots: [
@@ -153,6 +155,7 @@ export default {
           }
           await G.say('Greaves', '¿Has vuelto al láudano? No se te ocurra mezclarlo con ginebra.');
           G.clue('greaves_sabe');
+          if (G.hasClue('delantal')) G.objective('Salir por el pasillo a Hanbury Street.');
           g.talking = false;
           await G.think('Nunca le he contado a nadie lo del láudano. ¿Cómo lo sabe?');
           G.sanity(-3);
@@ -184,6 +187,7 @@ export default {
         G.player.pose = 'kneel';
         await G.think('Un delantal de cuero, empapado, tirado junto al grifo.');
         G.clue('delantal');
+        if (G.flag('greaves_met')) G.objective('Salir por el pasillo a Hanbury Street.');
         G.player.pose = null;
         await G.think('Los periódicos llevan una semana hablando de un tal "Leather Apron". Ahora tendrán su delantal.');
       },

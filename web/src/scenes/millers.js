@@ -46,7 +46,7 @@ export default {
     lights.push({ id: 'court', x: 1065, y: GROUND - 120, r: 160, color: P.candle, intensity: 0.0, flicker: 0.3, halo: 20, haloK: 0 });
     layers.push({ canvas: near, parallax: 1, kind: 'near' });
     const fg = R.paintLayer(WIDTH * 1.3, (ctx) => {
-      ctx.fillStyle = '#040405'; ctx.fillRect(200, 0, 50, 720); ctx.fillRect(2200, 0, 200, 720);
+      ctx.fillStyle = '#040405'; ctx.fillRect(200, 630, 40, 90); ctx.fillRect(192, 622, 56, 12); ctx.fillRect(2200, 0, 200, 720);
     });
     layers.push({ canvas: fg, parallax: 1.3, kind: 'fg' });
     return { layers, lights };

@@ -64,7 +64,10 @@ export class Actor {
   }
 
   light() {
-    if (!this.lantern || !this.lanternOn) return null;
+    if (!this.lantern || !this.lanternOn) {
+      // the protagonist always keeps a faint fill so he never vanishes in the dark
+      return this.isPlayer ? { x: this.x, y: this.y - this.h * 0.55, r: this.h * 1.3, color: [0.55, 0.6, 0.7], intensity: 0.16, halo: 0, reflect: false } : null;
+    }
     const s = this.h / 200;
     return {
       x: this.x + this.facing * 22 * s, y: this.y - 92 * s, r: 430, color: P.lantern, intensity: 0.85, flicker: 0.04,
@@ -72,7 +75,85 @@ export class Actor {
     };
   }
 
-  draw(ctx, t) {
+  // Draw through a small offscreen buffer so the figure can receive a rim light from the
+  // nearest lamp and a little occlusion at the feet, which gives the silhouettes volume.
+  draw(ctx, t, lights = []) {
+    const m = ctx.getTransform();
+    const rs = m.a;
+    const W = Math.ceil(this.h * 1.6), Hh = Math.ceil(this.h * 1.35);
+    if (!this._buf || this._bufRs !== rs || this._bufH !== this.h) {
+      this._buf = document.createElement('canvas');
+      this._buf.width = Math.ceil(W * rs); this._buf.height = Math.ceil(Hh * rs);
+      this._bufRs = rs; this._bufH = this.h;
+    }
+    const b = this._buf, bc = b.getContext('2d');
+    bc.setTransform(1, 0, 0, 1, 0, 0);
+    bc.clearRect(0, 0, b.width, b.height);
+    bc.setTransform(rs, 0, 0, rs, 0, 0);
+    const ox = W / 2, oy = Hh - this.h * 0.1;
+    bc.translate(ox - this.x, oy - this.y);
+    this.drawFigure(bc, t, true);
+    bc.setTransform(rs, 0, 0, rs, 0, 0);
+    bc.globalCompositeOperation = 'source-atop';
+    // rim light from the strongest nearby light
+    let best = null, bestK = 0;
+    for (const L of lights) {
+      if (L.off || L.cone) continue;
+      const dx = L.x - this.x, dy = L.y - (this.y - this.h * 0.6);
+      const d = Math.hypot(dx, dy);
+      const k = (L.intensity ?? 1) * Math.max(0, 1 - d / (L.r * 1.1));
+      if (k > bestK) { bestK = k; best = { dx, dy, c: L.color }; }
+    }
+    if (best && bestK > 0.04) {
+      const side = Math.sign(best.dx) || 1;
+      const g = bc.createLinearGradient(ox + side * W * 0.18, 0, ox - side * W * 0.02, 0);
+      const c = best.c;
+      g.addColorStop(0, `rgba(${c[0] * 255 | 0},${c[1] * 255 | 0},${c[2] * 255 | 0},${Math.min(0.55, bestK * 0.9)})`);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      bc.fillStyle = g;
+      bc.fillRect(0, 0, W, Hh);
+    }
+    // occlusion toward the feet, cold top light on hat and shoulders
+    const g2 = bc.createLinearGradient(0, oy - this.h, 0, oy);
+    g2.addColorStop(0, 'rgba(160,180,200,0.10)'); g2.addColorStop(0.55, 'rgba(0,0,0,0)'); g2.addColorStop(1, 'rgba(0,0,0,0.45)');
+    bc.fillStyle = g2; bc.fillRect(0, 0, W, Hh);
+    bc.globalCompositeOperation = 'source-over';
+    // contact shadow straight into the scene, then the figure
+    this.drawShadow(ctx);
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.drawImage(b, this.x - ox, this.y - oy, W, Hh);
+    ctx.restore();
+  }
+
+  drawShadow(ctx) {
+    const s = this.h / 200;
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    const g = ctx.createRadialGradient(this.x, this.y, 2, this.x, this.y, 44 * s * this.build);
+    g.addColorStop(0, 'rgba(0,0,0,0.55)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.translate(this.x, this.y); ctx.scale(1, 0.18); ctx.translate(-this.x, -this.y);
+    ctx.fillRect(this.x - 50 * s, this.y - 50 * s, 100 * s, 100 * s);
+    ctx.restore();
+  }
+
+  // Breath vapour in the cold, drawn into the fog layer so it is lit like fog.
+  breath(ctx, t) {
+    if (!this.visible || this.noBreath) return;
+    const s = this.h / 200;
+    const period = this.moving ? 1.6 : 3.4;
+    const k = ((((t + this.x * 0.013) % period) + period) % period) / period;
+    if (k > 0.45) return;
+    const p = k / 0.45;
+    const mx = this.x + this.facing * (20 + p * 26) * s, my = this.y - (178 - p * 10) * s - (this.pose === 'kneel' ? -38 * s : 0) - (this.pose === 'sit' ? -44 * s : 0);
+    const g = ctx.createRadialGradient(mx, my, 1, mx, my, (6 + p * 16) * s);
+    g.addColorStop(0, `rgba(255,255,255,${0.5 * (1 - p)})`); g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(mx - 30 * s, my - 30 * s, 60 * s, 60 * s);
+  }
+
+  drawFigure(ctx, t, noShadow = false) {
     const s = this.h / 200;
     const f = this.facing;
     const sw = Math.sin(this.phase);
@@ -81,13 +162,7 @@ export class Actor {
     const breathe = Math.sin(t * 1.8 + this.x * 0.01) * 0.6 * s;
 
     ctx.save();
-    ctx.globalAlpha = this.alpha;
-    // contact shadow
-    const g = ctx.createRadialGradient(this.x, this.y, 2, this.x, this.y, 44 * s * this.build);
-    g.addColorStop(0, 'rgba(0,0,0,0.55)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g;
-    ctx.save(); ctx.translate(this.x, this.y); ctx.scale(1, 0.18); ctx.translate(-this.x, -this.y);
-    ctx.fillRect(this.x - 50 * s, this.y - 50 * s, 100 * s, 100 * s); ctx.restore();
+    if (!noShadow) this.drawShadow(ctx);
 
     ctx.translate(this.x, this.y);
     ctx.scale(f * s, s);
@@ -176,10 +251,16 @@ export class Actor {
     ctx.fillStyle = this.skin;
     ctx.beginPath(); ctx.ellipse(hx, hy, 14, 17, 0.08, 0, Math.PI * 2); ctx.fill();
     // nose + jaw profile on facing side
-    ctx.beginPath(); ctx.moveTo(hx + 12, hy - 4); ctx.lineTo(hx + 18, hy + 4); ctx.lineTo(hx + 12, hy + 6); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(hx + 12, hy - 3); ctx.lineTo(hx + 16, hy + 4); ctx.lineTo(hx + 12, hy + 5); ctx.fill();
     // hollow eye socket & shadow under brim
-    ctx.fillStyle = 'rgba(0,0,0,0.55)';
-    ctx.beginPath(); ctx.ellipse(hx + 6, hy - 2, 4, 3, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.beginPath(); ctx.ellipse(hx + 6, hy - 2, 3.5, 2.5, 0, 0, Math.PI * 2); ctx.fill();
+    // the brim's shadow falls across the eyes
+    if (this.hat !== 'none' && this.hat !== 'shawl') {
+      const g = ctx.createLinearGradient(0, hy - 16, 0, hy + 4);
+      g.addColorStop(0, 'rgba(0,0,0,0.75)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(hx + 1, hy - 4, 15, 13, 0, Math.PI, Math.PI * 2.0001); ctx.lineTo(hx + 18, hy + 4); ctx.lineTo(hx - 14, hy + 4); ctx.fill();
+    }
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.beginPath(); ctx.ellipse(hx - 4, hy + 2, 10, 15, 0, 0, Math.PI * 2); ctx.fill();
     if (this.hair) { ctx.fillStyle = this.hair; ctx.beginPath(); ctx.ellipse(hx - 6, hy - 6, 12, 14, -0.3, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(hx - 18, hy - 4, 10, 26); }
@@ -214,7 +295,7 @@ export class Actor {
     let a = ang;
     if (this.pose === 'reach' && !back) a = -1.2;
     if (this.pose === 'cower') a = back ? -2.2 : -2.5;
-    if (this.lantern && this.lanternOn && !back && this.pose !== 'reach') a = -0.22 + sw * 0.08;
+    if (this.lantern && this.lanternOn && !back && this.pose !== 'reach') a = -0.22 + Math.sin(this.phase) * 0.08;
     ctx.rotate(a);
     ctx.fillStyle = back ? shade(this.coat, 0.6) : shade(this.coat, 1.1);
     ctx.fillRect(-7, 0, 14, 44);

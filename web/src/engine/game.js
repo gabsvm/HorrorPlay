@@ -36,6 +36,7 @@ export class Game {
     this.madTarget = 0;
     this.layerCache = new Map();
     this.player = new Actor('Thomas', { h: 206, hat: 'bowler', coat: '#24262a', coatLen: 0.86, flare: 1.18, lantern: true, speed: 150, z: 10 });
+    this.player.isPlayer = true;
     this.player.onStep = () => audio.step(this.scene?.surface || 'stone');
     this.fitStage();
     window.addEventListener('resize', () => this.fitStage());
@@ -90,6 +91,14 @@ export class Game {
       }
     });
     document.getElementById('btn-notebook').addEventListener('click', () => this.toggleNotebook());
+    document.getElementById('btn-reveal').addEventListener('click', () => this.reveal());
+    window.addEventListener('keydown', (e) => { if (e.key === ' ' && !this.ui._advance && !this.running) { e.preventDefault(); this.reveal(); } });
+  }
+
+  reveal() {
+    if (this.inMenu || !this.scene) return;
+    this.revealT = 2.4;
+    audio.whisper(0.4, 0.03);
   }
 
   toggleNotebook() {
@@ -191,6 +200,7 @@ export class Game {
     if (d.profile && !this.state.profile.includes(d.profile)) this.state.profile.push(d.profile);
     if (d.flag) this.state.flags[d.flag] = true;
     if (d.denial) { this.state.sanity = Math.max(0, this.state.sanity - 6); this.ui.setSanity(this.state.sanity); audio.heartbeat(0.7); }
+    if (d.final && this.state.deductions.filter((x) => x.startsWith('f_')).length >= 3) this.state.objective = 'Ir al agua.';
     if (d.final) { audio.whisper(1.4, 0.1); this.state.sanity = Math.max(0, this.state.sanity - 4); this.ui.setSanity(this.state.sanity); }
     this.pendingDeduction = d;
     return d;
@@ -272,8 +282,13 @@ export class Game {
 
   // ------------------------------------------------------------ loop
   loop(now) {
+    requestAnimationFrame((t) => this.loop(t));
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
+    try { this.tick(now, dt); } catch (err) { if (!this._loopErr) console.error(err); this._loopErr = true; }
+  }
+
+  tick(now, dt) {
     if (this.scene) {
       for (const a of this.actors) a.update(dt);
       if (this.scene.update) this.scene.update(this.G, dt);
@@ -288,9 +303,9 @@ export class Game {
       this.r.fx.red = Math.max(0, this.r.fx.red - dt * 1.2);
       this.updateHover();
       if (this.clickMark) this.clickMark.t += dt;
+      if (this.revealT > 0) this.revealT -= dt;
       this.r.frame(this.scene, this.actors, dt, (ctx) => this.drawOverlay(ctx));
     }
-    requestAnimationFrame((t) => this.loop(t));
   }
 
   updateHover() {
@@ -308,6 +323,18 @@ export class Game {
   }
 
   drawOverlay(ctx) {
+    if (this.revealT > 0 && this.scene && !this.running) {
+      const a = Math.min(1, this.revealT) * 0.9;
+      for (const h of this.activeHotspots()) {
+        const [x, y, w, hh] = typeof h.rect === 'function' ? h.rect(this.G) : h.rect;
+        const cx = x + w / 2 - this.r.cam.x, cy = Math.min(690, y + hh / 2);
+        if (cx < -20 || cx > 1300) continue;
+        ctx.strokeStyle = h.cursor === 'exit' ? `rgba(160,200,220,${a})` : `rgba(255,214,140,${a})`;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(cx, cy, 9 + Math.sin(performance.now() / 200) * 1.5, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = ctx.strokeStyle; ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+    }
     // a soft lantern-coloured ripple where the player clicked to walk
     const m = this.clickMark;
     if (m && m.t < 0.6) {
@@ -424,6 +451,7 @@ export class Game {
         if (delta < 0) { audio.heartbeat(Math.min(1, -delta / 10)); }
       },
       chapter: (id) => game.startChapter(id),
+      objective: (text) => { game.state.objective = text; },
       save: () => game.save(),
       nameEntry: (prompt, forced) => game.ui.nameEntry(prompt, forced),
       Actor,

@@ -85,6 +85,9 @@ button { font-family: var(--sc); color: var(--ink); background: none; border: 0;
 .page .hint { font-style: italic; font-size: calc(17 * var(--u)); margin: 0 0 calc(10*var(--u)); color: #5a4a33; }
 .page ul { list-style: none; margin: 0 0 calc(22*var(--u)); padding: 0; }
 .page li { font-style: italic; font-size: calc(20 * var(--u)); line-height: 1.3; padding: calc(6*var(--u)) calc(8*var(--u)); margin-bottom: calc(4*var(--u)); border-left: 2px solid transparent; }
+#objective { font-family: var(--sc); font-size: calc(17*var(--u)); color: #6a2a1e; margin-bottom: calc(14*var(--u)); padding: calc(8*var(--u)) calc(10*var(--u)); border: 1px dashed rgba(106,42,30,0.4); }
+#objective:empty { display: none; }
+#objective::before { content: "Ahora: "; color: #5a4a33; }
 #clue-list li { cursor: pointer; }
 #clue-list li:hover { background: rgba(120, 90, 40, 0.12); }
 #clue-list li.sel { border-left-color: var(--blood); background: rgba(140, 30, 20, 0.1); }

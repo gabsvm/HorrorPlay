@@ -55,7 +55,7 @@ export default {
     for (let i = 0; i < 6; i++) lights.push({ x: 500 + i * 700, y: 300 + (i % 2) * 60, r: 220, color: P.candle, intensity: 0.35, flicker: 0.3, halo: 26, haloK: 0.4 });
     const fg = R.paintLayer(WIDTH * 1.35, (ctx) => {
       ctx.fillStyle = '#030303';
-      for (let x = 400; x < WIDTH * 1.35; x += 900) ctx.fillRect(x, 0, 40 + (x % 3) * 20, 720);
+      for (let x = 700; x < WIDTH * 1.35; x += 1300) { ctx.fillRect(x, 0, 18, 720); ctx.fillRect(x - 30, 300, 78, 8); }
     });
     return { layers: [{ canvas: sky, parallax: 0.1, kind: 'far' }, { canvas: near, parallax: 1, kind: 'near' }, { canvas: fg, parallax: 1.35, kind: 'fg' }], lights };
   },

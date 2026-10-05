@@ -14,6 +14,7 @@ export default {
   spawn: 230,
   playerH: 252,
   surface: 'wood',
+  indoor: true,
   lantern: false,
   ambient: [0.03, 0.035, 0.04],
   fog: { density: 0.2, amount: 0.3, color: [0.34, 0.4, 0.38], speed: 2, ground: 0.15 },
@@ -37,11 +38,11 @@ export default {
       const r = rng(5);
       for (let s = 0; s < 4; s++) for (let i = 0; i < 7; i++) {
         const jx = 310 + i * 41, jy = 170 + s * 100, jh = r.range(46, 78);
-        ctx.fillStyle = `rgba(${r.int(90, 140)},${r.int(110, 150)},${r.int(70, 100)},0.55)`;
+        ctx.fillStyle = `rgba(${r.int(70, 95)},${r.int(78, 96)},${r.int(48, 62)},0.75)`;
         ctx.fillRect(jx, jy - jh, 32, jh);
         ctx.fillStyle = 'rgba(40,30,20,0.85)'; ctx.beginPath(); ctx.ellipse(jx + 16, jy - jh * 0.45, 9, jh * 0.22, 0, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#2a2016'; ctx.fillRect(jx - 2, jy - jh - 6, 36, 7);
-        ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(jx + 4, jy - jh + 4, 3, jh - 8);
+        ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(jx + 4, jy - jh + 4, 3, jh - 8);
       }
       // anatomical chart
       ctx.fillStyle = '#c6b892'; ctx.fillRect(660, 140, 150, 230);
@@ -79,7 +80,6 @@ export default {
     lights.push({ id: 'gas', x: 260, y: 190, r: 360, color: P.gas, intensity: 0.45, flicker: 0.08, halo: 40 });
     const fg = R.paintLayer(WIDTH * 1.2, (ctx) => {
       ctx.fillStyle = '#040404'; ctx.fillRect(0, 0, 60, 720); ctx.fillRect(1700, 0, 100, 720);
-      ctx.beginPath(); ctx.moveTo(900, 720); ctx.lineTo(940, 640); ctx.lineTo(1100, 640); ctx.lineTo(1120, 720); ctx.fill();
     });
     return { layers: [{ canvas: near, parallax: 1, kind: 'near' }, { canvas: fg, parallax: 1.2, kind: 'fg' }], lights };
   },

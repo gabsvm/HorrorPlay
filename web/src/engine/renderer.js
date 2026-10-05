@@ -170,7 +170,8 @@ export class Renderer {
     cn.setTransform(rs, 0, 0, rs, -camX * rs, camY * rs);
     if (scene.drawNear) scene.drawNear(cn, t);
     const sorted = actors.filter((a) => a.visible).sort((a, b) => (a.z || 0) - (b.z || 0));
-    for (const a of sorted) a.draw(cn, t);
+    const prevLights = this.lightsFrame || scene.lights;
+    for (const a of sorted) a.draw(cn, t, prevLights);
     if (scene.drawNearOver) scene.drawNearOver(cn, t);
 
     // foreground
@@ -233,7 +234,9 @@ export class Renderer {
       g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, `rgba(255,255,255,${0.35 * (fog.ground ?? 1)})`); g.addColorStop(1, `rgba(255,255,255,${0.12 * (fog.ground ?? 1)})`);
       cfo.fillStyle = g; cfo.fillRect(0, gy, 640, 360 - gy);
     }
-    if (scene.drawFog) { cfo.setTransform(fs, 0, 0, fs, -camX * fs, 0); scene.drawFog(cfo, t); }
+    cfo.setTransform(fs, 0, 0, fs, -camX * fs, 0);
+    if (scene.drawFog) scene.drawFog(cfo, t);
+    if (!scene.indoor) for (const a of sorted) a.breath(cfo, t);
 
     // glow (halos, reflections, rain)
     const cgl = this.cGlow;

@@ -19,7 +19,7 @@ export const P = {
   water: '#1d2a2c',
   cloth: '#3a3530',
   coat: '#26282b',
-  skin: '#b59a82',
+  skin: '#9c8470',
   paper: '#c9b994',
 
   // Light (encoded at half strength: 0.5 == 1.0x, the shader doubles it)
