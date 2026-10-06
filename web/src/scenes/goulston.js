@@ -134,6 +134,14 @@ export default {
       },
     },
     {
+      id: 'poster', name: 'Cartel', rect: [1200, 466, 72, 92], walk: 1236,
+      act: async (G) => { await G.think('"Se ha perdido un terrier. Se gratificará." Media ciudad busca a un asesino y la otra media, a su perro.'); },
+    },
+    {
+      id: 'lamp', name: 'Farola', rect: [350, GROUND - 340, 60, 340], walk: 430,
+      act: async (G) => { await G.think('La única farola de la calle. El portal de los Wentworth queda fuera de su luz. Él lo sabía.'); },
+    },
+    {
       id: 'butcher', name: 'Carnicería', rect: [40, GROUND - 210, 440, 200], walk: 300,
       act: async (G) => { await G.think('Cerrada a cal y canto. En el escaparate cuelgan ganchos vacíos.'); },
     },

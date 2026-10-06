@@ -141,7 +141,14 @@ export default {
       ctx.fillStyle = '#4a3a30'; ctx.fillRect(x - 6 + Math.sin(t * 0.7 + k) * 2, y - 2, 12, 10);
       if (k === 0) { ctx.fillStyle = '#16120f'; ctx.beginPath(); ctx.ellipse(x, y - 4, 16, 18, 0, Math.PI, 0); ctx.fill(); }
     }
-    if (!this.G?.has('peine') && !this.G?.flag('peine_taken')) { ctx.fillStyle = '#5a4630'; ctx.fillRect(990, GROUND + 10, 22, 5); ctx.fillStyle = '#2a1e14'; for (let i = 0; i < 6; i++) ctx.fillRect(991 + i * 3.5, GROUND + 14, 2, 3); }
+    if (!this.G?.has('peine') && !this.G?.flag('peine_taken')) {
+      // a pocket comb of horn, two teeth broken, lying apart from her other things
+      ctx.fillStyle = '#7a5e3a'; ctx.fillRect(988, GROUND + 8, 28, 6);
+      ctx.fillStyle = '#a07a4a'; ctx.fillRect(988, GROUND + 8, 28, 2);
+      ctx.fillStyle = '#3a2a1a'; for (let i = 0; i < 9; i++) if (i !== 3 && i !== 4) ctx.fillRect(989 + i * 3, GROUND + 14, 2, 4);
+      const k = ((this.G?.game.r.time || 0) % 2.8) / 2.8;
+      if (k < 0.25) { ctx.fillStyle = `rgba(255,236,200,${Math.sin((k / 0.25) * Math.PI) * 0.9})`; ctx.fillRect(1001, GROUND + 2, 2, 12); ctx.fillRect(996, GROUND + 7, 12, 2); }
+    }
     // the leather apron by the tap
     leatherApron(ctx, 1612, GROUND + 2);
   },
@@ -206,7 +213,7 @@ export default {
           }
           await G.say('Greaves', '¿Has vuelto al láudano? No se te ocurra mezclarlo con ginebra.');
           G.clue('greaves_sabe');
-          if (G.hasClue('delantal')) G.objective('Salir por el pasillo a Hanbury Street.');
+          if (G.hasClue('delantal')) G.objective(G.flag('peine_taken') ? 'Salir por el pasillo a Hanbury Street.' : 'Mirar lo que hay junto a la valla, a los pies de Annie. Luego salir por el pasillo.');
           g.talking = false;
           await G.think('Nunca le he contado a nadie lo del láudano. ¿Cómo lo sabe?');
           G.sanity(-3);
@@ -238,13 +245,13 @@ export default {
         G.player.pose = 'kneel';
         await G.think('Un delantal de cuero, empapado, tirado junto al grifo.');
         G.clue('delantal');
-        if (G.flag('greaves_met')) G.objective('Salir por el pasillo a Hanbury Street.');
+        if (G.flag('greaves_met')) G.objective(G.flag('peine_taken') ? 'Salir por el pasillo a Hanbury Street.' : 'Mirar lo que hay junto a la valla, a los pies de Annie. Luego salir por el pasillo.');
         G.player.pose = null;
         await G.think('Los periódicos llevan una semana hablando de un tal "Leather Apron". Ahora tendrán su delantal.');
       },
     },
     {
-      id: 'comb', name: 'Algo junto a la valla', when: (G) => !G.flag('peine_taken'), rect: [970, GROUND - 2, 70, 30], walk: 1060, face: -1,
+      id: 'comb', name: 'Algo junto a la valla', verb: 'Recoger', when: (G) => !G.flag('peine_taken'), rect: [970, GROUND - 2, 70, 30], walk: 1060, face: -1,
       act: async (G) => {
         G.player.pose = 'kneel';
         await G.think('Un peine de bolsillo con dos púas rotas, apartado de las otras cosas. Se les ha pasado.');
@@ -259,6 +266,7 @@ export default {
         }
         G.flag('peine_taken', true);
         G.give('peine');
+        if (G.hasClue('delantal') && G.flag('greaves_met')) G.objective('Salir por el pasillo a Hanbury Street.');
       },
     },
     {
@@ -328,7 +336,8 @@ export default {
     {
       id: 'passage', name: 'Pasillo a Hanbury Street', cursor: 'exit', rect: [30, GROUND - 250, 130, 250], walk: 190, face: -1,
       act: async (G) => {
-        if (!G.hasClue('delantal') || !G.flag('greaves_met')) { await G.think('Todavía no he terminado aquí.'); return; }
+        if (!G.hasClue('delantal') || !G.flag('greaves_met')) { await G.think('Todavía no he terminado aquí. Me falta examinar el patio y hablar con el médico.'); return; }
+        if (!G.flag('peine_taken')) { await G.think('A los pies de Annie, junto a la valla, hay algo que los de Phillips no han recogido. Antes de irme quiero verlo.'); G.objective('Mirar lo que hay junto a la valla, a los pies de Annie.'); return; }
         G.flag('annie_taken', true);
         await G.game.chapterHooks.leaveHanbury(G);
       },

@@ -60,6 +60,7 @@ node web/tools/smoke.mjs
 
 ```bash
 node web/tools/walk.mjs
+node web/tools/walk.mjs alt
 ```
 
 ```bash
@@ -68,6 +69,7 @@ node web/tools/audio-smoke.mjs
 
 - `smoke.mjs` pinta todas las escenas y sus variantes y renderiza fotogramas contra un canvas/WebGL simulado y estricto (detecta radios negativos, coordenadas no finitas, errores de código).
 - `walk.mjs` arranca el juego real con un DOM simulado y juega la partida entera, del prólogo a los créditos.
+- `walk.mjs alt` juega mal a propósito (sale del cuarto sin mirar el escritorio, deduce donde no toca, intenta irse sin el peine) para comprobar que el juego no se queda bloqueado.
 - `audio-smoke.mjs` ejecuta todos los sonidos y la música contra un grafo de Web Audio simulado.
 
 Con el juego abierto en el navegador, en la consola:

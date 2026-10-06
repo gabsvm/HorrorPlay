@@ -8,6 +8,11 @@ import { drawCorpse, groundLantern } from './corpse.js';
 
 const WIDTH = 2300, GROUND = 628;
 
+// once Watkins has told what he found and what was seen, the trail leads east
+function mitreObjective(G) {
+  if (G.hasClue('trozo') && G.hasClue('testigo')) G.objective('Seguir el rastro del delantal hacia el este, por Goulston Street.');
+}
+
 export default {
   id: 'mitre',
   width: WIDTH,
@@ -137,11 +142,13 @@ export default {
           await G.say('Agente Watkins', 'Hago esta ronda cada quince minutos. A la una y media no había nada. A la una y cuarenta y cuatro estaba ahí, en la esquina.');
           await G.say('Agente Watkins', 'Le falta un trozo del delantal, cortado a cuchillo. Se lo llevó.');
           G.clue('trozo');
+          mitreObjective(G);
           await G.say('Agente Watkins', 'Y dicen que hace una hora han encontrado a otra en Berner Street, en el patio de un club. Dos en una noche, inspector.');
         } else if (c === 'witness') {
           await G.say('Agente Watkins', 'Tres hombres salían de un club de Duke\'s Place a la una y media. Uno vio a una mujer hablando con un hombre a la entrada de Church Passage.');
           await G.say('Agente Watkins', 'Abrigo oscuro y bombín. Dice que el hombre llevaba una linterna como las nuestras, de policía. Por eso no le dio importancia.');
           G.clue('testigo');
+          mitreObjective(G);
           w.talking = false;
           await G.think('Una linterna de policía. Puede ser uno de los nuestros.');
         } else if (c === 'name') {
@@ -200,6 +207,7 @@ export default {
             { id: 'delantal', x: 1160, y: 350, r: 80, name: 'El delantal', act: async (G) => {
               await G.think('Al delantal le falta una esquina, cortada a cuchillo, en línea recta. Con eso se limpió las manos.');
               G.clue('trozo');
+          mitreObjective(G);
             } },
             { id: 'pulso', x: 900, y: 158, r: 60, name: 'La muñeca', act: async (G) => {
               await G.think('Le cojo la muñeca para buscarle el pulso. Es la costumbre.');
@@ -227,11 +235,20 @@ export default {
     {
       id: 'morris', name: 'Morris, el vigilante', cursor: 'talk', rect: [1200, GROUND - 172, 80, 172], walk: 1140, face: 1,
       act: async (G) => {
+        if (!G.flag('mitre_badge')) { await G.think('Watkins no me deja pasar hasta que le enseñe la placa.'); return; }
         const m = G.actor('Morris'); m.talking = true;
         await G.say('Morris', 'Estaba barriendo ahí dentro, con la puerta entornada. No oí nada, señor. Nada de nada.');
         await G.say('Morris', 'Fui policía, ¿sabe? Pensé que ya había visto de todo.');
         m.talking = false;
       },
+    },
+    {
+      id: 'notice', name: 'Aviso de la Policía de la City', rect: [1686, 466, 104, 78], walk: 1740,
+      act: async (G) => { await G.think('Un aviso pidiendo testigos de la noche del 8 de septiembre. Ya lo han tapado a medias con otro: un spaniel perdido.'); },
+    },
+    {
+      id: 'lamp', name: 'Farola', rect: [1430, GROUND - 350, 60, 350], walk: 1400,
+      act: async (G) => { await G.think('La farola de la plaza da luz a todo menos a la esquina donde estaba ella. Watkins pasa por aquí cada quince minutos.'); },
     },
     {
       id: 'passage', name: 'Church Passage', cursor: 'exit', rect: [60, GROUND - 270, 130, 270], walk: 160, face: -1,

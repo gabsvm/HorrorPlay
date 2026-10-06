@@ -216,7 +216,19 @@ export default {
     }
   },
 
+  drawNear(ctx) {
+    const G = this.G;
+    if (!G || isMob(G) || !G.flag('wren_paid') || G.flag('bisturi_taken')) return;
+    // the scalpel Wren left on top of the post
+    ctx.fillStyle = '#1a120c'; ctx.fillRect(1598, GROUND - 72, 16, 3);
+    ctx.fillStyle = '#c8c8c0'; ctx.beginPath(); ctx.moveTo(1614, GROUND - 73); ctx.lineTo(1628, GROUND - 72); ctx.lineTo(1614, GROUND - 70); ctx.fill();
+  },
+
   drawGlow(ctx, t) {
+    if (this.G && !isMob(this.G) && this.G.flag('wren_paid') && !this.G.flag('bisturi_taken')) {
+      const k = (t % 2.4) / 2.4;
+      if (k < 0.35) { const a = Math.sin((k / 0.35) * Math.PI) * 0.9; ctx.fillStyle = `rgba(255,240,210,${a})`; ctx.fillRect(1619, GROUND - 80, 2, 16); ctx.fillRect(1612, GROUND - 73, 16, 2); }
+    }
     if (!this.G || isMob(this.G)) return;
     // sparks off the grindstone
     const b = this.G.actor('Brennan');
@@ -242,7 +254,10 @@ export default {
   async enter(G) {
     this.G = G;
     if (isMob(G)) { await G.game.chapterHooks.mobScene(G); return; }
-    if (G.flag('kn_intro')) return;
+    if (G.flag('kn_intro')) {
+      if (G.deduced('d_brennan') && G.deduced('d_bisturi') && !G.flag('c1_done')) { G.flag('c1_done', true); await G.game.chapterHooks.endC1(G); }
+      return;
+    }
     G.flag('kn_intro', true);
     G.date(null, '4:31');
     await G.walk(1620);
@@ -300,7 +315,7 @@ export default {
           await G.say('Wren', 'Me llamo Wren. Busco cosas en el fango y las vendo. Esta noche he encontrado algo, pero las cosas cuestan.');
           w.talking = false;
           await G.think('Pide un penique. No se va a acercar a mí.');
-          G.objective('Darle un penique a Wren sin acercarse demasiado.');
+          G.objective('Dejar un penique en el poste de piedra para Wren, sin acercarse (inventario).');
           return;
         }
         if (G.flag('wren_paid')) {

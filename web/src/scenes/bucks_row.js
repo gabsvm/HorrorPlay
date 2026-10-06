@@ -152,6 +152,13 @@ export default {
     G.objective('Examinar el cuerpo. Hablar con Pike, con Neil y con el chico.');
   },
 
+  async onDeduce(G) {
+    if (G.deduced('d_brennan') && G.deduced('d_bisturi') && !G.flag('c1_done')) {
+      G.objective('Volver al desolladero de Winthrop Street.');
+      await G.think('Brennan, o alguien del hospital. Tengo que volver al desolladero.');
+    }
+  },
+
   hotspots: [
     {
       id: 'pike', name: 'Sargento Pike', cursor: 'talk', rect: (G) => { const a = G.actor('Pike'); return [a.x - 40, GROUND - 181, 80, 181]; }, walk: (G) => G.actor('Pike').x + 90, face: -1,

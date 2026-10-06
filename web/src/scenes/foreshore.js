@@ -299,6 +299,13 @@ export default {
       },
     },
     {
+      id: 'jetty', name: 'El embarcadero', rect: [900, 400, 640, 120], walk: 1300,
+      act: async (G) => {
+        if (is1866(G)) { await G.think('Nat se sentaba en la punta del embarcadero con los pies colgando. Mamá le gritaba que se iba a caer.'); await G.think('No se cayó de ahí. Nadie sabe de dónde se cayó.'); }
+        else { await G.think('Los mismos pilotes, veintidós años más podridos. La escalera sigue bajando hasta el agua.'); await G.think('Desde aquí, el desagüe se ve como una boca abierta.'); }
+      },
+    },
+    {
       id: 'water', name: 'El río', rect: [1700, WATER_Y, 400, 720 - WATER_Y], walk: 1740, face: 1,
       act: async (G) => (is1866(G) ? G.game.chapterHooks.prologueWater(G) : G.game.chapterHooks.finaleWater(G)),
     },

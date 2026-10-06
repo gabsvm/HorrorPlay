@@ -173,8 +173,10 @@ export default {
       act: async (G) => {
         const p = phase(G);
         if (p === 'c1') {
-          if (!G.flag('lantern_taken') || !G.flag('coat_on') || !G.flag('boots_on')) {
-            await G.think('No puedo salir así. Me falta el abrigo, las botas y la linterna.');
+          const missing = [!G.flag('coat_on') && 'el abrigo', !G.flag('boots_on') && 'las botas', !G.flag('lantern_taken') && 'la linterna'].filter(Boolean);
+          if (missing.length) {
+            const list = missing.length === 1 ? missing[0] : `${missing.slice(0, -1).join(', ')} y ${missing[missing.length - 1]}`;
+            await G.think(`No puedo salir así. Me falta ${list}. Está todo junto a la puerta.`);
             return;
           }
           await G.game.chapterHooks.leaveRoomC1(G);
@@ -209,6 +211,9 @@ export default {
         G.flag('coat_on', true);
         G.audio.paper();
         await G.think('El abrigo todavía está húmedo en los puños.');
+        if (!G.has('placa')) G.give('placa');
+        if (!G.has('penique') && !G.flag('penique_given')) G.give('penique');
+        await G.think('En el bolsillo, la placa de la División H y un penique.');
       },
     },
     {
@@ -292,7 +297,7 @@ export default {
       },
     },
     {
-      id: 'laudano', name: 'Frasco de láudano', rect: [1380, GROUND - 134, 24, 36], walk: 1300,
+      id: 'laudano', name: 'Frasco de láudano', rect: [1372, GROUND - 146, 40, 50], walk: 1300,
       act: async (G) => {
         if (!G.hasClue('laudano')) { G.clue('laudano'); await G.think('Láudano, para dormir. Casi vacío. Lo compré el martes.'); }
         else if (!G.flag('drank')) {
