@@ -1,5 +1,6 @@
 // DOM user interface: dialogue, choices, documents, notebook, inventory, cards.
 import { audio } from './audio.js';
+import { pixelize } from '../art/pixel.js';
 
 const $ = (id) => document.getElementById(id);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -159,10 +160,16 @@ export class UI {
       const b = document.createElement('div');
       b.className = 'inv-item' + (selected === id ? ' selected' : '') + (newId === id ? ' new' : '');
       b.title = d.name;
-      const cv = document.createElement('canvas');
-      cv.width = 96; cv.height = 96;
-      d.icon(cv.getContext('2d'));
-      b.appendChild(cv);
+      if (!d._pix) {
+        const cv = document.createElement('canvas');
+        cv.width = 96; cv.height = 96;
+        d.icon(cv.getContext('2d'));
+        d._pix = pixelize(cv, 0.5, { dither: 6, edge: 0.55 });
+      }
+      const pix = document.createElement('canvas');
+      pix.width = 48; pix.height = 48;
+      pix.getContext('2d').drawImage(d._pix, 0, 0);
+      b.appendChild(pix);
       b.addEventListener('pointerdown', (e) => { e.stopPropagation(); audio.click(); onSelect(id); });
       b.addEventListener('pointerenter', () => this.toast(d.name, 1200));
       inv.appendChild(b);

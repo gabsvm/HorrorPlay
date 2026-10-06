@@ -133,23 +133,118 @@ class AudioEngine {
     return { gain };
   }
 
-  // ------------------------------------------------------------ music: sparse, detuned piano-like notes over the beds
+  // ------------------------------------------------------------ music
+  // Three scored moods, scheduled on the audio clock:
+  //   dread  : bowed strings moving through Am - F - Dm - E, with a glassy harmonic now and then
+  //   memory : an out-of-tune music box playing Nat's tune, slowing down like a spring running out
+  //   chase  : a pulse, ticking metal and string stabs a semitone apart
   playMusic(mood) {
     if (!this.ctx) return;
-    if (this.music) { clearInterval(this.music.timer); this.music = null; }
+    const ctx = this.ctx;
+    if (this.music) {
+      clearInterval(this.music.timer);
+      const old = this.music.bus;
+      old.gain.cancelScheduledValues(ctx.currentTime);
+      old.gain.setValueAtTime(old.gain.value, ctx.currentTime);
+      old.gain.linearRampToValueAtTime(0, ctx.currentTime + 2.5);
+      setTimeout(() => old.disconnect(), 3000);
+      this.music = null;
+    }
     if (!mood) return;
-    const scales = {
-      dread: [110, 116.5, 130.8, 146.8, 155.6, 174.6, 220, 233.1],
-      memory: [196, 220, 246.9, 261.6, 293.7, 329.6, 392],
-      chase: [98, 103.8, 146.8, 155.6],
-    };
-    const notes = scales[mood] || scales.dread;
-    const every = mood === 'chase' ? 420 : mood === 'memory' ? 1600 : 2600;
+    const bus = ctx.createGain();
+    bus.gain.setValueAtTime(0, ctx.currentTime);
+    bus.gain.linearRampToValueAtTime(1, ctx.currentTime + 3);
+    bus.connect(this.master);
+    const send = ctx.createGain(); send.gain.value = 0.8; bus.connect(send).connect(this.reverb);
+    const stepDur = mood === 'dread' ? 8 : mood === 'memory' ? 0.42 : 60 / 140 / 2;
+    let next = ctx.currentTime + 0.15, step = 0;
     const timer = setInterval(() => {
-      if (Math.random() < (mood === 'chase' ? 0.9 : 0.55)) this.piano(notes[Math.floor(Math.random() * notes.length)] * (Math.random() < 0.2 ? 2 : 1), mood === 'chase' ? 0.06 : 0.09);
-      if (mood !== 'memory' && Math.random() < 0.15) this.piano(notes[0] / 2, 0.08);
-    }, every);
-    this.music = { timer };
+      while (next < ctx.currentTime + 0.8) {
+        if (mood === 'dread') this.dreadStep(bus, step, next, stepDur);
+        else if (mood === 'memory') next += this.memoryStep(bus, step, next) - stepDur;
+        else this.chaseStep(bus, step, next);
+        next += stepDur; step++;
+      }
+    }, 120);
+    this.music = { timer, bus };
+  }
+
+  strings(bus, freqs, t, dur, vol = 0.028) {
+    const ctx = this.ctx;
+    for (const f of freqs) {
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(vol, t + dur * 0.35);
+      g.gain.linearRampToValueAtTime(vol * 0.8, t + dur * 0.8);
+      g.gain.linearRampToValueAtTime(0.0001, t + dur + 1.5);
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700 + f; lp.Q.value = 0.7;
+      g.connect(lp).connect(bus);
+      for (const d of [-0.004, 0.005]) {
+        const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f * (1 + d);
+        const vib = ctx.createOscillator(); vib.frequency.value = 4.6 + Math.random(); const vg = ctx.createGain(); vg.gain.value = f * 0.004;
+        vib.connect(vg).connect(o.frequency);
+        o.connect(g); o.start(t); o.stop(t + dur + 1.6); vib.start(t); vib.stop(t + dur + 1.6);
+      }
+    }
+  }
+
+  dreadStep(bus, step, t, dur) {
+    const chords = [
+      [110, 130.8, 164.8],   // A minor
+      [87.3, 130.8, 174.6],  // F
+      [73.4, 110, 174.6],    // D minor
+      [82.4, 123.5, 207.7],  // E major: the leading tone that never resolves
+    ];
+    const c = chords[step % chords.length];
+    this.strings(bus, c, t, dur);
+    this.strings(bus, [c[0] / 2], t, dur, 0.04);
+    if (step % 2 === 1) {
+      const ctx = this.ctx, f = c[2] * 4;
+      const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t + 2); g.gain.linearRampToValueAtTime(0.012, t + 4); g.gain.linearRampToValueAtTime(0.0001, t + 7.5);
+      const tr = ctx.createOscillator(); tr.frequency.value = 6; const tg = ctx.createGain(); tg.gain.value = 0.006; tr.connect(tg).connect(g.gain);
+      o.connect(g).connect(bus); o.start(t + 2); o.stop(t + 8); tr.start(t + 2); tr.stop(t + 8);
+    }
+  }
+
+  // returns the duration of this note so the box can slow down
+  memoryStep(bus, step, t) {
+    const N = { E4: 329.6, G4: 392, A4: 440, B4: 493.9, C5: 523.3, D5: 587.3, E5: 659.3, G5: 784, A5: 880 };
+    const tune = [
+      ['A4', 1], ['C5', 1], ['E5', 1], ['A5', 2], ['G5', 1], ['E5', 1], ['C5', 1], ['D5', 2],
+      ['E5', 1], ['D5', 1], ['C5', 1], ['B4', 1], ['C5', 1], ['A4', 2], ['E4', 1], ['G4', 1], ['A4', 3], [null, 4],
+    ];
+    const [n, beats] = tune[step % tune.length];
+    const loop = Math.floor(step / tune.length);
+    const beat = 0.42 * (1 + (step % tune.length) * 0.012 + loop * 0.05); // the spring winds down
+    if (n) {
+      const ctx = this.ctx, f = N[n] * (1 + (Math.random() - 0.5) * 0.01) * (1 - loop * 0.004);
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.07, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+      g.connect(bus);
+      [[1, 1], [3.0, 0.25], [5.4, 0.08]].forEach(([h, a]) => {
+        const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = f * h;
+        const og = ctx.createGain(); og.gain.value = a; o.connect(og).connect(g); o.start(t); o.stop(t + 1.7);
+      });
+      if (step % 4 === 0) this.strings(bus, [N[n] / 4], t, beat * 4, 0.012);
+    }
+    return beats * beat;
+  }
+
+  chaseStep(bus, step, t) {
+    const ctx = this.ctx;
+    const s = step % 16;
+    if (s === 0 || s === 3 || s === 6 || s === 10 || s === 12) {
+      const o = ctx.createOscillator(); o.frequency.setValueAtTime(120, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.2);
+      const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.35, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+      o.connect(g).connect(bus); o.start(t); o.stop(t + 0.32);
+    }
+    // ticking metal
+    const src = ctx.createBufferSource(); src.buffer = this.noise;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 7000;
+    const hg = ctx.createGain(); hg.gain.setValueAtTime(0.0001, t); hg.gain.exponentialRampToValueAtTime(s % 2 ? 0.025 : 0.05, t + 0.002); hg.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    src.connect(hp).connect(hg).connect(bus); src.start(t, Math.random()); src.stop(t + 0.06);
+    if (s === 0) this.strings(bus, [110, 116.5], t, 1.6, 0.03);
+    if (s === 8) this.strings(bus, [155.6, 164.8], t, 1.2, 0.026);
   }
 
   piano(freq, vol = 0.1) {

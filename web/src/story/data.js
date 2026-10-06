@@ -1,31 +1,43 @@
 // Items, clues and deductions. Deductions marked `denial` are Thomas refusing the obvious;
 // once the flag `awake` is set (chapter 4) the notebook strikes them and writes the truth.
 
+// Inventory icons are drawn at 96x96 and reduced to 48x48 pixel art by the UI.
+const TAU = Math.PI * 2;
 const icon = (draw) => (ctx) => {
   ctx.clearRect(0, 0, 96, 96);
   ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 6;
   draw(ctx);
   ctx.restore();
 };
+const shine = (c, x, y, w, h) => { c.fillStyle = 'rgba(255,250,235,0.55)'; c.fillRect(x, y, w, h); };
 
 export const ITEMS = {
   penique: {
     name: 'Penique',
     icon: icon((c) => {
-      const g = c.createRadialGradient(42, 40, 4, 48, 48, 26); g.addColorStop(0, '#d79a5a'); g.addColorStop(1, '#6a3a1c');
-      c.fillStyle = g; c.beginPath(); c.arc(48, 48, 24, 0, Math.PI * 2); c.fill();
-      c.strokeStyle = '#3a200e'; c.lineWidth = 2; c.beginPath(); c.arc(48, 48, 19, 0, Math.PI * 2); c.stroke();
-      c.fillStyle = '#3a200e'; c.font = 'italic 14px Georgia'; c.textAlign = 'center'; c.fillText('1d', 48, 53);
+      c.fillStyle = '#3a200e'; c.beginPath(); c.arc(50, 50, 30, 0, TAU); c.fill();
+      const g = c.createRadialGradient(40, 38, 4, 48, 48, 30); g.addColorStop(0, '#e8a868'); g.addColorStop(0.6, '#a8622c'); g.addColorStop(1, '#5a2e12');
+      c.fillStyle = g; c.beginPath(); c.arc(48, 48, 28, 0, TAU); c.fill();
+      c.strokeStyle = '#6a3a18'; c.lineWidth = 3; c.beginPath(); c.arc(48, 48, 22, 0, TAU); c.stroke();
+      // Victoria's worn profile
+      c.fillStyle = '#7a4420';
+      c.beginPath(); c.ellipse(50, 46, 9, 11, 0, 0, TAU); c.fill();
+      c.beginPath(); c.moveTo(58, 44); c.lineTo(63, 49); c.lineTo(57, 51); c.fill();
+      c.fillRect(40, 54, 18, 10); c.beginPath(); c.ellipse(44, 40, 6, 8, -0.4, 0, TAU); c.fill();
+      shine(c, 32, 34, 8, 4);
     }),
     examine: async (G) => G.think('Un penique con la cara de la reina gastada de tanto pasar de mano en mano.'),
   },
   bisturi: {
     name: 'Bisturí',
     icon: icon((c) => {
-      c.translate(48, 48); c.rotate(-0.7);
-      c.fillStyle = '#6b5a44'; c.fillRect(-34, -4, 40, 8);
-      c.fillStyle = '#c9d0d2'; c.beginPath(); c.moveTo(6, -4); c.lineTo(34, -1); c.lineTo(8, 5); c.closePath(); c.fill();
+      c.translate(48, 50); c.rotate(-0.72);
+      c.fillStyle = '#120d0a'; c.fillRect(-40, -7, 46, 14);
+      c.fillStyle = '#2a1e16'; c.fillRect(-38, -5, 42, 4);
+      c.fillStyle = '#b8a060'; c.fillRect(4, -6, 7, 12);
+      c.fillStyle = '#8a9498'; c.beginPath(); c.moveTo(11, -5); c.lineTo(38, -2); c.quadraticCurveTo(44, 2, 34, 5); c.lineTo(11, 5); c.closePath(); c.fill();
+      c.fillStyle = '#dfe6e8'; c.beginPath(); c.moveTo(11, -5); c.lineTo(38, -2); c.lineTo(11, -1); c.closePath(); c.fill();
+      c.fillStyle = 'rgba(120,20,16,0.7)'; c.fillRect(24, 1, 8, 3);
     }),
     examine: async (G) => {
       await G.think('Acero de Weiss, mango de ébano. Grabado en la virola: LONDON HOSPITAL — SALA DE DISECCIÓN.');
@@ -36,8 +48,12 @@ export const ITEMS = {
   peine: {
     name: 'Peine de Annie',
     icon: icon((c) => {
-      c.fillStyle = '#7a6046'; c.fillRect(18, 34, 60, 12);
-      for (let i = 0; i < 14; i++) c.fillRect(20 + i * 4.2, 46, 2.4, 18);
+      c.translate(48, 48); c.rotate(-0.15);
+      c.fillStyle = '#3a2618'; c.fillRect(-32, -14, 64, 16);
+      c.fillStyle = '#8a6a48'; c.fillRect(-30, -12, 60, 12);
+      shine(c, -26, -11, 40, 2);
+      c.fillStyle = '#7a5c3c';
+      for (let i = 0; i < 14; i++) { if (i === 4 || i === 9) { c.fillRect(-29 + i * 4.3, 0, 3, 6); continue; } c.fillRect(-29 + i * 4.3, 0, 3, 20); }
     }),
     examine: async (G) => {
       await G.think('Un peine de bolsillo con dos púas rotas. Estaba en el patio, colocado junto a sus otras cosas.');
@@ -47,9 +63,12 @@ export const ITEMS = {
   tinta: {
     name: 'Tinta roja',
     icon: icon((c) => {
-      c.fillStyle = '#20262a'; c.fillRect(30, 30, 36, 40); c.fillRect(38, 22, 20, 10);
-      c.fillStyle = '#8e1b16'; c.fillRect(32, 48, 32, 20);
-      c.fillStyle = 'rgba(255,255,255,0.2)'; c.fillRect(34, 32, 4, 34);
+      c.fillStyle = '#0e1214'; c.fillRect(26, 34, 44, 44); c.fillRect(36, 22, 24, 14);
+      c.fillStyle = '#20282c'; c.fillRect(28, 36, 40, 40); c.fillRect(38, 24, 20, 12);
+      c.fillStyle = '#8e1b16'; c.fillRect(30, 52, 36, 22);
+      c.fillStyle = '#c9bc98'; c.fillRect(34, 42, 28, 10); c.fillStyle = '#5a1a14'; c.fillRect(38, 45, 20, 2); c.fillRect(38, 48, 14, 2);
+      shine(c, 31, 38, 4, 34);
+      c.fillStyle = '#8e1b16'; c.fillRect(58, 76, 10, 6);
     }),
     examine: async (G) => {
       if (G.flag('tinta_vacia')) await G.think('Casi vacío. Lo compré hace una semana.');
@@ -59,22 +78,32 @@ export const ITEMS = {
   placa: {
     name: 'Placa de inspector',
     icon: icon((c) => {
-      c.fillStyle = '#2a2018'; c.fillRect(20, 26, 56, 44);
-      c.fillStyle = '#b08a4e'; c.beginPath(); c.arc(48, 46, 12, 0, Math.PI * 2); c.fill();
-      c.fillStyle = '#2a2018'; c.font = 'bold 10px Georgia'; c.textAlign = 'center'; c.fillText('H', 48, 50);
+      c.fillStyle = '#140e0a'; c.fillRect(16, 22, 64, 52);
+      c.fillStyle = '#2e2018'; c.fillRect(18, 24, 60, 48);
+      c.strokeStyle = '#5a4430'; c.lineWidth = 2; c.strokeRect(22, 28, 52, 40);
+      // the crowned star of the Metropolitan Police
+      c.fillStyle = '#c9a24a';
+      c.beginPath(); for (let i = 0; i < 16; i++) { const a = i / 16 * TAU - Math.PI / 2, r = i % 2 ? 9 : 15; c.lineTo(48 + Math.cos(a) * r, 50 + Math.sin(a) * r); } c.closePath(); c.fill();
+      c.fillRect(42, 30, 12, 5); c.fillRect(44, 27, 2, 3); c.fillRect(48, 26, 2, 4); c.fillRect(52, 27, 2, 3);
+      c.fillStyle = '#2e2018'; c.beginPath(); c.arc(48, 50, 6, 0, TAU); c.fill();
+      c.fillStyle = '#c9a24a'; c.font = 'bold 9px Georgia'; c.textAlign = 'center'; c.fillText('H', 48, 53);
+      shine(c, 40, 40, 5, 2);
     }),
     examine: async (G) => G.think('Policía Metropolitana, División H. Inspector T. Ashgrove. La foto está tan borrosa que podría ser cualquiera.'),
   },
   llave: {
     name: 'Llave de latón',
     icon: icon((c) => {
-      c.strokeStyle = '#b08a4e'; c.lineWidth = 6; c.beginPath(); c.arc(30, 48, 12, 0, Math.PI * 2); c.stroke();
-      c.fillStyle = '#b08a4e'; c.fillRect(40, 45, 38, 6); c.fillRect(66, 51, 5, 10); c.fillRect(74, 51, 4, 7);
+      c.translate(48, 48); c.rotate(-0.4);
+      c.strokeStyle = '#5a4018'; c.lineWidth = 9; c.beginPath(); c.arc(-20, 0, 13, 0, TAU); c.stroke();
+      c.strokeStyle = '#c9a24a'; c.lineWidth = 6; c.beginPath(); c.arc(-20, 0, 13, 0, TAU); c.stroke();
+      c.fillStyle = '#5a4018'; c.fillRect(-8, -4, 44, 9);
+      c.fillStyle = '#c9a24a'; c.fillRect(-8, -3, 44, 6); c.fillRect(24, 3, 6, 12); c.fillRect(32, 3, 5, 8);
+      shine(c, -4, -3, 26, 2);
     }),
     examine: async (G) => G.think('Una llave pequeña de latón. Estaba en el cajón de Greaves.'),
   },
 };
-
 export const CLUES = {
   // Chapter 1
   botas: { tag: 'Mi cuarto · 31 ago', text: 'Me desperté con las botas empapadas y cubiertas de barro negro. No recuerdo haber salido.' },

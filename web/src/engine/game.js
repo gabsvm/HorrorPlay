@@ -286,7 +286,7 @@ export class Game {
       for (const a of this.actors) a.update(dt);
       if (this.scene.update) this.scene.update(this.G, dt);
       if (this.scene.life) for (const l of this.scene.life) if (l.update) l.update(dt, this.G);
-      if (this.menuPan) this.camFocus = 900 + Math.sin(now / 9000) * 600;
+      if (this.menuPan) this.camFocus = 1500 + Math.sin(now / 12000) * 260;
       const target = this.camTarget();
       this.r.cam.x += (target - this.r.cam.x) * Math.min(1, dt * 3.2);
       this.r.cam.shake = Math.max(0, this.r.cam.shake - dt * 20);
@@ -446,6 +446,7 @@ export class Game {
       },
       chapter: (id) => game.startChapter(id),
       objective: (text) => { game.state.objective = text; },
+      cinema: (on) => { game.stage.classList.toggle('cinema', !!on); },
       save: () => game.save(),
       nameEntry: (prompt, forced) => game.ui.nameEntry(prompt, forced),
       Actor,

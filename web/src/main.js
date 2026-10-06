@@ -34,6 +34,7 @@ function begin(chapterId, snapshot) {
 
 function mainMenu() {
   game.inMenu = true;
+  game.stage.classList.remove('cinema');
   game.ui.showHud(false);
   game.ui.hideDialogue();
   const saved = Game.loadSave();
@@ -59,10 +60,11 @@ function chapterMenu() {
 
 async function menuBackdrop() {
   // the menu sits over a slow pan of Buck's Row in the rain
-  await game.goto('bucks_row', { x: 1300, fade: false, noEnter: true });
-  game.player.visible = false;
+  await game.goto('bucks_row', { x: 1600, fade: false, noEnter: true });
+  // key art: a lone figure under the gas lamp, his back to us, in the rain
+  Object.assign(game.player, { visible: true, facing: -1, lanternOn: false, pose: null, hat: 'bowler', collarUp: true, coat: '#23262b', h: 206 });
   game.actors = [game.player];
-  game.camFocus = 900;
+  game.camFocus = 1500;
   game.fadeTo(0.25, 2500);
   game.menuPan = true;
 }

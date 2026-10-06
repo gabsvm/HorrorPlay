@@ -28,6 +28,13 @@ button { font-family: var(--sc); color: var(--ink); background: none; border: 0;
 #rotate span { font-size: 16px; color: var(--ink-dim); font-style: italic; }
 @media (orientation: portrait) and (max-width: 900px) { #rotate { display: flex; } }
 
+/* Cinematic letterbox */
+.bar { position: absolute; left: 0; right: 0; height: calc(64 * var(--u)); background: #000; pointer-events: none; transition: transform 1.2s cubic-bezier(.6,0,.2,1); z-index: 0; }
+#bar-top { top: 0; transform: translateY(-100%); }
+#bar-bottom { bottom: 0; transform: translateY(100%); }
+#stage.cinema #bar-top, #stage.cinema #bar-bottom { transform: none; }
+#stage.cinema #hud { opacity: 0; transition: opacity .6s; }
+
 /* HUD */
 #hud { position: absolute; inset: 0; pointer-events: none; }
 #hud > * { pointer-events: auto; }
@@ -45,7 +52,7 @@ button { font-family: var(--sc); color: var(--ink); background: none; border: 0;
 /* Inventory */
 #inventory { position: absolute; left: 50%; bottom: calc(14 * var(--u)); transform: translateX(-50%); display: flex; gap: calc(10 * var(--u)); }
 .inv-item { width: calc(68 * var(--u)); height: calc(68 * var(--u)); border: 1px solid rgba(176,138,78,0.35); background: rgba(6,8,10,0.72); position: relative; cursor: pointer; transition: border-color .2s, transform .2s; }
-.inv-item canvas { width: 100%; height: 100%; display: block; }
+.inv-item canvas { width: 100%; height: 100%; display: block; image-rendering: crisp-edges; image-rendering: pixelated; }
 .inv-item:hover { border-color: var(--gold); transform: translateY(calc(-3 * var(--u))); }
 .inv-item.selected { border-color: #ffd88a; box-shadow: 0 0 calc(14 * var(--u)) rgba(255, 200, 120, 0.35); }
 .inv-item.new { animation: newitem 1.6s ease-out; }

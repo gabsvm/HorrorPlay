@@ -108,6 +108,7 @@ export function makeChapters() {
 
     async prologueWater(G) {
       if (!G.flag('boat')) { await G.think('El agua está quieta. Demasiado quieta para ser el Támesis.'); return; }
+      G.cinema(true);
       G.audio.setBeds({ river: 0.4, drone: 0.4 }, 3);
       G.mad(0.3);
       await G.voice('Thomas.');
@@ -129,6 +130,7 @@ export function makeChapters() {
       G.audio.playMusic(null);
       await G.wait(1500);
       await G.card('', 'El Huésped', 'Hospes (lat.): el que recibe y el que es recibido.', 5200);
+      G.cinema(false);
       await G.chapter('c1');
     },
 
@@ -201,6 +203,7 @@ export function makeChapters() {
       const s = G.scene;
       G.take('peine');
       G.flag('comb_on_table', true);
+      G.cinema(true);
       await G.walk(560);
       G.face(1);
       G.player.pose = 'sit';
@@ -247,6 +250,7 @@ export function makeChapters() {
       G.clue('alguien_detras');
       G.sanity(-10);
       G.flag('seance_done', true);
+      G.cinema(false);
       await G.think('Un truco. Alguien le habló de Nat. ¿Quién sabía lo de Nat?');
       G.objective('Salir a Fournier Street.');
     },
@@ -260,6 +264,7 @@ export function makeChapters() {
 
     async mobScene(G) {
       G.date('10 de septiembre de 1888', '21:30');
+      G.cinema(true);
       G.audio.setBeds({ crowd: 0.9, wind: 0.2, drone: 0.2 }, 1);
       await G.walk(1900);
       await G.say('Vecinos', '¡Leather Apron! ¡Es el matarife! ¡Es él!');
@@ -304,6 +309,7 @@ export function makeChapters() {
       await G.fade(1, 1200);
       await G.card('', '', 'Al día siguiente detuvieron a John Pizer, a quien el barrio llamaba "Leather Apron". Tenía coartada y lo soltaron.', 4600);
       await G.card('', '', 'Brennan no volvió al desolladero.', 3200);
+      G.cinema(false);
       await G.chapter('c3');
     },
 
@@ -431,6 +437,7 @@ export function makeChapters() {
       await G.think('T. A.');
       await G.think('Cualquiera. Hay cientos de...');
       G.audio.door();
+      G.cinema(true);
       const gr = G.addActor(new Actor('Greaves', { x: 120, y: G.scene.groundY, h: 214, hat: 'top', coat: '#1d1b1c', coatLen: 0.95, cane: true, beard: '#7a7a74', hair: '#8a8a84', facing: 1, flare: 1.05, tails: true, chain: true, waistcoat: '#3a2a20', buttons: 'double' }));
       G.face(-1);
       await gr.walkTo(G.player.x - 260);
@@ -471,6 +478,7 @@ export function makeChapters() {
       await G.card('', '9 de noviembre', 'Limehouse, 2:30 de la madrugada', 3400);
       G.flag('fs_1888', true);
       G.date('9 de noviembre de 1888', '2:30');
+      G.cinema(false);
       await G.goto('foreshore', { x: 440, facing: 1, fade: false });
       await G.fade(0, 2000);
       await hooks.finaleIntro(G);
@@ -496,6 +504,7 @@ export function makeChapters() {
     async finaleWater(G) {
       if (finals(G) < 3) { await G.think('El agua me llama, pero todavía no. Primero el cuaderno: tengo que saberlo con certeza.'); return; }
       G.flag('ditch_glow', true); G.flag('water_light', true);
+      G.cinema(true);
       G.audio.setBeds({ river: 0.5, drone: 0.7, heart: 0.5 }, 4);
       G.mad(0.45);
       await G.think('Ya lo sé. Lo sé desde Buck\'s Row.');
@@ -574,6 +583,7 @@ export function makeChapters() {
       await G.card('', '', 'Nadie volvió a ver al inspector Thomas Ashgrove.', 4600);
       await G.card('', '', 'El Black Ditch sigue corriendo bajo el East End.', 4600);
       await G.card('', 'El Huésped', 'Fin', 5200);
+      G.cinema(false);
       G.game.finish();
     },
   };
