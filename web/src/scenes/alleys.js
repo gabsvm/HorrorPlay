@@ -1,5 +1,6 @@
 // Chapter 3 — the chase. Thomas runs "after the killer" through Whitechapel's courts while the whistles close in on him.
 import * as A from '../art/paint.js';
+import { stairsDown } from '../art/props.js';
 import { facade } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
@@ -71,9 +72,10 @@ export default {
       // bracket lamps, few and far between
       for (const lx of [700, 1800, 2900, 3800]) { const l = A.lampPost(ctx, lx, GROUND, 330, { bracket: true }); lights.push({ x: l.x, y: l.y, r: 360, color: P.gas, intensity: 0.7, flicker: 0.15, halo: 70, shaft: true, shaftW: 90 }); }
       // end: steps down to the culvert
-      ctx.fillStyle = '#010202'; ctx.fillRect(4000, GROUND - 160, 200, 200);
-      for (let i = 0; i < 5; i++) { ctx.fillStyle = `rgba(70,70,64,${0.6 - i * 0.1})`; ctx.fillRect(4010 + i * 14, GROUND - 10 + i * 12, 140, 8); }
-      A.railing(ctx, 3990, GROUND - 70, 220, 60);
+      ctx.fillStyle = '#030404'; ctx.beginPath(); ctx.moveTo(4000, GROUND); ctx.lineTo(4000, GROUND - 120); ctx.arc(4100, GROUND - 120, 100, Math.PI, 0); ctx.lineTo(4200, GROUND); ctx.fill();
+      ctx.strokeStyle = '#4a463e'; ctx.lineWidth = 12; ctx.beginPath(); ctx.arc(4100, GROUND - 120, 106, Math.PI, 0); ctx.stroke();
+      stairsDown(ctx, 4010, GROUND + 2, 180, { steps: 7, depth: 80 });
+      A.railing(ctx, 3976, GROUND - 70, 34, 60); A.railing(ctx, 4190, GROUND - 70, 34, 60);   // railings either side of the steps
     });
     const fg = R.paintLayer(WIDTH * 1.35, (ctx) => {
       ctx.fillStyle = '#030303';

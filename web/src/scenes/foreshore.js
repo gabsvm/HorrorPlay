@@ -1,6 +1,7 @@
 // Limehouse foreshore at low tide, where the Black Ditch empties into the Thames.
 // Prologue (1866, dusk, Thomas as a boy) and climax (1888, night).
 import * as A from '../art/paint.js';
+import { profileStairs } from '../art/props.js';
 import { P, shade } from '../art/palette.js';
 import { rng } from '../art/noise.js';
 import { Drip, Crow, Ripples, Rat, Smoke } from '../engine/life.js';
@@ -95,6 +96,7 @@ export default {
   walk: [380, 1760],
   spawn: 520,
   surface: 'mud',
+  noFgDressing: true,
   variant: (G) => (is1866(G) ? '1866' : '1888'),
   get playerH() { return this.G && is1866(this.G) ? 138 : 206; },
   get lantern() { return !(this.G && is1866(this.G)); },
@@ -180,9 +182,7 @@ export default {
       ctx.beginPath(); ctx.moveTo(1780, GROUND - 6); ctx.quadraticCurveTo(1900, GROUND + 20, WIDTH, GROUND + 10); ctx.lineTo(WIDTH, 720); ctx.lineTo(1700, 720); ctx.fill();
       ctx.fillStyle = dusk ? 'rgba(230,160,100,0.2)' : 'rgba(90,160,140,0.15)'; ctx.fillRect(1800, GROUND + 4, 260, 2); ctx.fillRect(1840, GROUND + 30, 200, 2);
       // stone stair up to Narrow Street, with a side wall and iron handrail
-      ctx.fillStyle = '#2a2724'; ctx.beginPath(); ctx.moveTo(10, GROUND); ctx.lineTo(10, GROUND - 290); ctx.lineTo(160, GROUND); ctx.fill();
-      for (let i = 0; i < 9; i++) { ctx.fillStyle = shade(P.stone, 0.55 + i * 0.04); ctx.fillRect(10 + i * 15, GROUND - 22 - i * 32, 126 - i * 6, 14); ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(10 + i * 15, GROUND - 10 - i * 32, 126 - i * 6, 3); }
-      ctx.strokeStyle = P.iron; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(150, GROUND - 40); ctx.lineTo(20, GROUND - 330); ctx.stroke();
+      profileStairs(ctx, 168, GROUND, 4, GROUND - 290, { count: 10, stone: '#6a655a', wall: '#2a2724', seed: 31 });
     });
     layers.push({ canvas: near, parallax: 1, kind: 'near' });
     if (dusk) lights.push({ x: 1400, y: 300, r: 1400, color: [0.5, 0.32, 0.2], intensity: 0.5, halo: 0, reflect: false });

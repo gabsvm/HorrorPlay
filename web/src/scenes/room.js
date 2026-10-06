@@ -1,5 +1,6 @@
 // Thomas's rented room, Thrawl Street. Revisited in chapters 1 and 3; what is in it changes.
 import * as A from '../art/paint.js';
+import { coatOnPeg, bowlerOnPeg, bullseyeLantern, bootsPair, newspaper, bottle, dissectionCase } from '../art/props.js';
 import { wallpaper, wainscot, floorboards, rug, interiorWindow, bed, desk, chair, bookcase } from '../art/build.js';
 import { Moths } from '../engine/life.js';
 import { P } from '../art/palette.js';
@@ -41,6 +42,7 @@ export default {
       // door with a bolt and a calendar beside it
       A.door(ctx, 70, GROUND - 270, 120, 270, { color: '#2c2016', steps: 0, fanlight: false, scraper: false, knocker: false });
       ctx.fillStyle = '#b08a4e'; ctx.beginPath(); ctx.arc(170, GROUND - 130, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#d8a860'; ctx.fillRect(80, GROUND - 3, 100, 3);                 // light from the landing under the door
       ctx.fillStyle = P.iron; ctx.fillRect(150, GROUND - 200, 30, 6); ctx.fillRect(176, GROUND - 204, 6, 14);
       ctx.fillStyle = '#c9bc98'; ctx.fillRect(210, GROUND - 470, 54, 72); ctx.fillStyle = '#7a1a14'; ctx.fillRect(210, GROUND - 470, 54, 16);
       ctx.font = '600 11px Georgia, serif'; ctx.fillStyle = '#e6dcc0'; ctx.textAlign = 'center'; ctx.fillText('1888', 237, GROUND - 458);
@@ -94,6 +96,7 @@ export default {
       for (const [px, py] of [[1240, GROUND - 480], [1262, GROUND - 470], [1288, GROUND - 486], [1300, GROUND - 462], [1252, GROUND - 452]]) { ctx.fillStyle = '#a3170f'; ctx.fillRect(px, py, 5, 5); }
       A.stain(ctx, 1206, GROUND - 520, 130, 96, { seed: 4, alpha: 0.4 });
     });
+    lights.push({ id: 'landing', x: 150, y: GROUND - 4, r: 380, color: [0.95, 0.7, 0.42], intensity: 0.6, flicker: 0.05, halo: 18, haloK: 0.5, reflect: false });
     lights.push({ id: 'candle', x: 1300, y: GROUND - 150, r: 560, color: P.candle, intensity: 1.0, flicker: 0.22, halo: 70 });
     lights.push({ id: 'street', x: 1070, y: 260, r: 120, color: P.gas, intensity: 0.4, halo: 30, haloK: 0.4, reflect: false });
     const fg = R.paintLayer(WIDTH * 1.2, (ctx) => {
@@ -128,8 +131,7 @@ export default {
     ctx.fillStyle = '#5a4a30'; ctx.fillRect(1288, GROUND - 104, 25, 4);
     ctx.fillStyle = '#ffd38a'; ctx.beginPath(); ctx.ellipse(1300.5, GROUND - 143 + Math.sin(t * 9) * 0.8, 3.2, 7.5, Math.sin(t * 5) * 0.08, 0, Math.PI * 2); ctx.fill();
     // laudanum bottle with a paper label
-    ctx.fillStyle = '#2e1c10'; ctx.fillRect(1386, GROUND - 124, 12, 24); ctx.fillRect(1389, GROUND - 132, 6, 8);
-    ctx.fillStyle = '#c9bc98'; ctx.fillRect(1387, GROUND - 116, 10, 8); ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(1387, GROUND - 122, 2, 18);
+    bottle(ctx, 1392, GROUND - 100);
     // clock hands and pendulum
     const hands = G?.state.clockHands || [3, 40];
     const cx = 1396, cy = GROUND - 440;
@@ -141,27 +143,12 @@ export default {
     ctx.strokeStyle = '#8a7444'; ctx.beginPath(); ctx.moveTo(cx, cy + 24); ctx.lineTo(cx + sw, cy + 52); ctx.stroke();
     ctx.fillStyle = '#9a8350'; ctx.beginPath(); ctx.arc(cx + sw, cy + 54, 5, 0, Math.PI * 2); ctx.fill();
     // coat, bowler and lantern on the hooks
-    if (!G?.flag('coat_on')) {
-      ctx.fillStyle = '#23262b';
-      ctx.beginPath(); ctx.moveTo(250, GROUND - 312); ctx.lineTo(278, GROUND - 312); ctx.lineTo(296, GROUND - 160); ctx.lineTo(232, GROUND - 160); ctx.fill();
-      ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(262, GROUND - 300, 4, 140);
-      ctx.fillStyle = '#111214'; ctx.beginPath(); ctx.ellipse(318, GROUND - 316, 18, 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(318, GROUND - 320, 12, Math.PI, 0); ctx.fill();
-    }
-    if (!G?.flag('lantern_taken')) {
-      ctx.fillStyle = '#2a2420'; ctx.fillRect(306, GROUND - 300, 22, 28); ctx.fillRect(310, GROUND - 306, 14, 6);
-      ctx.fillStyle = '#4a3a20'; ctx.beginPath(); ctx.arc(328, GROUND - 286, 6, 0, Math.PI * 2); ctx.fill();
-    }
+    if (!G?.flag('coat_on')) { coatOnPeg(ctx, 260, GROUND - 314); bowlerOnPeg(ctx, 318, GROUND - 312); }
+    if (!G?.flag('lantern_taken')) { ctx.fillStyle = '#6b5a3a'; ctx.fillRect(330, GROUND - 300, 4, 8); bullseyeLantern(ctx, 332, GROUND - 288); }
     // boots by the door, wet and black, leaking a puddle of river mud
-    if (p === 'c1' && !G?.flag('boots_on')) {
-      ctx.fillStyle = 'rgba(20,24,20,0.85)'; ctx.beginPath(); ctx.ellipse(240, GROUND + 6, 54, 7, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#0e0d0c';
-      ctx.fillRect(210, GROUND - 30, 22, 30); ctx.fillRect(210, GROUND - 6, 34, 8);
-      ctx.fillRect(244, GROUND - 28, 22, 28); ctx.fillRect(244, GROUND - 4, 34, 8);
-      ctx.fillStyle = '#1e1a14'; ctx.fillRect(210, GROUND - 10, 34, 4); ctx.fillRect(244, GROUND - 8, 34, 4);
-      ctx.fillStyle = 'rgba(160,170,160,0.25)'; ctx.fillRect(214, GROUND - 26, 3, 14);
-    }
-    if (p === 'c3b' && !G?.flag('paper_read')) { ctx.fillStyle = '#b8ab8a'; ctx.save(); ctx.translate(200, GROUND + 18); ctx.rotate(-0.12); ctx.fillRect(0, 0, 70, 16); ctx.fillStyle = 'rgba(30,20,10,0.6)'; ctx.fillRect(4, 3, 40, 2); ctx.fillRect(4, 8, 56, 1.5); ctx.restore(); }
-    if (p === 'c3b') { ctx.fillStyle = '#2a1a12'; ctx.fillRect(820, GROUND - 22, 80, 20); ctx.fillStyle = '#7d6b48'; ctx.fillRect(856, GROUND - 16, 8, 4); }
+    if (p === 'c1' && !G?.flag('boots_on')) bootsPair(ctx, 212, GROUND);
+    if (p === 'c3b' && !G?.flag('paper_read')) newspaper(ctx, 196, GROUND + 14, -0.1);
+    if (p === 'c3b') dissectionCase(ctx, 816, GROUND - 2);
     // by chapter three the face of the older boy in the photograph has been scratched away
     if (p !== 'c1') { ctx.fillStyle = '#c9c0ae'; ctx.fillRect(709, GROUND - 377, 14, 16); ctx.strokeStyle = '#7a7060'; ctx.lineWidth = 1.5; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(708 + i * 4, GROUND - 378); ctx.lineTo(712 + i * 3, GROUND - 361); ctx.stroke(); } }
   },
@@ -217,7 +204,7 @@ export default {
       },
     },
     {
-      id: 'coat', name: 'Abrigo y bombín', when: (G) => !G.flag('coat_on'), rect: [230, GROUND - 340, 75, 190], walk: 300, face: -1,
+      id: 'coat', name: 'Abrigo y bombín', when: (G) => !G.flag('coat_on'), rect: [220, GROUND - 340, 130, 190], walk: 300, face: -1,
       act: async (G) => {
         G.flag('coat_on', true);
         G.audio.paper();
@@ -225,7 +212,7 @@ export default {
       },
     },
     {
-      id: 'lantern', name: 'Linterna de ojo de buey', when: (G) => !G.flag('lantern_taken'), rect: [300, GROUND - 306, 40, 40], walk: 320, face: -1,
+      id: 'lantern', name: 'Linterna de ojo de buey', when: (G) => !G.flag('lantern_taken'), rect: [312, GROUND - 304, 46, 54], walk: 320, face: -1,
       act: async (G) => {
         G.flag('lantern_taken', true);
         G.audio.match();

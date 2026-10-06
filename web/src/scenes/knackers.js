@@ -1,5 +1,6 @@
 // Winthrop Street: Barber's horse-slaughter yard by the railway. Chapter 1 (investigation) and chapter 2 (the mob).
 import * as A from '../art/paint.js';
+import { stonePost, cattleTrough } from '../art/props.js';
 import { nightBackdrop, facade } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
@@ -126,7 +127,7 @@ export default {
       ctx.fillStyle = '#5c574d'; ctx.fillRect(1376, 424, 308, 10);
       A.crate(ctx, 1440, GROUND - 74, 70, 62, 3, { stencil: 'BARBER' });
       A.crate(ctx, 1500, GROUND - 60, 56, 48, 4);
-      A.bollard(ctx, 1611, GROUND);
+      stonePost(ctx, 1611, GROUND);
       // backs of terraces
       const tl = facade(ctx, { x: 1680, w: 520, top: 116, base: GROUND - 12, seed: 77, floors: 2, windows: 3, litMap: [4], figures: [4], roof: 'parapet', kind: 'plaster', door: 360 });
       tl.forEach((c) => lights.push({ x: c.x, y: c.y, r: 200, color: P.candle, intensity: 0.5, flicker: 0.2, halo: 30, haloK: 0.5 }));
@@ -134,10 +135,7 @@ export default {
       ctx.strokeStyle = '#141414'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(1690, 330); ctx.quadraticCurveTo(1940, 370, 2190, 324); ctx.stroke();
       ctx.fillStyle = '#7a756a'; ctx.fillRect(1760, 348, 40, 56); ctx.fillStyle = '#5a564c'; ctx.fillRect(1840, 356, 30, 40); ctx.fillStyle = '#6a5a4a'; ctx.fillRect(2010, 352, 46, 30);
       // granite cattle trough of the Drinking Fountain Association
-      ctx.fillStyle = '#5e5a52'; ctx.fillRect(1716, GROUND - 52, 150, 40); ctx.fillStyle = '#4a4740'; ctx.fillRect(1712, GROUND - 56, 158, 7);
-      ctx.fillStyle = '#0d1416'; ctx.fillRect(1722, GROUND - 52, 138, 6);
-      ctx.font = '600 9px Georgia, serif'; ctx.fillStyle = 'rgba(30,28,24,0.8)'; ctx.textAlign = 'center';
-      ctx.fillText('METROPOLITAN DRINKING FOUNTAIN', 1791, GROUND - 34); ctx.fillText('AND CATTLE TROUGH ASSOCIATION', 1791, GROUND - 22);
+      cattleTrough(ctx, 1716, GROUND - 6, 150);
       A.streetSign(ctx, 1720, 296, 'WINTHROP STREET');
       A.wires(ctx, 560, 210, 1700, 260, { count: 3, sag: 60 });
       A.flagstones(ctx, 0, GROUND - 12, WIDTH, 18);

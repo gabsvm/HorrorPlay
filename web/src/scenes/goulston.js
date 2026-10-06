@@ -1,5 +1,6 @@
 // Chapter 3 — Goulston Street, 30 September, 2:55 AM. The doorway of the Wentworth Model Dwellings.
 import * as A from '../art/paint.js';
+import { stairwellUp, doorSteps, apronPiece } from '../art/props.js';
 import { nightBackdrop, facade } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
@@ -42,13 +43,13 @@ export default {
       }
       ctx.fillStyle = '#7a7466'; ctx.fillRect(900, 346, 100, 30); ctx.fillStyle = '#2a2620'; ctx.font = '600 12px Georgia, serif'; ctx.textAlign = 'center'; ctx.fillText('WENTWORTH', 950, 359); ctx.fillText('DWELLINGS 1886', 950, 372);
       // the open stairwell doorway, Nos. 108–119
-      ctx.fillStyle = '#020202'; ctx.fillRect(880, GROUND - 260, 140, 248);
+      stairwellUp(ctx, 880, GROUND - 260, 140, 236, { steps: 10 });
+      doorSteps(ctx, 950, GROUND - 10, { count: 1, rise: 12, width: 140, grow: 0, depth: 6, stone: '#5e5a52' });
       ctx.fillStyle = '#6a655a'; ctx.fillRect(864, GROUND - 276, 172, 18); ctx.fillRect(864, GROUND - 258, 16, 246); ctx.fillRect(1020, GROUND - 258, 16, 246);
       ctx.fillStyle = 'rgba(255,240,220,0.08)'; ctx.fillRect(864, GROUND - 276, 172, 2); ctx.fillRect(864, GROUND - 258, 2, 246);
       ctx.font = '600 16px "IM Fell English SC", Georgia, serif'; ctx.fillStyle = 'rgba(200,190,160,0.7)'; ctx.textAlign = 'center';
       ctx.fillText('108 – 119', 950, GROUND - 262);
-      for (let i = 0; i < 6; i++) { ctx.fillStyle = `rgba(70,68,62,${0.55 - i * 0.08})`; ctx.fillRect(896 + i * 6, GROUND - 34 - i * 30, 108 - i * 12, 9); }
-      ctx.strokeStyle = 'rgba(60,60,60,0.5)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(1000, GROUND - 30); ctx.lineTo(950, GROUND - 200); ctx.stroke();
+
       const right = facade(ctx, { x: 1420, w: 480, top: -90, base: GROUND - 12, seed: 303, floors: 3, windows: 2, roof: 'parapet', boards: [1], pawn: 380, stock: true });
       chimneys.push(...right.chimneys);
       A.streetSign(ctx, 1456, 252, 'GOULSTON STREET');
@@ -58,6 +59,8 @@ export default {
       A.kerb(ctx, 0, GROUND + 6, WIDTH);
       A.cobbles(ctx, 0, GROUND + 22, WIDTH, 720 - GROUND - 22, { seed: 72, rows: 9, puddles: 14, litter: 2 });
       A.bollard(ctx, 1100, GROUND - 4);
+      // the gas jet on the first landing of the stairwell throws a little light down to the doorway
+      lights.push({ id: 'stairgas', x: 965, y: GROUND - 210, r: 240, color: P.gas, intensity: 0.55, flicker: 0.1, halo: 16, haloK: 0.5, reflect: false });
       const lamp = A.lampPost(ctx, 380, GROUND, 320);
       lights.push({ x: lamp.x, y: lamp.y, r: 420, color: P.gas, intensity: 0.8, flicker: 0.12, halo: 100, shaft: true });
     });
@@ -86,9 +89,7 @@ export default {
 
   drawNear(ctx) {
     if (!this.G?.flag('apron_found')) {
-      ctx.fillStyle = '#c8bca4';
-      ctx.beginPath(); ctx.moveTo(920, GROUND - 6); ctx.lineTo(966, GROUND - 14); ctx.lineTo(980, GROUND - 2); ctx.lineTo(930, GROUND + 4); ctx.fill();
-      ctx.fillStyle = '#4a1a14'; ctx.beginPath(); ctx.ellipse(950, GROUND - 4, 14, 5, 0.2, 0, Math.PI * 2); ctx.fill();
+      apronPiece(ctx, 920, GROUND - 20);
     }
     if (this.G?.flag('chalk_seen')) A.chalk(ctx, 1040, GROUND - 210, 'HERE I AM', { size: 30, rot: 0.05 });
   },

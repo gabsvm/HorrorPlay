@@ -1,5 +1,6 @@
 // Chapter 2 — backyard of 29 Hanbury Street, 8 September 1888, just after six in the morning.
 import * as A from '../art/paint.js';
+import { doorSteps, leatherApron } from '../art/props.js';
 import { facade } from '../art/build.js';
 import { P, shade } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
@@ -36,10 +37,11 @@ export default {
       const back = facade(ctx, { x: 0, w: 760, top: -130, base: GROUND - 10, seed: 101, floors: 3, windows: 3, roof: 'parapet', broken: [1], litMap: [5], nets: [5], stock: true });
       back.forEach((c) => lights.push({ x: c.x, y: c.y, r: 220, color: P.candle, intensity: 0.4, flicker: 0.15, halo: 30 }));
       chimneys.push(...back.chimneys);
-      ctx.fillStyle = '#0a0a0a'; ctx.fillRect(560, GROUND - 210, 96, 200);
-      A.door(ctx, 566, GROUND - 204, 84, 194, { color: '#3a2c20', open: 0.35, steps: 0, fanlight: false, knocker: false, scraper: false });
-      ctx.fillStyle = shade(P.stone, 0.85); ctx.fillRect(546, GROUND - 22, 126, 12); ctx.fillStyle = shade(P.stone, 0.75); ctx.fillRect(536, GROUND - 10, 146, 12);
-      ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(546, GROUND - 12, 126, 2);
+      // the back door stands two steps up from the yard, half open on the dark passage
+      ctx.fillStyle = '#0a0a0a'; ctx.fillRect(560, GROUND - 246, 96, 210);
+      A.door(ctx, 566, GROUND - 240, 84, 204, { color: '#3a2c20', open: 0.35, steps: 0, fanlight: false, knocker: false, scraper: false });
+      ctx.fillStyle = '#4a443a'; ctx.fillRect(556, GROUND - 40, 104, 6);                     // the sill
+      doorSteps(ctx, 608, GROUND - 2, { count: 2, rise: 17, width: 112, grow: 28, stone: '#6a655a' });
       // the passage through the house to the street
       ctx.fillStyle = '#060606'; ctx.fillRect(40, GROUND - 240, 110, 230);
       ctx.fillStyle = '#2a2018'; ctx.fillRect(32, GROUND - 248, 126, 10);
@@ -141,9 +143,7 @@ export default {
     }
     if (!this.G?.has('peine') && !this.G?.flag('peine_taken')) { ctx.fillStyle = '#5a4630'; ctx.fillRect(990, GROUND + 10, 22, 5); ctx.fillStyle = '#2a1e14'; for (let i = 0; i < 6; i++) ctx.fillRect(991 + i * 3.5, GROUND + 14, 2, 3); }
     // the leather apron by the tap
-    ctx.fillStyle = '#4a2e1c';
-    ctx.beginPath(); ctx.moveTo(1610, GROUND - 4); ctx.quadraticCurveTo(1640, GROUND - 30, 1700, GROUND - 8); ctx.lineTo(1706, GROUND + 6); ctx.lineTo(1604, GROUND + 6); ctx.fill();
-    ctx.fillStyle = 'rgba(255,230,200,0.12)'; ctx.fillRect(1626, GROUND - 16, 40, 3);
+    leatherApron(ctx, 1612, GROUND + 2);
   },
 
   async enter(G) {
@@ -275,7 +275,7 @@ export default {
       },
     },
     {
-      id: 'steps', name: 'Escalones', rect: [530, GROUND - 30, 160, 40], walk: 700, face: -1,
+      id: 'steps', name: 'Escalones', rect: [540, GROUND - 48, 140, 50], walk: 700, face: -1,
       act: async (G) => {
         await G.think('Aquí, entre los escalones y la valla. La tierra está removida y alguien ha echado serrín.');
         await G.think('En esta casa duermen diecisiete personas, y hubo luz de sobra para verlo todo. Nadie vio nada.');

@@ -4,6 +4,7 @@ import { wallpaper, wainscot, floorboards, rug, fireplace, frame } from '../art/
 import { Smoke, Moths } from '../engine/life.js';
 import { P, shade } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
+import { seanceTrumpet } from '../art/props.js';
 
 const WIDTH = 1400, GROUND = 664;
 const TABLE_X = 760;
@@ -72,8 +73,11 @@ export default {
       for (const [sx, sy] of [[1090, 220], [1110, 300], [1160, 260], [1180, 380], [1100, 420], [1170, 470]]) { ctx.fillRect(sx - 4, sy, 8, 2); ctx.fillRect(sx - 1, sy - 3, 2, 8); }
       // side table: trumpet, tambourine, a bell, and a stuffed raven under a glass dome
       ctx.fillStyle = '#20150e'; ctx.fillRect(560, GROUND - 100, 110, 10); ctx.fillRect(608, GROUND - 90, 12, 90); ctx.fillRect(588, GROUND - 6, 52, 6);
-      ctx.fillStyle = '#8a7a4a'; ctx.beginPath(); ctx.moveTo(570, GROUND - 104); ctx.lineTo(640, GROUND - 122); ctx.lineTo(640, GROUND - 100); ctx.closePath(); ctx.fill();
       ctx.fillStyle = '#5a4630'; ctx.beginPath(); ctx.ellipse(654, GROUND - 106, 14, 4, 0, 0, Math.PI * 2); ctx.fill();
+      // a little oil lamp with a red glass shade on the mantel: Wexley's sanctuary light
+      ctx.fillStyle = '#5a4520'; ctx.fillRect(402, GROUND - 168, 16, 8); ctx.fillRect(406, GROUND - 176, 8, 8);
+      ctx.fillStyle = '#7a1612'; ctx.beginPath(); ctx.ellipse(410, GROUND - 186, 11, 12, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,140,110,0.5)'; ctx.fillRect(405, GROUND - 192, 3, 8);
       ctx.fillStyle = '#20150e'; ctx.fillRect(1000, GROUND - 150, 50, 150);
       ctx.fillStyle = '#0c0b0c'; ctx.beginPath(); ctx.ellipse(1025, GROUND - 176, 12, 18, 0.2, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.moveTo(1034, GROUND - 188); ctx.lineTo(1046, GROUND - 184); ctx.lineTo(1034, GROUND - 180); ctx.fill();
       ctx.strokeStyle = 'rgba(190,210,215,0.3)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(1004, GROUND - 152); ctx.lineTo(1004, GROUND - 196); ctx.arc(1025, GROUND - 196, 21, Math.PI, 0); ctx.lineTo(1046, GROUND - 152); ctx.stroke();
@@ -84,6 +88,7 @@ export default {
       for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; ctx.beginPath(); ctx.moveTo(978 + Math.cos(a) * 24, 198 + Math.sin(a) * 24); ctx.lineTo(978 + Math.cos(a) * 38, 198 + Math.sin(a) * 38); ctx.stroke(); }
       A.stain(ctx, 930, 150, 96, 96, { seed: 8, alpha: 0.5 });
     });
+    lights.push({ id: 'redlamp', x: 410, y: GROUND - 186, r: 380, color: [0.85, 0.28, 0.2], intensity: 0.55, flicker: 0.08, halo: 34, haloK: 0.6 });
     lights.push({ id: 'c1', x: TABLE_X - 30, y: GROUND - 150, r: 420, color: P.candle, intensity: 0.9, flicker: 0.25, halo: 60 });
     lights.push({ id: 'c2', x: TABLE_X + 10, y: GROUND - 156, r: 420, color: P.candle, intensity: 0.9, flicker: 0.25, halo: 60 });
     lights.push({ id: 'c3', x: TABLE_X + 50, y: GROUND - 150, r: 420, color: P.candle, intensity: 0.9, flicker: 0.25, halo: 60 });
@@ -107,6 +112,10 @@ export default {
       new Actor('Viuda', { x: TABLE_X - 160, y: GROUND, h: 190, hat: 'bonnet', hatColor: '#0a0a0b', skirt: true, coat: '#121112', shawl: '#0e0d0e', facing: 1, pose: 'sit', z: 1 }),
       new Actor('Joven', { x: TABLE_X + 40, y: GROUND, h: 200, hat: 'none', hair: '#2a1e14', coat: '#2a2a30', facing: -1, pose: 'sit', z: -1, moustache: '#2a1e14', scarf: '#4a3a2a' }),
     ];
+  },
+
+  drawNear(ctx, t) {
+    seanceTrumpet(ctx, 572, GROUND - 101, t);
   },
 
   drawNearOver(ctx, t) {
