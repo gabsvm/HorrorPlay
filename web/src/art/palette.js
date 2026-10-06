@@ -37,14 +37,17 @@ export const P = {
 
 export const rgb = (c, a = 1) => `rgba(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)},${a})`;
 
-export function shade(hex, f) {
-  const n = parseInt(hex.slice(1), 16);
-  const r = Math.min(255, ((n >> 16) & 255) * f), g = Math.min(255, ((n >> 8) & 255) * f), b = Math.min(255, (n & 255) * f);
-  return `rgb(${r | 0},${g | 0},${b | 0})`;
+export function toRgb(c) {
+  if (c[0] === '#') { const n = parseInt(c.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  const m = c.match(/[\d.]+/g); return m ? m.slice(0, 3).map(Number) : [0, 0, 0];
 }
 
-export function mix(hexA, hexB, t) {
-  const a = parseInt(hexA.slice(1), 16), b = parseInt(hexB.slice(1), 16);
-  const ch = (s) => Math.round(((a >> s) & 255) * (1 - t) + ((b >> s) & 255) * t);
-  return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
+export function shade(c, f) {
+  const [r, g, b] = toRgb(c);
+  return `rgb(${Math.min(255, r * f) | 0},${Math.min(255, g * f) | 0},${Math.min(255, b * f) | 0})`;
+}
+
+export function mix(a, b, t) {
+  const A = toRgb(a), B = toRgb(b);
+  return `rgb(${Math.round(A[0] * (1 - t) + B[0] * t)},${Math.round(A[1] * (1 - t) + B[1] * t)},${Math.round(A[2] * (1 - t) + B[2] * t)})`;
 }

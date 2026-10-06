@@ -50,14 +50,6 @@ export class Game {
     const vw = window.innerWidth, vh = window.innerHeight;
     const u = Math.min(vw / W, vh / H);
     document.documentElement.style.setProperty('--u', `${u}px`);
-    const forced = Number(new URLSearchParams(location.search).get('dpr'));
-    const dpr = forced || Math.min(window.devicePixelRatio || 1, 2);
-    const rs = forced ? u * dpr : Math.max(0.75, Math.min(1.5, u * dpr));
-    if (Math.abs(rs - this.r.rs) > 0.05) {
-      this.r.resize(rs);
-      this.layerCache.clear();
-      if (this.scene) this.buildLayers(this.scene);
-    }
   }
 
   // ------------------------------------------------------------ input
@@ -250,6 +242,7 @@ export class Game {
     this.player.x = x ?? scene.spawn ?? scene.walk[0] + 40;
     this.player.facing = facing ?? 1;
     if (scene.actors) for (const a of scene.actors(this.G)) this.actors.push(a);
+    scene.life = scene.makeLife ? scene.makeLife(this.G) : [];
     this.r.cam.x = this.camTarget();
     audio.setBeds(scene.beds || {}, 1.5);
     audio.playMusic(scene.music || null);
@@ -292,6 +285,7 @@ export class Game {
     if (this.scene) {
       for (const a of this.actors) a.update(dt);
       if (this.scene.update) this.scene.update(this.G, dt);
+      if (this.scene.life) for (const l of this.scene.life) if (l.update) l.update(dt, this.G);
       if (this.menuPan) this.camFocus = 900 + Math.sin(now / 9000) * 600;
       const target = this.camTarget();
       this.r.cam.x += (target - this.r.cam.x) * Math.min(1, dt * 3.2);

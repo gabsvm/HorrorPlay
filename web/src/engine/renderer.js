@@ -6,8 +6,11 @@
 //   fog   : animated fog alpha, shaded by the lightmap (volumetric look)
 //   glow  : additive halos, wet reflections, rain
 import { noiseCanvas } from '../art/noise.js';
+import { pixelize, quantizeData } from '../art/pixel.js';
 
 export const W = 1280, H = 720;
+// The game is drawn on a 640x360 pixel grid and scaled up with nearest-neighbour filtering.
+export const PX = 0.5;
 
 const VS = `
 attribute vec2 p; varying vec2 vUv;
@@ -21,6 +24,16 @@ uniform float uTime, uMad, uFade, uFlash, uFogAmt, uRedFlash, uDesat;
 uniform vec3 uFogCol;
 varying vec2 vUv;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
+float bayer(vec2 p){
+  vec2 q = mod(floor(p), 4.0);
+  float i = q.x + q.y * 4.0;
+  float v = 0.0;
+  if (i < 1.0) v = 0.0; else if (i < 2.0) v = 8.0; else if (i < 3.0) v = 2.0; else if (i < 4.0) v = 10.0;
+  else if (i < 5.0) v = 12.0; else if (i < 6.0) v = 4.0; else if (i < 7.0) v = 14.0; else if (i < 8.0) v = 6.0;
+  else if (i < 9.0) v = 3.0; else if (i < 10.0) v = 11.0; else if (i < 11.0) v = 1.0; else if (i < 12.0) v = 9.0;
+  else if (i < 13.0) v = 15.0; else if (i < 14.0) v = 7.0; else if (i < 15.0) v = 13.0; else v = 5.0;
+  return v / 16.0 - 0.47;
+}
 vec3 compose(vec2 uv){
   vec3 L = texture2D(tLight, uv).rgb * 2.0;
   vec4 far = texture2D(tFar, uv);
@@ -57,9 +70,11 @@ void main(){
   float v = smoothstep(0.95, 0.25, length(c * vec2(1.0, 0.82)));
   col *= mix(0.42, 1.0, v);
   col *= 1.0 - 0.35 * m * (1.0 - v);
-  // grain
-  float g = hash(vUv * uRes + fract(uTime * 7.31) * 100.0) - 0.5;
-  col += g * (0.045 + 0.05 * m);
+  // grain on the pixel grid, plus ordered dither so smooth light falls off in clean pixel bands
+  vec2 px = floor(vUv * uRes);
+  float g = hash(px + fract(uTime * 7.31) * 100.0) - 0.5;
+  col += g * (0.03 + 0.05 * m);
+  col += bayer(px) / 40.0;
   // pulses and fades
   col = mix(col, vec3(0.55, 0.03, 0.02), uRedFlash);
   col = mix(col, vec3(0.95, 0.97, 1.0), uFlash);
@@ -79,7 +94,7 @@ export class Renderer {
     this.view = view;
     this.gl = view.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false, preserveDrawingBuffer: true });
     if (!this.gl) throw new Error('WebGL no disponible');
-    this.rs = 1;
+    this.rs = PX;
     this.time = 0;
     this.fx = { mad: 0, fade: 1, flash: 0, red: 0, desat: 0 };
     this.cam = { x: 0, shake: 0 };
@@ -88,7 +103,7 @@ export class Renderer {
     this.fogTex2 = noiseCanvas(256, 128, { scale: 4, seed: 91, octaves: 4, tile: true, alpha: true, shape: (v, nx, ny) => (v - 0.34) * 2.0 * feather(ny) });
     this.rain = [];
     this.initGL();
-    this.resize(1);
+    this.resize();
   }
 
   initGL() {
@@ -117,8 +132,9 @@ export class Renderer {
       const t = gl.createTexture();
       gl.activeTexture(gl.TEXTURE0 + i);
       gl.bindTexture(gl.TEXTURE_2D, t);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      const f = i < 3 ? gl.NEAREST : gl.LINEAR; // art layers stay crisp, light and fog stay soft
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, f);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, f);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       gl.uniform1i(gl.getUniformLocation(prog, n), i);
@@ -127,8 +143,9 @@ export class Renderer {
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   }
 
-  // rs = render scale (backing pixels per logical pixel)
-  resize(rs) {
+  // Fixed pixel grid: the output never depends on the screen size.
+  resize() {
+    const rs = PX;
     this.rs = rs;
     this.view.width = Math.round(W * rs);
     this.view.height = Math.round(H * rs);
@@ -138,18 +155,36 @@ export class Renderer {
     this.light = mk2d(320, 180);
     this.fog = mk2d(640, 360);
     this.glow = mk2d(640, 360);
+    this.dyn = mk2d(fw, fh);
+    this.cDyn = this.dyn.getContext('2d', { willReadFrequently: true });
     this.cFar = this.far.getContext('2d'); this.cNear = this.near.getContext('2d'); this.cFg = this.fg.getContext('2d');
+    this.cNear.imageSmoothingEnabled = false;
     this._staticKey = null;
     this.cLight = this.light.getContext('2d'); this.cFog = this.fog.getContext('2d'); this.cGlow = this.glow.getContext('2d');
   }
 
-  // Paint a static layer once, at render scale. `width` is in logical px.
-  paintLayer(width, painter, height = H) {
-    const c = mk2d(Math.ceil(width * this.rs), Math.ceil(height * this.rs));
+  // Paint a static layer once at full logical resolution, then reduce it to the pixel grid
+  // and snap it to the palette. `width` is in logical px.
+  paintLayer(width, painter, height = H, { dither = 14 } = {}) {
+    const c = mk2d(Math.ceil(width), Math.ceil(height));
     const ctx = c.getContext('2d');
-    ctx.scale(this.rs, this.rs);
     painter(ctx, width, height);
-    return c;
+    return pixelize(c, this.rs, { dither });
+  }
+
+  // Draw per-frame props on a scratch buffer and quantize them so they match the painted layers.
+  dynamicPass(target, draw, camX, camY, t) {
+    const c = this.cDyn, rs = this.rs;
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.clearRect(0, 0, this.dyn.width, this.dyn.height);
+    c.setTransform(rs, 0, 0, rs, -camX * rs, camY * rs);
+    draw(c, t);
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    const img = c.getImageData(0, 0, this.dyn.width, this.dyn.height);
+    quantizeData(img.data, this.dyn.width, this.dyn.height, { dither: 10, alphaCut: 90 });
+    c.putImageData(img, 0, 0);
+    target.setTransform(1, 0, 0, 1, 0, 0);
+    target.drawImage(this.dyn, 0, 0);
   }
 
   frame(scene, actors, dt, overlay) {
@@ -176,12 +211,12 @@ export class Renderer {
     cn.setTransform(1, 0, 0, 1, 0, 0);
     cn.clearRect(0, 0, this.near.width, this.near.height);
     for (const L of scene.layers) if (L.kind === 'near') cn.drawImage(L.canvas, Math.round(-camX * rs), Math.round(camY * rs));
+    if (scene.drawNear || scene.life) this.dynamicPass(cn, (c, tt) => { if (scene.drawNear) scene.drawNear(c, tt); if (scene.life) for (const l of scene.life) l.draw && l.draw(c, tt); }, camX, camY, t);
     cn.setTransform(rs, 0, 0, rs, -camX * rs, camY * rs);
-    if (scene.drawNear) scene.drawNear(cn, t);
     const sorted = actors.filter((a) => a.visible).sort((a, b) => (a.z || 0) - (b.z || 0));
     const prevLights = this.lightsFrame || scene.lights;
     for (const a of sorted) a.draw(cn, t, prevLights);
-    if (scene.drawNearOver) scene.drawNearOver(cn, t);
+    if (scene.drawNearOver) this.dynamicPass(cn, (c, tt) => scene.drawNearOver(c, tt), camX, camY, t);
 
     // foreground
     const cg = this.cFg;
@@ -247,6 +282,17 @@ export class Renderer {
     }
     cfo.setTransform(fs, 0, 0, fs, -camX * fs, 0);
     if (scene.drawFog) scene.drawFog(cfo, t);
+    // light shafts: lamps pour a visible cone of light down through the fog
+    for (const L of lights) {
+      if (L.off || !L.shaft) continue;
+      const len = (scene.groundY - L.y) + 10, w0 = 10, w1 = L.shaftW || 120;
+      const g = cfo.createLinearGradient(0, L.y, 0, L.y + len);
+      const k = (L.shaftK ?? 0.38) * (L.intensity ?? 1);
+      g.addColorStop(0, `rgba(255,255,255,${k})`); g.addColorStop(1, 'rgba(255,255,255,0)');
+      cfo.fillStyle = g;
+      cfo.beginPath(); cfo.moveTo(L.x - w0, L.y + 12); cfo.lineTo(L.x + w0, L.y + 12); cfo.lineTo(L.x + w1, L.y + len); cfo.lineTo(L.x - w1, L.y + len); cfo.closePath(); cfo.fill();
+    }
+    if (scene.life) for (const l of scene.life) if (l.drawFog) l.drawFog(cfo, t);
     if (!scene.indoor) for (const a of sorted) a.breath(cfo, t);
 
     // glow (halos, reflections, rain)
@@ -271,6 +317,7 @@ export class Renderer {
       }
     }
     if (scene.drawGlow) scene.drawGlow(cgl, t);
+    if (scene.life) for (const l of scene.life) if (l.drawGlow) l.drawGlow(cgl, t);
     if (scene.rain) this.drawRain(cgl, scene, camX, dt);
     if (overlay) { cgl.setTransform(fs, 0, 0, fs, 0, 0); overlay(cgl, t); }
 
@@ -293,8 +340,8 @@ export class Renderer {
     this.rain.length = amount;
     ctx.save();
     ctx.setTransform(640 / W, 0, 0, 360 / H, 0, 0);
-    ctx.strokeStyle = 'rgba(150,170,175,0.16)';
-    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = 'rgba(150,170,175,0.2)';
+    ctx.lineWidth = 2;
     ctx.beginPath();
     for (const d of this.rain) {
       d.y += 900 * d.s * dt; d.x -= 120 * d.s * dt;
@@ -302,6 +349,14 @@ export class Renderer {
       ctx.moveTo(d.x, d.y); ctx.lineTo(d.x + 4 * d.s, d.y - 22 * d.s);
     }
     ctx.stroke();
+    // splashes where drops hit the street
+    if (scene.groundY) {
+      ctx.fillStyle = 'rgba(170,190,195,0.22)';
+      for (let i = 0; i < 46 * scene.rain; i++) {
+        const sx = Math.random() * W, sy = scene.groundY + 14 + Math.random() * (H - scene.groundY - 14);
+        ctx.fillRect(sx - 3, sy, 2, 2); ctx.fillRect(sx + 2, sy - 1, 2, 2); ctx.fillRect(sx, sy - 3, 2, 2);
+      }
+    }
     ctx.restore();
   }
 
