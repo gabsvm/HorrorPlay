@@ -224,3 +224,20 @@ canvas.fly { position: absolute; width: calc(68*var(--u)); height: calc(68*var(-
 #inspect.busy #insp-close, #inspect.busy #insp-hint { opacity: 0.3; pointer-events: none; }
 #vision { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; mix-blend-mode: screen; z-index: 6; }
 #insp-close.done { color: #ffd88a; animation: pulse 1.6s ease-in-out infinite; }
+
+/* ---- New-game intro: the record of effects, three lines over Whitechapel, the first page ---- */
+#intro { position: absolute; inset: 0; z-index: 8; transition: background 1.2s; }
+#intro.black { background: #000; }
+#intro.clear { background: transparent; }
+#intro > div { position: absolute; opacity: 0; transition: opacity 1.1s ease; pointer-events: none; }
+#intro > div.on { opacity: 1; }
+.intro-doc { left: 50%; top: 50%; width: calc(620*var(--u)); transform: translate(-50%, -50%) rotate(-0.6deg); padding: calc(40*var(--u)) calc(48*var(--u)); background: radial-gradient(ellipse at 40% 30%, #d6c9a8, #ad9a72); color: #241c12; font-family: var(--type); font-size: calc(19*var(--u)); line-height: 1.55; box-shadow: 0 calc(20*var(--u)) calc(60*var(--u)) #000; }
+.intro-doc .h { font-size: calc(21*var(--u)); letter-spacing: .1em; text-align: center; margin-bottom: calc(6*var(--u)); min-height: 1.4em; }
+.intro-doc .s { font-size: calc(15*var(--u)); text-align: center; color: #5a4a33; margin-bottom: calc(22*var(--u)); min-height: 1.2em; border-bottom: 1px solid rgba(36,28,18,0.35); padding-bottom: calc(10*var(--u)); }
+.intro-doc .p { margin-bottom: calc(12*var(--u)); min-height: 1.4em; }
+.intro-line { left: 0; right: 0; bottom: calc(110*var(--u)); text-align: center; font-family: var(--serif); font-style: italic; font-size: calc(34*var(--u)); color: #e8dcc0; text-shadow: 0 0 calc(18*var(--u)) #000, 0 0 calc(4*var(--u)) #000; }
+.intro-page { left: 50%; top: 50%; width: calc(560*var(--u)); min-height: calc(260*var(--u)); transform: translate(-50%, -50%) rotate(0.8deg); padding: calc(48*var(--u)) calc(54*var(--u)); background: repeating-linear-gradient(180deg, transparent 0, transparent calc(35*var(--u)), rgba(90,70,40,0.18) calc(35*var(--u)), rgba(90,70,40,0.18) calc(36*var(--u))), radial-gradient(ellipse at 50% 40%, #e3d5b2, #bfa97c); box-shadow: 0 calc(20*var(--u)) calc(60*var(--u)) #000; }
+.intro-page .text { font-family: var(--serif); font-style: italic; font-size: calc(30*var(--u)); line-height: 1.2; color: #2a1e14; transform: skewX(-6deg); }
+.intro-page .sig { margin-top: calc(26*var(--u)); text-align: right; font-family: var(--serif); font-style: italic; font-size: calc(24*var(--u)); color: #2a1e14; opacity: 0; transition: opacity 1s; }
+.intro-page .sig.on { opacity: 1; }
+.intro-skip { right: calc(28*var(--u)); bottom: calc(22*var(--u)); font-family: var(--sc); font-size: calc(14*var(--u)); letter-spacing: .14em; color: rgba(220,205,175,0.45); opacity: 1 !important; }

@@ -1,5 +1,6 @@
 // Chapter flow and every scripted sequence that spans scenes.
 import { Actor } from '../engine/actor.js';
+import { playIntro } from './intro.js';
 
 const LOOKS = {
   child: { hat: 'cap', coat: '#3a342c', coatLen: 0.62, flare: 1.05, build: 0.9, speed: 120, lantern: false, collarUp: false, patches: true, scarf: '#5a2a22', sideburns: false, hair: '#2a1e16', gloves: null, stubble: null },
@@ -26,6 +27,8 @@ export function makeChapters() {
   const chapters = {
     async prologue(G) {
       G.hud(false);
+      // a new game opens on the notebook found in the Ditch; replaying the chapter does not
+      if (G.game.introNext) { G.game.introNext = false; await playIntro(G); }
       G.flag('fs_1888', false);
       look(G, 'child');
       G.game.r.fx.fade = 1;

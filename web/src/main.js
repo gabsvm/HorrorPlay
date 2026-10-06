@@ -41,7 +41,7 @@ function mainMenu() {
   const unlocked = Game.unlocked();
   const items = [];
   if (saved && saved.chapter) items.push({ label: 'Continuar', action: () => begin(saved.chapter, Game.chapterSnapshot(saved.chapter) || saved) });
-  items.push({ label: 'Nueva partida', action: () => { Game.clearSave(); begin('prologue'); } });
+  items.push({ label: 'Nueva partida', action: () => { Game.clearSave(); game.introNext = true; begin('prologue'); } });
   if (unlocked.length > 1) items.push({ label: 'Capítulos', action: () => chapterMenu() });
   game.ui.menu(items);
   menuBackdrop();
