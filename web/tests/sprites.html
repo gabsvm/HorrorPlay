@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Sprite lab</title>
+<style>
+  body { margin: 0; background: #2a2622; color: #ddd; font: 12px monospace; }
+  canvas { image-rendering: pixelated; display: block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="module">
+// Contact sheet of the protagonist: walk cycle frames, poses and the lantern, rendered through
+// the same sprite pipeline as the game (supersample -> 640x360 grid -> palette), scaled up.
+import { Actor } from '../src/engine/actor.js';
+
+const params = new URLSearchParams(location.search);
+const scale = Number(params.get('s')) || 3;
+const who = params.get('who') || 'thomas';
+const looks = {
+  thomas: { h: 206, hat: 'bowler', coat: '#23262b', coatLen: 0.88, flare: 1.2, lantern: true, lanternOn: true, collarUp: true, sideburns: true, hair: '#1a1410', trousers: '#1a1b1e', gloves: '#2a221c', scarf: '#4a1612', stubble: 'rgba(30,22,18,0.35)' },
+  child: { h: 138, hat: 'cap', coat: '#3a342c', coatLen: 0.62, flare: 1.05, build: 0.9, patches: true, scarf: '#5a2a22', hair: '#2a1e16' },
+};
+const frames = [];
+for (let i = 0; i < 8; i++) frames.push({ label: `paso ${i}`, phase: (i / 8) * Math.PI * 2, moving: true });
+frames.push({ label: 'quieto', phase: 0 }, { label: 'kneel', pose: 'kneel' }, { label: 'reach', pose: 'reach' }, { label: 'examina', pose: 'inspect' }, { label: 'recoge', pose: 'take' }, { label: 'sit', pose: 'sit' }, { label: 'cower', pose: 'cower' }, { label: 'mira atrás', look: 1 }, { label: 'habla', talking: true }, { label: 'sin farol', lanternOn: false });
+
+const only = params.get('only');
+if (only) { const keep = only.split(',').map(Number); frames.splice(0, frames.length, ...frames.filter((f, i) => keep.includes(i))); }
+const cellW = 110, cellH = 130, cols = Number(params.get('cols')) || 6;
+const rows = Math.ceil(frames.length / cols);
+const cv = document.getElementById('c');
+cv.width = cols * cellW * scale; cv.height = rows * cellH * scale;
+const ctx = cv.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+ctx.fillStyle = '#3a342e'; ctx.fillRect(0, 0, cv.width, cv.height);
+const light = [{ x: 0, y: 0, r: 400, color: [1, 0.66, 0.3], intensity: 1 }];
+
+frames.forEach((f, i) => {
+  const a = new Actor('Thomas', { ...looks[who], x: 0, y: 0, facing: 1 });
+  a.isPlayer = true;
+  a.phase = f.phase ?? 0; a.moving = !!f.moving; a.pose = f.pose ?? null; a.look = f.look ?? 0; a.talking = !!f.talking;
+  if (f.lanternOn === false) a.lanternOn = false;
+  a.walkAmt = f.moving ? 1 : 0; a.vf = 1;
+  // draw at the game's pixel scale (0.5) into a small canvas, then blow it up
+  const small = document.createElement('canvas');
+  small.width = cellW; small.height = cellH;
+  const sc = small.getContext('2d');
+  sc.setTransform(0.5, 0, 0, 0.5, 0, 0);
+  a.x = cellW; a.y = cellH * 2 - 16;
+  light[0].x = a.x + 160; light[0].y = a.y - 200;
+  a.draw(sc, 1.3 + i * 0.1, light);
+  const cx = (i % cols) * cellW * scale, cy = Math.floor(i / cols) * cellH * scale;
+  ctx.drawImage(small, cx, cy, cellW * scale, cellH * scale);
+  ctx.fillStyle = '#ddd'; ctx.font = `${10 * scale / 2}px monospace`; ctx.fillText(f.label, cx + 6, cy + 14 * scale / 2);
+});
+</script>
+</body>
+</html>

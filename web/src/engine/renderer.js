@@ -318,10 +318,31 @@ export class Renderer {
     }
     if (scene.drawGlow) scene.drawGlow(cgl, t);
     if (scene.life) for (const l of scene.life) if (l.drawGlow) l.drawGlow(cgl, t);
+    if (this.drops && this.drops.length) {
+      for (const d of this.drops) {
+        d.life -= dt;
+        if (d.ring !== undefined) {
+          d.ring += dt;
+          cgl.strokeStyle = `rgba(150,175,180,${Math.max(0, d.life) * 0.7})`; cgl.lineWidth = 2;
+          cgl.beginPath(); cgl.ellipse(d.x, d.y, 6 + d.ring * 40, 2 + d.ring * 6, 0, 0, Math.PI * 2); cgl.stroke();
+        } else {
+          d.vy += 500 * dt; d.x += d.vx * dt; d.y += d.vy * dt;
+          cgl.fillStyle = `rgba(170,190,195,${Math.max(0, d.life) * 1.4})`; cgl.fillRect(d.x, d.y, 3, 3);
+        }
+      }
+      this.drops = this.drops.filter((d) => d.life > 0);
+    }
     if (scene.rain) this.drawRain(cgl, scene, camX, dt);
     if (overlay) { cgl.setTransform(fs, 0, 0, fs, 0, 0); overlay(cgl, t); }
 
     this.present(scene);
+  }
+
+  // droplets kicked up by a boot on a wet street
+  splash(x, y) {
+    (this.drops ||= []);
+    for (let i = 0; i < 7; i++) this.drops.push({ x, y: y - 2, vx: (Math.random() - 0.5) * 120, vy: -60 - Math.random() * 90, life: 0.35 + Math.random() * 0.2 });
+    this.drops.push({ x, y: y + 2, ring: 0, life: 0.5 });
   }
 
   radial(ctx, x, y, r, c, k) {

@@ -35,9 +35,12 @@ export class Game {
     this.pointer = { x: W / 2, y: H / 2, inside: false, touch: false };
     this.madTarget = 0;
     this.layerCache = new Map();
-    this.player = new Actor('Thomas', { h: 206, hat: 'bowler', coat: '#23262b', coatLen: 0.88, flare: 1.2, lantern: true, speed: 150, z: 10, collarUp: true, sideburns: true, hair: '#1a1410' });
+    this.player = new Actor('Thomas', { h: 206, hat: 'bowler', coat: '#23262b', coatLen: 0.88, flare: 1.2, lantern: true, speed: 150, z: 10, collarUp: true, sideburns: true, hair: '#1a1410', gloves: '#2a221c', scarf: '#4a1612', stubble: 'rgba(30,22,18,0.35)' });
     this.player.isPlayer = true;
-    this.player.onStep = () => audio.step(this.scene?.surface || 'stone');
+    this.player.onStep = (a) => {
+      audio.step(this.scene?.surface || 'stone');
+      if (this.scene && (this.scene.wet || this.scene.rain) && !this.scene.indoor) this.r.splash(a.x + a.facing * 14 * (a.h / 200), a.y);
+    };
     this.fitStage();
     window.addEventListener('resize', () => this.fitStage());
     this.bindInput();
@@ -117,6 +120,7 @@ export class Game {
 
   async onClick(p, look) {
     if (this.inMenu || this.running || !this.scene || this.ui.notebookOpen) return;
+    if (this.player.fidget) { if (this.player.pose === 'inspect') this.player.pose = null; this.player.fidget = null; this.player.shiver = 0; this.player.stillT = 0; }
     const h = this.hotspotAt(p);
     if (!h) {
       if (this.selectedItem) { this.selectItem(null); return; }
@@ -138,19 +142,37 @@ export class Game {
         const [x, , w] = typeof h.rect === 'function' ? h.rect(G) : h.rect;
         this.player.facing = x + w / 2 >= this.player.x ? 1 : -1;
       }
+      const gesture = this.gestureFor(h, G);
+      if (gesture) { this.player.pose = gesture; await wait(gesture === 'take' ? 260 : 180); }
+      const settle = () => { if (this.player.pose === gesture) this.player.pose = null; };
       if (item) {
         this.selectItem(null);
         if (h.use) {
           const handled = await h.use(G, item);
-          if (handled !== false) return;
+          if (handled !== false) { settle(); return; }
         }
         await G.think(this.itemDefs[item].wrong || 'No. Eso no sirve ahí.');
+        settle();
         return;
       }
+      try {
       if (look && h.look) await h.look(G);
       else if (h.act) await h.act(G);
       else if (h.look) await h.look(G);
+      } finally { settle(); }
     });
+  }
+
+  // Which body language fits a hotspot: talk to people, raise the lantern at things in front,
+  // crouch for things on the ground. Exits get none.
+  gestureFor(h, G) {
+    if (h.cursor === 'exit' || h.cursor === 'talk' || h.gesture === false) return null;
+    if (h.gesture) return h.gesture;
+    const [, y, , hh] = typeof h.rect === 'function' ? h.rect(G) : h.rect;
+    const cy = y + hh / 2, g = this.scene.groundY;
+    if (cy > g - 40) return 'take';
+    if (this.player.lantern && this.player.lanternOn && cy > g - 260) return 'inspect';
+    return null;
   }
 
   async run(fn) {
@@ -283,6 +305,7 @@ export class Game {
 
   tick(now, dt) {
     if (this.scene) {
+      this.player.idleAllowed = !this.running && !this.inMenu && !this.ui.notebookOpen;
       for (const a of this.actors) a.update(dt);
       if (this.scene.update) this.scene.update(this.G, dt);
       if (this.scene.life) for (const l of this.scene.life) if (l.update) l.update(dt, this.G);
@@ -389,7 +412,11 @@ export class Game {
       has: (id) => game.state.items.includes(id),
       hasClue: (id) => game.state.clues.includes(id),
       deduced: (id) => game.state.deductions.includes(id),
-      say: (who, text, opts) => game.ui.say(who, text, opts),
+      say: async (who, text, opts) => {
+        const speaking = (who === 'Ashgrove' || who === 'Thomas') && !(opts && opts.style);
+        if (speaking) game.player.talking = true;
+        try { await game.ui.say(who, text, opts); } finally { if (speaking) game.player.talking = false; }
+      },
       think: (text) => game.ui.say('Ashgrove', text, { style: 'thought' }),
       voice: (text, opts = {}) => { audio.whisper(2.2, 0.16); return game.ui.say(opts.name ?? '', text, { style: 'voice', ...opts }); },
       narrate: (text) => game.ui.say('', text, { style: 'thought' }),
