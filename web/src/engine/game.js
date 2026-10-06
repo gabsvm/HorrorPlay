@@ -560,7 +560,7 @@ export class Game {
         }, 8000);
         game.refreshInventory(id);
         game.ui.toast(`Obtienes: ${game.itemDefs[id].name}`);
-        audio.paper();
+        audio.pickup();
       },
       take: (id) => {
         game.state.items = game.state.items.filter((i) => i !== id);

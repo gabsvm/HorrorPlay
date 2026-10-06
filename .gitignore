@@ -16,3 +16,6 @@ Thumbs.db
 android/keystore/*.keystore
 android/keystore/*.jks
 android/keystore/*.keystore.*
+
+# raw CC0 downloads; the game ships the processed web/assets/audio (see its CREDITS.md)
+web/assets-src/

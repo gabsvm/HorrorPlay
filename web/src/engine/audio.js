@@ -1,4 +1,10 @@
-// Procedural sound: no recorded assets, everything is synthesised so the whole soundscape is ours.
+// Sound. Music, the Host, heartbeats and stings are synthesised; rain, the river, footsteps, doors,
+// cloth and paper are short CC0 recordings (assets/audio, see CREDITS.md) layered over the synthesis.
+// Every recorded sound has a procedural fallback, so the game sounds whole before (or without) them.
+
+const SAMPLES = ['rain', 'storm', 'river', 'step_stone', 'step_gravel', 'step_mud', 'step_wood0', 'step_wood1', 'step_wood2',
+  'step_wood3', 'step_wood4', 'door_open', 'door_close', 'creak1', 'creak2', 'creak3', 'cloth1', 'cloth2', 'leather',
+  'book_open', 'book_close', 'book_flip1', 'book_flip2', 'latch', 'metal_click', 'knife'];
 
 class AudioEngine {
   constructor() {
@@ -22,7 +28,67 @@ class AudioEngine {
     this.reverb.connect(this.wet).connect(this.master);
     this.noise = this.noiseBuffer(4);
     this.brown = this.noiseBuffer(4, true);
+    this.loadSamples();
+    // whatever the scene asked for before the first click can start now
+    if (this.wantBeds) this.setBeds(this.wantBeds, 1.5);
+    if (this.wantMusic) this.playMusic(this.wantMusic);
   }
+
+  // ------------------------------------------------------------ recordings
+  loadSamples() {
+    this.samples = {};
+    this._waiting = {};
+    const embedded = window.__SAMPLES || {};
+    for (const n of SAMPLES) {
+      // the single-file build carries them as data URIs, decoded here so no fetch policy can block them
+      const data = embedded[n];
+      const bytes = data
+        ? Promise.resolve(Uint8Array.from(atob(data.slice(data.indexOf(',') + 1)), (c) => c.charCodeAt(0)).buffer)
+        : fetch(`assets/audio/${n}.mp3`).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(r.status)));
+      bytes
+        .then((b) => this.ctx.decodeAudioData(b))
+        .then((buf) => { this.samples[n] = buf; (this._waiting[n] || []).forEach((f) => f(buf)); delete this._waiting[n]; })
+        .catch(() => {});
+    }
+  }
+
+  // run `fn(buffer)` as soon as a recording is ready (now, if it already is)
+  whenSample(n, fn) {
+    if (this.samples?.[n]) fn(this.samples[n]);
+    else if (this._waiting) (this._waiting[n] ||= []).push(fn);
+  }
+
+  // a one-shot recording; returns false when it is not loaded so callers can fall back
+  play(n, { vol = 0.5, rate = 1, rev = 0.15, delay = 0, pan = 0 } = {}) {
+    const buf = this.ctx && this.samples?.[n];
+    if (!buf) return false;
+    const ctx = this.ctx, t = ctx.currentTime + delay;
+    const s = ctx.createBufferSource(); s.buffer = buf; s.playbackRate.value = rate;
+    const g = ctx.createGain(); g.gain.value = vol;
+    let out = g;
+    if (pan && ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = pan; g.connect(p); out = p; }
+    s.connect(g); out.connect(this.master);
+    if (rev) { const r = ctx.createGain(); r.gain.value = rev; out.connect(r).connect(this.reverb); }
+    s.start(t);
+    return true;
+  }
+
+  // a looping recording feeding a bed; the loop points skip the codec's padding at both ends
+  loopSample(n, target, vol, { rate = 1, filter = null } = {}) {
+    this.whenSample(n, (buf) => {
+      const ctx = this.ctx;
+      const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.playbackRate.value = rate;
+      const pad = Math.min(0.03, buf.duration / 4);
+      s.loopStart = pad; s.loopEnd = buf.duration - pad;
+      const g = ctx.createGain(); g.gain.value = 0;
+      g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 1.5);
+      if (filter) s.connect(filter).connect(g); else s.connect(g);
+      g.connect(target);
+      s.start(0, pad + Math.random() * buf.duration * 0.8);
+    });
+  }
+
+  pick(names) { return names[Math.floor(Math.random() * names.length)]; }
 
   noiseBuffer(sec, brown = false) {
     const ctx = this.ctx, n = ctx.sampleRate * sec;
@@ -63,6 +129,7 @@ class AudioEngine {
   }
 
   setBeds(map, fadeSec = 2) {
+    this.wantBeds = map;
     for (const k of Object.keys(this.beds)) if (!(k in map)) this.bed(k, 0, fadeSec);
     for (const [k, v] of Object.entries(map)) this.bed(k, v, fadeSec);
   }
@@ -79,6 +146,9 @@ class AudioEngine {
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7000;
       const g = ctx.createGain(); g.gain.value = 0.16;
       s.connect(hp).connect(lp).connect(g).connect(gain);
+      this.whenSample('rain', () => g.gain.linearRampToValueAtTime(0.04, ctx.currentTime + 2));
+      this.loopSample('rain', gain, 0.75);
+      this.loopSample('storm', gain, 0.28);
       // gutter drip layer
       const s2 = src(this.brown);
       const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 400; bp.Q.value = 0.7;
@@ -101,6 +171,9 @@ class AudioEngine {
       const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1800; bp.Q.value = 3;
       const g2 = ctx.createGain(); g2.gain.value = 0.03; lfo(0.4, 0.03, g2.gain);
       s2.connect(bp).connect(g2).connect(gain);
+      // water lapping at the piles, slowed and darkened so its short loop does not tick
+      const wlp = ctx.createBiquadFilter(); wlp.type = 'lowpass'; wlp.frequency.value = 1400;
+      this.loopSample('river', gain, 0.22, { rate: 0.8, filter: wlp });
     } else if (name === 'room') {
       const s = src(this.brown);
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 180;
@@ -108,6 +181,12 @@ class AudioEngine {
       s.connect(lp).connect(g).connect(gain);
       const o = ctx.createOscillator(); o.frequency.value = 50; const og = ctx.createGain(); og.gain.value = 0.012;
       o.connect(og).connect(gain); o.start();
+      // an old house settling: a board creaks somewhere, now and then
+      const timer = setInterval(() => {
+        const v = gain.gain.value;
+        if (v > 0.05 && Math.random() < 0.35) this.play(this.pick(['creak1', 'creak2', 'creak3']), { vol: Math.min(0.3, v * 0.35), rate: 0.8 + Math.random() * 0.3, rev: 0.6, pan: Math.random() * 1.6 - 0.8 });
+      }, 7000);
+      return { gain, timer };
     } else if (name === 'crowd') {
       const s = src(this.noise);
       const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 700; bp.Q.value = 0.9;
@@ -139,6 +218,7 @@ class AudioEngine {
   //   memory : an out-of-tune music box playing Nat's tune, slowing down like a spring running out
   //   chase  : a pulse, ticking metal and string stabs a semitone apart
   playMusic(mood) {
+    this.wantMusic = mood;
     if (!this.ctx) return;
     const ctx = this.ctx;
     if (this.music) {
@@ -278,6 +358,14 @@ class AudioEngine {
   }
 
   step(surface = 'stone') {
+    const r = 0.88 + Math.random() * 0.24;
+    if (surface === 'wood' && this.play(this.pick(['step_wood0', 'step_wood1', 'step_wood2', 'step_wood3', 'step_wood4']), { vol: 0.28, rate: r, rev: 0.2 })) return;
+    if (surface === 'mud' && this.play('step_mud', { vol: 0.75, rate: r * 0.9, rev: 0.05 })) { this.noiseHit({ freq: 500, q: 0.8, vol: 0.08, d: 0.18, type: 'lowpass', rev: 0.05 }); return; }
+    if (surface === 'stone' && this.play('step_stone', { vol: 0.55, rate: r, rev: 0.25 })) {
+      if (Math.random() < 0.4) this.play('step_gravel', { vol: 0.12, rate: r, rev: 0.1 });
+      this.noiseHit({ freq: 3500, q: 0.6, vol: 0.03, a: 0.01, d: 0.14, type: 'highpass', rev: 0.1 }); // wet splash
+      return;
+    }
     if (surface === 'wood') this.noiseHit({ freq: 260, q: 2, vol: 0.22, d: 0.09, rev: 0.15, buf: this.brown });
     else if (surface === 'mud') this.noiseHit({ freq: 500, q: 0.8, vol: 0.18, d: 0.18, type: 'lowpass', rev: 0.1 });
     else {
@@ -359,9 +447,10 @@ class AudioEngine {
   }
 
   click() { this.noiseHit({ freq: 3000, q: 4, vol: 0.05, d: 0.03, rev: 0 }); }
-  paper() { this.noiseHit({ freq: 4200, q: 0.8, vol: 0.12, a: 0.03, d: 0.25, type: 'highpass', rev: 0.05 }); }
+  paper() { if (this.play(this.pick(['book_flip1', 'book_flip2']), { vol: 0.35, rate: 0.95 + Math.random() * 0.15, rev: 0.05 })) return; this.noiseHit({ freq: 4200, q: 0.8, vol: 0.12, a: 0.03, d: 0.25, type: 'highpass', rev: 0.05 }); }
   pen() { for (let i = 0; i < 6; i++) setTimeout(() => this.noiseHit({ freq: 5000 + Math.random() * 2000, q: 3, vol: 0.04, d: 0.05, rev: 0 }), i * 70); }
   door() {
+    if (this.play('door_open', { vol: 0.6, rev: 0.4 })) { this.play('door_close', { vol: 0.5, rev: 0.45, delay: 1.1 }); return; }
     this.noiseHit({ freq: 160, q: 1, vol: 0.4, d: 0.3, buf: this.brown, rev: 0.4 });
     if (!this.ctx) return;
     const ctx = this.ctx, t = ctx.currentTime;
@@ -375,6 +464,12 @@ class AudioEngine {
   splash() { this.noiseHit({ freq: 700, q: 0.5, vol: 0.4, a: 0.01, d: 0.6, type: 'lowpass', rev: 0.4 }); }
   thud() { this.noiseHit({ freq: 90, type: 'lowpass', vol: 0.7, d: 0.4, buf: this.brown, rev: 0.3 }); }
   match() { this.noiseHit({ freq: 2500, q: 0.7, vol: 0.18, a: 0.01, d: 0.4, rev: 0.1 }); }
+  // picking something up: cloth and leather, then the object going into a pocket
+  pickup() { if (this.play(this.pick(['cloth1', 'cloth2']), { vol: 0.45, rev: 0.05 })) { this.play('leather', { vol: 0.35, delay: 0.25, rev: 0.05 }); return; } this.paper(); }
+  bookOpen() { if (!this.play('book_open', { vol: 0.45, rev: 0.05 })) this.paper(); }
+  bookClose() { if (!this.play('book_close', { vol: 0.45, rev: 0.05 })) this.paper(); }
+  latch() { if (!this.play('latch', { vol: 0.5, rev: 0.3 })) this.click(); }
+  knife() { if (!this.play('knife', { vol: 0.5, rev: 0.35 })) this.sting(0.2); }
   tick() { this.noiseHit({ freq: 3800, q: 8, vol: 0.06, d: 0.02, rev: 0.1 }); }
 }
 

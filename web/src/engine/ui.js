@@ -215,12 +215,12 @@ export class UI {
     this.setBadge(0);
     this.renderNotebook();
     this.el.nb.classList.remove('hidden');
-    audio.paper();
+    audio.bookOpen();
   }
 
   closeNotebook() {
     this.el.nb.classList.add('hidden');
-    audio.paper();
+    audio.bookClose();
     if (this.game && this.game.onNotebookClosed) this.game.onNotebookClosed();
   }
 
