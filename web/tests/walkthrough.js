@@ -49,7 +49,7 @@ export async function run({ log = true } = {}) {
     await act('door');
     need(game.state.scene === 'room', 'No debería poder salir sin abrigo');
     await act('boots'); await act('coat'); await act('lantern'); await act('desk'); await act('laudano');
-    await act('mirror'); await act('clock');
+    await act('mirror'); await act('clock'); await act('photo');
     await act('door');
     expectScene('bucks_row');
     await act('pike', null, [0]);            // doctor -> zurdo, anatomia
@@ -83,6 +83,7 @@ export async function run({ log = true } = {}) {
     await act('passage');
     expectScene('seance');
     await act('wexley'); await act('mirror'); await act('mirror');
+    await act('clock'); await act('raven'); await act('chart');
     await act('table', 'peine');
     need(game.state.flags.seance_done, 'La sesión no terminó');
     await deduce('greaves_sabe', 'alguien_detras');
@@ -109,7 +110,7 @@ export async function run({ log = true } = {}) {
     for (let i = 0; i < 200 && game.state.scene !== 'room'; i++) await new Promise((r) => setTimeout(r, 20));
     await settle();
     expectScene('room');
-    await act('paper'); await act('bed');
+    await act('paper'); await act('bed'); await act('photo');
     await deduce('dedos', 'carta');
     await deduce('estuche', 'bisturi');
     await deduce('aqui_estoy', 'nat_voz');
