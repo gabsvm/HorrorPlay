@@ -202,7 +202,7 @@ export class Actor {
     if (this.turnT > 0 && !this.pose) this.drawFront(bc, t);
     else this.drawFigure(bc, t);
     bc.setTransform(1, 0, 0, 1, 0, 0);
-    this.rimLights(bc, W, Hh, lights);
+    if (!Actor.lowFx) this.rimLights(bc, W, Hh, lights);
     bc.globalCompositeOperation = 'source-atop';
     const g2 = bc.createLinearGradient(0, oy - this.h, 0, oy);
     g2.addColorStop(0, 'rgba(150,170,190,0.10)'); g2.addColorStop(0.6, 'rgba(0,0,0,0)'); g2.addColorStop(1, 'rgba(0,0,0,0.4)');
@@ -267,7 +267,7 @@ export class Actor {
   blit(ctx, rs, ox, oy, W, Hh) {
     this.drawShadow(ctx);
     const px = Math.round((this.x - ox) * rs) / rs, py = Math.round((this.y - oy) * rs) / rs;
-    if (this.reflect) {
+    if (this.reflect && !Actor.lowFx) {
       // a dark, squashed reflection in the wet street, broken up by the cobbles
       ctx.save();
       ctx.beginPath(); ctx.rect(this.x - W / 2, this.y + 2, W, this.h * 0.55); ctx.clip();

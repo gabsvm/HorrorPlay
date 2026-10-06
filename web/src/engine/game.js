@@ -5,6 +5,7 @@ import { fgDressing } from '../art/build.js';
 import { paintBody, paintVision } from '../art/bodies.js';
 import { UI } from './ui.js';
 import { audio } from './audio.js';
+import { prefs } from './prefs.js';
 
 const wait = (ms) => new Promise((r) => setTimeout(r, window.FAST ? 0 : ms));
 const SAVE_KEY = 'elhuesped.save.v1';
@@ -45,12 +46,24 @@ export class Game {
       audio.step(this.scene?.surface || 'stone');
       if (this.scene && (this.scene.wet || this.scene.rain) && !this.scene.indoor) this.r.splash(a.x + a.facing * 14 * (a.h / 200), a.y);
     };
+    if (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches) document.documentElement.classList.add('touch');
     this.fitStage();
     window.addEventListener('resize', () => this.fitStage());
+    window.addEventListener('pointerdown', () => this.wantFullscreen(), { capture: true });
     this.bindInput();
     this.G = this.makeAPI();
     this.last = performance.now();
     requestAnimationFrame((t) => this.loop(t));
+  }
+
+  // On a phone in the browser: the first tap asks for fullscreen in landscape (the APK is already).
+  wantFullscreen() {
+    if (this._fsAsked || !matchMedia('(pointer: coarse)').matches || window.__APK) return;
+    this._fsAsked = true;
+    const el = document.documentElement;
+    if (!document.fullscreenElement && el.requestFullscreen) {
+      el.requestFullscreen({ navigationUI: 'hide' }).then(() => screen.orientation?.lock?.('landscape').catch(() => {})).catch(() => {});
+    }
   }
 
   fitStage() {
@@ -375,7 +388,22 @@ export class Game {
     requestAnimationFrame((t) => this.loop(t));
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
+    const t0 = performance.now();
     try { this.tick(now, dt); } catch (err) { if (!this._loopErr) console.error(err); this._loopErr = true; }
+    this.adaptQuality(performance.now() - t0, now);
+  }
+
+  // Quality: 'alta' always full, 'baja' always light, 'auto' drops the costly effects (rim light,
+  // reflections, dust) if a frame's work stays too high for a phone to hold its frame rate.
+  adaptQuality(cost, now) {
+    const q = prefs.quality || 'auto';
+    let low = q === 'baja';
+    if (q === 'auto') {
+      this._cost = this._cost == null ? cost : this._cost * 0.97 + cost * 0.03;
+      if (!this._autoLow && now > 6000 && this._cost > 15) this._autoLow = true;
+      low = !!this._autoLow;
+    }
+    if (low !== !!this.r.lowFx) { this.r.lowFx = low; Actor.lowFx = low; }
   }
 
   tick(now, dt) {

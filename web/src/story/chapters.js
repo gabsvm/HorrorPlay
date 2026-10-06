@@ -4,7 +4,7 @@ import { playIntro } from './intro.js';
 
 const LOOKS = {
   child: { hat: 'cap', coat: '#3a342c', coatLen: 0.62, flare: 1.05, build: 0.9, speed: 120, lantern: false, collarUp: false, patches: true, scarf: '#5a2a22', sideburns: false, hair: '#2a1e16', gloves: null, stubble: null },
-  adult: { hat: 'bowler', coat: '#23262b', coatLen: 0.88, flare: 1.2, build: 1, speed: 150, lantern: true, collarUp: true, patches: false, scarf: null, sideburns: true, hair: '#1a1410', trousers: '#1a1b1e', gloves: '#2a221c', scarf: '#4a1612', stubble: 'rgba(30,22,18,0.35)' },
+  adult: { hat: 'bowler', coat: '#23262b', coatLen: 0.88, flare: 1.2, build: 1, speed: 150, lantern: true, collarUp: true, patches: false, sideburns: true, hair: '#1a1410', trousers: '#1a1b1e', gloves: '#2a221c', scarf: '#4a1612', stubble: 'rgba(30,22,18,0.35)' },
 };
 function look(G, k) { Object.assign(G.player, LOOKS[k]); }
 

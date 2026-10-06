@@ -346,7 +346,7 @@ export class Renderer {
       cgl.filter = 'none';
     }
     // dust and drizzle hanging in each lamp's cone, drifting slowly and catching the light
-    for (const L of lights) {
+    if (!this.lowFx) for (const L of lights) {
       if (L.off || !L.shaft) continue;
       const len = scene.groundY + 10 - (L.shaftY0 ?? L.y + 14), w1 = L.shaftW || 120, c = L.color || [1, 0.85, 0.6];
       for (let i = 0; i < 22; i++) {
@@ -360,7 +360,7 @@ export class Renderer {
         cgl.fillRect(x, y, 2, 2);
       }
     }
-    if (wet) for (const a of sorted) if (!a.noRain) a.rainHits(cgl, t, scene.rain);
+    if (wet && !this.lowFx) for (const a of sorted) if (!a.noRain) a.rainHits(cgl, t, scene.rain);
     if (this.drops && this.drops.length) {
       for (const d of this.drops) {
         d.life -= dt;

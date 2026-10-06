@@ -241,3 +241,26 @@ canvas.fly { position: absolute; width: calc(68*var(--u)); height: calc(68*var(-
 .intro-page .sig { margin-top: calc(26*var(--u)); text-align: right; font-family: var(--serif); font-style: italic; font-size: calc(24*var(--u)); color: #2a1e14; opacity: 0; transition: opacity 1s; }
 .intro-page .sig.on { opacity: 1; }
 .intro-skip { right: calc(28*var(--u)); bottom: calc(22*var(--u)); font-family: var(--sc); font-size: calc(14*var(--u)); letter-spacing: .14em; color: rgba(220,205,175,0.45); opacity: 1 !important; }
+
+/* ---- Touch screens: the stage scales down on a phone, so text and buttons keep a readable floor ---- */
+html.touch .hud-btn { font-size: max(calc(19 * var(--u)), 14px); padding: max(calc(6 * var(--u)), 8px) max(calc(14 * var(--u)), 10px); }
+html.touch #datecard { font-size: max(calc(18 * var(--u)), 11px); }
+html.touch #hud-objective { font-size: max(calc(15 * var(--u)), 11px); }
+html.touch #dlg-name { font-size: max(calc(19 * var(--u)), 11px); }
+html.touch #dlg-text { font-size: max(calc(25 * var(--u)), 15px); }
+html.touch #dialogue { width: calc(1000 * var(--u)); }
+html.touch #dialogue.has-portrait { padding-left: calc(172 * var(--u)); }
+html.touch .choice { font-size: max(calc(24 * var(--u)), 15px); padding: max(calc(10 * var(--u)), 10px) max(calc(22 * var(--u)), 14px); }
+html.touch #choices { width: calc(900 * var(--u)); }
+html.touch .inv-item { width: max(calc(68 * var(--u)), 46px); height: max(calc(68 * var(--u)), 46px); }
+html.touch .menu-btn { font-size: max(calc(26 * var(--u)), 17px); padding: max(calc(6 * var(--u)), 8px) calc(20 * var(--u)); }
+html.touch .page li { font-size: max(calc(20 * var(--u)), 13px); }
+html.touch .page h2 { font-size: max(calc(26 * var(--u)), 15px); }
+html.touch .page .hint, html.touch #nb-feedback, html.touch #objective { font-size: max(calc(17 * var(--u)), 11px); }
+html.touch .doc-paper { font-size: max(calc(19 * var(--u)), 12px); }
+html.touch #hover-label { font-size: max(calc(20 * var(--u)), 13px); }
+html.touch #insp-label { font-size: max(calc(19 * var(--u)), 13px); }
+html.touch #tip { font-size: max(calc(18 * var(--u)), 12px); }
+html.touch .close { font-size: max(calc(20 * var(--u)), 15px); padding: 10px 16px; }
+/* no pointer to draw on a touch screen: the finger is the cursor */
+html.touch #cursor, html.touch #cursor-item { display: none !important; }

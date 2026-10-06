@@ -1,4 +1,4 @@
-import { prefs, savePrefs, cycle, labelOf, VOLUMES, SPEEDS } from './engine/prefs.js';
+import { prefs, savePrefs, cycle, labelOf, VOLUMES, SPEEDS, QUALITIES } from './engine/prefs.js';
 import { Game, freshState } from './engine/game.js';
 import { audio } from './engine/audio.js';
 import { ITEMS, CLUES, DEDUCTIONS } from './story/data.js';
@@ -37,6 +37,7 @@ function optionsMenu(back) {
   const render = () => game.ui.menu([
     { label: `Volumen: ${labelOf(VOLUMES, prefs.volume)}`, action: () => { prefs.volume = cycle(VOLUMES, prefs.volume); audio.setVolume(prefs.volume); savePrefs(); render(); } },
     { label: `Texto: ${labelOf(SPEEDS, prefs.text)}`, action: () => { prefs.text = cycle(SPEEDS, prefs.text); savePrefs(); render(); } },
+    { label: `Calidad: ${labelOf(QUALITIES, prefs.quality)}`, action: () => { prefs.quality = cycle(QUALITIES, prefs.quality); savePrefs(); render(); } },
     { label: 'Volver', action: back },
   ]);
   render();
@@ -118,6 +119,16 @@ game.onPause = () => {
   pauseMenu();
 };
 document.getElementById('btn-menu').addEventListener('click', () => game.onPause());
+
+// Android app hooks: Back pauses (or closes what is open), leaving the app saves and goes quiet.
+window.__appBack = () => {
+  if (game.ui._inspectClose) { game.ui._inspectClose(); return; }
+  if (game.ui.notebookOpen) { game.ui.closeNotebook(); return; }
+  if (game.ui._advance) { game.ui.advance(); return; }
+  if (game.onPause) game.onPause();
+};
+window.__appPause = () => { game.autosave(); if (audio.ctx) audio.ctx.suspend(); };
+window.__appResume = () => { if (audio.ctx) audio.ctx.resume(); };
 
 game.finish = () => {
   Game.clearSave();

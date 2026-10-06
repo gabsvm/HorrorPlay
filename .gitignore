@@ -19,3 +19,7 @@ android/keystore/*.keystore.*
 
 # raw CC0 downloads; the game ships the processed web/assets/audio (see its CREDITS.md)
 web/assets-src/
+
+# Android build output and the local debug signing key
+web/dist/
+web/android/debug.keystore

@@ -84,4 +84,10 @@ Parámetros de desarrollo en la URL: `?scene=bucks_row&x=900&noenter=1&flags=a,b
 
 ## Android
 
-El juego es una página estática, así que se puede empaquetar con Capacitor como cualquier web: copiar `web/` como `webDir` y bloquear la orientación en horizontal.
+```bash
+bash web/tools/build-apk.sh
+```
+
+Genera `web/dist/el-huesped.apk` solo con las build-tools del SDK de Android y el JDK (sin Gradle ni descargas). El APK es un WebView a pantalla completa, en horizontal y sin que se apague la pantalla, que carga la versión de un solo archivo desde sus assets. Atrás abre la pausa, y salir de la app guarda y silencia el sonido. Las partidas se guardan en el teléfono. Se firma con una clave de depuración local (`web/android/debug.keystore`, se crea la primera vez y no se sube al repositorio). El icono sale de `python web/tools/make-icon.py`.
+
+Instalar con el teléfono conectado por USB (depuración USB activada): `adb install -r web/dist/el-huesped.apk`. O copiar el APK al teléfono y abrirlo, permitiendo instalar apps de origen desconocido.
