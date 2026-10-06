@@ -215,7 +215,8 @@ export class Renderer {
     cn.setTransform(rs, 0, 0, rs, -camX * rs, camY * rs);
     const sorted = actors.filter((a) => a.visible).sort((a, b) => (a.z || 0) - (b.z || 0));
     const prevLights = this.lightsFrame || scene.lights;
-    for (const a of sorted) a.draw(cn, t, prevLights);
+    const wet = !!scene.rain && !scene.indoor;
+    for (const a of sorted) { a.wet = wet; a.reflect = wet && !!scene.reflectY && (scene.wet ?? 0) > 0.5; a.draw(cn, t, prevLights); }
     if (scene.drawNearOver) this.dynamicPass(cn, (c, tt) => scene.drawNearOver(c, tt), camX, camY, t);
 
     // foreground
@@ -318,6 +319,22 @@ export class Renderer {
     }
     if (scene.drawGlow) scene.drawGlow(cgl, t);
     if (scene.life) for (const l of scene.life) if (l.drawGlow) l.drawGlow(cgl, t);
+    // dust and drizzle hanging in each lamp's cone, drifting slowly and catching the light
+    for (const L of lights) {
+      if (L.off || !L.shaft) continue;
+      const len = (scene.groundY - L.y) + 10, w1 = L.shaftW || 120, c = L.color || [1, 0.85, 0.6];
+      for (let i = 0; i < 22; i++) {
+        const h1 = ((i * 7919) % 1000) / 1000, h2 = ((i * 104729) % 997) / 997;
+        const v = (h2 + t * (0.012 + h1 * 0.02)) % 1;
+        const x = L.x + (h1 - 0.5) * 2 * (10 + (w1 - 10) * v) * 0.85 + Math.sin(t * 0.6 + i) * 6;
+        const y = L.y + 14 + v * len;
+        const a = (1 - v) * (0.25 + 0.25 * Math.sin(t * 2.3 + i * 1.7)) * (L.intensity ?? 1);
+        if (a <= 0.02) continue;
+        cgl.fillStyle = `rgba(${c[0] * 255 | 0},${c[1] * 255 | 0},${c[2] * 255 | 0},${a})`;
+        cgl.fillRect(x, y, 2, 2);
+      }
+    }
+    if (wet) for (const a of sorted) if (!a.noRain) a.rainHits(cgl, t, scene.rain);
     if (this.drops && this.drops.length) {
       for (const d of this.drops) {
         d.life -= dt;

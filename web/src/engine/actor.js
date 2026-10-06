@@ -35,6 +35,12 @@ function segment(ctx, len, w0, w1) {
   ctx.lineTo(w0 / 2, 0);
   ctx.arc(0, 0, w0 / 2, 0, Math.PI, true);
   ctx.fill();
+  const prev = ctx.fillStyle, w = Math.max(w0, w1) / 2;
+  const g = ctx.createLinearGradient(-w, 0, w, 0);
+  g.addColorStop(0, 'rgba(0,0,0,0.32)'); g.addColorStop(0.38, 'rgba(0,0,0,0)');
+  g.addColorStop(0.62, 'rgba(255,240,220,0.05)'); g.addColorStop(1, 'rgba(0,0,0,0.22)');
+  ctx.fillStyle = g; ctx.fill();
+  ctx.fillStyle = prev;
 }
 
 export class Actor {
@@ -187,25 +193,8 @@ export class Actor {
     if (this.turnT > 0 && !this.pose) this.drawFront(bc, t);
     else this.drawFigure(bc, t);
     bc.setTransform(1, 0, 0, 1, 0, 0);
+    this.rimLights(bc, W, Hh, lights);
     bc.globalCompositeOperation = 'source-atop';
-    // rim light from the strongest nearby light
-    let best = null, bestK = 0;
-    for (const L of lights) {
-      if (L.off || L.cone) continue;
-      const dx = L.x - this.x, dy = L.y - (this.y - this.h * 0.6);
-      const d = Math.hypot(dx, dy);
-      const k = (L.intensity ?? 1) * Math.max(0, 1 - d / (L.r * 1.1));
-      if (k > bestK) { bestK = k; best = { dx, c: L.color }; }
-    }
-    if (best && bestK > 0.04) {
-      const side = Math.sign(best.dx) || 1;
-      const g = bc.createLinearGradient(ox + side * W * 0.15, 0, ox + side * W * 0.06, 0);
-      const c = best.c;
-      g.addColorStop(0, `rgba(${c[0] * 255 | 0},${c[1] * 255 | 0},${c[2] * 255 | 0},${Math.min(0.38, bestK * 0.6)})`);
-      g.addColorStop(1, 'rgba(0,0,0,0)');
-      bc.fillStyle = g;
-      bc.fillRect(0, 0, W, Hh);
-    }
     const g2 = bc.createLinearGradient(0, oy - this.h, 0, oy);
     g2.addColorStop(0, 'rgba(150,170,190,0.10)'); g2.addColorStop(0.6, 'rgba(0,0,0,0)'); g2.addColorStop(1, 'rgba(0,0,0,0.4)');
     bc.fillStyle = g2; bc.fillRect(0, 0, W, Hh);
@@ -214,12 +203,74 @@ export class Actor {
     this.blit(ctx, rs, ox, oy, W, Hh);
   }
 
+  // Edge lighting from the actual lights in the scene. For each of the two strongest lights, the
+  // silhouette is subtracted from itself shifted toward the light: what remains is the rim that
+  // faces it, which is painted in the light's colour. The far side gets a band of shadow.
+  rimLights(bc, W, Hh, lights) {
+    const s = this.h / 200, cy = this.y - this.h * 0.6;
+    const found = [];
+    for (const L of lights) {
+      if (L.off || L.cone) continue;
+      const dx = L.x - this.x, dy = L.y - cy, d = Math.hypot(dx, dy) || 1;
+      const k = (L.intensity ?? 1) * Math.max(0, 1 - d / (L.r * 1.15));
+      if (k > 0.03) found.push({ ux: dx / d, uy: dy / d, k, c: L.color || [1, 0.8, 0.6] });
+    }
+    // a lantern lights its bearer from below and in front
+    if (this.lantern && this.lanternOn) found.push({ ux: this.facing * 0.6, uy: 0.8, k: 0.5, c: P.lantern || [1, 0.75, 0.45] });
+    found.sort((a, b) => b.k - a.k);
+    if (!this._rim || this._rim.width !== W || this._rim.height !== Hh) {
+      this._rim = document.createElement('canvas'); this._rim.width = W; this._rim.height = Hh;
+    }
+    const rc = this._rim.getContext('2d');
+    const pass = (ux, uy, width, fill, mode) => {
+      rc.globalCompositeOperation = 'copy'; rc.drawImage(this._hi, 0, 0);
+      rc.globalCompositeOperation = 'destination-out'; rc.drawImage(this._hi, -ux * width, -uy * width);
+      rc.globalCompositeOperation = 'source-in'; rc.fillStyle = fill; rc.fillRect(0, 0, W, Hh);
+      rc.globalCompositeOperation = 'source-over';
+      bc.globalCompositeOperation = mode; bc.drawImage(this._rim, 0, 0);
+      bc.globalCompositeOperation = 'source-over';
+    };
+    const rgb = (c, a) => `rgba(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)},${a})`;
+    if (found[0]) pass(-found[0].ux, -found[0].uy, Math.max(5, 9 * s), `rgba(0,0,0,${Math.min(0.42, 0.18 + found[0].k * 0.4)})`, 'source-atop');
+    for (const f of found.slice(0, 2)) pass(f.ux, f.uy, Math.max(2.5, 3.2 * s), rgb(f.c, Math.min(0.7, f.k * 0.95)), 'lighter');
+    if (this.wet) pass(0, -1, Math.max(2, 2.2 * s), 'rgba(170,190,205,0.13)', 'lighter');
+  }
+
+  // Rain bouncing off the hat brim and the shoulders (drawn into the additive glow layer).
+  rainHits(ctx, t, amount) {
+    const s = this.h / 200, n = Math.round(6 * amount + 2);
+    const top = this.y - this.h * (this.pose === 'kneel' || this.pose === 'sit' ? 0.78 : this.hat === 'top' || this.hat === 'helmet' ? 1.02 : 0.96);
+    for (let i = 0; i < n; i++) {
+      const h1 = ((i * 92821 + this.seed * 13) % 997) / 997, h2 = ((i * 6871 + this.seed) % 503) / 503;
+      const k = (t * (1.1 + h2) + h1) % 1;
+      if (k > 0.22) continue;
+      const p = k / 0.22, a = (1 - p) * 0.75;
+      const onHat = i % 3 === 0;
+      const x = this.x + (onHat ? (h2 - 0.5) * 26 * s : (i % 2 ? 1 : -1) * (14 + h1 * 10) * s);
+      const y = onHat ? top : this.y - this.h * 0.78 + (this.pose === 'kneel' ? this.h * 0.18 : 0);
+      ctx.fillStyle = `rgba(175,195,205,${a})`;
+      ctx.fillRect(x - 1 - p * 7, y - p * 9 + p * p * 10, 2, 2);
+      ctx.fillRect(x - 1 + p * 7, y - p * 8 + p * p * 10, 2, 2);
+      if (p < 0.4) ctx.fillRect(x - 1, y - 1, 3, 2);
+    }
+  }
+
   blit(ctx, rs, ox, oy, W, Hh) {
     this.drawShadow(ctx);
+    const px = Math.round((this.x - ox) * rs) / rs, py = Math.round((this.y - oy) * rs) / rs;
+    if (this.reflect) {
+      // a dark, squashed reflection in the wet street, broken up by the cobbles
+      ctx.save();
+      ctx.beginPath(); ctx.rect(this.x - W / 2, this.y + 2, W, this.h * 0.55); ctx.clip();
+      ctx.translate(0, this.y + 2); ctx.scale(1, -0.55); ctx.translate(0, -this.y);
+      ctx.globalAlpha = this.alpha * 0.3;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(this._lo, px, py, W, Hh);
+      ctx.restore();
+    }
     ctx.save();
     ctx.globalAlpha = this.alpha;
     ctx.imageSmoothingEnabled = false;
-    const px = Math.round((this.x - ox) * rs) / rs, py = Math.round((this.y - oy) * rs) / rs;
     ctx.drawImage(this._lo, px, py, W, Hh);
     ctx.restore();
   }
@@ -391,6 +442,12 @@ export class Actor {
     }
     ctx.quadraticCurveTo(lean, shoulderY - 9, -bw + lean, shoulderY + 4);
     ctx.fill();
+    {
+      const tg = ctx.createLinearGradient(-bw * 1.4, 0, bw * 1.4 + lean, 0);
+      tg.addColorStop(0, 'rgba(0,0,0,0.32)'); tg.addColorStop(0.32, 'rgba(0,0,0,0)');
+      tg.addColorStop(0.7, 'rgba(255,240,220,0.04)'); tg.addColorStop(1, 'rgba(0,0,0,0.26)');
+      ctx.fillStyle = tg; ctx.fill();
+    }
 
     // shadow side, folds and the lit front edge
     ctx.fillStyle = 'rgba(0,0,0,0.26)';
