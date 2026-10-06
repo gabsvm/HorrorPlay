@@ -21,6 +21,7 @@ export class UI {
     this.el.dlg.addEventListener('pointerdown', (e) => { e.stopPropagation(); this.advance(); });
     window.addEventListener('keydown', (e) => {
       if ((e.key === ' ' || e.key === 'Enter') && this._advance) { e.preventDefault(); this.advance(); }
+      if (e.key === 'Escape' && this._inspectClose && !this._advance) this._inspectClose();
       if (/^[1-9]$/.test(e.key) && this._choiceKeys) { const b = this._choiceKeys[Number(e.key) - 1]; if (b) b.click(); }
     });
     $('doc-close').addEventListener('click', () => this._docClose && this._docClose());
@@ -201,6 +202,96 @@ export class UI {
     c.classList.remove('show');
     await wait(1400);
     c.classList.add('hidden');
+  }
+
+  // ------------------------------------------------------------ crime-scene close-up
+  // A painted close-up explored in the dark: the pointer carries the lantern, and anything worth
+  // examining names itself when the light falls on it. `onPoint(point)` runs the examination.
+  async inspect({ title, paint, points, seen = {} }, onPoint) {
+    const box = $('inspect'), img = $('insp-img'), dark = $('insp-dark'), label = $('insp-label');
+    this.hideDialogue();
+    const hi = document.createElement('canvas'); hi.width = 1280; hi.height = 720;
+    paint(hi.getContext('2d'), 1280, 720);
+    const lo = pixelize(hi, 0.5, { dither: 8 });
+    const ic = img.getContext('2d'); ic.imageSmoothingEnabled = false; ic.drawImage(lo, 0, 0);
+    $('insp-title').textContent = title || '';
+    box.classList.remove('hidden', 'busy');
+    const dc = dark.getContext('2d');
+    let lx = 640, ly = 360, hover = null, busy = false, closed = false, raf = 0;
+    const toLocal = (e) => { const r = box.getBoundingClientRect(); return { x: ((e.clientX - r.left) / r.width) * 1280, y: ((e.clientY - r.top) / r.height) * 720 }; };
+    const at = (x, y) => points.find((p) => Math.hypot(p.x - x, p.y - y) < (p.r || 60)) || null;
+    const draw = () => {
+      if (closed) return;
+      const t = performance.now() / 1000, fl = 1 + Math.sin(t * 9) * 0.02 + Math.sin(t * 23) * 0.015;
+      dc.globalCompositeOperation = 'source-over';
+      dc.clearRect(0, 0, 640, 360);
+      dc.fillStyle = 'rgba(2,2,4,0.94)'; dc.fillRect(0, 0, 640, 360);
+      dc.globalCompositeOperation = 'destination-out';
+      const g = dc.createRadialGradient(lx / 2, ly / 2, 10, lx / 2, ly / 2, 120 * fl);
+      g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.55, 'rgba(0,0,0,0.85)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      dc.fillStyle = g; dc.fillRect(0, 0, 640, 360);
+      // a little ambient so the shape of the body is always there
+      dc.fillStyle = 'rgba(0,0,0,0.12)'; dc.fillRect(0, 0, 640, 360);
+      dc.globalCompositeOperation = 'source-over';
+      // warm lantern tint where the light falls
+      const w = dc.createRadialGradient(lx / 2, ly / 2, 4, lx / 2, ly / 2, 110 * fl);
+      w.addColorStop(0, 'rgba(255,170,90,0.10)'); w.addColorStop(1, 'rgba(255,170,90,0)');
+      dc.fillStyle = w; dc.fillRect(0, 0, 640, 360);
+      for (const p of points) {
+        const d = Math.hypot(p.x - lx, p.y - ly);
+        if (d > 260) continue;
+        const a = Math.max(0, 1 - d / 260) * (seen[p.id] ? 0.35 : 0.8);
+        dc.strokeStyle = seen[p.id] ? `rgba(160,160,150,${a})` : `rgba(255,214,140,${a})`;
+        dc.lineWidth = 1;
+        dc.beginPath(); dc.arc(p.x / 2, p.y / 2, (seen[p.id] ? 4 : 6) + Math.sin(t * 4) * 1, 0, Math.PI * 2); dc.stroke();
+      }
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    const showLabel = () => {
+      if (!hover || busy) { label.classList.add('hidden'); return; }
+      label.classList.remove('hidden');
+      label.innerHTML = `<span class="verb">${seen[hover.id] ? 'Volver a mirar' : 'Examinar'}</span>${hover.name}`;
+      label.style.left = `calc(${hover.x} * var(--u))`; label.style.top = `calc(${hover.y} * var(--u))`;
+    };
+    const move = (e) => { const p = toLocal(e); lx = p.x; ly = p.y; hover = at(lx, ly); box.style.cursor = hover && !busy ? 'pointer' : 'none'; showLabel(); };
+    const down = async (e) => {
+      if (e.target.id === 'insp-close') return;
+      move(e);
+      if (busy || !hover) return;
+      busy = true; box.classList.add('busy'); showLabel();
+      audio.click();
+      const p = hover;
+      try { await onPoint(p); } finally { seen[p.id] = true; this.hideDialogue(); busy = false; box.classList.remove('busy'); showLabel(); }
+    };
+    box.addEventListener('pointermove', move);
+    box.addEventListener('pointerdown', down);
+    await new Promise((res) => {
+      const close = () => { if (busy) return; res(); };
+      $('insp-close').onclick = close;
+      this._inspectClose = close;
+    });
+    closed = true; cancelAnimationFrame(raf);
+    this._inspectClose = null;
+    box.removeEventListener('pointermove', move);
+    box.removeEventListener('pointerdown', down);
+    box.classList.add('hidden'); label.classList.add('hidden');
+  }
+
+  // A flash of something he does not remember doing, a few frames long, twice.
+  async vision(paint) {
+    if (window.FAST) return;
+    const v = $('vision');
+    const hi = document.createElement('canvas'); hi.width = 1280; hi.height = 720;
+    paint(hi.getContext('2d'), 1280, 720);
+    const c = v.getContext('2d'); c.imageSmoothingEnabled = false;
+    c.clearRect(0, 0, 640, 360); c.drawImage(pixelize(hi, 0.5, { dither: 10 }), 0, 0);
+    for (const ms of [90, 60, 140]) {
+      v.classList.remove('hidden'); v.style.opacity = String(0.6 + Math.random() * 0.4);
+      await wait(ms);
+      v.classList.add('hidden');
+      await wait(70 + Math.random() * 120);
+    }
   }
 
   // ------------------------------------------------------------ inventory

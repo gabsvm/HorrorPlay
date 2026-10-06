@@ -5,6 +5,7 @@ import { P, shade } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
 import { rng } from '../art/noise.js';
 import { Smoke, Drip, Crow, Cat } from '../engine/life.js';
+import { drawCorpse } from './corpse.js';
 
 const WIDTH = 2000, GROUND = 630;
 
@@ -128,6 +129,8 @@ export default {
   },
 
   drawNear(ctx, t) {
+    // Annie Chapman between the steps and the fence, under the sacking Phillips threw over her
+    if (this.G && !this.G.flag('annie_taken')) drawCorpse(ctx, t, { key: 'annie', x: 650, y: GROUND + 14, h: 150, cover: '#5a4a36', look: { hat: 'none', coat: '#2a2420', hair: '#3a2a20', eyesClosed: true } });
     // neighbours leaning out of the windows next door (they charge a penny for the view)
     for (const [x, y, k] of [[1370, 262, 0], [1730, 262, 1], [1550, 506, 2]]) {
       ctx.fillStyle = '#16120f';
@@ -148,13 +151,13 @@ export default {
     if (G.flag('hb_intro')) return;
     G.flag('hb_intro', true);
     G.date('8 de septiembre de 1888', '6:20');
-    await G.walk(620);
+    await G.walk(800);
     await G.think('En la calle hay vecinos cobrando un penique por asomarse a la ventana a mirar el patio.');
     const pike = G.actor('Pike'); pike.facing = -1;
     await G.say('Pike', 'Annie Chapman. Cuarenta y siete años. Vendía flores y ganchillo cuando estaba sana. Ya no lo estaba.');
-    await G.say('Pike', 'La encontró un vecino a las seis menos cuarto, entre los escalones y la valla. Ya se la han llevado.');
+    await G.say('Pike', 'La encontró un vecino a las seis menos cuarto, entre los escalones y la valla. Phillips no ha querido que la muevan hasta que usted la viera.');
     await G.narrate('Pike escribe la hora en la libreta.');
-    G.objective('Examinar el patio y hablar con Pike, con el médico y con la casera.');
+    G.objective('Examinar el cuerpo y el patio. Hablar con Pike, con el médico y con la casera.');
   },
 
   hotspots: [
@@ -244,7 +247,7 @@ export default {
       id: 'comb', name: 'Algo junto a la valla', when: (G) => !G.flag('peine_taken'), rect: [740, GROUND - 6, 70, 30], walk: 720, face: 1,
       act: async (G) => {
         G.player.pose = 'kneel';
-        await G.think('Un peine de bolsillo con dos púas rotas. Se les habrá pasado al recoger sus cosas.');
+        await G.think('Un peine de bolsillo con dos púas rotas, apartado de las otras cosas. Se les ha pasado.');
         G.player.pose = null;
         const c = await G.choice(['Dárselo a Pike.', 'Guardármelo.']);
         if (c === 0) {
@@ -279,6 +282,46 @@ export default {
       },
     },
     {
+      id: 'annie', name: 'El cuerpo de Annie Chapman', verb: 'Examinar', when: (G) => !G.flag('annie_taken'), rect: [560, GROUND - 30, 180, 60], walk: 790, face: -1, gesture: false,
+      act: async (G) => {
+        await G.think('Aparto el saco.');
+        await G.inspect('annie', {
+          title: 'Annie Chapman', body: 'chapman',
+          points: [
+            { id: 'cara', x: 300, y: 350, r: 60, name: 'La cara', act: async (G) => {
+              await G.think('La cara hinchada, la lengua entre los dientes. La estrangularon primero, hasta dejarla sin sentido.');
+              await G.think('Por eso nadie oyó nada. Cuando empezó a cortar, ella ya no podía gritar.');
+            } },
+            { id: 'cuello', x: 412, y: 350, r: 50, name: 'El cuello', act: async (G) => {
+              await G.think('El corte da toda la vuelta. Casi le separa la cabeza. Hay que tener mucha fuerza en la mano, o mucha costumbre.');
+            } },
+            { id: 'hombro', x: 560, y: 175, r: 70, name: 'Sobre el hombro', act: async (G) => {
+              G.red(0.5); G.audio.sting(0.2); G.shake(4);
+              await G.think('Sobre el hombro derecho, lo que le sacaron del vientre. No está tirado: está colocado.');
+              G.sanity(-5);
+              await G.think('He visto esto antes. En una mesa de mármol, en el London Hospital, con un profesor señalando con el puntero.');
+            } },
+            { id: 'saco', x: 950, y: 360, r: 90, name: 'Bajo el saco', act: async (G) => {
+              await G.think('Phillips dejó el saco sobre el vientre. No hace falta levantarlo: me lo contó Greaves.');
+              await G.think('Falta algo de dentro. Lo sacó entero, con cortes limpios. Sabía dónde estaba y cómo se suelta.');
+              G.clue('falta');
+            } },
+            { id: 'mano', x: 900, y: 540, r: 55, name: 'La mano', act: async (G) => {
+              await G.think('En el dedo, dos marcas claras y la piel levantada. Le arrancaron los anillos.');
+              await G.think('Anillos de latón; no valían nada. No los cogió para venderlos.');
+              G.clue('anillos');
+            } },
+            { id: 'cosas', x: 1140, y: 556, r: 80, name: 'Sus cosas', act: async (G) => {
+              await G.think('Un trozo de muselina, un sobre roto con el sello de un regimiento, dos peniques. En fila, a sus pies.');
+              G.clue('ordenados');
+              await G.think('Como el instrumental antes de una operación.');
+            } },
+          ],
+        });
+        await G.think('Vuelvo a taparla. Ahora me miran todos los de las ventanas.');
+      },
+    },
+    {
       id: 'neighbours', name: 'Vecinos en las ventanas', rect: [1300, 150, 600, 190], walk: 1500,
       act: async (G) => { await G.think('Los de la casa de al lado cobran un penique por asomarse a mirar el patio. Ya hay cola en la calle.'); },
     },
@@ -286,6 +329,7 @@ export default {
       id: 'passage', name: 'Pasillo a Hanbury Street', cursor: 'exit', rect: [30, GROUND - 250, 130, 250], walk: 190, face: -1,
       act: async (G) => {
         if (!G.hasClue('delantal') || !G.flag('greaves_met')) { await G.think('Todavía no he terminado aquí.'); return; }
+        G.flag('annie_taken', true);
         await G.game.chapterHooks.leaveHanbury(G);
       },
     },

@@ -53,7 +53,9 @@ export async function run({ log = true } = {}) {
     await act('door');
     expectScene('bucks_row');
     await act('pike', null, [0]);            // doctor -> zurdo, anatomia
-    await act('neil'); await act('boy'); await act('tracks');
+    await act('neil'); await act('boy'); await act('tracks'); await act('polly');
+    need(game.G.hasClue('cuello'), 'Falta la pista del cuerpo (cuello)');
+    await deduce('cuello', 'silencio');
     await deduce('ronda', 'silencio');
     await deduce('zurdo', 'anatomia');
     await deduce('botas', 'huellas');
@@ -77,6 +79,9 @@ export async function run({ log = true } = {}) {
 
     // Chapter 2
     expectScene('hanbury');
+    await act('annie');
+    need(game.G.hasClue('anillos') && game.G.hasClue('falta'), 'Faltan las pistas del cuerpo de Annie');
+    await deduce('anillos', 'falta');
     await act('pike'); await act('greaves', null, [0]); await act('amelia'); await act('apron'); await act('comb', null, [1]); await act('window');
     await deduce('delantal', 'brennan_zurdo');
     await deduce('ordenados', 'anatomia');
@@ -101,6 +106,8 @@ export async function run({ log = true } = {}) {
     await act('watkins', 'placa', [0]);
     await act('watkins', null, [0]); await act('watkins', null, [0]); await act('watkins', null, [0]);
     await act('corner'); await act('morris');
+    need(game.G.hasClue('guantes') && game.G.hasClue('marcas'), 'Faltan las pistas del cuerpo de Kate');
+    await deduce('guantes', 'rapido'); await deduce('marcas', 'ordenados');
     await deduce('rapido', 'ronda');
     await deduce('testigo', 'trozo');
     await act('east');

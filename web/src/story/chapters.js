@@ -242,6 +242,7 @@ export function makeChapters() {
       G.audio.sting(0.4);
       await G.say('Madame Wexley', '¡HAY ALGUIEN DETRÁS DE USTED!');
       G.red(0.9); G.shake(16);
+      await G.vision('nichols');
       G.flag('candles_out', true); G.flag('mirror_cracked', true);
       s.lights.forEach((l) => { l.off = true; });
       G.audio.thud();
@@ -468,6 +469,7 @@ export function makeChapters() {
       gr.pose = 'reach';
       G.audio.sting(0.45);
       G.red(1); G.shake(18);
+      await G.vision('hands');
       await G.fade(1, 120);
       G.audio.thud();
       await G.wait(1600);
@@ -543,7 +545,13 @@ export function makeChapters() {
       await G.choice(['"Me llamo Thomas Ashgrove."', '"Me llamo Thomas Ashgrove."']);
       await G.say('Ashgrove', 'Me llamo Thomas...');
       await G.voice('¿Seguro?');
+      // he drops the lantern and goes down on his knees, hands at his head
+      G.player.lanternOn = false; G.audio.thud();
+      G.player.pose = 'clutch';
+      await G.wait(700);
       await G.say('Ashgrove', 'Me llamo...');
+      await G.vision('eddowes');
+      await G.vision('hands');
       G.red(1); G.audio.sting(0.5);
       await G.fade(1, 1600);
       G.zoom(1);

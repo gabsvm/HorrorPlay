@@ -4,6 +4,7 @@ import { nightBackdrop, facade, warehouse } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
 import { Smoke, Drip, Rat, Cat, Crow, Moths, Paper, Ripples } from '../engine/life.js';
+import { drawCorpse, groundLantern } from './corpse.js';
 
 const WIDTH = 2600, GROUND = 628;
 
@@ -85,6 +86,7 @@ export default {
       A.sack(ctx, 260, GROUND - 8, 4); A.sack(ctx, 300, GROUND - 6, 5);
       A.crate(ctx, 160, GROUND - 70, 66, 58, 9, { stencil: 'E.W.' });
       const lamp = A.lampPost(ctx, 1640, GROUND, 320);
+      lights.push({ id: 'bodylamp', x: 880, y: GROUND + 4, r: 300, color: P.lantern, intensity: 0.85, flicker: 0.06, halo: 26, haloK: 0.6 });
       lights.push({ id: 'lamp', x: lamp.x, y: lamp.y, r: 520, color: P.gas, intensity: 1.15, flicker: 0.08, halo: 130, shaft: true, shaftW: 130 });
     });
     layers.push({ canvas: near, parallax: 1, kind: 'near' });
@@ -116,11 +118,20 @@ export default {
     ];
   },
 
+  drawNear(ctx, t) {
+    // Polly Nichols where the carter found her, Neil's cape over her, waiting for the mortuary barrow
+    const gone = !this.G || this.G.flag('polly_taken');
+    const L = this.lights && this.lights.find((l) => l.id === 'bodylamp');
+    if (L) L.off = gone;
+    if (!gone) groundLantern(ctx, 892, GROUND + 22);
+    if (this.G && !this.G.flag('polly_taken')) drawCorpse(ctx, t, { key: 'polly', x: 800, y: GROUND + 20, h: 150, cover: '#161c30', look: { hat: 'bonnet', hatColor: '#0e0d0d', coat: '#4a3a2c', hair: '#4a3a2a' } });
+  },
+
   actors() {
     return [
       new Actor('Pike', { x: 980, y: GROUND, h: 200, hat: 'bowler', coat: '#2c2a26', coatLen: 0.9, cape: true, facing: 1, build: 1.05, moustache: '#3a2a1e', buttons: 'double', notebook: true, hair: '#3a2a1e' }),
       new Actor('Neil', { x: 1500, y: GROUND, h: 212, hat: 'helmet', coat: '#161c30', trousers: '#12151f', coatLen: 0.8, flare: 1.02, facing: -1, lantern: true, lanternOn: true, belt: true, number: true, moustache: '#4a3424' }),
-      new Actor('Chico', { x: 760, y: GROUND, h: 156, hat: 'cap', coat: '#4a3a2a', coatLen: 0.58, facing: -1, stoop: 1, pose: 'kneel', patches: true, hair: '#4a3020' }),
+      new Actor('Chico', { x: 610, y: GROUND, h: 156, hat: 'cap', coat: '#4a3a2a', coatLen: 0.58, facing: -1, stoop: 1, pose: 'kneel', patches: true, hair: '#4a3020' }),
     ];
   },
 
@@ -133,10 +144,11 @@ export default {
     pike.facing = 1;
     await G.say('Pike', 'Inspector.');
     await G.narrate('Pike abre la libreta y escribe algo, como siempre que llego.');
-    await G.say('Pike', 'Mary Ann Nichols. La llamaban Polly. Cuarenta y tres años. Ya se la han llevado al depósito de Old Montague Street.');
+    await G.say('Pike', 'Mary Ann Nichols. La llamaban Polly. Cuarenta y tres años. Sigue ahí, delante del portón: la carretilla del depósito no ha llegado.');
+    await G.say('Pike', 'Si quiere verla, ahora es el momento, señor.');
     await G.say('Pike', 'La encontró un carretero a las tres cuarenta, justo delante del portón del establo. Neil llegó un minuto después, haciendo la ronda.');
     await G.think('Tengo que hablar con todos antes de que se despierte la calle, que luego la gente habla de más.');
-    G.objective('Hablar con Pike, con Neil y con el chico. Examinar la calle.');
+    G.objective('Examinar el cuerpo. Hablar con Pike, con Neil y con el chico.');
   },
 
   hotspots: [
@@ -200,7 +212,7 @@ export default {
       },
     },
     {
-      id: 'boy', name: 'Chico con un cubo', cursor: 'talk', rect: [720, GROUND - 95, 90, 95], walk: 860, face: -1,
+      id: 'boy', name: 'Chico con un cubo', cursor: 'talk', rect: [570, GROUND - 95, 90, 95], walk: 700, face: -1,
       act: async (G) => {
         const b = G.actor('Chico'); b.talking = true;
         if (!G.hasClue('silencio')) {
@@ -222,6 +234,40 @@ export default {
       act: async (G) => {
         await G.think('Aquí, delante del portón. El carretero creyó que era una lona tirada en el suelo.');
         await G.think('Apenas había sangre bajo ella. Llewellyn dice que la mayor parte se quedó dentro de la ropa.');
+      },
+    },
+    {
+      id: 'polly', name: 'El cuerpo de Polly Nichols', verb: 'Examinar', when: (G) => !G.flag('polly_taken'), rect: [690, GROUND - 30, 200, 70], walk: 930, face: -1, gesture: false,
+      act: async (G) => {
+        await G.think('Levanto la capa de Neil.');
+        await G.inspect('polly', {
+          title: 'Mary Ann "Polly" Nichols', body: 'nichols',
+          points: [
+            { id: 'cara', x: 300, y: 350, r: 60, name: 'La cara', act: async (G) => {
+              await G.think('Tiene los ojos abiertos. Miran algo que ya no está ahí.');
+              await G.think('Un moratón en la mandíbula, a la derecha: alguien le sujetó la cara con la mano derecha, desde atrás.');
+            } },
+            { id: 'cuello', x: 412, y: 350, r: 50, name: 'El cuello', act: async (G) => {
+              await G.think('Dos cortes. De un lado a otro, hasta el hueso. El primero para callarla, el segundo para asegurarse.');
+              await G.think('Ni un rasguño en las manos. No se defendió.');
+              G.clue('cuello');
+            } },
+            { id: 'vientre', x: 925, y: 370, r: 80, name: 'La falda', act: async (G) => {
+              await G.think('La falda está empapada. La levanto un palmo con la punta del lápiz.');
+              G.red(0.35); G.audio.sting(0.12);
+              await G.think('Cortes en el vientre, largos, hechos después. Por eso apenas había sangre en el suelo: la ropa se la bebió toda.');
+              G.sanity(-3);
+            } },
+            { id: 'manos', x: 900, y: 540, r: 55, name: 'Las manos', act: async (G) => {
+              await G.think('Las manos abiertas, las palmas hacia arriba. Ni tierra en las uñas. No arañó a nadie.');
+            } },
+            { id: 'sombrero', x: 150, y: 500, r: 60, name: 'El sombrero', act: async (G) => {
+              await G.think('El sombrero negro nuevo. Le dijo a la casera que con ese sombrero pronto tendría para la cama.');
+              await G.think('Lo recojo y lo dejo junto a su cabeza. No sé por qué lo hago.');
+            } },
+          ],
+        });
+        await G.think('Vuelvo a taparla con la capa.');
       },
     },
     {
@@ -254,6 +300,7 @@ export default {
       id: 'west', name: 'Hacia Winthrop Street', cursor: 'exit', rect: [0, GROUND - 420, 150, 440], walk: 160, face: -1,
       act: async (G) => {
         if (!G.flag('knackers_lead')) { await G.think('Antes tengo que oír lo que dijo el médico.'); return; }
+        G.flag('polly_taken', true);
         await G.goto('knackers', { x: 1960, facing: -1 });
       },
     },

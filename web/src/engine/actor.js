@@ -166,7 +166,7 @@ export class Actor {
       return this.isPlayer ? { x: this.x, y: this.y - this.h * 0.55, r: this.h * 1.3, color: [0.55, 0.6, 0.7], intensity: 0.24, halo: 0, reflect: false } : null;
     }
     const s = this.h / 200;
-    const lift = this.pose === 'inspect' ? 46 : this.pose === 'take' ? -24 : this.pose === 'kneel' ? -30 : 0;
+    const lift = this.pose === 'inspect' ? 46 : this.pose === 'take' ? -24 : this.pose === 'kneel' || this.pose === 'clutch' ? -30 : this.pose === 'recoil' ? 40 : 0;
     const reachX = this.pose === 'inspect' ? 34 : 0;
     return {
       x: this.x + this.facing * (22 + reachX) * s, y: this.y - (92 + lift) * s, r: 430, color: P.lantern, intensity: 0.85, flicker: 0.04,
@@ -318,7 +318,7 @@ export class Actor {
     const k = ((((t + this.x * 0.013) % period) + period) % period) / period;
     if (k > 0.45) return;
     const p = k / 0.45;
-    const lift = this.pose === 'kneel' ? 38 : this.pose === 'sit' ? 44 : 0;
+    const lift = this.pose === 'kneel' || this.pose === 'clutch' ? 38 : this.pose === 'sit' ? 44 : 0;
     const mx = this.x + this.facing * (20 + p * 26) * s, my = this.y - (178 - lift - p * 10) * s;
     const g = ctx.createRadialGradient(mx, my, 1, mx, my, (6 + p * 16) * s);
     g.addColorStop(0, `rgba(255,255,255,${0.5 * (1 - p)})`); g.addColorStop(1, 'rgba(255,255,255,0)');
@@ -391,7 +391,9 @@ export class Actor {
     const s = this.h / 200;
     const w = this.walkAmt;                              // 0 standing .. 1 full stride
     const pose = this.pose;
-    const kneel = pose === 'kneel', cower = pose === 'cower', sit = pose === 'sit', reach = pose === 'reach';
+    // clutch: on his knees with his hands at his head; recoil: a step back from something; write: notebook out
+    const clutch = pose === 'clutch', recoil = pose === 'recoil', write = pose === 'write';
+    const kneel = pose === 'kneel' || clutch, cower = pose === 'cower', sit = pose === 'sit', reach = pose === 'reach';
     const take = pose === 'take', inspect = pose === 'inspect';
     const qa = this.phase, qb = this.phase + Math.PI;
     const fa = this.footAt(qa, w), fb = this.footAt(qb, w);
@@ -411,7 +413,7 @@ export class Actor {
     const bw = 24 * this.build;                           // half shoulder width
     // standing, the weight drifts from one leg to the other; each footfall jolts the body down
     const shift = pose ? 0 : Math.sin(t * 0.45 + this.seed) * 1.4 * (1 - w);
-    const lean = this.stoop * 9 + w * 5 + (cower ? 14 : 0) + (take ? 16 : 0) + (inspect ? 6 : 0) + shift;
+    const lean = this.stoop * 9 + w * 5 + (cower ? 14 : 0) + (take ? 16 : 0) + (inspect ? 6 : 0) + (clutch ? 10 : 0) + (recoil ? -11 : 0) + (write ? 3 : 0) + shift;
     ctx.translate(0, (this.impact || 0) * 2.2 * w);
     const hipY = -97 + bobY, shoulderY = -158 + this.stoop * 6 + breathe * 0.4 + (cower ? 10 : 0) + bobY * 0.9;
     const hemY = this.skirt ? (sit ? -48 : -2) : hipY + (this.coatLen - 0.5) * 140;
@@ -420,12 +422,13 @@ export class Actor {
     // foot targets for every pose (ankle positions, local space)
     let footBack = { x: -3 + fb.x, y: gl - 6 + fb.y, pitch: fb.pitch }, footFront = { x: 4 + fa.x, y: gl - 6 + fa.y, pitch: fa.pitch };
     if (kneel) { footFront = { x: 30, y: gl - 6, pitch: 0 }; footBack = { x: -44, y: gl - 4, pitch: 0.9 }; }
+    else if (recoil) { footFront = { x: 14, y: gl - 6, pitch: -0.2 }; footBack = { x: -36, y: gl - 6, pitch: 0.35 }; }
     else if (sit) { footFront = { x: 46, y: gl - 6, pitch: 0 }; footBack = { x: 38, y: gl - 6, pitch: 0 }; }
     else if (cower) { footFront = { x: 16, y: gl - 6, pitch: 0 }; footBack = { x: -20, y: gl - 6, pitch: 0.3 }; }
     else if (take) { footFront = { x: 22, y: gl - 6, pitch: 0 }; footBack = { x: -16, y: gl - 6, pitch: 0.2 }; }
 
     // ---- back arm and back leg
-    this.arm(ctx, -1, shoulderY, lean, bw, -sw * 0.42 * walk, back, t);
+    this.arm(ctx, -1, shoulderY, lean, bw, recoil ? 0.55 : -sw * 0.42 * walk, back, t);
     this.legIK(ctx, -3, hipY, footBack, true);
 
     // ---- coat tails / bustle behind the body
@@ -551,14 +554,17 @@ export class Actor {
     // ---- head
     const nod = this.talking ? Math.sin(t * 9) * 1.2 : 0;
     const hx = lean + 6 + this.stoop * 8, hy = shoulderY - 22 + nod;
-    const tilt = take ? 0.3 : kneel ? 0.24 : cower ? 0.2 : inspect ? 0.1 : this.talking ? Math.sin(t * 2.1 + this.seed) * 0.04 : 0;
+    const tilt = clutch ? 0.42 : write ? 0.26 : recoil ? -0.16 : take ? 0.3 : kneel ? 0.24 : cower ? 0.2 : inspect ? 0.1 : this.talking ? Math.sin(t * 2.1 + this.seed) * 0.04 : 0;
     if (tilt) { ctx.save(); ctx.translate(hx, hy + 12); ctx.rotate(tilt); ctx.translate(-hx, -(hy + 12)); }
     this.head(ctx, hx, hy, t);
     if (tilt) ctx.restore();
 
     // ---- front arm
     let armA = sw * 0.42 * walk;
-    if (reach) armA = this.grind ? -1.15 + Math.sin(t * 7 + this.seed) * 0.16 : -1.25;
+    if (recoil) armA = -2.15;
+    else if (clutch) armA = -2.7;
+    else if (write) armA = -0.6;
+    else if (reach) armA = this.grind ? -1.15 + Math.sin(t * 7 + this.seed) * 0.16 : -1.25;
     else if (take) armA = -0.55;
     else if (inspect) armA = -1.35;
     else if (this.lantern && this.lanternOn) armA = -0.18 + sw * 0.07 * walk;
@@ -808,6 +814,8 @@ export class Actor {
     ctx.translate(side * bw * 0.55 + lean, shoulderY + 8);
     let a = ang;
     if (this.pose === 'cower') a = front ? -2.4 : -2.1;
+    if (this.pose === 'clutch') a = front ? -2.7 : -2.55;
+    if (this.pose === 'write' && !front) a = -0.8 + Math.sin(t * 14) * 0.05;
     if (this.pose === 'sit') a = -0.7;
     if (this.pose === 'take' && !front) a = -0.2;
     ctx.rotate(a);
@@ -821,6 +829,9 @@ export class Actor {
     if (this.pose === 'sit') elbow = -0.9;
     if (this.pose === 'take' && front) elbow = 0.25;
     if (front && this.notebook && !this.moving && !this.talking) elbow = -1.5 + Math.sin(t * 2 + this.seed) * 0.05;
+    if (this.pose === 'write') elbow = front ? -1.45 : -1.25 + Math.sin(t * 14) * 0.08;
+    if (this.pose === 'clutch') elbow = -2.15;
+    if (this.pose === 'recoil' && front) elbow = -1.7;
     ctx.fillStyle = color;
     ctx.rotate(elbow);
     if (this.rolled && front) ctx.fillStyle = shade(this.coat, 1.1);
@@ -844,7 +855,8 @@ export class Actor {
       ctx.restore();
     }
     if (front && this.cane) { ctx.save(); ctx.rotate(-(a + elbow) + 0.1); ctx.fillStyle = '#100c09'; ctx.fillRect(-2, 38, 4, 78); ctx.fillStyle = '#b9a36a'; ctx.fillRect(-3, 34, 6, 6); ctx.restore(); }
-    if (front && this.notebook && !this.moving && !this.talking) { ctx.fillStyle = '#d8cfbd'; ctx.fillRect(-2, 36, 14, 10); ctx.fillStyle = '#2a2016'; ctx.fillRect(-2, 36, 14, 2); }
+    if (!front && this.pose === 'write') { ctx.fillStyle = '#3a2a1a'; ctx.fillRect(2, 30, 3, 14); }   // the pencil
+    if (front && ((this.notebook && !this.moving && !this.talking) || this.pose === 'write')) { ctx.fillStyle = '#d8cfbd'; ctx.fillRect(-2, 36, 14, 10); ctx.fillStyle = '#2a2016'; ctx.fillRect(-2, 36, 14, 2); }
     ctx.restore();
   }
 

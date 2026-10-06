@@ -2,6 +2,7 @@
 import { Renderer, W, H } from './renderer.js';
 import { Actor } from './actor.js';
 import { fgDressing } from '../art/build.js';
+import { paintBody, paintVision } from '../art/bodies.js';
 import { UI } from './ui.js';
 import { audio } from './audio.js';
 
@@ -594,6 +595,24 @@ export class Game {
       flash: (v = 1) => { game.r.fx.flash = v; game.punch = 1; },
       red: (v = 0.8) => { game.r.fx.red = v; game.punch = 1; },
       shake: (v = 10) => { game.r.cam.shake = v; game.punch = Math.max(game.punch || 0, 0.6); },
+      // Kneel over a body and examine it close up. `points`: [{ id, x, y, r, name, act(G) }] in 1280x720.
+      inspect: async (id, { title, body, points }) => {
+        const seen = ((game.state.seen ||= {})[`insp:${id}`] ||= {});
+        const p = game.player;
+        if (!window.FAST && !seen.__first) { p.pose = 'recoil'; G.audio.sting(0.15); await wait(750); }
+        seen.__first = true;
+        p.pose = 'kneel';
+        if (window.FAST) { for (const pt of points) { await pt.act(G); seen[pt.id] = true; } }
+        else {
+          await G.fade(1, 450);
+          game.r.fx.fade = 0;
+          await game.ui.inspect({ title, paint: (ctx, w, h) => paintBody(ctx, w, h, body), points, seen }, (pt) => pt.act(G));
+          game.r.fx.fade = 1; await G.fade(0, 600);
+        }
+        p.pose = null;
+      },
+      // a subliminal flash: 'hands' or a body close-up
+      vision: (kind = 'hands') => { game.punch = 1; return game.ui.vision((ctx, w, h) => paintVision(ctx, w, h, kind)); },
       // a held camera move for a scripted moment; G.zoom(1) lets go
       zoom: (z = 1.15, x, y, speed = 0.8) => {
         game.zoomTarget = z === 1 ? null : { z, x: x ?? game.player.x, y: y ?? game.scene.groundY - game.player.h * 0.6, speed, hold: true };
@@ -630,6 +649,11 @@ export class Game {
       clue: (id) => {
         if (game.state.clues.includes(id)) return false;
         game.state.clues.push(id);
+        const pl = game.player;
+        if (!window.FAST && pl.visible && !pl.pose && !pl.moving) {
+          pl.pose = 'write'; audio.pen();
+          setTimeout(() => { if (pl.pose === 'write') pl.pose = null; }, 1500);
+        }
         G.tipOnce('clue', {
           mouse: 'Las pistas se anotan solas en el <b>cuaderno</b>. Ábrelo con <kbd>N</kbd> o con el botón de arriba.',
           touch: 'Las pistas se anotan solas en el <b>cuaderno</b>. Ábrelo con el botón de arriba.',

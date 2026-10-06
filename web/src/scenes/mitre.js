@@ -4,6 +4,7 @@ import { nightBackdrop, facade, warehouse } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
 import { Smoke, Drip, Rat, Crow, Moths, Paper, Ripples } from '../engine/life.js';
+import { drawCorpse, groundLantern } from './corpse.js';
 
 const WIDTH = 2300, GROUND = 628;
 
@@ -35,6 +36,7 @@ export default {
       A.streetSign(ctx, 34, 136, 'CHURCH PASSAGE');
       A.poster(ctx, 190, 380, 36, 90, [['', 4]], { seed: 31, color: '#8f8466', under: false });
       // the empty houses; in No. 3 a City constable slept through it all
+      lights.push({ id: 'bodylamp', x: 940, y: GROUND, r: 300, color: P.lantern, intensity: 0.85, flicker: 0.06, halo: 26, haloK: 0.6 });
       const houses = facade(ctx, { x: 230, w: 420, top: -110, base: GROUND - 12, seed: 201, floors: 3, windows: 2, boards: [0, 1, 2], litMap: [3], nets: [3], roof: 'parapet', kind: 'plaster', door: 300, number: '3' });
       houses.forEach((c) => lights.push({ x: c.x, y: c.y, r: 180, color: P.candle, intensity: 0.35, flicker: 0.12, halo: 22 }));
       chimneys.push(...houses.chimneys);
@@ -87,6 +89,12 @@ export default {
       new Paper({ x0: 200, x1: 2200, y: GROUND + 70, seed: 13 }),
       new Ripples({ x: 1460, y: GROUND + 50, w: 180 }),
     ];
+  },
+
+  drawNear(ctx, t) {
+    // Catherine Eddowes in the darkest corner, four minutes dead, nobody has covered her yet
+    groundLantern(ctx, 950, GROUND + 18);
+    drawCorpse(ctx, t, { key: 'kate', x: 830, y: GROUND + 16, h: 150, cover: null, blood: 1.3, look: { hat: 'bonnet', hatColor: '#1a1414', coat: '#24262a', apron: '#a8a292', hair: '#2a2420', eyesClosed: true } });
   },
 
   actors() {
@@ -160,16 +168,50 @@ export default {
         if (c === 0) await G.think('Estaba en Aldgate. Eso creo. ¿Qué hacía yo en Aldgate a las dos menos cuarto?');
         else await G.think('No ha sonado ningún silbato. Watkins no ha llegado a tocar el suyo.');
         G.sanity(-5);
-        w.x = 760; w.facing = -1;
+        w.x = 600; w.facing = 1;
         return true;
       },
     },
     {
       id: 'corner', name: 'La esquina más oscura', rect: [700, GROUND - 10, 260, 70], walk: 820,
       act: async (G) => {
-        if (!G.flag('mitre_badge')) return;
+        if (!G.flag('mitre_badge')) { await G.think('Watkins no me deja acercarme sin enseñarle la placa.'); return; }
         await G.think('El rincón donde no llega la farola. Desde aquí no se ve ninguna ventana con luz.');
         await G.think('Él conocía este rincón. Sabía que estaba a oscuras.');
+        await G.inspect('kate', {
+          title: 'Catherine Eddowes', body: 'eddowes',
+          points: [
+            { id: 'cara', x: 320, y: 360, r: 65, name: 'La cara', act: async (G) => {
+              G.red(0.4); G.audio.sting(0.18);
+              await G.think('Le ha cortado la cara. Un tajo en cada párpado. Una V en cada mejilla, con la punta hacia los ojos.');
+              await G.think('Esto no la mató. Esto lo hizo después, con calma, sabiendo que Watkins pasaba cada quince minutos.');
+              G.clue('marcas');
+              G.sanity(-4);
+            } },
+            { id: 'cuello', x: 412, y: 350, r: 50, name: 'El cuello', act: async (G) => {
+              await G.think('Un solo corte, de izquierda a derecha. La misma mano que en Buck\'s Row.');
+            } },
+            { id: 'vientre', x: 900, y: 345, r: 85, name: 'El vientre', act: async (G) => {
+              G.red(0.5); G.shake(4);
+              await G.think('Abierta de arriba abajo. Lo de dentro, sobre el hombro, como en Hanbury Street.');
+              await G.think('Le falta un riñón. Lo sé antes de mirar. ¿Cómo lo sé antes de mirar?');
+              G.sanity(-5);
+            } },
+            { id: 'delantal', x: 1160, y: 350, r: 80, name: 'El delantal', act: async (G) => {
+              await G.think('Al delantal le falta una esquina, cortada a cuchillo, en línea recta. Con eso se limpió las manos.');
+              G.clue('trozo');
+            } },
+            { id: 'pulso', x: 900, y: 158, r: 60, name: 'La muñeca', act: async (G) => {
+              await G.think('Le cojo la muñeca para buscarle el pulso. Es la costumbre.');
+              await G.think('Al soltarla, mis guantes se quedan pegados a su piel.');
+              await G.vision('hands');
+              G.red(0.6);
+              await G.think('Me miro los guantes. Están pegajosos. Y la sangre del dorso ya está seca.');
+              G.clue('guantes');
+              G.sanity(-6);
+            } },
+          ],
+        });
       },
     },
     {
