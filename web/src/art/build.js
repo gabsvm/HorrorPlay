@@ -360,3 +360,54 @@ export function frame(ctx, x, y, w, h, { seed = 2, kind = 'portrait' } = {}) {
   else { ctx.fillRect(x, y + h * 0.65, w, h * 0.35); ctx.fillStyle = 'rgba(160,150,120,0.25)'; ctx.fillRect(x, y + h * 0.3, w, 4); }
   A.stain(ctx, x, y, w, h, { seed, alpha: 0.6 });
 }
+
+// Out-of-focus silhouettes on the foreground layer: things between the camera and the street
+// (chains, laundry, railings, the rim of a barrel) that slide past faster than the scene and give
+// it depth. They stay in the top and bottom bands so they never cover what can be clicked.
+export function fgDressing(ctx, width, { seed = 1, indoor = false } = {}) {
+  const r = rng(seed * 31 + 7);
+  ctx.fillStyle = '#040506'; ctx.strokeStyle = '#040506';
+  let x = r.range(200, 700);
+  while (x < width - 100) {
+    const kind = indoor ? r.pick(['lampChain', 'swag', 'chair']) : r.pick(['chain', 'laundry', 'railing', 'barrel', 'chain', 'laundry']);
+    if (kind === 'chain') {
+      // a hoist chain hanging from a beam out of shot, with its hook
+      const len = r.range(90, 200);
+      ctx.lineWidth = 7; ctx.setLineDash([10, 5]);
+      ctx.beginPath(); ctx.moveTo(x, -10); ctx.lineTo(x + r.range(-6, 6), len); ctx.stroke();
+      ctx.setLineDash([]); ctx.lineWidth = 8;
+      ctx.beginPath(); ctx.arc(x, len + 16, 14, -Math.PI * 0.5, Math.PI * 0.9); ctx.stroke();
+    } else if (kind === 'laundry') {
+      const w = r.range(380, 620), sag = r.range(40, 80);
+      ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(x, 20); ctx.quadraticCurveTo(x + w / 2, 20 + sag * 2, x + w, 10); ctx.stroke();
+      for (let i = 0; i < 3; i++) {
+        const k = 0.2 + i * 0.27 + r.range(-0.05, 0.05), cx = x + w * k, cy = 20 + sag * 2 * 2 * k * (1 - k) + 2;
+        const cw = r.range(40, 80), ch = r.range(50, 110);
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + cw, cy + 4); ctx.lineTo(cx + cw - 6, cy + ch); ctx.lineTo(cx + cw * 0.5, cy + ch - 12); ctx.lineTo(cx + 4, cy + ch + 4); ctx.closePath(); ctx.fill();
+      }
+      x += w;
+    } else if (kind === 'railing') {
+      const w = r.range(260, 420);
+      ctx.fillRect(x, 676, w, 10);
+      for (let px = x + 6; px < x + w; px += 26) { ctx.fillRect(px, 650, 8, 70); ctx.beginPath(); ctx.moveTo(px - 4, 652); ctx.lineTo(px + 4, 632); ctx.lineTo(px + 12, 652); ctx.fill(); }
+      x += w;
+    } else if (kind === 'barrel') {
+      ctx.beginPath(); ctx.ellipse(x, 700, r.range(70, 100), 40, 0, Math.PI, 0); ctx.fill(); ctx.fillRect(x - 100, 700, 200, 30);
+    } else if (kind === 'sign') {
+      // a shop sign on a bracket, swinging into the top of the frame
+      ctx.fillRect(x - 70, 0, 8, 70); ctx.fillRect(x - 70, 60, 150, 8);
+      ctx.fillRect(x - 40, 74, 110, 64); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x - 30, 66); ctx.lineTo(x - 30, 76); ctx.moveTo(x + 60, 66); ctx.lineTo(x + 60, 76); ctx.stroke();
+    } else if (kind === 'lampChain') {
+      ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(x, -10); ctx.lineTo(x, 70); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x - 50, 120); ctx.quadraticCurveTo(x, 50, x + 50, 120); ctx.closePath(); ctx.fill();
+    } else if (kind === 'swag') {
+      ctx.beginPath(); ctx.moveTo(x - 160, -10); ctx.quadraticCurveTo(x, 150, x + 160, -10); ctx.closePath(); ctx.fill();
+    } else if (kind === 'chair') {
+      // the top rail of a chair back, very close to the lens
+      ctx.fillRect(x - 70, 664, 140, 16); ctx.fillRect(x - 64, 664, 14, 60); ctx.fillRect(x + 50, 664, 14, 60);
+      ctx.beginPath(); ctx.ellipse(x, 664, 76, 12, 0, Math.PI, 0); ctx.fill();
+    }
+    x += r.range(900, 1500);
+  }
+}

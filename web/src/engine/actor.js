@@ -111,7 +111,7 @@ export class Actor {
         this.x += dir * step; this.moving = true;
         const prev = this.phase;
         this.phase += (step / (STRIDE * s)) * Math.PI;
-        if (this.onStep && Math.floor(prev / Math.PI) !== Math.floor(this.phase / Math.PI)) this.onStep(this);
+        if (Math.floor(prev / Math.PI) !== Math.floor(this.phase / Math.PI)) { this.impact = 1; if (this.onStep) this.onStep(this); }
       }
     } else {
       this.moving = false;
@@ -123,6 +123,14 @@ export class Actor {
     const wantWalk = this.moving ? Math.min(1, this.v / (this._speed || 1) + 0.35) : 0;
     this.walkAmt += (wantWalk - this.walkAmt) * Math.min(1, dt * (this.moving ? 6 : 9));
     this.vf = this.facing;
+    // the hem of a heavy coat lags behind every change of speed and swings past on a turn
+    const vw = (this.moving ? this.v : 0) * this.facing;
+    const acc = (vw - (this._vw ?? vw)) / Math.max(dt, 1e-3);
+    this._vw = vw;
+    this.coatX = this.coatX || 0; this.coatV = this.coatV || 0;
+    this.coatV += (-this.coatX * 70 - this.coatV * 7 - acc * this.facing * 0.035) * dt;
+    this.coatX = Math.max(-14, Math.min(14, this.coatX + this.coatV * dt));
+    this.impact = Math.max(0, (this.impact || 0) - dt * 7);
     // an idle glance over the shoulder every few seconds (never while talking or walking)
     const want = !this.moving && !this.talking && (!this.pose || this.fidget === 'look') && (this.idleT % 9) > 7.6 && this.fidget !== 'lantern' ? 1 : 0;
     this.look += (want - this.look) * Math.min(1, dt * 4);
@@ -183,7 +191,7 @@ export class Actor {
     // still characters only need a fresh sprite a few times per second
     this.blink = this.blinkAt(t);
     const key = `${this.moving}|${this.talking}|${this.pose}|${this.facing}|${this.lanternOn}|${Math.round(this.look * 4)}|${Math.round(this.x)}|${this.turnT > 0}|${this.blink}|${Math.round((this.walkAmt ?? 0) * 8)}|${Math.round((this.shiver || 0) * 2)}`;
-    const stale = this.moving || this.talking || this.turnT > 0 || this.grind || (this.walkAmt ?? 0) > 0.01 || key !== this._key || t - (this._drawnAt ?? -1) > 0.12 || t < (this._drawnAt ?? 0);
+    const stale = this.moving || this.talking || this.turnT > 0 || this.grind || Math.abs(this.coatV || 0) > 0.6 || (this.walkAmt ?? 0) > 0.01 || key !== this._key || t - (this._drawnAt ?? -1) > 0.12 || t < (this._drawnAt ?? 0);
     if (!stale) { this.blit(ctx, rs, ox, oy, W, Hh); return; }
     this._key = key; this._drawnAt = t;
     const b = this._hi, bc = b.getContext('2d', { willReadFrequently: true });
@@ -277,6 +285,21 @@ export class Actor {
 
   drawShadow(ctx) {
     const s = this.h / 200;
+    const L = this.shadowFrom;
+    if (L) {
+      const hl = Math.max(40, this.y - L.y), d = this.x - L.x;
+      const len = Math.min(this.h * 2.4, (this.h * Math.abs(d)) / hl + this.h * 0.25);
+      const dir = Math.sign(d) || 1;
+      const flick = L.flicker ? 1 + Math.sin(performance.now() / 90 + L.x) * L.flicker * 0.3 : 1;
+      ctx.save();
+      ctx.globalAlpha = this.alpha * Math.min(0.5, L.k * 0.6);
+      ctx.translate(this.x, this.y + 2); ctx.scale(dir, 0.13);
+      const g = ctx.createLinearGradient(0, 0, len * flick, 0);
+      g.addColorStop(0, 'rgba(0,0,0,0.9)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.moveTo(0, -22 * s); ctx.lineTo(len * flick, -44 * s); ctx.lineTo(len * flick, 44 * s); ctx.lineTo(0, 22 * s); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
     ctx.save();
     ctx.globalAlpha = this.alpha;
     const g = ctx.createRadialGradient(this.x, this.y, 2, this.x, this.y, 46 * s * this.build);
@@ -386,7 +409,10 @@ export class Actor {
     ctx.translate(0, lower);
 
     const bw = 24 * this.build;                           // half shoulder width
-    const lean = this.stoop * 9 + w * 5 + (cower ? 14 : 0) + (take ? 16 : 0) + (inspect ? 6 : 0);
+    // standing, the weight drifts from one leg to the other; each footfall jolts the body down
+    const shift = pose ? 0 : Math.sin(t * 0.45 + this.seed) * 1.4 * (1 - w);
+    const lean = this.stoop * 9 + w * 5 + (cower ? 14 : 0) + (take ? 16 : 0) + (inspect ? 6 : 0) + shift;
+    ctx.translate(0, (this.impact || 0) * 2.2 * w);
     const hipY = -97 + bobY, shoulderY = -158 + this.stoop * 6 + breathe * 0.4 + (cower ? 10 : 0) + bobY * 0.9;
     const hemY = this.skirt ? (sit ? -48 : -2) : hipY + (this.coatLen - 0.5) * 140;
     const back = shade(this.coat, 0.62), coatLit = shade(this.coat, 1.18);
@@ -417,7 +443,7 @@ export class Actor {
 
     // ---- body
     // the hem is pushed by the forward knee and trails behind; at rest it stirs in the wind
-    const sway = w > 0.05 ? -sw * 5 * w : Math.sin(t * 0.9 + this.seed) * 1.2;
+    const sway = (w > 0.05 ? -sw * 5 * w : Math.sin(t * 0.9 + this.seed) * 1.2) + (this.coatX || 0);
     ctx.fillStyle = this.coat;
     ctx.beginPath();
     if (this.skirt) {
@@ -525,7 +551,10 @@ export class Actor {
     // ---- head
     const nod = this.talking ? Math.sin(t * 9) * 1.2 : 0;
     const hx = lean + 6 + this.stoop * 8, hy = shoulderY - 22 + nod;
+    const tilt = take ? 0.3 : kneel ? 0.24 : cower ? 0.2 : inspect ? 0.1 : this.talking ? Math.sin(t * 2.1 + this.seed) * 0.04 : 0;
+    if (tilt) { ctx.save(); ctx.translate(hx, hy + 12); ctx.rotate(tilt); ctx.translate(-hx, -(hy + 12)); }
     this.head(ctx, hx, hy, t);
+    if (tilt) ctx.restore();
 
     // ---- front arm
     let armA = sw * 0.42 * walk;
@@ -798,8 +827,10 @@ export class Actor {
     segment(ctx, 34, 12, 10);
     ctx.fillStyle = this.rolled ? this.skin : shade(color, 0.7); ctx.fillRect(-6, 28, 12, 5);
     ctx.fillStyle = this.gloves || this.skin;
-    ctx.beginPath(); ctx.ellipse(1, 39, 5.5, 6.5, 0, 0, TAU); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(5, 35, 2.2, 3.5, -0.5, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(1, 39, 6.6, 7.6, 0, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(6, 35, 2.8, 4.2, -0.5, 0, TAU); ctx.fill();
+    ctx.fillStyle = 'rgba(255,240,220,0.16)'; ctx.fillRect(2, 33, 4, 3);
+    ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(-5, 42, 11, 2.5);
     if (holdLantern) {
       // the lantern hangs from its bail and swings a little behind the hand
       const swing = 0.22 * Math.sin(this.phase - 0.9) * (this.walkAmt || 0) + Math.sin(t * 1.3 + this.seed) * 0.03;
@@ -847,22 +878,25 @@ export class Actor {
     ctx.fillStyle = 'rgba(0,0,0,0.18)';
     ctx.beginPath(); ctx.moveTo(fx - 6, hy + 3); ctx.quadraticCurveTo(fx - 2, hy + 6, fx - 1, hy + 12); ctx.lineTo(hx - 2, hy + 12); ctx.closePath(); ctx.fill();
     if (this.stubble) { ctx.fillStyle = this.stubble; ctx.beginPath(); ctx.moveTo(hx - 3, hy + 5); ctx.lineTo(fx - 1, hy + 9); ctx.quadraticCurveTo(fx + 1.5, hy + 13, fx - 2, hy + 14.5); ctx.lineTo(hx - 3, hy + 13); ctx.closePath(); ctx.fill(); }
-    ctx.fillStyle = 'rgba(20,10,8,0.45)';
-    ctx.beginPath(); ctx.ellipse(fx - 3.5, hy - 3.5, 3.6, 2.8, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = 'rgba(20,10,8,0.58)';
+    ctx.beginPath(); ctx.ellipse(fx - 3.5, hy - 3.5, 4, 3, 0, 0, TAU); ctx.fill();
     // ear
     ctx.fillStyle = shade(this.skin, 0.82);
     ctx.beginPath(); ctx.ellipse(hx - 4 + turn * 3, hy, 3, 4.6, 0, 0, TAU); ctx.fill();
     ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(hx - 4 + turn * 3, hy - 1, 1.5, 3);
     // eye: a glint when the light catches it
     ctx.fillStyle = '#120c0a';
-    if (this.blink) ctx.fillRect(fx - 5, hy - 3.5, 4, 1);
+    if (this.blink) ctx.fillRect(fx - 6, hy - 3.5, 5, 1.4);
     else {
-      ctx.beginPath(); ctx.ellipse(fx - 3, hy - 3.5, 1.8, 1.4, 0, 0, TAU); ctx.fill();
-      ctx.fillStyle = 'rgba(230,220,200,0.6)'; ctx.fillRect(fx - 2.5, hy - 4.5, 1.2, 1.2);
+      ctx.fillStyle = '#d9cfbc'; ctx.fillRect(fx - 2.6, hy - 4.6, 2.2, 2.2);          // the white, in front of the iris
+      ctx.fillStyle = '#120c0a';
+      ctx.beginPath(); ctx.ellipse(fx - 3.6, hy - 3.5, 2.1, 1.7, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = 'rgba(240,230,210,0.75)'; ctx.fillRect(fx - 3.4, hy - 4.6, 1.2, 1.2);
     }
     if (turn > 0.5) { ctx.fillStyle = '#120c0a'; ctx.beginPath(); ctx.ellipse(fx - 9, hy - 3.5, 1.6, 1.3, 0, 0, TAU); ctx.fill(); }
     // brow
-    ctx.fillStyle = shade(this.hair || '#1e1712', 1.1); ctx.fillRect(fx - 6, hy - 7, 6, 1.6);
+    ctx.fillStyle = shade(this.hair || '#1e1712', 1.1); ctx.fillRect(fx - 7, hy - 7.6, 7.5, 2.2);
+    ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(fx - 1, hy + 3.5, 3.5, 1.2);           // under the nose
     const open = this.talking ? Math.abs(Math.sin(t * 11)) * 2.2 : 0;
     ctx.fillStyle = '#2a1410'; ctx.fillRect(fx - 3.5, hy + 7.5, 4.5, 1.2 + open);
     // hair: cropped short above the collar, or longer and pinned up for the women

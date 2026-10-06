@@ -1,6 +1,7 @@
 // Game controller: loop, camera, input, hotspots, state, and the script API (G) scenes are written against.
 import { Renderer, W, H } from './renderer.js';
 import { Actor } from './actor.js';
+import { fgDressing } from '../art/build.js';
 import { UI } from './ui.js';
 import { audio } from './audio.js';
 
@@ -60,7 +61,32 @@ export class Game {
   // ------------------------------------------------------------ input
   toLogical(e) {
     const rect = this.stage.getBoundingClientRect();
-    return { x: ((e.clientX - rect.left) / rect.width) * W, y: ((e.clientY - rect.top) / rect.height) * H };
+    let x = ((e.clientX - rect.left) / rect.width) * W, y = ((e.clientY - rect.top) / rect.height) * H;
+    // undo the camera push-in so clicks land on what is under the pointer
+    const [z, ux, uy] = this.r.fx.zoom;
+    if (z !== 1) { const cx = ux * W, cy = (1 - uy) * H; x = cx + (x - cx) / z; y = cy + (y - cy) / z; }
+    return { x, y };
+  }
+
+  // Ease the camera's push-in toward its target: a held shot, a dialogue framing, or none.
+  updateZoom(dt) {
+    const zs = (this.zoom ||= { z: 1, x: W / 2, y: H / 2 });
+    const tg = this.zoomTarget || { z: 1, x: zs.x, y: zs.y };
+    this.punch = Math.max(0, (this.punch || 0) - dt * 2.5);
+    const k = Math.min(1, dt * (tg.speed || 1.6));
+    zs.z += (tg.z - zs.z) * k; zs.x += (tg.x - zs.x) * k; zs.y += (tg.y - zs.y) * k;
+    const z = zs.z + this.punch * 0.05;
+    const half = 0.5 / z;
+    const ux = Math.max(half, Math.min(1 - half, (zs.x - this.r.cam.x) / W));
+    const uy = Math.max(half, Math.min(1 - half, 1 - zs.y / H));
+    this.r.fx.zoom = [z, ux, uy];
+  }
+
+  // Frame a dialogue: push in a little on the speaker, or between the two people talking.
+  frameDialogue(npc, z = 1.08) {
+    if (this.zoomTarget?.hold || !this.player.visible || window.FAST) return;
+    const p = this.player, x = npc ? (npc.x + p.x) / 2 : p.x;
+    this.zoomTarget = { z, x, y: this.scene.groundY - p.h * 0.6, speed: 1.2 };
   }
 
   bindInput() {
@@ -217,7 +243,7 @@ export class Game {
     try { await fn(this.G); } catch (err) { console.error(err); }
     finally {
       this.running--;
-      if (!this.running) { this.ui.busy(false); this.ui.hideDialogue(); }
+      if (!this.running) { this.ui.busy(false); this.ui.hideDialogue(); if (!this.zoomTarget?.hold) this.zoomTarget = null; }
     }
   }
 
@@ -270,6 +296,12 @@ export class Game {
       this.layerCache.set(key, built);
     }
     const built = this.layerCache.get(key);
+    if (!built._dressed && !scene.noFgDressing) {
+      const w = scene.width * 1.3;
+      const fg = this.r.paintLayer(w, (ctx) => fgDressing(ctx, w, { seed: scene.id.length * 13 + scene.width, indoor: !!scene.indoor }), H, { blur: 3 });
+      built.layers = [...built.layers, { canvas: fg, parallax: 1.3, kind: 'fg' }];
+      built._dressed = true;
+    }
     scene.layers = built.layers;
     scene.lights = built.lights.map((l) => ({ ...l }));
     scene.built = built;
@@ -303,6 +335,8 @@ export class Game {
     if (scene.actors) for (const a of scene.actors(this.G)) this.addActor(a);
     scene.life = scene.makeLife ? scene.makeLife(this.G) : [];
     this.r.cam.x = this.camTarget();
+    this.zoomTarget = null;
+    this.zoom = { z: window.FAST ? 1 : 1.07, x: this.player.x, y: scene.groundY - 160 };
     audio.setBeds(scene.beds || {}, 1.5);
     audio.playMusic(scene.music || null);
     if (scene.date) this.ui.setDate(scene.date, null);
@@ -352,6 +386,7 @@ export class Game {
       if (this.menuPan) this.camFocus = 1500 + Math.sin(now / 12000) * 260;
       const target = this.camTarget();
       this.r.cam.x += (target - this.r.cam.x) * Math.min(1, dt * 3.2);
+      this.updateZoom(dt);
       this.r.cam.shake = Math.max(0, this.r.cam.shake - dt * 20);
       const sanityMad = Math.max(0, (65 - this.state.sanity) / 65) * 0.6;
       const mad = Math.max(sanityMad, this.madTarget);
@@ -536,9 +571,10 @@ export class Game {
         const was = npc && npc.talking;
         if (npc) { npc.talking = true; if (!npc.pose && game.player.visible) npc.facing = game.player.x >= npc.x ? 1 : -1; }
         const portrait = speaking ? game.player : npc;
+        if (portrait) game.frameDialogue(npc);
         try { await game.ui.say(who, text, { portrait, ...opts }); } finally { if (speaking) game.player.talking = false; if (npc && !was) npc.talking = false; }
       },
-      think: (text) => game.ui.say('Ashgrove', text, { style: 'thought', portrait: game.player.visible ? game.player : null }),
+      think: (text) => (game.frameDialogue(null, 1.05), game.ui.say('Ashgrove', text, { style: 'thought', portrait: game.player.visible ? game.player : null })),
       voice: (text, opts = {}) => { audio.whisper(2.2, 0.16); return game.ui.say(opts.name ?? '', text, { style: 'voice', portrait: game.player.visible ? game.player : null, ...opts }); },
       narrate: (text) => game.ui.say('', text, { style: 'thought' }),
       choice: (opts, o) => { game.ui.hideDialogue(); return game.ui.choice(opts, o); },
@@ -555,9 +591,13 @@ export class Game {
       walk: (x, opts) => game.player.walkTo(x, opts),
       face: (dir) => { game.player.facing = dir; },
       fade: (v, ms = 800) => game.fadeTo(v, ms),
-      flash: (v = 1) => { game.r.fx.flash = v; },
-      red: (v = 0.8) => { game.r.fx.red = v; },
-      shake: (v = 10) => { game.r.cam.shake = v; },
+      flash: (v = 1) => { game.r.fx.flash = v; game.punch = 1; },
+      red: (v = 0.8) => { game.r.fx.red = v; game.punch = 1; },
+      shake: (v = 10) => { game.r.cam.shake = v; game.punch = Math.max(game.punch || 0, 0.6); },
+      // a held camera move for a scripted moment; G.zoom(1) lets go
+      zoom: (z = 1.15, x, y, speed = 0.8) => {
+        game.zoomTarget = z === 1 ? null : { z, x: x ?? game.player.x, y: y ?? game.scene.groundY - game.player.h * 0.6, speed, hold: true };
+      },
       mad: (v) => { game.madTarget = v; },
       desat: (v) => { game.r.fx.desat = v; },
       camFocus: (x) => { game.camFocus = x; },

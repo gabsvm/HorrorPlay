@@ -22,6 +22,7 @@ uniform sampler2D tFar, tNear, tFg, tLight, tFog, tGlow;
 uniform vec2 uRes;
 uniform float uTime, uMad, uFade, uFlash, uFogAmt, uRedFlash, uDesat;
 uniform vec3 uFogCol;
+uniform vec3 uZoom;
 varying vec2 vUv;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
 float bayer(vec2 p){
@@ -48,7 +49,8 @@ vec3 compose(vec2 uv){
   return col;
 }
 void main(){
-  vec2 uv = vUv;
+  // camera push-in: zoom about a point (uv space)
+  vec2 uv = (vUv - uZoom.yz) / uZoom.x + uZoom.yz;
   float m = uMad;
   // madness: slow breathing warp and a faint tidal ripple
   uv.x += sin(uv.y * 14.0 + uTime * 0.9) * 0.0022 * m;
@@ -96,7 +98,7 @@ export class Renderer {
     if (!this.gl) throw new Error('WebGL no disponible');
     this.rs = PX;
     this.time = 0;
-    this.fx = { mad: 0, fade: 1, flash: 0, red: 0, desat: 0 };
+    this.fx = { mad: 0, fade: 1, flash: 0, red: 0, desat: 0, zoom: [1, 0.5, 0.5] };
     this.cam = { x: 0, shake: 0 };
     const feather = (ny) => Math.pow(Math.sin(Math.PI * ny), 1.6);
     this.fogTex = noiseCanvas(256, 128, { scale: 6, seed: 77, octaves: 5, tile: true, alpha: true, shape: (v, nx, ny) => (v - 0.3) * 1.8 * feather(ny) });
@@ -126,7 +128,7 @@ export class Renderer {
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     this.u = {};
-    for (const n of ['uRes', 'uTime', 'uMad', 'uFade', 'uFlash', 'uFogAmt', 'uFogCol', 'uRedFlash', 'uDesat']) this.u[n] = gl.getUniformLocation(prog, n);
+    for (const n of ['uRes', 'uTime', 'uMad', 'uFade', 'uFlash', 'uFogAmt', 'uFogCol', 'uRedFlash', 'uDesat', 'uZoom']) this.u[n] = gl.getUniformLocation(prog, n);
     this.tex = {};
     ['tFar', 'tNear', 'tFg', 'tLight', 'tFog', 'tGlow'].forEach((n, i) => {
       const t = gl.createTexture();
@@ -165,9 +167,10 @@ export class Renderer {
 
   // Paint a static layer once at full logical resolution, then reduce it to the pixel grid
   // and snap it to the palette. `width` is in logical px.
-  paintLayer(width, painter, height = H, { dither = 9 } = {}) {
+  paintLayer(width, painter, height = H, { dither = 9, blur = 0 } = {}) {
     const c = mk2d(Math.ceil(width), Math.ceil(height));
     const ctx = c.getContext('2d');
+    if (blur) ctx.filter = `blur(${blur}px)`;
     painter(ctx, width, height);
     return pixelize(c, this.rs, { dither });
   }
@@ -216,7 +219,18 @@ export class Renderer {
     const sorted = actors.filter((a) => a.visible).sort((a, b) => (a.z || 0) - (b.z || 0));
     const prevLights = this.lightsFrame || scene.lights;
     const wet = !!scene.rain && !scene.indoor;
-    for (const a of sorted) { a.wet = wet; a.reflect = wet && !!scene.reflectY && (scene.wet ?? 0) > 0.5; a.draw(cn, t, prevLights); }
+    for (const a of sorted) {
+      a.wet = wet; a.reflect = wet && !!scene.reflectY && (scene.wet ?? 0) > 0.5;
+      // the light that throws this figure's shadow across the ground: strongest nearby, not its own
+      let best = null, bk = 0.12;
+      for (const L of prevLights) {
+        if (L.off || L.cone || L.y > a.y - 20) continue;
+        const k = (L.intensity ?? 1) * Math.max(0, 1 - Math.hypot(L.x - a.x, L.y - a.y) / (L.r * 1.6));
+        if (k > bk) { bk = k; best = L; }
+      }
+      a.shadowFrom = best && { x: best.x, y: best.y, k: bk, flicker: best.flicker };
+      a.draw(cn, t, prevLights);
+    }
     if (scene.drawNearOver) this.dynamicPass(cn, (c, tt) => scene.drawNearOver(c, tt), camX, camY, t);
 
     // foreground
@@ -286,12 +300,12 @@ export class Renderer {
     // light shafts: lamps pour a visible cone of light down through the fog
     for (const L of lights) {
       if (L.off || !L.shaft) continue;
-      const len = (scene.groundY - L.y) + 10, w0 = 10, w1 = L.shaftW || 120;
-      const g = cfo.createLinearGradient(0, L.y, 0, L.y + len);
+      const y0 = L.shaftY0 ?? L.y + 12, len = scene.groundY + 10 - y0, w0 = L.shaftW0 ?? 10, w1 = L.shaftW || 120, sk = L.shaftSkew || 0;
+      const g = cfo.createLinearGradient(0, y0, 0, y0 + len);
       const k = (L.shaftK ?? 0.38) * (L.intensity ?? 1);
       g.addColorStop(0, `rgba(255,255,255,${k})`); g.addColorStop(1, 'rgba(255,255,255,0)');
       cfo.fillStyle = g;
-      cfo.beginPath(); cfo.moveTo(L.x - w0, L.y + 12); cfo.lineTo(L.x + w0, L.y + 12); cfo.lineTo(L.x + w1, L.y + len); cfo.lineTo(L.x - w1, L.y + len); cfo.closePath(); cfo.fill();
+      cfo.beginPath(); cfo.moveTo(L.x - w0, y0); cfo.lineTo(L.x + w0, y0); cfo.lineTo(L.x + sk + w1, y0 + len); cfo.lineTo(L.x + sk - w1, y0 + len); cfo.closePath(); cfo.fill();
     }
     if (scene.life) for (const l of scene.life) if (l.drawFog) l.drawFog(cfo, t);
     if (!scene.indoor) for (const a of sorted) a.breath(cfo, t);
@@ -319,15 +333,27 @@ export class Renderer {
     }
     if (scene.drawGlow) scene.drawGlow(cgl, t);
     if (scene.life) for (const l of scene.life) if (l.drawGlow) l.drawGlow(cgl, t);
+    // indoors the air is too clear for fog to carry a beam, so window light is laid on as glow
+    if (scene.indoor) for (const L of lights) {
+      if (L.off || !L.shaft) continue;
+      const y0 = L.shaftY0 ?? L.y + 12, len = scene.groundY + 10 - y0, w0 = L.shaftW0 ?? 10, w1 = L.shaftW || 120, sk = L.shaftSkew || 0, c = L.color || [1, 1, 1];
+      const k = (L.shaftK ?? 0.38) * (L.intensity ?? 1) * 0.35;
+      const g = cgl.createLinearGradient(L.x, y0, L.x + sk, y0 + len);
+      g.addColorStop(0, `rgba(${c[0] * 255 | 0},${c[1] * 255 | 0},${c[2] * 255 | 0},${k})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+      cgl.fillStyle = g;
+      cgl.filter = 'blur(6px)';
+      cgl.beginPath(); cgl.moveTo(L.x - w0, y0); cgl.lineTo(L.x + w0, y0); cgl.lineTo(L.x + sk + w1, y0 + len); cgl.lineTo(L.x + sk - w1, y0 + len); cgl.closePath(); cgl.fill();
+      cgl.filter = 'none';
+    }
     // dust and drizzle hanging in each lamp's cone, drifting slowly and catching the light
     for (const L of lights) {
       if (L.off || !L.shaft) continue;
-      const len = (scene.groundY - L.y) + 10, w1 = L.shaftW || 120, c = L.color || [1, 0.85, 0.6];
+      const len = scene.groundY + 10 - (L.shaftY0 ?? L.y + 14), w1 = L.shaftW || 120, c = L.color || [1, 0.85, 0.6];
       for (let i = 0; i < 22; i++) {
         const h1 = ((i * 7919) % 1000) / 1000, h2 = ((i * 104729) % 997) / 997;
         const v = (h2 + t * (0.012 + h1 * 0.02)) % 1;
-        const x = L.x + (h1 - 0.5) * 2 * (10 + (w1 - 10) * v) * 0.85 + Math.sin(t * 0.6 + i) * 6;
-        const y = L.y + 14 + v * len;
+        const x = L.x + (L.shaftSkew || 0) * v + (h1 - 0.5) * 2 * ((L.shaftW0 ?? 10) + (w1 - (L.shaftW0 ?? 10)) * v) * 0.85 + Math.sin(t * 0.6 + i) * 6;
+        const y = (L.shaftY0 ?? L.y + 14) + v * len;
         const a = (1 - v) * (0.25 + 0.25 * Math.sin(t * 2.3 + i * 1.7)) * (L.intensity ?? 1);
         if (a <= 0.02) continue;
         cgl.fillStyle = `rgba(${c[0] * 255 | 0},${c[1] * 255 | 0},${c[2] * 255 | 0},${a})`;
@@ -417,6 +443,7 @@ export class Renderer {
     gl.uniform1f(u.uFlash, fx.flash);
     gl.uniform1f(u.uRedFlash, fx.red);
     gl.uniform1f(u.uDesat, fx.desat);
+    gl.uniform3f(u.uZoom, fx.zoom[0], fx.zoom[1], fx.zoom[2]);
     const f = scene.fog || {};
     gl.uniform1f(u.uFogAmt, f.amount ?? 0.55);
     const fc = f.color || [0.42, 0.5, 0.52];

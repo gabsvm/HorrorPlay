@@ -15,6 +15,8 @@ export default {
   spawn: 230,
   surface: 'wood',
   indoor: true,
+  reflectY: GROUND + 6,
+  wet: 0.35,
   lantern: false,
   ambient: [0.03, 0.035, 0.04],
   fog: { density: 0.2, amount: 0.3, color: [0.34, 0.4, 0.38], speed: 2, ground: 0.15 },
@@ -61,7 +63,7 @@ export default {
       A.stain(ctx, 660, 140, 150, 230, { seed: 3, alpha: 0.5 });
       // window onto Whitechapel Road
       const win = interiorWindow(ctx, 860, 160, 170, 240);
-      lights.push({ x: win.x, y: win.y, r: 300, color: [0.3, 0.38, 0.45], intensity: 0.4, halo: 0, reflect: false });
+      lights.push({ x: win.x, y: win.y, r: 300, color: [0.3, 0.38, 0.45], intensity: 0.4, halo: 0, reflect: false, shaft: true, shaftY0: 166, shaftW0: 78, shaftW: 120, shaftSkew: -280, shaftK: 0.5 });
       // locked glass-fronted cabinet of case files
       ctx.fillStyle = '#1e140c'; ctx.fillRect(1240, GROUND - 400, 180, 400);
       ctx.fillStyle = '#2a1e14'; ctx.fillRect(1232, GROUND - 410, 196, 12);

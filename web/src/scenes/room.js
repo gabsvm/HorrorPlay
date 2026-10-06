@@ -16,6 +16,8 @@ export default {
   spawn: 760,
   surface: 'wood',
   indoor: true,
+  reflectY: GROUND + 6,
+  wet: 0.35,
   ambient: [0.05, 0.05, 0.06],
   fog: { density: 0.18, amount: 0.25, color: [0.3, 0.32, 0.34], speed: 3, ground: 0.2 },
   rain: 0,
@@ -71,7 +73,7 @@ export default {
       ctx.fillStyle = '#e0d8c8'; ctx.beginPath(); ctx.ellipse(700, GROUND - 8, 18, 9, 0, 0, Math.PI * 2); ctx.fill();
       // window
       const win = interiorWindow(ctx, 990, 190, 160, 230);
-      lights.push({ id: 'window', x: win.x, y: win.y + 40, r: 360, color: [0.32, 0.4, 0.5], intensity: 0.55, halo: 0, reflect: false });
+      lights.push({ id: 'window', x: win.x, y: win.y + 40, r: 360, color: [0.32, 0.4, 0.5], intensity: 0.55, halo: 0, reflect: false, shaft: true, shaftY0: 196, shaftW0: 72, shaftW: 120, shaftSkew: -330, shaftK: 0.55 });
       // desk, chair, shelf of books, a pile of old newspapers
       desk(ctx, 1190, GROUND, 230);
       chair(ctx, 1150, GROUND, 1);

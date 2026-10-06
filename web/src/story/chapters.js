@@ -500,6 +500,7 @@ export function makeChapters() {
       await G.think('Aquí se ahogó Nat. Aquí contesté.');
       await G.think('Tengo que pensar con orden, como en cualquier caso.');
       G.flag('awake', true);
+      G.shake(4);
       G.clue('ficha');
       await G.think('En el cuaderno hay una página nueva, escrita con mi letra: mi propia ficha. Tengo que contrastarla con el perfil.');
       G.objective('En el cuaderno: relacionar mi ficha con las pistas del asesino (al menos tres).');
@@ -509,6 +510,7 @@ export function makeChapters() {
       G.flag('ditch_glow', true);
       await G.think('El desagüe brilla por dentro con una luz verde y lenta, como si respirara.');
       if (finals(G) < 3) { await G.think('Todavía no. Antes tengo que estar seguro. El cuaderno.'); return; }
+      G.zoom(1.22, G.player.x, G.scene.groundY - G.player.h * 0.7, 0.35);
       await G.voice('Ven al agua, Tommy.');
     },
 
@@ -544,6 +546,7 @@ export function makeChapters() {
       await G.say('Ashgrove', 'Me llamo...');
       G.red(1); G.audio.sting(0.5);
       await G.fade(1, 1600);
+      G.zoom(1);
       G.scene.reflection = false;
       G.player.pose = null;
       G.mad(0);
@@ -569,12 +572,14 @@ export function makeChapters() {
       await G.say('Wren', '¿Cómo se llama usted, señor? Su nombre de verdad.');
       w.talking = false;
       G.game.ui.hideDialogue();
+      G.zoom(1.2, (G.player.x + w.x) / 2, G.scene.groundY - G.player.h * 0.65, 0.3);
       await G.nameEntry('¿Cómo se llama usted?', 'Jack');
       G.audio.sting(0.3);
       w.talking = true;
       await G.say('Wren', 'No... No, señor. Usted antes se llamaba de otra manera.');
       w.talking = false;
       w.walkTo(2100, { speed: 240 });
+      G.zoom(1);
       await G.wait(1200);
       G.face(1);
       const court = G.light('court');

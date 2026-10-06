@@ -16,6 +16,8 @@ export default {
   spawn: 240,
   surface: 'wood',
   indoor: true,
+  reflectY: GROUND + 6,
+  wet: 0.35,
   lantern: false,
   ambient: [0.025, 0.02, 0.022],
   fog: { density: 0.25, amount: 0.35, color: [0.4, 0.34, 0.3], speed: 2, ground: 0.1 },
