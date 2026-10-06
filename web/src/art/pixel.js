@@ -73,7 +73,13 @@ export function pixelize(src, scale, opts = {}) {
   const out = document.createElement('canvas');
   out.width = Math.max(1, Math.round(src.width * scale));
   out.height = Math.max(1, Math.round(src.height * scale));
-  return pixelizeInto(src, out, opts);
+  pixelizeInto(src, out, opts);
+  // copy into an ordinary (GPU-friendly) canvas: the CPU one used for reading back pixels
+  // would otherwise be re-uploaded every time it is drawn
+  const gpu = document.createElement('canvas');
+  gpu.width = out.width; gpu.height = out.height;
+  gpu.getContext('2d').drawImage(out, 0, 0);
+  return gpu;
 }
 
 // Same, into an existing canvas (reused every frame for sprites).
