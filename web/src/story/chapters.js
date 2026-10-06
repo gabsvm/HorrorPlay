@@ -34,8 +34,9 @@ export function makeChapters() {
       await G.fade(0, 2500);
       await G.narrate('Hacía tres semanas que el río se había llevado a Nat.');
       await G.narrate('Desde entonces bajaba cada tarde con la marea baja a buscarlo. Mamá decía que ya no iba a volver, pero yo bajaba igual.');
+      await G.narrate('Nat se pasaba las tardes junto al embarcadero, con el barquito que papá le hizo con una caja de puros.');
       await G.think('Hoy encontraré algo suyo. Lo sé.');
-      G.objective('Buscar en el barro algo de Nat.');
+      G.objective('Buscar el barquito de Nat en el barro, junto al embarcadero.');
       G.tipOnce('controls', {
         mouse: 'Haz <b>clic</b> para caminar. Pasa el cursor por la escena: lo que se puede examinar se enmarca. <kbd>Espacio</kbd> revela todo lo interactuable.',
         touch: '<b>Toca</b> para caminar. Toca algo una vez para ver qué es y otra vez para examinarlo. <b>Revelar</b> muestra todo lo interactuable.',
@@ -111,7 +112,7 @@ export function makeChapters() {
     },
 
     async prologueWater(G) {
-      if (!G.flag('boat')) { await G.think('El agua está quieta. Demasiado quieta para ser el Támesis.'); return; }
+      if (!G.flag('boat')) { await G.think('El agua está quieta. Demasiado quieta para ser el Támesis.'); await G.think('Primero el barquito. Tiene que estar en el barro, entre los pilotes del embarcadero.'); return; }
       G.cinema(true);
       G.audio.setBeds({ river: 0.4, drone: 0.4 }, 3);
       G.mad(0.3);

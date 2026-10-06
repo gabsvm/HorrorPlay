@@ -229,6 +229,15 @@ export default {
   drawGlow(ctx, t) {
     // slow ripples on the river and, when the Host is near, a green light under the surface
     const G = this.G;
+    if (G && is1866(G) && !G.flag('boat')) {
+      // the wet sail catches the last of the light every few seconds
+      const k = (t % 3.2) / 3.2;
+      if (k < 0.3) {
+        const a = Math.sin((k / 0.3) * Math.PI) * 0.8;
+        ctx.fillStyle = `rgba(255,236,200,${a})`;
+        ctx.fillRect(1130 + 16, GROUND + 30 - 62, 4, 22); ctx.fillRect(1130 + 7, GROUND + 30 - 53, 22, 4);
+      }
+    }
     if (G && G.flag('water_light')) {
       const x = 1500 + Math.sin(t * 0.2) * 200;
       const g = ctx.createRadialGradient(x, 560, 4, x, 560, 260);
@@ -236,6 +245,24 @@ export default {
       g.addColorStop(0, `rgba(60,230,170,${0.35 * k})`); g.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = g; ctx.save(); ctx.translate(0, 560); ctx.scale(1, 0.25); ctx.translate(0, -560); ctx.fillRect(x - 260, 300, 520, 520); ctx.restore();
     }
+  },
+
+  drawNear(ctx, t) {
+    // Nat's toy boat, half sunk in the mud by the jetty piles: a cigar-box hull and a torn sail
+    if (!this.G || !is1866(this.G) || this.G.flag('boat')) return;
+    const x = 1130, y = GROUND + 30;
+    ctx.save();
+    ctx.translate(x, y); ctx.rotate(-0.18); ctx.scale(1.8, 1.8);
+    ctx.fillStyle = '#6a4428';
+    ctx.beginPath(); ctx.moveTo(-26, -6); ctx.lineTo(24, -6); ctx.lineTo(16, 6); ctx.lineTo(-20, 6); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#7a5232'; ctx.fillRect(-24, -8, 46, 3);
+    ctx.fillStyle = '#c9a860'; ctx.fillRect(-8, -4, 12, 3);           // the cigar-box label
+    ctx.fillStyle = '#3a2a1c'; ctx.fillRect(-2, -44, 3, 38);          // mast
+    ctx.fillStyle = '#ece4cc';
+    ctx.beginPath(); ctx.moveTo(1, -42); ctx.lineTo(20, -12); ctx.lineTo(10, -14); ctx.lineTo(8, -20); ctx.lineTo(1, -10); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = '#221d18';                                         // mud lapping over the hull
+    ctx.beginPath(); ctx.ellipse(x + 2, y + 12, 56, 8, 0, 0, Math.PI * 2); ctx.fill();
   },
 
   drawNearOver(ctx, t) {
@@ -259,7 +286,7 @@ export default {
 
   hotspots: [
     {
-      id: 'boat', name: 'Algo en el barro', when: (G) => is1866(G) && !G.flag('boat'), rect: [1090, GROUND + 10, 80, 40], walk: 1060, face: 1,
+      id: 'boat', name: 'Algo en el barro', verb: 'Recoger', when: (G) => is1866(G) && !G.flag('boat'), rect: [1070, GROUND - 60, 130, 110], walk: 1040, face: 1,
       act: async (G) => G.game.chapterHooks.prologueBoat(G),
     },
     {
@@ -278,7 +305,7 @@ export default {
     {
       id: 'stairs', name: 'Escaleras a Narrow Street', cursor: 'exit', rect: [10, 330, 150, 290], walk: 400, face: -1,
       act: async (G) => {
-        if (is1866(G)) await G.think('Todavía no. Hoy no me voy sin él.');
+        if (is1866(G)) await G.think('Todavía no. Hoy no me voy sin encontrar algo de Nat. Él siempre jugaba allí, junto a los pilotes del embarcadero.');
         else await G.think('Arriba están los silbatos. No hay a dónde volver.');
       },
     },
