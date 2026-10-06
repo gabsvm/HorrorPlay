@@ -218,8 +218,14 @@ export class Game {
         this.player.facing = x + w / 2 >= this.player.x ? 1 : -1;
       }
       const gesture = this.gestureFor(h, G);
-      if (gesture) { this.player.pose = gesture; await wait(gesture === 'take' ? 260 : 180); }
-      const settle = () => { if (this.player.pose === gesture) this.player.pose = null; };
+      if (gesture === 'take' || h.reach) {
+        // the hand goes to the thing, not just somewhere in front
+        const [rx, ry, rw, rh] = typeof h.rect === 'function' ? h.rect(G) : h.rect;
+        const p = this.player, s = p.h / 200;
+        p.reachTo = { x: Math.max(p.x - 90 * s, Math.min(p.x + 90 * s, rx + rw / 2)), y: Math.max(p.y - 170 * s, Math.min(p.y - 4, ry + rh / 2)) };
+      }
+      if (gesture) { this.player.pose = gesture; await wait(gesture === 'take' ? 320 : 180); }
+      const settle = () => { if (this.player.pose === gesture) this.player.pose = null; this.player.reachTo = null; };
       if (item) {
         this.selectItem(null);
         if (h.use) {
@@ -631,10 +637,21 @@ export class Game {
         // the NPC who speaks moves their mouth and turns to whoever they are talking to
         const npc = !speaking && who ? game.actors.find((a) => a !== game.player && (a.name === who || a.name === who.split(' ').pop()) && a.visible) : null;
         const was = npc && npc.talking;
-        if (npc) { npc.talking = true; if (!npc.pose && game.player.visible) npc.facing = game.player.x >= npc.x ? 1 : -1; }
+        if (npc) {
+          npc.talking = true;
+          const p = game.player;
+          if (!npc.pose && p.visible) npc.facing = p.x >= npc.x ? 1 : -1;
+          // the two of them look at each other's faces, up or down as their heights require
+          npc.lookAt = { x: p.x, y: p.y - p.h * 0.9 };
+          if (p.visible && !p.pose && !game.player.moving) { p.facing = npc.x >= p.x ? 1 : -1; p.lookAt = { x: npc.x, y: npc.y - npc.h * 0.9 }; }
+        }
         const portrait = speaking ? game.player : npc;
         if (portrait) game.frameDialogue(npc);
-        try { await game.ui.say(who, text, { portrait, ...opts }); } finally { if (speaking) game.player.talking = false; if (npc && !was) npc.talking = false; }
+        try { await game.ui.say(who, text, { portrait, ...opts }); } finally {
+          if (speaking) game.player.talking = false;
+          if (npc && !was) npc.talking = false;
+          if (npc) { npc.lookAt = null; game.player.lookAt = null; }
+        }
       },
       think: (text) => (game.frameDialogue(null, 1.05), game.ui.say('Ashgrove', text, { style: 'thought', portrait: game.player.visible ? game.player : null })),
       voice: (text, opts = {}) => { audio.whisper(2.2, 0.16); return game.ui.say(opts.name ?? '', text, { style: 'voice', portrait: game.player.visible ? game.player : null, ...opts }); },
@@ -651,6 +668,8 @@ export class Game {
       hud: (on) => game.ui.showHud(on),
       goto: (id, opts) => game.goto(id, opts),
       walk: (x, opts) => game.player.walkTo(x, opts),
+      // up or down a flight of steps to (x, y)
+      stairs: (x, y, opts) => game.player.climb(x, y, opts),
       face: (dir) => { game.player.facing = dir; },
       fade: (v, ms = 800) => game.fadeTo(v, ms),
       flash: (v = 1) => { game.r.fx.flash = v; game.punch = 1; },

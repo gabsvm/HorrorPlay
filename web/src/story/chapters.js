@@ -498,8 +498,14 @@ export function makeChapters() {
       G.flag('fs_1888', true);
       G.date('9 de noviembre de 1888', '2:30');
       G.cinema(false);
-      await G.goto('foreshore', { x: 440, facing: 1, fade: false });
-      await G.fade(0, 2000);
+      // he comes down the stone stair from Narrow Street onto the foreshore
+      await G.goto('foreshore', { x: 30, facing: 1, fade: false });
+      G.player.y = G.scene.groundY - 282;
+      G.game.camFocus = 400;
+      G.fade(0, 2000);
+      await G.stairs(176, G.scene.groundY, { steps: 10, speed: 80 });
+      G.game.camFocus = null;
+      await G.walk(440);
       await hooks.finaleIntro(G);
     },
 

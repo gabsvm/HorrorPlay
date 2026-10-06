@@ -78,6 +78,33 @@ export class Actor {
 
   stop() { if (this._resolve) this._arrive(false); }
 
+  // Climb or descend a flight: the body rises (or drops) one step at a time while the legs walk.
+  climb(x, y, { steps = 8, speed = 70 } = {}) {
+    if (typeof window !== 'undefined' && window.FAST) { this.x = x; this.y = y; return Promise.resolve(); }
+    this.facing = x >= this.x ? 1 : -1;
+    return new Promise((res) => {
+      this._climb = { x0: this.x, y0: this.y, x1: x, y1: y, steps, p: 0, len: Math.hypot(x - this.x, y - this.y) || 1, speed, res };
+    });
+  }
+
+  updateClimb(dt) {
+    const c = this._climb;
+    if (!c) return;
+    const s = this.h / 200;
+    c.p = Math.min(1, c.p + (dt * c.speed) / c.len);
+    // within each step the body holds its height, then lifts (or drops) to the next tread
+    const k = c.p * c.steps, n = Math.floor(k), f = k - n;
+    const stepK = Math.min(c.steps, n + Math.min(1, Math.max(0, (f - 0.45) / 0.55) ** 2)) / c.steps;
+    const prevX = this.x, prevY = this.y;
+    this.x = c.x0 + (c.x1 - c.x0) * c.p;
+    this.y = c.y0 + (c.y1 - c.y0) * stepK;
+    this.moving = true; this.v = c.speed;
+    const prev = this.phase;
+    this.phase += (Math.hypot(this.x - prevX, this.y - prevY) / (STRIDE * s * 0.6)) * Math.PI;
+    if (Math.floor(prev / Math.PI) !== Math.floor(this.phase / Math.PI)) { this.impact = 1; if (this.onStep) this.onStep(this); }
+    if (c.p >= 1) { this._climb = null; this.moving = false; this.v = 0; c.res(); }
+  }
+
   _arrive(ok) {
     this._target = null; this.moving = false;
     const r = this._resolve; this._resolve = null;
@@ -111,16 +138,19 @@ export class Actor {
       else {
         this.x += dir * step; this.moving = true;
         const prev = this.phase;
-        this.phase += (step / (STRIDE * s)) * Math.PI;
+        this.phase += (step / (STRIDE * s * (1 + 0.55 * (this.run || 0)))) * Math.PI;
         if (Math.floor(prev / Math.PI) !== Math.floor(this.phase / Math.PI)) { this.impact = 1; if (this.onStep) this.onStep(this); }
       }
-    } else {
+    } else if (!this._climb) {
       this.moving = false;
       this.v = 0;
       // finish the step: bring the phase to the next foot plant
       const target = Math.ceil(this.phase / Math.PI - 0.15) * Math.PI;
       this.phase += (target - this.phase) * Math.min(1, dt * 7);
     }
+    const wantRun = this.moving ? Math.max(0, Math.min(1, (this.v - 175 * s) / (90 * s))) : 0;
+    this.run = (this.run || 0) + (wantRun - (this.run || 0)) * Math.min(1, dt * 5);
+    this.updateClimb(dt);
     const wantWalk = this.moving ? Math.min(1, this.v / (this._speed || 1) + 0.35) : 0;
     this.walkAmt += (wantWalk - this.walkAmt) * Math.min(1, dt * (this.moving ? 6 : 9));
     this.vf = this.facing;
@@ -437,7 +467,8 @@ export class Actor {
   // Where each foot is during the walk. Stance: planted and sliding back under the body at
   // exactly the speed the body moves forward. Swing: an arc forward with the toe lifting.
   footAt(q, w) {
-    const S = STRIDE * w, lift = 15 * w;
+    const run = this.run || 0;
+    const S = STRIDE * w * (1 + 0.55 * run), lift = (15 + 24 * run) * w;
     q = ((q % TAU) + TAU) % TAU;
     if (q < Math.PI) { const u = q / Math.PI; return { x: S / 2 - u * S, y: 0, pitch: 0 }; }
     const u = (q - Math.PI) / Math.PI, e = u * u * (3 - 2 * u);
@@ -458,7 +489,9 @@ export class Actor {
     const walk = w;
     const breathe = Math.sin(t * 1.7 + this.seed) * 0.8;
     // weight: the pelvis drops when both feet are on the ground and rises as a leg passes under it
-    const bobY = 2.6 * Math.cos(2 * qa) * w + breathe * 0.3;
+    // walking, the pelvis dips at each double support; running, it bounces off each foot
+    const run = this.run || 0;
+    const bobY = (2.6 * Math.cos(2 * qa) * (1 - run) - 5 * Math.abs(Math.sin(qa)) * run + 2 * run) * w + breathe * 0.3;
     const lower = kneel ? 38 : sit ? 44 : cower ? 22 : take ? 16 : 0;
     const gl = -lower;
 
@@ -470,7 +503,7 @@ export class Actor {
     const bw = 24 * this.build;                           // half shoulder width
     // standing, the weight drifts from one leg to the other; each footfall jolts the body down
     const shift = pose ? 0 : Math.sin(t * 0.45 + this.seed) * 1.4 * (1 - w);
-    const lean = this.stoop * 9 + w * 5 + (cower ? 14 : 0) + (take ? 16 : 0) + (inspect ? 6 : 0) + (clutch ? 10 : 0) + (recoil ? -11 : 0) + (write ? 3 : 0) + shift;
+    const lean = this.stoop * 9 + w * 5 + (cower ? 14 : 0) + (take ? 16 : 0) + (inspect ? 6 : 0) + (clutch ? 10 : 0) + (recoil ? -11 : 0) + (write ? 3 : 0) + shift + (this.run || 0) * 12 * w;
     ctx.translate(0, (this.impact || 0) * 2.2 * w);
     const hipY = -97 + bobY, shoulderY = -158 + this.stoop * 6 + breathe * 0.4 + (cower ? 10 : 0) + bobY * 0.9;
     const hemY = this.skirt ? (sit ? -48 : -2) : hipY + (this.coatLen - 0.5) * 140;
@@ -484,8 +517,24 @@ export class Actor {
     else if (cower) { footFront = { x: 16, y: gl - 6, pitch: 0 }; footBack = { x: -20, y: gl - 6, pitch: 0.3 }; }
     else if (take) { footFront = { x: 22, y: gl - 6, pitch: 0 }; footBack = { x: -16, y: gl - 6, pitch: 0.2 }; }
 
+    // ---- an arm that reaches for something: solve shoulder -> elbow -> hand toward the target
+    this._armIK = null;
+    if (this.reachTo) {
+      const sx = bw * 0.55 + lean, sy = shoulderY + 8;
+      const tx = (this.reachTo.x - this.x) / (this.facing * s), ty = (this.reachTo.y - this.y) / s - lower;
+      let dx = tx - sx, dy = ty - sy, dist = Math.hypot(dx, dy) || 1;
+      const L1 = 40, L2 = 40, max = L1 + L2 - 2;
+      if (dist > max) { dx *= max / dist; dy *= max / dist; dist = max; }
+      const base = Math.atan2(-dx, dy);
+      const bend = Math.acos(Math.max(-1, Math.min(1, (L1 * L1 + dist * dist - L2 * L2) / (2 * L1 * dist))));
+      const a = base - bend;                                  // elbow below the line, as arms bend
+      const ex = sx - Math.sin(a) * L1, ey = sy + Math.cos(a) * L1;
+      const b = Math.atan2(-(sx + dx - ex), sy + dy - ey);
+      this._armIK = { a, e: b - a };
+    }
+
     // ---- back arm and back leg
-    this.arm(ctx, -1, shoulderY, lean, bw, recoil ? 0.55 : -sw * 0.42 * walk, back, t);
+    this.arm(ctx, -1, shoulderY, lean + run * 12, bw, recoil ? 0.55 : -sw * (0.42 + 0.22 * run) * walk, back, t);
     this.legIK(ctx, -3, hipY, footBack, true);
 
     // ---- coat tails / bustle behind the body
@@ -615,13 +664,18 @@ export class Actor {
     // ---- head
     const nod = this.talking ? Math.sin(t * 9) * 1.2 : 0;
     const hx = lean + 6 + this.stoop * 8, hy = shoulderY - 22 + nod;
-    const tilt = clutch ? 0.42 : write ? 0.26 : recoil ? -0.16 : take ? 0.3 : kneel ? 0.24 : cower ? 0.2 : inspect ? 0.1 : this.talking ? Math.sin(t * 2.1 + this.seed) * 0.04 : 0;
+    let look = 0;
+    if (this.lookAt && !pose) {
+      const hy0 = this.y - this.h * 0.9;
+      look = Math.max(-0.3, Math.min(0.3, Math.atan2(this.lookAt.y - hy0, Math.abs(this.lookAt.x - this.x) + 20) * 0.8));
+    }
+    const tilt = look + (clutch ? 0.42 : write ? 0.26 : recoil ? -0.16 : take ? 0.3 : kneel ? 0.24 : cower ? 0.2 : inspect ? 0.1 : this.talking ? Math.sin(t * 2.1 + this.seed) * 0.04 : 0);
     if (tilt) { ctx.save(); ctx.translate(hx, hy + 12); ctx.rotate(tilt); ctx.translate(-hx, -(hy + 12)); }
     this.head(ctx, hx, hy, t);
     if (tilt) ctx.restore();
 
     // ---- front arm
-    let armA = sw * 0.42 * walk;
+    let armA = sw * (0.42 + 0.22 * run) * walk;
     if (recoil) armA = -2.15;
     else if (clutch) armA = -2.7;
     else if (write) armA = -0.6;
@@ -879,13 +933,15 @@ export class Actor {
     if (this.pose === 'write' && !front) a = -0.8 + Math.sin(t * 14) * 0.05;
     if (this.pose === 'sit') a = -0.7;
     if (this.pose === 'take' && !front) a = -0.2;
+    if (front && this._armIK) a = this._armIK.a;
     ctx.rotate(a);
     ctx.fillStyle = color;
     segment(ctx, 40, 14, 12);
     ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(-7, 30, 14, 3);
     ctx.translate(0, 40);
-    const holdLantern = front && this.lantern && this.lanternOn && this.pose !== 'reach';
-    let elbow = Math.min(0, a) * -0.35 - 0.18;
+    const ik = front && this._armIK;
+    const holdLantern = this.lantern && this.lanternOn && this.pose !== 'reach' && (front ? !this._armIK : !!this._armIK);
+    let elbow = Math.min(0, a) * -0.35 - 0.18 - (this.run || 0) * 1.45;
     if (holdLantern) elbow = this.pose === 'inspect' ? -0.15 : -0.55;
     if (this.pose === 'sit') elbow = -0.9;
     if (this.pose === 'take' && front) elbow = 0.25;
@@ -893,6 +949,7 @@ export class Actor {
     if (this.pose === 'write') elbow = front ? -1.45 : -1.25 + Math.sin(t * 14) * 0.08;
     if (this.pose === 'clutch') elbow = -2.15;
     if (this.pose === 'recoil' && front) elbow = -1.7;
+    if (ik) { a = ik.a; elbow = ik.e; }
     ctx.fillStyle = color;
     ctx.rotate(elbow);
     if (this.rolled && front) ctx.fillStyle = shade(this.coat, 1.1);

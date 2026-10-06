@@ -139,8 +139,13 @@ export default {
         G.player.x -= 60;
       }
     }
-    await G.walk(4040, { speed: 300 });
+    await G.walk(4030, { speed: 300 });
     this.chasing = false;
+    // down the steps into the culvert, into the dark
+    G.player.speed = 120;
+    const down = G.stairs(4110, GROUND + 74, { steps: 6, speed: 60 });
+    for (let i = 0; i < 24; i++) { G.player.alpha = 1 - i / 30; await G.wait(70); }
+    await down;
     await G.game.chapterHooks.endChase(G);
   },
 

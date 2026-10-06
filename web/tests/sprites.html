@@ -24,7 +24,7 @@ const looks = {
 };
 const frames = [];
 for (let i = 0; i < 8; i++) frames.push({ label: `paso ${i}`, phase: (i / 8) * Math.PI * 2, moving: true });
-frames.push({ label: 'quieto', phase: 0 }, { label: 'kneel', pose: 'kneel' }, { label: 'reach', pose: 'reach' }, { label: 'examina', pose: 'inspect' }, { label: 'recoge', pose: 'take' }, { label: 'sit', pose: 'sit' }, { label: 'cower', pose: 'cower' }, { label: 'mira atrás', look: 1 }, { label: 'habla', talking: true }, { label: 'sin farol', lanternOn: false }, { label: 'giro', turn: 0.1 }, { label: 'giro izq', turn: 0.1, facing: -1 }, { label: 'parpadeo', blink: true });
+frames.push({ label: 'quieto', phase: 0 }, { label: 'kneel', pose: 'kneel' }, { label: 'reach', pose: 'reach' }, { label: 'examina', pose: 'inspect' }, { label: 'recoge', pose: 'take' }, { label: 'sit', pose: 'sit' }, { label: 'cower', pose: 'cower' }, { label: 'mira atrás', look: 1 }, { label: 'habla', talking: true }, { label: 'sin farol', lanternOn: false }, { label: 'giro', turn: 0.1 }, { label: 'giro izq', turn: 0.1, facing: -1 }, { label: 'parpadeo', blink: true }, { label: 'corre A', phase: 0.4, moving: true, run: 1 }, { label: 'corre B', phase: 2.0, moving: true, run: 1 }, { label: 'coge', pose: 'take', reach: [70, -8] }, { label: 'alcanza', reach: [80, -120] }, { label: 'mira abajo', lookAt: 40 });
 
 if (params.get('portrait')) {
   // dialogue portraits: talk / listen / blink / the Host's voice, for each look
@@ -68,12 +68,17 @@ frames.forEach((f, i) => {
   a.walkAmt = f.moving ? 1 : 0; a.vf = a.facing;
   if (f.turn) a.turnT = f.turn;
   if (f.blink) a.blinkAt = () => true;
+  if (f.run) a.run = f.run;
+  if (f.reach) a._reach = f.reach;
+  if (f.lookAt != null) a._lookAt = f.lookAt;
   // draw at the game's pixel scale (0.5) into a small canvas, then blow it up
   const small = document.createElement('canvas');
   small.width = cellW; small.height = cellH;
   const sc = small.getContext('2d');
   sc.setTransform(0.5, 0, 0, 0.5, 0, 0);
   a.x = cellW; a.y = cellH * 2 - 16;
+  if (a._reach) a.reachTo = { x: a.x + a._reach[0], y: a.y + a._reach[1] };
+  if (a._lookAt != null) a.lookAt = { x: a.x + 120, y: a.y + a._lookAt };
   light[0].x = a.x + 160; light[0].y = a.y - 200;
   a.draw(sc, 1.3 + i * 0.1, light);
   const cx = (i % cols) * cellW * scale, cy = Math.floor(i / cols) * cellH * scale;
