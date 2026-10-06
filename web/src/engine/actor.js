@@ -117,7 +117,7 @@ export class Actor {
     const stale = this.moving || this.talking || key !== this._key || t - (this._drawnAt ?? -1) > 0.12 || t < (this._drawnAt ?? 0);
     if (!stale) { this.blit(ctx, rs, ox, oy, W, Hh); return; }
     this._key = key; this._drawnAt = t;
-    const b = this._hi, bc = b.getContext('2d');
+    const b = this._hi, bc = b.getContext('2d', { willReadFrequently: true });
     bc.setTransform(1, 0, 0, 1, 0, 0);
     bc.clearRect(0, 0, W, Hh);
     bc.translate(ox - this.x, oy - this.y);

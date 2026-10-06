@@ -3,6 +3,7 @@ import * as A from '../art/paint.js';
 import { nightBackdrop, facade, warehouse } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
+import { Smoke, Drip, Rat, Crow, Moths, Paper, Ripples } from '../engine/life.js';
 
 const WIDTH = 2300, GROUND = 628;
 
@@ -23,26 +24,45 @@ export default {
   date: '30 de septiembre de 1888',
 
   build(R) {
-    const layers = nightBackdrop(R, WIDTH, { seed: 44, horizon: 430 });
+    const layers = nightBackdrop(R, WIDTH, { seed: 44, horizon: 430, domeX: 900 });
     const lights = [];
+    const chimneys = [];
     const near = R.paintLayer(WIDTH, (ctx) => {
-      // Church Passage, narrow and pitch black, on the left
-      A.brickWall(ctx, 0, 100, 230, GROUND - 112, { seed: 2, soot: 1 });
+      // Church Passage, narrow and pitch black, on the left, toward Duke's Place
+      A.brickWall(ctx, 0, 100, 230, GROUND - 112, { seed: 2, soot: 1, palette: A.BRICK.stock });
       ctx.fillStyle = '#020202'; ctx.fillRect(70, GROUND - 260, 110, 248);
-      A.streetSign(ctx, 40, 140, 'CHURCH PASSAGE');
-      // empty houses, then Kearley & Tonge warehouses
-      facade(ctx, { x: 230, w: 420, top: 160, base: GROUND - 12, seed: 201, floors: 3, windows: 2, boards: [0, 1, 2, 3], roof: 'parapet', kind: 'plaster' });
+      ctx.fillStyle = '#5c574d'; ctx.fillRect(62, GROUND - 270, 126, 12);
+      A.streetSign(ctx, 34, 136, 'CHURCH PASSAGE');
+      A.poster(ctx, 190, 380, 36, 90, [['', 4]], { seed: 31, color: '#8f8466', under: false });
+      // the empty houses; in No. 3 a City constable slept through it all
+      const houses = facade(ctx, { x: 230, w: 420, top: 160, base: GROUND - 12, seed: 201, floors: 3, windows: 2, boards: [0, 1, 2], litMap: [3], nets: [3], roof: 'parapet', kind: 'plaster', door: 300, number: '3' });
+      houses.forEach((c) => lights.push({ x: c.x, y: c.y, r: 180, color: P.candle, intensity: 0.35, flicker: 0.12, halo: 22 }));
+      chimneys.push(...houses.chimneys);
+      // Kearley & Tonge warehouses, a loading bay with a handcart and stacked chests of tea
       warehouse(ctx, { x: 650, w: 900, top: 60, base: GROUND - 12, seed: 202, name: 'KEARLEY & TONGE' });
-      ctx.fillStyle = '#100a06'; ctx.fillRect(1180, GROUND - 200, 80, 188); // watchman's door, ajar
+      A.crate(ctx, 1290, GROUND - 74, 76, 62, 31, { stencil: 'K & T' });
+      A.crate(ctx, 1300, GROUND - 130, 60, 56, 32, { stencil: 'CEYLON' });
+      A.crate(ctx, 1370, GROUND - 58, 56, 46, 33);
+      A.cart(ctx, 1500, GROUND, { flip: true });
+      // the watchman's door, left ajar on his lamp
+      ctx.fillStyle = '#100a06'; ctx.fillRect(1180, GROUND - 200, 80, 188);
       ctx.fillStyle = '#d9964a'; ctx.fillRect(1180, GROUND - 200, 12, 188);
-      facade(ctx, { x: 1550, w: 750, top: 140, base: GROUND - 12, seed: 203, floors: 3, windows: 4, litMap: [9], roof: 'parapet', door: 600 });
-      A.streetSign(ctx, 1600, 180, 'MITRE SQUARE  E.C.');
+      ctx.fillStyle = '#5c574d'; ctx.fillRect(1172, GROUND - 210, 96, 10);
+      const right = facade(ctx, { x: 1550, w: 750, top: 140, base: GROUND - 12, seed: 203, floors: 3, windows: 4, litMap: [9], figures: [9], roof: 'parapet', door: 600, stock: true, number: '9' });
+      right.forEach((c) => lights.push({ x: c.x, y: c.y, r: 200, color: P.candle, intensity: 0.45, flicker: 0.15, halo: 30 }));
+      chimneys.push(...right.chimneys);
+      A.streetSign(ctx, 1600, 176, 'MITRE SQUARE  E.C.');
       A.poster(ctx, 1800, 470, 110, 70, [['CITY POLICE', 14], ['NOTICE', 12]], { seed: 9, tilt: 0.02 });
+      A.poster(ctx, 1930, 476, 84, 64, [['LOST', 13], ['SPANIEL', 11], ['REWARD', 11]], { seed: 10, tilt: -0.04, color: '#c4b892' });
+      A.wires(ctx, 640, 180, 1560, 240, { count: 2, sag: 50 });
       A.flagstones(ctx, 0, GROUND - 12, WIDTH, 18);
       A.kerb(ctx, 0, GROUND + 6, WIDTH);
       A.cobbles(ctx, 0, GROUND + 22, WIDTH, 720 - GROUND - 22, { seed: 61, rows: 9, puddles: 8 });
-      const lamp = A.lampPost(ctx, 1460, GROUND, 230, { bracket: false });
-      lights.push({ x: lamp.x, y: lamp.y, r: 460, color: P.gas, intensity: 0.85, flicker: 0.1, halo: 110 });
+      // the darkest corner, far from the lamp: the chalk outline the City police left
+      ctx.strokeStyle = 'rgba(225,225,215,0.55)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.ellipse(820, GROUND + 34, 90, 12, 0, 0, Math.PI * 2); ctx.stroke();
+      const lamp = A.lampPost(ctx, 1460, GROUND, 230);
+      lights.push({ x: lamp.x, y: lamp.y, r: 460, color: P.gas, intensity: 0.85, flicker: 0.1, halo: 110, shaft: true, shaftW: 110 });
     });
     lights.push({ id: 'watch', x: 1190, y: GROUND - 110, r: 260, color: P.candle, intensity: 0.6, flicker: 0.2, halo: 30 });
     layers.push({ canvas: near, parallax: 1, kind: 'near' });
@@ -53,21 +73,29 @@ export default {
       A.railing(ctx, 1700, 640, 400, 80, { gap: 14 });
     });
     layers.push({ canvas: fg, parallax: 1.3, kind: 'fg' });
-    return { layers, lights };
+    return { layers, lights, chimneys };
   },
 
-  actors() {
+  makeLife() {
+    const b = this.built || {};
     return [
-      new Actor('Watkins', { x: 640, y: GROUND, h: 212, hat: 'helmet', coat: '#1a1d26', coatLen: 0.82, facing: -1, lantern: true, lanternOn: true }),
-      new Actor('Morris', { x: 1240, y: GROUND, h: 190, hat: 'cap', coat: '#2e2a24', coatLen: 0.7, facing: -1, stoop: 1, beard: '#5a5550' }),
-      new Actor('Agente', { x: 1000, y: GROUND, h: 210, hat: 'helmet', coat: '#1a1d26', coatLen: 0.82, facing: 1 }),
+      ...(b.chimneys || []).map((c) => new Smoke({ x: c.x, y: c.y, rate: 0.8 })),
+      new Drip({ x: 1250, y: GROUND - 212, ground: GROUND - 6, period: 2.8 }),
+      new Rat({ x0: 600, x1: 1200, y: GROUND + 18, seed: 11 }),
+      new Crow({ x: 1110, y: 54, facing: -1, seed: 12 }),
+      new Moths({ x: 1460, y: GROUND - 210 }),
+      new Paper({ x0: 200, x1: 2200, y: GROUND + 70, seed: 13 }),
+      new Ripples({ x: 1460, y: GROUND + 50, w: 180 }),
     ];
   },
 
-  drawNear(ctx) {
-    // the darkest corner: chalk outline left by the City police
-    ctx.strokeStyle = 'rgba(210,210,200,0.35)'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.ellipse(820, GROUND + 34, 90, 12, 0, 0, Math.PI * 2); ctx.stroke();
+  actors() {
+    const city = { hat: 'helmet', hatColor: '#0e1018', coat: '#14182a', trousers: '#10121c', coatLen: 0.8, flare: 1.02, belt: true, number: true };
+    return [
+      new Actor('Watkins', { ...city, x: 640, y: GROUND, h: 212, facing: -1, lantern: true, lanternOn: true, moustache: '#3a2a1e' }),
+      new Actor('Morris', { x: 1240, y: GROUND, h: 190, hat: 'cap', coat: '#2e2a24', coatLen: 0.7, facing: -1, stoop: 1, beard: '#7a7670', hair: '#8a8680', scarf: '#3a3028' }),
+      new Actor('Agente', { ...city, x: 1000, y: GROUND, h: 210, facing: 1, sideburns: true }),
+    ];
   },
 
   async enter(G) {

@@ -4,6 +4,7 @@ import { facade } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
 import { rng } from '../art/noise.js';
+import { Smoke, Rat, Paper, Drip, Cat } from '../engine/life.js';
 
 const WIDTH = 4200, GROUND = 630;
 
@@ -23,46 +24,80 @@ export default {
 
   build(R) {
     const lights = [];
+    const chimneys = [];
     const sky = R.paintLayer(1280 + (WIDTH - 1280) * 0.1, (ctx, w, h) => {
-      A.sky(ctx, w, h, { seed: 91, glow: 'rgba(60,90,90,0.1)' });
+      A.sky(ctx, w, h, { seed: 91, glow: 'rgba(60,90,90,0.1)', stars: 4 });
     });
     const near = R.paintLayer(WIDTH, (ctx) => {
       const r = rng(17);
       let x = 0, k = 0;
+      const signs = ['BEDS 4d.', 'MANGLING DONE', 'GOOD BEDS', 'COFFEE 1d.'];
       while (x < WIDTH) {
         const w = r.range(260, 480);
-        facade(ctx, { x, w, top: r.range(30, 140), base: GROUND - 12, seed: 400 + k, floors: 3, windows: r.int(1, 3), roof: 'parapet', kind: r.chance(0.4) ? 'plaster' : 'brick', boards: [r.int(0, 6)], broken: [r.int(0, 6)] });
-        if (r.chance(0.5)) { ctx.fillStyle = '#020202'; ctx.fillRect(x + w * 0.4, GROUND - 200, 70, 188); }
+        const ls = facade(ctx, {
+          x, w, top: r.range(30, 140), base: GROUND - 12, seed: 400 + k, floors: 3, windows: r.int(1, 3), roof: 'parapet',
+          kind: r.chance(0.4) ? 'plaster' : 'brick', stock: r.chance(0.6), boards: [r.int(0, 6)], broken: [r.int(0, 6)],
+          litMap: r.chance(0.4) ? [r.int(0, 5)] : [], figures: [r.int(0, 5)],
+          sign: r.chance(0.35) ? { x: 10, text: signs[k % signs.length], w: 120, h: 40 } : null,
+        });
+        ls.forEach((c) => lights.push({ x: c.x, y: c.y, r: 190, color: P.candle, intensity: 0.4, flicker: 0.25, halo: 24 }));
+        chimneys.push(...ls.chimneys);
+        if (r.chance(0.5)) { ctx.fillStyle = '#020202'; ctx.fillRect(x + w * 0.4, GROUND - 200, 70, 188); ctx.fillStyle = '#5c574d'; ctx.fillRect(x + w * 0.4 - 6, GROUND - 208, 82, 8); }
         x += w; k++;
       }
       // laundry lines strung across the court
-      ctx.strokeStyle = '#121212'; ctx.lineWidth = 1.5;
       for (let i = 0; i < 12; i++) {
         const lx = i * 360 + 80;
+        ctx.strokeStyle = '#121212'; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(lx, 200); ctx.quadraticCurveTo(lx + 150, 250, lx + 300, 196); ctx.stroke();
-        ctx.fillStyle = ['#6a665c', '#4a4440', '#7a7468'][i % 3]; ctx.fillRect(lx + 90, 228, 40, 60); ctx.fillRect(lx + 180, 232, 30, 44);
+        for (const [ox, ww, hh, c] of [[90, 40, 60, ['#6a665c', '#4a4440', '#7a7468'][i % 3]], [180, 30, 44, '#5a3a32'], [240, 22, 34, '#8a857a']]) {
+          ctx.fillStyle = c; ctx.fillRect(lx + ox, 228 + (ox === 240 ? -6 : 0), ww, hh);
+          ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(lx + ox, 228 + hh - 6 + (ox === 240 ? -6 : 0), ww, 6);
+        }
       }
       A.vgrad(ctx, 0, GROUND - 12, WIDTH, 720 - GROUND + 12, [[0, '#2a2622'], [1, '#141210']]);
-      A.cobbles(ctx, 0, GROUND + 4, WIDTH, 720 - GROUND - 4, { seed: 93, rows: 8, puddles: 30 });
-      // central gutter
-      ctx.fillStyle = 'rgba(10,14,14,0.8)'; ctx.fillRect(0, GROUND + 40, WIDTH, 10);
-      // three junction mouths
-      for (const jx of [1100, 2200, 3300]) { ctx.fillStyle = '#010101'; ctx.fillRect(jx - 60, 160, 120, GROUND - 172); A.streetSign(ctx, jx - 70, 130, ['WENTWORTH ST', 'FLOWER & DEAN', 'THRAWL ST'][[1100, 2200, 3300].indexOf(jx)]); }
+      A.cobbles(ctx, 0, GROUND + 4, WIDTH, 720 - GROUND - 4, { seed: 93, rows: 8, puddles: 30, litter: 3 });
+      ctx.fillStyle = 'rgba(10,14,14,0.85)'; ctx.fillRect(0, GROUND + 40, WIDTH, 10);
+      ctx.fillStyle = 'rgba(130,150,150,0.15)'; ctx.fillRect(0, GROUND + 42, WIDTH, 2);
+      // barrels, crates, a broken barrow along the walls
+      for (let i = 0; i < 10; i++) {
+        const bx = 300 + i * 390 + r.range(-40, 40);
+        if (r.chance(0.5)) A.barrel(ctx, bx, GROUND - 52, 40, 46); else A.crate(ctx, bx, GROUND - 56, 60, 48, 500 + i);
+      }
+      for (const jx of [1100, 2200, 3300]) {
+        ctx.fillStyle = '#010101'; ctx.fillRect(jx - 60, 160, 120, GROUND - 172);
+        A.streetSign(ctx, jx - 74, 126, ['WENTWORTH ST', 'FLOWER & DEAN', 'THRAWL ST'][[1100, 2200, 3300].indexOf(jx)]);
+      }
+      // bracket lamps, few and far between
+      for (const lx of [700, 1800, 2900, 3800]) { const l = A.lampPost(ctx, lx, GROUND, 330, { bracket: true }); lights.push({ x: l.x, y: l.y, r: 360, color: P.gas, intensity: 0.7, flicker: 0.15, halo: 70, shaft: true, shaftW: 90 }); }
       // end: steps down to the culvert
       ctx.fillStyle = '#010202'; ctx.fillRect(4000, GROUND - 160, 200, 200);
       for (let i = 0; i < 5; i++) { ctx.fillStyle = `rgba(70,70,64,${0.6 - i * 0.1})`; ctx.fillRect(4010 + i * 14, GROUND - 10 + i * 12, 140, 8); }
+      A.railing(ctx, 3990, GROUND - 70, 220, 60);
     });
-    for (let i = 0; i < 6; i++) lights.push({ x: 500 + i * 700, y: 300 + (i % 2) * 60, r: 220, color: P.candle, intensity: 0.35, flicker: 0.3, halo: 26, haloK: 0.4 });
     const fg = R.paintLayer(WIDTH * 1.35, (ctx) => {
       ctx.fillStyle = '#030303';
       for (let x = 700; x < WIDTH * 1.35; x += 1300) { ctx.fillRect(x, 0, 18, 720); ctx.fillRect(x - 30, 300, 78, 8); }
     });
-    return { layers: [{ canvas: sky, parallax: 0.1, kind: 'far' }, { canvas: near, parallax: 1, kind: 'near' }, { canvas: fg, parallax: 1.35, kind: 'fg' }], lights };
+    return { layers: [{ canvas: sky, parallax: 0.1, kind: 'far' }, { canvas: near, parallax: 1, kind: 'near' }, { canvas: fg, parallax: 1.35, kind: 'fg' }], lights, chimneys };
+  },
+
+  makeLife() {
+    const b = this.built || {};
+    return [
+      ...(b.chimneys || []).slice(0, 8).map((c) => new Smoke({ x: c.x, y: c.y, rate: 1, drift: 30 })),
+      new Rat({ x0: 600, x1: 2000, y: GROUND + 30, seed: 31 }),
+      new Rat({ x0: 2400, x1: 3800, y: GROUND + 30, seed: 32 }),
+      new Paper({ x0: 200, x1: 4000, y: GROUND + 70, seed: 33 }),
+      new Drip({ x: 1050, y: 170, ground: GROUND + 10, period: 1.6 }),
+      new Drip({ x: 2250, y: 170, ground: GROUND + 10, period: 2.2 }),
+      new Cat({ x: 1520, y: 196, facing: 1 }),
+    ];
   },
 
   actors() {
     const cops = [];
-    for (let i = 0; i < 3; i++) cops.push(new Actor(`Poli${i}`, { x: -200 - i * 120, y: GROUND, h: 210, hat: 'helmet', coat: '#1a1d26', coatLen: 0.82, facing: 1, lantern: true, lanternOn: true, speed: 240 }));
+    for (let i = 0; i < 3; i++) cops.push(new Actor(`Poli${i}`, { x: -200 - i * 120, y: GROUND, h: 210, hat: 'helmet', coat: '#161c30', trousers: '#12151f', coatLen: 0.8, flare: 1.02, belt: true, number: true, facing: 1, lantern: true, lanternOn: true, speed: 240, moustache: i === 1 ? '#3a2a1e' : null }));
     return cops;
   },
 

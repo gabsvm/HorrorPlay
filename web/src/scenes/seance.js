@@ -1,6 +1,7 @@
 // Chapter 2 — Madame Wexley's parlour, Fournier Street, the night of 8 September.
 import * as A from '../art/paint.js';
-import { wallpaper, wainscot, floorboards, rug, chair } from '../art/build.js';
+import { wallpaper, wainscot, floorboards, rug, fireplace, frame } from '../art/build.js';
+import { Smoke, Moths } from '../engine/life.js';
 import { P, shade } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
 
@@ -30,34 +31,57 @@ export default {
       ctx.fillStyle = '#0a0606'; ctx.fillRect(0, 0, WIDTH, 720);
       wallpaper(ctx, 0, 30, WIDTH, GROUND - 150, { seed: 51, base: '#4a1e1c', stripe: '#3a1614', damp: 0.4 });
       wainscot(ctx, 0, GROUND - 120, WIDTH, 120);
+      ctx.fillStyle = '#140a08'; ctx.fillRect(0, 0, WIDTH, 34); ctx.fillStyle = '#5a4520'; ctx.fillRect(0, 30, WIDTH, 5);
       floorboards(ctx, 0, GROUND - 6, WIDTH, 720 - GROUND + 6, { color: '#2e1f16' });
       rug(ctx, TABLE_X - 300, GROUND + 6, 600, 50);
-      // heavy drapes
+      // heavy velvet drapes with tasselled tie-backs
       for (const x of [0, 1240]) {
-        ctx.fillStyle = '#2a0d0c';
-        ctx.fillRect(x, 20, 160, GROUND - 20);
-        for (let k = 0; k < 6; k++) { ctx.fillStyle = `rgba(0,0,0,${0.15 + (k % 2) * 0.2})`; ctx.fillRect(x + k * 27, 20, 12, GROUND - 20); }
+        ctx.fillStyle = '#2e0e0d'; ctx.fillRect(x, 20, 160, GROUND - 20);
+        for (let k = 0; k < 7; k++) { ctx.fillStyle = `rgba(0,0,0,${0.12 + (k % 2) * 0.22})`; ctx.fillRect(x + k * 23, 20, 11, GROUND - 20); ctx.fillStyle = 'rgba(255,200,170,0.06)'; ctx.fillRect(x + k * 23 + 11, 20, 2, GROUND - 20); }
+        ctx.fillStyle = '#8a6a2a'; ctx.fillRect(x + 20, GROUND - 330, 120, 8); ctx.beginPath(); ctx.arc(x + 80, GROUND - 312, 9, 0, Math.PI * 2); ctx.fill();
+        for (let k = 0; k < 6; k++) ctx.fillRect(x + 74 + k * 2.5, GROUND - 304, 1.5, 22);
+        ctx.fillStyle = '#5a4520'; ctx.fillRect(x - 10, 14, 180, 10);
       }
       // door
-      A.door(ctx, 190, GROUND - 270, 116, 270, { color: '#2a1a12', steps: 0 });
-      // the mirror: gilt frame, black glass. It reflects the room but never the inspector.
-      ctx.fillStyle = '#5a4520'; ctx.fillRect(TABLE_X - 130, 110, 260, 300);
-      ctx.fillStyle = '#3a2c14'; ctx.fillRect(TABLE_X - 118, 122, 236, 276);
-      A.vgrad(ctx, TABLE_X - 110, 130, 220, 260, [[0, '#14181a'], [1, '#0b0d0e']]);
-      // reflected room: table edge, candles, two seated clients
+      A.door(ctx, 190, GROUND - 270, 116, 270, { color: '#2a1a12', steps: 0, fanlight: false, scraper: false });
+      // cold fireplace with dried flowers and a clock stopped at a quarter past three
+      fireplace(ctx, 340, GROUND, { lit: false, w: 160 });
+      ctx.fillStyle = '#4a3a2a'; ctx.fillRect(360, GROUND - 184, 18, 24); ctx.fillStyle = '#5a3a3a'; for (let i = 0; i < 5; i++) ctx.fillRect(362 + i * 3, GROUND - 204 + (i % 2) * 5, 2, 22);
+      ctx.fillStyle = '#20150e'; ctx.fillRect(440, GROUND - 200, 40, 40); ctx.fillStyle = '#c9bc98'; ctx.beginPath(); ctx.arc(460, GROUND - 182, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#141210'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(460, GROUND - 182); ctx.lineTo(467, GROUND - 182); ctx.moveTo(460, GROUND - 182); ctx.lineTo(462, GROUND - 191); ctx.stroke();
+      // the mirror: an ornate gilt frame, black glass. It reflects the room but never the inspector.
+      ctx.fillStyle = '#6a5224'; ctx.fillRect(TABLE_X - 134, 104, 268, 310);
+      ctx.fillStyle = '#8a6a2a';
+      for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(TABLE_X - 134 + i * 53.6, 104, 11, Math.PI, 0); ctx.fill(); }
+      ctx.beginPath(); ctx.moveTo(TABLE_X - 40, 104); ctx.quadraticCurveTo(TABLE_X, 60, TABLE_X + 40, 104); ctx.fill();
+      ctx.fillStyle = '#3a2c14'; ctx.fillRect(TABLE_X - 120, 118, 240, 282);
+      ctx.fillStyle = 'rgba(255,220,150,0.12)'; ctx.fillRect(TABLE_X - 134, 104, 268, 3); ctx.fillRect(TABLE_X - 134, 104, 3, 310);
+      A.vgrad(ctx, TABLE_X - 110, 128, 220, 262, [[0, '#14181a'], [1, '#0b0d0e']]);
       ctx.fillStyle = '#060707'; ctx.fillRect(TABLE_X - 110, 330, 220, 60);
       ctx.fillStyle = '#0a0b0b';
       ctx.beginPath(); ctx.ellipse(TABLE_X - 60, 300, 16, 20, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(TABLE_X - 80, 316, 40, 30);
       ctx.beginPath(); ctx.ellipse(TABLE_X + 50, 304, 15, 19, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(TABLE_X + 32, 318, 38, 30);
       ctx.fillStyle = '#c99858'; for (const dx of [-20, 4, 28]) ctx.fillRect(TABLE_X + dx, 318, 3, 8);
-      ctx.fillStyle = '#5a4520'; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(TABLE_X - 130 + i * 65, 108, 9, Math.PI, 0); ctx.fill(); }
-      // spirit cabinet and side table with trumpet
-      ctx.fillStyle = '#1a0f0b'; ctx.fillRect(1060, GROUND - 330, 150, 330);
-      ctx.fillStyle = '#2c0f0e'; ctx.fillRect(1070, GROUND - 320, 130, 310);
-      ctx.fillStyle = '#20150e'; ctx.fillRect(360, GROUND - 100, 100, 10); ctx.fillRect(400, GROUND - 90, 12, 90);
-      ctx.fillStyle = '#8a7a4a'; ctx.beginPath(); ctx.moveTo(380, GROUND - 104); ctx.lineTo(450, GROUND - 120); ctx.lineTo(450, GROUND - 100); ctx.closePath(); ctx.fill();
-      // framed photographs of "spirits"
-      for (let i = 0; i < 3; i++) { ctx.fillStyle = '#2a2014'; ctx.fillRect(380 + i * 70, 200 + (i % 2) * 20, 50, 66); ctx.fillStyle = '#6a6660'; ctx.fillRect(386 + i * 70, 206 + (i % 2) * 20, 38, 54); A.stain(ctx, 386 + i * 70, 206 + (i % 2) * 20, 38, 54, { seed: i, alpha: 0.7 }); }
+      ctx.fillStyle = 'rgba(160,190,200,0.08)'; ctx.beginPath(); ctx.moveTo(TABLE_X - 100, 130); ctx.lineTo(TABLE_X - 30, 130); ctx.lineTo(TABLE_X - 100, 260); ctx.fill();
+      // spirit cabinet: black curtains embroidered with stars
+      ctx.fillStyle = '#1a0f0b'; ctx.fillRect(1060, GROUND - 340, 150, 340);
+      ctx.fillStyle = '#5a4520'; ctx.fillRect(1052, GROUND - 350, 166, 12);
+      ctx.fillStyle = '#120a0a'; ctx.fillRect(1070, GROUND - 330, 64, 320); ctx.fillRect(1136, GROUND - 330, 64, 320);
+      ctx.fillStyle = 'rgba(200,170,90,0.5)';
+      for (const [sx, sy] of [[1090, 220], [1110, 300], [1160, 260], [1180, 380], [1100, 420], [1170, 470]]) { ctx.fillRect(sx - 4, sy, 8, 2); ctx.fillRect(sx - 1, sy - 3, 2, 8); }
+      // side table: trumpet, tambourine, a bell, and a stuffed raven under a glass dome
+      ctx.fillStyle = '#20150e'; ctx.fillRect(560, GROUND - 100, 110, 10); ctx.fillRect(608, GROUND - 90, 12, 90); ctx.fillRect(588, GROUND - 6, 52, 6);
+      ctx.fillStyle = '#8a7a4a'; ctx.beginPath(); ctx.moveTo(570, GROUND - 104); ctx.lineTo(640, GROUND - 122); ctx.lineTo(640, GROUND - 100); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#5a4630'; ctx.beginPath(); ctx.ellipse(654, GROUND - 106, 14, 4, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#20150e'; ctx.fillRect(1000, GROUND - 150, 50, 150);
+      ctx.fillStyle = '#0c0b0c'; ctx.beginPath(); ctx.ellipse(1025, GROUND - 176, 12, 18, 0.2, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.moveTo(1034, GROUND - 188); ctx.lineTo(1046, GROUND - 184); ctx.lineTo(1034, GROUND - 180); ctx.fill();
+      ctx.strokeStyle = 'rgba(190,210,215,0.3)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(1004, GROUND - 152); ctx.lineTo(1004, GROUND - 196); ctx.arc(1025, GROUND - 196, 21, Math.PI, 0); ctx.lineTo(1046, GROUND - 152); ctx.stroke();
+      // framed "spirit" photographs and an astrological chart
+      for (let i = 0; i < 3; i++) frame(ctx, 380 + i * 70 - 140, 200 + (i % 2) * 20, 46, 60, { seed: 70 + i });
+      ctx.fillStyle = '#b4a47e'; ctx.fillRect(930, 150, 96, 96); ctx.strokeStyle = 'rgba(60,40,20,0.7)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(978, 198, 38, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(978, 198, 24, 0, Math.PI * 2); ctx.stroke();
+      for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; ctx.beginPath(); ctx.moveTo(978 + Math.cos(a) * 24, 198 + Math.sin(a) * 24); ctx.lineTo(978 + Math.cos(a) * 38, 198 + Math.sin(a) * 38); ctx.stroke(); }
+      A.stain(ctx, 930, 150, 96, 96, { seed: 8, alpha: 0.5 });
     });
     lights.push({ id: 'c1', x: TABLE_X - 30, y: GROUND - 150, r: 420, color: P.candle, intensity: 0.9, flicker: 0.25, halo: 60 });
     lights.push({ id: 'c2', x: TABLE_X + 10, y: GROUND - 156, r: 420, color: P.candle, intensity: 0.9, flicker: 0.25, halo: 60 });
@@ -66,34 +90,45 @@ export default {
       ctx.fillStyle = '#050303';
       ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(160, 200, 90, 720); ctx.lineTo(0, 720); ctx.fill();
       ctx.beginPath(); ctx.moveTo(1680, 0); ctx.quadraticCurveTo(1540, 300, 1600, 720); ctx.lineTo(1680, 720); ctx.fill();
+      ctx.fillRect(0, 0, 1680, 24);
     });
     return { layers: [{ canvas: near, parallax: 1, kind: 'near' }, { canvas: fg, parallax: 1.2, kind: 'fg' }], lights };
   },
 
+  makeLife() {
+    // incense curling up from a dish on the mantel, dust turning in the candlelight
+    return [new Smoke({ x: 368, y: GROUND - 200, rate: 0.5, drift: 6, size: 0.4 }), new Moths({ x: TABLE_X + 10, y: GROUND - 200, n: 5 })];
+  },
+
   actors() {
     return [
-      new Actor('Wexley', { x: TABLE_X + 170, y: GROUND, h: 200, hat: 'shawl', skirt: true, coat: '#2a1c22', facing: -1, pose: 'sit', z: 1 }),
-      new Actor('Viuda', { x: TABLE_X - 160, y: GROUND, h: 190, hat: 'bonnet', skirt: true, coat: '#121112', facing: 1, pose: 'sit', z: 1 }),
-      new Actor('Joven', { x: TABLE_X + 40, y: GROUND, h: 200, hat: 'none', hair: '#2a1e14', coat: '#2a2a30', facing: -1, pose: 'sit', z: -1 }),
+      new Actor('Wexley', { x: TABLE_X + 170, y: GROUND, h: 200, hat: 'shawl', shawl: '#3a1a2a', skirt: true, bustle: true, coat: '#2a1c22', facing: -1, pose: 'sit', z: 1, hair: '#1a1210' }),
+      new Actor('Viuda', { x: TABLE_X - 160, y: GROUND, h: 190, hat: 'bonnet', hatColor: '#0a0a0b', skirt: true, coat: '#121112', shawl: '#0e0d0e', facing: 1, pose: 'sit', z: 1 }),
+      new Actor('Joven', { x: TABLE_X + 40, y: GROUND, h: 200, hat: 'none', hair: '#2a1e14', coat: '#2a2a30', facing: -1, pose: 'sit', z: -1, moustache: '#2a1e14', scarf: '#4a3a2a' }),
     ];
   },
 
   drawNearOver(ctx, t) {
-    // round table with cloth, three candles (drawn over the seated figures)
+    // round table with a fringed velvet cloth and three candles (drawn over the seated figures)
     ctx.fillStyle = '#1a0c0a'; ctx.fillRect(TABLE_X - 12, GROUND - 120, 24, 120);
     ctx.fillStyle = '#3a1814';
     ctx.beginPath(); ctx.ellipse(TABLE_X, GROUND - 124, 150, 18, 0, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.moveTo(TABLE_X - 150, GROUND - 124); ctx.lineTo(TABLE_X - 160, GROUND - 60); ctx.lineTo(TABLE_X + 160, GROUND - 60); ctx.lineTo(TABLE_X + 150, GROUND - 124); ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.3)'; for (let x = TABLE_X - 140; x < TABLE_X + 150; x += 34) ctx.fillRect(x, GROUND - 112, 6, 52);
+    ctx.fillStyle = '#8a6a2a'; for (let x = TABLE_X - 158; x < TABLE_X + 160; x += 7) ctx.fillRect(x, GROUND - 60, 3, 9);
     const out = this.G?.flag('candles_out');
     for (const dx of [-30, 10, 50]) {
-      ctx.fillStyle = '#e0d4b4'; ctx.fillRect(TABLE_X + dx - 3, GROUND - 160 + (dx === 10 ? -6 : 0), 7, 34);
-      if (!out) { ctx.fillStyle = '#ffd38a'; ctx.beginPath(); ctx.ellipse(TABLE_X + dx + 0.5, GROUND - 166 + (dx === 10 ? -6 : 0) + Math.sin(t * 8 + dx) * 0.8, 2.5, 6, 0, 0, Math.PI * 2); ctx.fill(); }
+      const top = GROUND - 160 + (dx === 10 ? -6 : 0);
+      ctx.fillStyle = '#5a4520'; ctx.fillRect(TABLE_X + dx - 7, GROUND - 128, 15, 4);
+      ctx.fillStyle = '#e0d4b4'; ctx.fillRect(TABLE_X + dx - 3, top, 7, 34); ctx.fillRect(TABLE_X + dx + 3, top + 6, 3, 12);
+      if (!out) { ctx.fillStyle = '#ffd38a'; ctx.beginPath(); ctx.ellipse(TABLE_X + dx + 0.5, top - 6 + Math.sin(t * 8 + dx) * 0.8, 2.8, 6.5, Math.sin(t * 4 + dx) * 0.1, 0, Math.PI * 2); ctx.fill(); }
     }
     if (this.G?.flag('comb_on_table')) { ctx.fillStyle = '#6a5038'; ctx.fillRect(TABLE_X - 14, GROUND - 130, 28, 5); }
     if (this.G?.flag('mirror_cracked')) {
-      ctx.strokeStyle = 'rgba(220,230,230,0.5)'; ctx.lineWidth = 1.2;
+      ctx.strokeStyle = 'rgba(220,230,230,0.55)'; ctx.lineWidth = 2;
       const cx = TABLE_X + 20, cy = 230;
-      for (let i = 0; i < 10; i++) { const a = i * 0.63; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * 140, cy + Math.sin(a) * 130); ctx.stroke(); }
+      for (let i = 0; i < 10; i++) { const a = i * 0.63; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * 70, cy + Math.sin(a) * 60); ctx.lineTo(cx + Math.cos(a + 0.1) * 140, cy + Math.sin(a + 0.1) * 130); ctx.stroke(); }
+      ctx.beginPath(); ctx.arc(cx, cy, 26, 0, Math.PI * 2); ctx.stroke();
     }
   },
 
@@ -179,12 +214,28 @@ export default {
       },
     },
     {
-      id: 'trumpet', name: 'Trompeta de espiritismo', rect: [360, GROUND - 130, 110, 40], walk: 470,
+      id: 'trumpet', name: 'Trompeta de espiritismo', rect: [560, GROUND - 130, 110, 40], walk: 600,
       act: async (G) => { await G.think('Una trompeta de latón para que "los espíritus" hablen por ella. Un truco de feria.'); },
     },
     {
-      id: 'photos', name: 'Fotografías de espíritus', rect: [370, 190, 220, 110], walk: 470,
+      id: 'photos', name: 'Fotografías de espíritus', rect: [230, 190, 200, 110], walk: 330,
       act: async (G) => { await G.think('Fotografías de difuntos, con "espíritus" añadidos con doble exposición. Una de ellas tiene la cara borrada por la humedad, o eso parece.'); },
+    },
+    {
+      id: 'clock', name: 'Reloj de la repisa', rect: [430, GROUND - 210, 60, 56], walk: 460,
+      act: async (G) => {
+        await G.think('Un reloj de sobremesa, parado a las tres y cuarto.');
+        await G.think("A las tres y cuarto pasó Neil por Buck's Row y no vio a nadie.");
+        G.audio.tick(); G.sanity(-2);
+      },
+    },
+    {
+      id: 'raven', name: 'Cuervo disecado', rect: [995, GROUND - 216, 62, 66], walk: 980,
+      act: async (G) => { await G.think('Un cuervo disecado bajo una campana de cristal. Tiene la cabeza vuelta hacia la puerta, como si esperara a alguien.'); },
+    },
+    {
+      id: 'chart', name: 'Carta astral', rect: [930, 150, 96, 96], walk: 980,
+      act: async (G) => { await G.think('Una carta astral dibujada a mano. En el margen alguien ha escrito "T. A." y la fecha de mi nacimiento.'); G.sanity(-3); },
     },
     {
       id: 'door', name: 'Salir a Fournier Street', cursor: 'exit', rect: [180, GROUND - 280, 140, 280], walk: 250, face: -1,

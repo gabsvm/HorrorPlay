@@ -353,7 +353,7 @@ export function makeChapters() {
     },
 
     async caught(G) {
-      const long = G.addActor(new Actor('Long', { x: G.player.x - 520, y: G.scene.groundY, h: 212, hat: 'helmet', coat: '#1b2030', coatLen: 0.82, facing: 1, lantern: true, lanternOn: true }));
+      const long = G.addActor(new Actor('Long', { x: G.player.x - 520, y: G.scene.groundY, h: 212, hat: 'helmet', coat: '#161c30', trousers: '#12151f', coatLen: 0.8, flare: 1.02, belt: true, number: true, facing: 1, lantern: true, lanternOn: true, moustache: '#3a2a1e' }));
       await long.walkTo(G.player.x - 260);
       G.face(-1);
       long.talking = true;
@@ -431,7 +431,7 @@ export function makeChapters() {
       await G.think('T. A.');
       await G.think('Cualquiera. Hay cientos de...');
       G.audio.door();
-      const gr = G.addActor(new Actor('Greaves', { x: 120, y: G.scene.groundY, h: 214, hat: 'top', coat: '#1d1b1c', coatLen: 0.95, cane: true, beard: '#6a6a66', facing: 1, flare: 1.05 }));
+      const gr = G.addActor(new Actor('Greaves', { x: 120, y: G.scene.groundY, h: 214, hat: 'top', coat: '#1d1b1c', coatLen: 0.95, cane: true, beard: '#7a7a74', hair: '#8a8a84', facing: 1, flare: 1.05, tails: true, chain: true, waistcoat: '#3a2a20', buttons: 'double' }));
       G.face(-1);
       await gr.walkTo(G.player.x - 260);
       gr.talking = true;

@@ -1,6 +1,7 @@
 // Chapter 4 — Dr Greaves's study at the London Hospital, Whitechapel Road, 8 November 1888, night.
 import * as A from '../art/paint.js';
-import { wallpaper, wainscot, floorboards, interiorWindow, desk, chair, rug } from '../art/build.js';
+import { wallpaper, wainscot, floorboards, interiorWindow, desk, chair, rug, frame } from '../art/build.js';
+import { Moths } from '../engine/life.js';
 import { P } from '../art/palette.js';
 import { rng } from '../art/noise.js';
 
@@ -29,59 +30,89 @@ export default {
       ctx.fillStyle = '#080908'; ctx.fillRect(0, 0, WIDTH, 720);
       wallpaper(ctx, 0, 30, WIDTH, GROUND - 150, { seed: 71, base: '#2c3a32', stripe: '#24322a', damp: 0.3 });
       wainscot(ctx, 0, GROUND - 120, WIDTH, 120);
+      ctx.fillStyle = '#0c0d0c'; ctx.fillRect(0, 0, WIDTH, 30); ctx.fillStyle = '#3a3428'; ctx.fillRect(0, 26, WIDTH, 6);
       floorboards(ctx, 0, GROUND - 6, WIDTH, 720 - GROUND + 6, { color: '#33251a' });
       rug(ctx, 560, GROUND + 6, 520, 48);
-      A.door(ctx, 80, GROUND - 280, 124, 280, { color: '#2a1d14', steps: 0 });
-      ctx.fillStyle = '#c9bc98'; ctx.fillRect(110, GROUND - 230, 64, 20); ctx.fillStyle = '#2a2016'; ctx.font = '11px Georgia'; ctx.textAlign = 'center'; ctx.fillText('DR. L. GREAVES', 142, GROUND - 216);
-      // shelves of specimen jars
-      ctx.fillStyle = '#1c140e'; for (let s = 0; s < 4; s++) ctx.fillRect(300, 170 + s * 100, 300, 10);
+      // door with a brass name plate
+      A.door(ctx, 80, GROUND - 280, 124, 280, { color: '#2a1d14', steps: 0, fanlight: false, scraper: false });
+      ctx.fillStyle = '#c9bc98'; ctx.fillRect(110, GROUND - 232, 64, 22); ctx.strokeStyle = '#7a6440'; ctx.lineWidth = 2; ctx.strokeRect(110, GROUND - 232, 64, 22);
+      ctx.fillStyle = '#2a2016'; ctx.font = '600 10px Georgia, serif'; ctx.textAlign = 'center'; ctx.fillText('DR. L. GREAVES', 142, GROUND - 217);
+      // diplomas
+      frame(ctx, 236, 120, 46, 34, { seed: 3, kind: 'landscape' }); frame(ctx, 236, 176, 46, 34, { seed: 4, kind: 'landscape' });
+      // shelves of specimen jars, labelled in a careful hand
+      ctx.fillStyle = '#1c140e'; for (let s = 0; s < 4; s++) { ctx.fillRect(300, 170 + s * 100, 300, 10); ctx.fillStyle = 'rgba(255,230,200,0.07)'; ctx.fillRect(300, 170 + s * 100, 300, 2); ctx.fillStyle = '#1c140e'; }
       const r = rng(5);
       for (let s = 0; s < 4; s++) for (let i = 0; i < 7; i++) {
         const jx = 310 + i * 41, jy = 170 + s * 100, jh = r.range(46, 78);
-        ctx.fillStyle = `rgba(${r.int(70, 95)},${r.int(78, 96)},${r.int(48, 62)},0.75)`;
+        ctx.fillStyle = `rgba(${r.int(70, 95)},${r.int(78, 96)},${r.int(48, 62)},0.8)`;
         ctx.fillRect(jx, jy - jh, 32, jh);
-        ctx.fillStyle = 'rgba(40,30,20,0.85)'; ctx.beginPath(); ctx.ellipse(jx + 16, jy - jh * 0.45, 9, jh * 0.22, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = 'rgba(40,30,20,0.85)'; ctx.beginPath(); ctx.ellipse(jx + 16, jy - jh * 0.45, 9, jh * 0.22, r.range(-0.3, 0.3), 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = '#2a2016'; ctx.fillRect(jx - 2, jy - jh - 6, 36, 7);
-        ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(jx + 4, jy - jh + 4, 3, jh - 8);
+        ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(jx + 4, jy - jh + 4, 3, jh - 8);
+        ctx.fillStyle = '#c9bc98'; ctx.fillRect(jx + 8, jy - 20, 16, 10); ctx.fillStyle = 'rgba(40,30,20,0.6)'; ctx.fillRect(jx + 10, jy - 16, 12, 1.5);
       }
       // anatomical chart
       ctx.fillStyle = '#c6b892'; ctx.fillRect(660, 140, 150, 230);
+      ctx.fillStyle = '#4a3a1e'; ctx.fillRect(656, 136, 158, 6); ctx.fillRect(656, 368, 158, 6);
       ctx.strokeStyle = '#5a3a2a'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(735, 180, 16, 0, Math.PI * 2); ctx.moveTo(735, 196); ctx.lineTo(735, 290); ctx.moveTo(700, 220); ctx.lineTo(770, 220); ctx.moveTo(735, 290); ctx.lineTo(710, 350); ctx.moveTo(735, 290); ctx.lineTo(760, 350); ctx.stroke();
       for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(718, 228 + i * 10); ctx.quadraticCurveTo(735, 234 + i * 10, 752, 228 + i * 10); ctx.stroke(); }
+      ctx.fillStyle = '#8a2a1e'; ctx.beginPath(); ctx.ellipse(742, 236, 8, 10, 0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(40,30,20,0.6)'; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(770, 190 + i * 24); ctx.lineTo(800, 190 + i * 24); ctx.stroke(); }
       A.stain(ctx, 660, 140, 150, 230, { seed: 3, alpha: 0.5 });
       // window onto Whitechapel Road
       const win = interiorWindow(ctx, 860, 160, 170, 240);
       lights.push({ x: win.x, y: win.y, r: 300, color: [0.3, 0.38, 0.45], intensity: 0.4, halo: 0, reflect: false });
-      // locked glass-fronted cabinet
+      // locked glass-fronted cabinet of case files
       ctx.fillStyle = '#1e140c'; ctx.fillRect(1240, GROUND - 400, 180, 400);
+      ctx.fillStyle = '#2a1e14'; ctx.fillRect(1232, GROUND - 410, 196, 12);
       ctx.fillStyle = 'rgba(30,40,40,0.9)'; ctx.fillRect(1254, GROUND - 386, 152, 220);
-      for (let s = 0; s < 3; s++) { ctx.fillStyle = '#2a1e14'; ctx.fillRect(1254, GROUND - 316 + s * 70, 152, 6); for (let i = 0; i < 6; i++) { ctx.fillStyle = ['#5a4a30', '#3a2a20', '#6a5a3a'][i % 3]; ctx.fillRect(1260 + i * 24, GROUND - 360 + s * 70, 18, 44); } }
+      for (let s = 0; s < 3; s++) {
+        ctx.fillStyle = '#2a1e14'; ctx.fillRect(1254, GROUND - 316 + s * 70, 152, 6);
+        for (let i = 0; i < 6; i++) { ctx.fillStyle = ['#5a4a30', '#3a2a20', '#6a5a3a'][i % 3]; ctx.fillRect(1260 + i * 24, GROUND - 360 + s * 70, 18, 44); ctx.fillStyle = '#c9bc98'; ctx.fillRect(1263 + i * 24, GROUND - 350 + s * 70, 12, 6); }
+      }
+      ctx.fillStyle = 'rgba(180,200,210,0.12)'; ctx.beginPath(); ctx.moveTo(1260, GROUND - 386); ctx.lineTo(1300, GROUND - 386); ctx.lineTo(1260, GROUND - 300); ctx.fill();
       ctx.fillStyle = '#1e140c'; ctx.fillRect(1328, GROUND - 386, 4, 220);
       ctx.fillStyle = '#b08a4e'; ctx.fillRect(1322, GROUND - 270, 16, 10);
       ctx.fillStyle = '#171009'; ctx.fillRect(1254, GROUND - 150, 152, 140);
-      // skeleton on its stand
-      ctx.strokeStyle = '#b8ad94'; ctx.lineWidth = 4;
+      ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(1260, GROUND - 144, 68, 128); ctx.fillRect(1332, GROUND - 144, 68, 128);
+      // articulated skeleton on its stand
+      ctx.strokeStyle = '#c4b8a0'; ctx.lineWidth = 4;
       const sx = 1140;
-      ctx.beginPath(); ctx.arc(sx, GROUND - 300, 16, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#c4b8a0'; ctx.beginPath(); ctx.ellipse(sx, GROUND - 300, 15, 17, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#0a0a0a'; ctx.beginPath(); ctx.ellipse(sx - 5, GROUND - 302, 4, 4, 0, 0, Math.PI * 2); ctx.ellipse(sx + 6, GROUND - 302, 4, 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(sx - 4, GROUND - 290, 8, 3);
       ctx.beginPath(); ctx.moveTo(sx, GROUND - 284); ctx.lineTo(sx, GROUND - 160); ctx.stroke();
-      for (let i = 0; i < 6; i++) { ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(sx, GROUND - 260 + i * 12, 24 - i * 2, 4, 0, 0, Math.PI); ctx.stroke(); }
-      ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(sx - 26, GROUND - 270); ctx.lineTo(sx - 34, GROUND - 190); ctx.moveTo(sx + 26, GROUND - 270); ctx.lineTo(sx + 34, GROUND - 190);
-      ctx.moveTo(sx - 10, GROUND - 160); ctx.lineTo(sx - 16, GROUND - 40); ctx.moveTo(sx + 10, GROUND - 160); ctx.lineTo(sx + 16, GROUND - 40); ctx.stroke();
-      ctx.fillStyle = '#1a1a1a'; ctx.fillRect(sx - 3, GROUND - 330, 6, 330); ctx.fillRect(sx - 30, GROUND - 6, 60, 6);
+      for (let i = 0; i < 6; i++) { ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(sx, GROUND - 262 + i * 12, 24 - i * 2, 5, 0, 0, Math.PI); ctx.stroke(); }
+      ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(sx, GROUND - 156, 20, 9, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(sx - 26, GROUND - 272); ctx.lineTo(sx - 32, GROUND - 216); ctx.lineTo(sx - 30, GROUND - 168); ctx.moveTo(sx + 26, GROUND - 272); ctx.lineTo(sx + 34, GROUND - 216); ctx.lineTo(sx + 30, GROUND - 168);
+      ctx.moveTo(sx - 10, GROUND - 150); ctx.lineTo(sx - 14, GROUND - 92); ctx.lineTo(sx - 16, GROUND - 40); ctx.moveTo(sx + 10, GROUND - 150); ctx.lineTo(sx + 14, GROUND - 92); ctx.lineTo(sx + 16, GROUND - 40); ctx.stroke();
+      ctx.fillStyle = '#1a1a1a'; ctx.fillRect(sx - 3, GROUND - 330, 6, 330); ctx.fillRect(sx - 30, GROUND - 6, 60, 6); ctx.fillRect(sx - 3, GROUND - 336, 26, 4);
+      // desk: microscope, a skull used as a paperweight, case notes, the green-shaded lamp
       desk(ctx, 560, GROUND, 300);
       chair(ctx, 880, GROUND, -1);
-      ctx.fillStyle = '#d4c6a0'; ctx.fillRect(620, GROUND - 104, 90, 8); ctx.fillStyle = '#2a2a2a'; ctx.fillRect(780, GROUND - 112, 20, 16);
-      // green-shaded desk lamp
+      ctx.fillStyle = '#d4c6a0'; ctx.fillRect(620, GROUND - 104, 90, 8); ctx.fillRect(626, GROUND - 108, 70, 4);
+      ctx.fillStyle = '#2a2a2a'; ctx.fillRect(780, GROUND - 112, 20, 16);
+      ctx.fillStyle = '#3a3428'; ctx.fillRect(812, GROUND - 104, 30, 6); ctx.fillRect(822, GROUND - 150, 8, 48); ctx.fillRect(818, GROUND - 156, 22, 10);
+      ctx.save(); ctx.translate(826, GROUND - 140); ctx.rotate(-0.3); ctx.fillStyle = '#9a8350'; ctx.fillRect(0, -16, 8, 26); ctx.restore();
+      ctx.fillStyle = '#c4b8a0'; ctx.beginPath(); ctx.ellipse(752, GROUND - 112, 14, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(744, GROUND - 106, 16, 8);
+      ctx.fillStyle = '#1a1612'; ctx.beginPath(); ctx.ellipse(752, GROUND - 112, 3.5, 3.5, 0, 0, Math.PI * 2); ctx.ellipse(760, GROUND - 112, 3, 3, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#6a5a30'; ctx.fillRect(700, GROUND - 150, 6, 50); ctx.fillRect(686, GROUND - 100, 34, 6);
       ctx.fillStyle = '#1f5a3e'; ctx.beginPath(); ctx.moveTo(672, GROUND - 150); ctx.lineTo(734, GROUND - 150); ctx.lineTo(722, GROUND - 170); ctx.lineTo(684, GROUND - 170); ctx.fill();
+      ctx.fillStyle = 'rgba(160,255,200,0.2)'; ctx.fillRect(684, GROUND - 168, 38, 3);
+      // gas bracket on the wall by the door
+      ctx.fillStyle = '#4a3e28'; ctx.fillRect(250, 196, 24, 6); ctx.fillRect(266, 186, 4, 12);
+      ctx.fillStyle = '#e8d4a0'; ctx.beginPath(); ctx.ellipse(268, 182, 7, 9, 0, 0, Math.PI * 2); ctx.fill();
     });
     lights.push({ id: 'lamp', x: 703, y: GROUND - 140, r: 560, color: [0.95, 0.85, 0.55], intensity: 1.0, flicker: 0.04, halo: 50 });
-    lights.push({ id: 'gas', x: 260, y: 190, r: 360, color: P.gas, intensity: 0.45, flicker: 0.08, halo: 40 });
+    lights.push({ id: 'gas', x: 268, y: 182, r: 360, color: P.gas, intensity: 0.45, flicker: 0.08, halo: 40 });
     const fg = R.paintLayer(WIDTH * 1.2, (ctx) => {
       ctx.fillStyle = '#040404'; ctx.fillRect(0, 0, 60, 720); ctx.fillRect(1700, 0, 100, 720);
     });
     return { layers: [{ canvas: near, parallax: 1, kind: 'near' }, { canvas: fg, parallax: 1.2, kind: 'fg' }], lights };
+  },
+
+  makeLife() {
+    return [new Moths({ x: 703, y: GROUND - 175, n: 3 })];
   },
 
   async enter(G) {
