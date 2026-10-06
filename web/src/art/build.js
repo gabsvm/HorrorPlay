@@ -411,4 +411,16 @@ export function fgDressing(ctx, width, { seed = 1, indoor = false } = {}) {
     }
     x += r.range(900, 1500);
   }
+  // rubble and kerbstones right under the lens, along the bottom edge only (below anything you can
+  // click), so the street has a near plane the eye looks past
+  if (!indoor) {
+    let bx = r.range(0, 300);
+    while (bx < width) {
+      const bw = r.range(80, 260), bh = r.range(10, 24);
+      ctx.beginPath(); ctx.moveTo(bx, 722);
+      for (let k = 0; k <= 6; k++) ctx.lineTo(bx + (bw * k) / 6, 722 - bh * (0.5 + 0.5 * Math.sin(k * 1.7 + bx)));
+      ctx.lineTo(bx + bw, 722); ctx.closePath(); ctx.fill();
+      bx += bw + r.range(300, 800);
+    }
+  }
 }

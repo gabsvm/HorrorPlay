@@ -13,19 +13,27 @@ FF = sys.argv[1] if len(sys.argv) > 1 else (shutil.which('ffmpeg') or 'ffmpeg')
 RATE = 32000
 K = 'kenney_rpg-audio/Audio/'
 
-# name: (source, start, length or None, channels, kbps, loop crossfade seconds, peak)
+# name: (source, start, length or None, channels, kbps, loop crossfade seconds, peak[, ffmpeg filter])
 SOUNDS = {
     'rain':        ('rain_ogg/1.ogg', 0, 26, 2, 64, 2.0, 0.8),
     'storm':       ('dark_rainy_night.ogg', 60, 42, 2, 64, 3.0, 0.8),
     'river':       ('sfx_loops/water_flowing.ogg', 0, None, 1, 48, 0.3, 0.7),
-    'step_stone':  ('steps/stone01.ogg', 0, None, 1, 48, 0, 0.9),
+    # footsteps: Kenney's boot steps, shaped per surface (dry stone, hollow boards, soft wet earth)
+    'step_stone0': (K + 'footstep02.ogg', 0, None, 1, 48, 0, 0.9, 'highpass=f=140,equalizer=f=3200:t=q:w=1.2:g=3'),
+    'step_stone1': (K + 'footstep04.ogg', 0, None, 1, 48, 0, 0.9, 'highpass=f=140,equalizer=f=3200:t=q:w=1.2:g=3'),
+    'step_stone2': (K + 'footstep05.ogg', 0, None, 1, 48, 0, 0.9, 'highpass=f=140,equalizer=f=3200:t=q:w=1.2:g=3'),
+    'step_stone3': (K + 'footstep06.ogg', 0, None, 1, 48, 0, 0.9, 'highpass=f=140,equalizer=f=3200:t=q:w=1.2:g=3'),
+    'step_stone4': (K + 'footstep07.ogg', 0, None, 1, 48, 0, 0.9, 'highpass=f=140,equalizer=f=3200:t=q:w=1.2:g=3'),
+    'step_wood0':  (K + 'footstep00.ogg', 0, None, 1, 48, 0, 0.9, 'lowpass=f=3000,equalizer=f=200:t=q:w=1:g=4'),
+    'step_wood1':  (K + 'footstep01.ogg', 0, None, 1, 48, 0, 0.9, 'lowpass=f=3000,equalizer=f=200:t=q:w=1:g=4'),
+    'step_wood2':  (K + 'footstep03.ogg', 0, None, 1, 48, 0, 0.9, 'lowpass=f=3000,equalizer=f=200:t=q:w=1:g=4'),
+    'step_wood3':  (K + 'footstep08.ogg', 0, None, 1, 48, 0, 0.9, 'lowpass=f=3000,equalizer=f=200:t=q:w=1:g=4'),
+    'step_wood4':  (K + 'footstep09.ogg', 0, None, 1, 48, 0, 0.9, 'lowpass=f=3000,equalizer=f=200:t=q:w=1:g=4'),
+    'step_mud0':   (K + 'footstep00.ogg', 0, None, 1, 48, 0, 0.9, 'asetrate=27200,aresample=32000,lowpass=f=700,equalizer=f=250:t=q:w=1:g=5'),
+    'step_mud1':   (K + 'footstep01.ogg', 0, None, 1, 48, 0, 0.9, 'asetrate=27200,aresample=32000,lowpass=f=700,equalizer=f=250:t=q:w=1:g=5'),
+    'step_mud2':   (K + 'footstep03.ogg', 0, None, 1, 48, 0, 0.9, 'asetrate=27200,aresample=32000,lowpass=f=700,equalizer=f=250:t=q:w=1:g=5'),
+    'step_mud3':   (K + 'footstep08.ogg', 0, None, 1, 48, 0, 0.9, 'asetrate=27200,aresample=32000,lowpass=f=700,equalizer=f=250:t=q:w=1:g=5'),
     'step_gravel': ('steps/gravel.ogg', 0, 0.35, 1, 48, 0, 0.9),
-    'step_mud':    ('steps/mud02.ogg', 0, None, 1, 48, 0, 0.9),
-    'step_wood0':  (K + 'footstep00.ogg', 0, None, 1, 48, 0, 0.9),
-    'step_wood1':  (K + 'footstep01.ogg', 0, None, 1, 48, 0, 0.9),
-    'step_wood2':  (K + 'footstep03.ogg', 0, None, 1, 48, 0, 0.9),
-    'step_wood3':  (K + 'footstep08.ogg', 0, None, 1, 48, 0, 0.9),
-    'step_wood4':  (K + 'footstep09.ogg', 0, None, 1, 48, 0, 0.9),
     'door_open':   (K + 'doorOpen_2.ogg', 0, None, 1, 56, 0, 0.9),
     'door_close':  (K + 'doorClose_1.ogg', 0, None, 1, 56, 0, 0.9),
     'creak1':      (K + 'creak1.ogg', 0, None, 1, 48, 0, 0.9),
@@ -44,9 +52,10 @@ SOUNDS = {
 }
 
 
-def decode(path, start, length, ch):
+def decode(path, start, length, ch, af=None):
     cmd = [FF, '-v', 'quiet', '-ss', str(start), '-i', path]
     if length: cmd += ['-t', str(length)]
+    if af: cmd += ['-af', af]
     cmd += ['-ac', str(ch), '-ar', str(RATE), '-f', 's16le', '-']
     a = array.array('h'); a.frombytes(subprocess.run(cmd, capture_output=True, check=True).stdout)
     return [x / 32768 for x in a]
@@ -82,9 +91,13 @@ def encode(samples, ch, kbps, out):
 
 
 os.makedirs(OUT, exist_ok=True)
+for f in os.listdir(OUT):
+    if f.endswith('.mp3') and f[:-4] not in SOUNDS: os.remove(os.path.join(OUT, f))
 total = 0
-for name, (src, start, length, ch, kbps, xf, peak) in SOUNDS.items():
-    s = decode(os.path.join(SRC, src), start, length, ch)
+for name, spec in SOUNDS.items():
+    src, start, length, ch, kbps, xf, peak = spec[:7]
+    af = spec[7] if len(spec) > 7 else None
+    s = decode(os.path.join(SRC, src), start, length, ch, af)
     if xf: s = crossfade_loop(s, ch, xf)
     else: s = trim_silence(s, ch)
     pk = max(1e-6, max(abs(x) for x in s))

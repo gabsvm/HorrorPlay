@@ -2,8 +2,12 @@
 // cloth and paper are short CC0 recordings (assets/audio, see CREDITS.md) layered over the synthesis.
 // Every recorded sound has a procedural fallback, so the game sounds whole before (or without) them.
 
-const SAMPLES = ['rain', 'storm', 'river', 'step_stone', 'step_gravel', 'step_mud', 'step_wood0', 'step_wood1', 'step_wood2',
-  'step_wood3', 'step_wood4', 'door_open', 'door_close', 'creak1', 'creak2', 'creak3', 'cloth1', 'cloth2', 'leather',
+const STEPS = {
+  stone: ['step_stone0', 'step_stone1', 'step_stone2', 'step_stone3', 'step_stone4'],
+  wood: ['step_wood0', 'step_wood1', 'step_wood2', 'step_wood3', 'step_wood4'],
+  mud: ['step_mud0', 'step_mud1', 'step_mud2', 'step_mud3'],
+};
+const SAMPLES = ['rain', 'storm', 'river', 'step_gravel', ...STEPS.stone, ...STEPS.wood, ...STEPS.mud, 'door_open', 'door_close', 'creak1', 'creak2', 'creak3', 'cloth1', 'cloth2', 'leather',
   'book_open', 'book_close', 'book_flip1', 'book_flip2', 'latch', 'metal_click', 'knife'];
 import { prefs } from './prefs.js';
 
@@ -362,13 +366,22 @@ class AudioEngine {
     s.start(t, Math.random() * 2); s.stop(t + a + d + 0.1);
   }
 
-  step(surface = 'stone') {
-    const r = 0.88 + Math.random() * 0.24;
-    if (surface === 'wood' && this.play(this.pick(['step_wood0', 'step_wood1', 'step_wood2', 'step_wood3', 'step_wood4']), { vol: 0.28, rate: r, rev: 0.2 })) return;
-    if (surface === 'mud' && this.play('step_mud', { vol: 0.75, rate: r * 0.9, rev: 0.05 })) { this.noiseHit({ freq: 500, q: 0.8, vol: 0.08, d: 0.18, type: 'lowpass', rev: 0.05 }); return; }
-    if (surface === 'stone' && this.play('step_stone', { vol: 0.55, rate: r, rev: 0.25 })) {
-      if (Math.random() < 0.4) this.play('step_gravel', { vol: 0.12, rate: r, rev: 0.1 });
-      this.noiseHit({ freq: 3500, q: 0.6, vol: 0.03, a: 0.01, d: 0.14, type: 'highpass', rev: 0.1 }); // wet splash
+  // a footfall: never the same recording twice in a row, a little pitch and level drift, lighter for a child
+  step(surface = 'stone', weight = 1) {
+    const set = STEPS[surface] || STEPS.stone;
+    let pick = this.pick(set);
+    if (pick === this._lastStep) pick = set[(set.indexOf(pick) + 1) % set.length];
+    this._lastStep = pick;
+    const r = (0.92 + Math.random() * 0.16) * (weight < 0.8 ? 1.12 : 1), v = (0.85 + Math.random() * 0.3) * Math.min(1, weight + 0.15);
+    if (surface === 'mud' && this.play(pick, { vol: 0.6 * v, rate: r, rev: 0.05 })) {
+      // the wet suck as the boot comes out of the mud
+      this.noiseHit({ freq: 320, q: 0.9, vol: 0.07 * v, a: 0.04, d: 0.2, type: 'lowpass', buf: this.brown, rev: 0.03 });
+      return;
+    }
+    if (surface === 'wood' && this.play(pick, { vol: 0.3 * v, rate: r, rev: 0.2 })) return;
+    if (surface !== 'wood' && surface !== 'mud' && this.play(pick, { vol: 0.42 * v, rate: r, rev: 0.25 })) {
+      if (Math.random() < 0.25) this.play('step_gravel', { vol: 0.08 * v, rate: r, rev: 0.1 });
+      this.noiseHit({ freq: 3500, q: 0.6, vol: 0.025 * v, a: 0.01, d: 0.12, type: 'highpass', rev: 0.1 }); // wet street
       return;
     }
     if (surface === 'wood') this.noiseHit({ freq: 260, q: 2, vol: 0.22, d: 0.09, rev: 0.15, buf: this.brown });

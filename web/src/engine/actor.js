@@ -2,7 +2,7 @@
 // animation stays fluid), lit by its nearest lamp, then reduced to the pixel grid as a sprite.
 // Silhouette first: hats, coats, shawls, aprons and posture identify people in the dark.
 import { P, shade } from '../art/palette.js';
-import { pixelizeInto } from '../art/pixel.js';
+import { pixelizeInto, quantizeData } from '../art/pixel.js';
 
 const DEF = {
   h: 200, hat: 'bowler', hatColor: '#121316', coat: P.coat, coatLen: 0.78, flare: 1.15, build: 1, skin: P.skin,
@@ -209,6 +209,7 @@ export class Actor {
     bc.fillStyle = g2; bc.fillRect(0, 0, W, Hh);
     bc.globalCompositeOperation = 'source-over';
     pixelizeInto(b, this._lo, { dither: 8, alphaCut: 100, edge: 0.62 });
+    if (!Actor.lowFx) this.shadeVolume(this._lo, this._found || []);
     this.blit(ctx, rs, ox, oy, W, Hh);
   }
 
@@ -227,6 +228,7 @@ export class Actor {
     // a lantern lights its bearer from below and in front
     if (this.lantern && this.lanternOn) found.push({ ux: this.facing * 0.6, uy: 0.8, k: 0.5, c: P.lantern || [1, 0.75, 0.45] });
     found.sort((a, b) => b.k - a.k);
+    this._found = found;
     if (!this._rim || this._rim.width !== W || this._rim.height !== Hh) {
       this._rim = document.createElement('canvas'); this._rim.width = W; this._rim.height = Hh;
     }
@@ -241,8 +243,62 @@ export class Actor {
     };
     const rgb = (c, a) => `rgba(${Math.round(c[0] * 255)},${Math.round(c[1] * 255)},${Math.round(c[2] * 255)},${a})`;
     if (found[0]) pass(-found[0].ux, -found[0].uy, Math.max(5, 9 * s), `rgba(0,0,0,${Math.min(0.42, 0.18 + found[0].k * 0.4)})`, 'source-atop');
-    for (const f of found.slice(0, 2)) pass(f.ux, f.uy, Math.max(2.5, 3.2 * s), rgb(f.c, Math.min(0.7, f.k * 0.95)), 'lighter');
+    for (const f of found.slice(0, 2)) pass(f.ux, f.uy, Math.max(3, 4.2 * s), rgb(f.c, Math.min(0.85, f.k * 1.2)), 'lighter');
     if (this.wet) pass(0, -1, Math.max(2, 2.2 * s), 'rgba(170,190,205,0.13)', 'lighter');
+  }
+
+  // Volume: a height field is built from the silhouette (rounded at the edges) and from how light or
+  // dark each part is (folds, the gap between arm and coat), its slope gives a normal per pixel, and
+  // every pixel is lit by the two strongest lights plus a faint sky. The side away from the lamp
+  // sinks into shadow, the side toward it is modelled, like a body and not a cut-out.
+  shadeVolume(lo, found) {
+    const w = lo.width, h = lo.height, n = w * h;
+    const c = lo.getContext('2d', { willReadFrequently: true });
+    const img = c.getImageData(0, 0, w, h), d = img.data;
+    if (!this._hb || this._hb.length !== n) { this._hb = new Float32Array(n); this._tb = new Float32Array(n); }
+    const H = this._hb, T = this._tb;
+    for (let i = 0; i < n; i++) {
+      const a = d[i * 4 + 3];
+      H[i] = a > 0 ? 1 + ((d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 765) * 0.35 : 0;
+    }
+    // two box blurs, horizontal then vertical, radius 2
+    for (let pass = 0; pass < 2; pass++) {
+      for (let y = 0; y < h; y++) {
+        let acc = 0; const row = y * w;
+        for (let x = -2; x < w + 2; x++) {
+          if (x + 2 < w) acc += H[row + x + 2];
+          if (x - 3 >= 0) acc -= H[row + x - 3];
+          if (x >= 0 && x < w) T[row + x] = acc / 5;
+        }
+      }
+      for (let x = 0; x < w; x++) {
+        let acc = 0;
+        for (let y = -2; y < h + 2; y++) {
+          if (y + 2 < h) acc += T[(y + 2) * w + x];
+          if (y - 3 >= 0) acc -= T[(y - 3) * w + x];
+          if (y >= 0 && y < h) H[y * w + x] = acc / 5;
+        }
+      }
+    }
+    // the lights, as unit vectors with a little depth toward the viewer; a faint cool sky above
+    const L = found.slice(0, 2).map((f) => ({ x: f.ux * 0.8, y: f.uy * 0.8, z: 0.55, w: Math.min(1, f.k * 1.6) }));
+    L.push({ x: 0, y: -0.7, z: 0.7, w: 0.3 });
+    let sumW = 0;
+    for (const l of L) { const m = Math.hypot(l.x, l.y, l.z); l.x /= m; l.y /= m; l.z /= m; sumW += l.w; }
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const i = y * w + x, p = i * 4;
+        if (d[p + 3] === 0) continue;
+        let nx = -(H[i + 1] - H[i - 1]) * 2.4, ny = -(H[i + w] - H[i - w]) * 2.4, nz = 1;
+        const m = Math.hypot(nx, ny, nz); nx /= m; ny /= m; nz /= m;
+        let lit = 0;
+        for (const l of L) lit += l.w * Math.max(0, nx * l.x + ny * l.y + nz * l.z);
+        const f = 0.48 + 0.92 * (lit / sumW);
+        d[p] = Math.min(255, d[p] * f); d[p + 1] = Math.min(255, d[p + 1] * f); d[p + 2] = Math.min(255, d[p + 2] * f * (f < 0.8 ? 1.06 : 1));
+      }
+    }
+    quantizeData(d, w, h, { dither: 6, alphaCut: 100 });
+    c.putImageData(img, 0, 0);
   }
 
   // Rain bouncing off the hat brim and the shoulders (drawn into the additive glow layer).
@@ -463,10 +519,12 @@ export class Actor {
       // a fitted greatcoat: waist, then a skirt whose front is pushed by the leading knee
       const push = Math.max(0, footFront.x - 4) * 0.35 * w, trail = Math.max(0, -footBack.x - 3) * 0.3 * w;
       const waistY = hipY - 12;
+      const gust = this.windy ? Math.sin(t * 1.7 + this.seed) * 0.6 + Math.sin(t * 4.3 + this.seed * 2) * 0.4 : 0;
+      const flut = gust * 3 + (this.coatV || 0) * 0.08;
       ctx.moveTo(-bw + lean, shoulderY + 4);
       ctx.quadraticCurveTo(-bw * 0.95 + lean * 0.6, waistY - 20, -bw * 0.8 + lean * 0.3, waistY);
-      ctx.quadraticCurveTo(-bw * 0.95, hipY + 10, -bw * fl + sway - trail, hemY);
-      ctx.quadraticCurveTo(sway, hemY + 4, bw * fl * 0.92 + sway * 0.6 + push, hemY + 1);
+      ctx.quadraticCurveTo(-bw * 0.95, hipY + 10, -bw * fl + sway - trail - Math.abs(flut) * 1.4, hemY - flut);
+      ctx.quadraticCurveTo(sway + flut * 2, hemY + 4 + Math.sin(t * 6 + this.seed) * Math.min(3, Math.abs(flut)), bw * fl * 0.92 + sway * 0.6 + push, hemY + 1);
       ctx.quadraticCurveTo(bw * 0.92, hipY + 10, bw * 0.78 + lean * 0.3, waistY);
       ctx.quadraticCurveTo(bw * 0.92 + lean * 0.6, waistY - 20, bw * 0.95 + lean, shoulderY + 4);
     }
@@ -521,7 +579,9 @@ export class Actor {
     }
     if (this.cape) {
       ctx.fillStyle = shade(this.coat, 0.9);
-      ctx.beginPath(); ctx.moveTo(-bw - 5 + lean, shoulderY - 1); ctx.quadraticCurveTo(-bw * 1.5, shoulderY + 40, -bw * 1.3 + sway * 0.4, shoulderY + 62); ctx.lineTo(bw * 1.3 + sway * 0.4, shoulderY + 62); ctx.quadraticCurveTo(bw * 1.3, shoulderY + 30, bw + 5 + lean, shoulderY - 1); ctx.fill();
+      // the cape lifts at the back with the wind and with every change of pace
+      const cf = (this.windy ? Math.sin(t * 2.2 + this.seed) * 3 + 3 : 0) + Math.abs(this.coatV || 0) * 0.15 + w * 4;
+      ctx.beginPath(); ctx.moveTo(-bw - 5 + lean, shoulderY - 1); ctx.quadraticCurveTo(-bw * 1.5 - cf, shoulderY + 40, -bw * 1.3 + sway * 0.4 - cf * 1.6, shoulderY + 62 - cf * 1.2); ctx.quadraticCurveTo(sway * 0.4 - cf * 0.5, shoulderY + 66 + Math.sin(t * 5 + this.seed) * cf * 0.3, bw * 1.3 + sway * 0.4, shoulderY + 62); ctx.quadraticCurveTo(bw * 1.3, shoulderY + 30, bw + 5 + lean, shoulderY - 1); ctx.fill();
       ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(-bw * 1.3 + sway * 0.4, shoulderY + 58, bw * 2.6, 4);
     }
     if (this.apron) {
@@ -541,7 +601,7 @@ export class Actor {
       ctx.fillStyle = this.scarf;
       ctx.beginPath(); ctx.moveTo(-bw * 0.6 + lean, shoulderY - 3); ctx.lineTo(bw * 0.8 + lean, shoulderY - 3); ctx.lineTo(bw * 0.7 + lean, shoulderY + 10); ctx.lineTo(-bw * 0.5 + lean, shoulderY + 10); ctx.fill();
       // the ends hang down the chest and lift a little with the stride
-      const flap = sw * 2 * (this.walkAmt || 0) + Math.sin(t * 2 + this.seed) * 0.8;
+      const flap = sw * 2 * (this.walkAmt || 0) + Math.sin(t * 2 + this.seed) * 0.8 + (this.windy ? -Math.abs(Math.sin(t * 3.1 + this.seed)) * 4 - 2 : 0) + (this.coatV || 0) * 0.1;
       ctx.beginPath(); ctx.moveTo(bw * 0.45 + lean, shoulderY + 6); ctx.lineTo(bw * 0.72 + lean, shoulderY + 6); ctx.lineTo(bw * 0.7 + lean + flap, shoulderY + 34); ctx.lineTo(bw * 0.5 + lean + flap, shoulderY + 32); ctx.fill();
       ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(bw * 0.5 + lean + flap, shoulderY + 28, bw * 0.2, 4);
     }

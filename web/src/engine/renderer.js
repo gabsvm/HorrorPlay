@@ -43,7 +43,13 @@ vec3 compose(vec2 uv){
   vec4 fog = texture2D(tFog, uv);
   vec3 fogLit = uFogCol * (0.28 + L * 0.95);
   col = mix(col, fogLit, clamp(fog.a * uFogAmt, 0.0, 1.0));
-  vec4 fg = texture2D(tFg, uv);
+  // depth of field: whatever passes in front of the camera is out of focus
+  vec2 px1 = 1.0 / uRes;
+  vec4 fg = texture2D(tFg, uv) * 0.2;
+  fg += texture2D(tFg, uv + vec2(2.0, 0.0) * px1) * 0.1; fg += texture2D(tFg, uv - vec2(2.0, 0.0) * px1) * 0.1;
+  fg += texture2D(tFg, uv + vec2(0.0, 2.0) * px1) * 0.1; fg += texture2D(tFg, uv - vec2(0.0, 2.0) * px1) * 0.1;
+  fg += texture2D(tFg, uv + vec2(1.5, 1.5) * px1) * 0.1; fg += texture2D(tFg, uv - vec2(1.5, 1.5) * px1) * 0.1;
+  fg += texture2D(tFg, uv + vec2(1.5, -1.5) * px1) * 0.1; fg += texture2D(tFg, uv - vec2(1.5, -1.5) * px1) * 0.1;
   col = mix(col, fg.rgb * (L * 0.55 + 0.04), fg.a);
   col += texture2D(tGlow, uv).rgb;
   return col;
@@ -220,7 +226,7 @@ export class Renderer {
     const prevLights = this.lightsFrame || scene.lights;
     const wet = !!scene.rain && !scene.indoor;
     for (const a of sorted) {
-      a.wet = wet; a.reflect = wet && !!scene.reflectY && (scene.wet ?? 0) > 0.5;
+      a.windy = !scene.indoor; a.wet = wet; a.reflect = wet && !!scene.reflectY && (scene.wet ?? 0) > 0.5;
       // the light that throws this figure's shadow across the ground: strongest nearby, not its own
       let best = null, bk = 0.12;
       for (const L of prevLights) {
