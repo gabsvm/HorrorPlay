@@ -62,7 +62,7 @@ async function menuBackdrop() {
   // the menu sits over a slow pan of Buck's Row in the rain
   await game.goto('bucks_row', { x: 1600, fade: false, noEnter: true });
   // key art: a lone figure under the gas lamp, his back to us, in the rain
-  Object.assign(game.player, { visible: true, facing: -1, lanternOn: false, pose: null, hat: 'bowler', collarUp: true, coat: '#23262b', h: 206 });
+  Object.assign(game.player, { visible: true, facing: -1, lanternOn: false, pose: null, hat: 'bowler', collarUp: true, coat: '#23262b' });
   game.actors = [game.player];
   game.camFocus = 1500;
   game.fadeTo(0.25, 2500);

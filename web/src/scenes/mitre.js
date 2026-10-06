@@ -35,7 +35,7 @@ export default {
       A.streetSign(ctx, 34, 136, 'CHURCH PASSAGE');
       A.poster(ctx, 190, 380, 36, 90, [['', 4]], { seed: 31, color: '#8f8466', under: false });
       // the empty houses; in No. 3 a City constable slept through it all
-      const houses = facade(ctx, { x: 230, w: 420, top: 160, base: GROUND - 12, seed: 201, floors: 3, windows: 2, boards: [0, 1, 2], litMap: [3], nets: [3], roof: 'parapet', kind: 'plaster', door: 300, number: '3' });
+      const houses = facade(ctx, { x: 230, w: 420, top: -110, base: GROUND - 12, seed: 201, floors: 3, windows: 2, boards: [0, 1, 2], litMap: [3], nets: [3], roof: 'parapet', kind: 'plaster', door: 300, number: '3' });
       houses.forEach((c) => lights.push({ x: c.x, y: c.y, r: 180, color: P.candle, intensity: 0.35, flicker: 0.12, halo: 22 }));
       chimneys.push(...houses.chimneys);
       // Kearley & Tonge warehouses, a loading bay with a handcart and stacked chests of tea
@@ -48,12 +48,12 @@ export default {
       ctx.fillStyle = '#100a06'; ctx.fillRect(1180, GROUND - 200, 80, 188);
       ctx.fillStyle = '#d9964a'; ctx.fillRect(1180, GROUND - 200, 12, 188);
       ctx.fillStyle = '#5c574d'; ctx.fillRect(1172, GROUND - 210, 96, 10);
-      const right = facade(ctx, { x: 1550, w: 750, top: 140, base: GROUND - 12, seed: 203, floors: 3, windows: 4, litMap: [9], figures: [9], roof: 'parapet', door: 600, stock: true, number: '9' });
+      const right = facade(ctx, { x: 1550, w: 750, top: -130, base: GROUND - 12, seed: 203, floors: 3, windows: 4, litMap: [9], figures: [9], roof: 'parapet', door: 600, stock: true, number: '9' });
       right.forEach((c) => lights.push({ x: c.x, y: c.y, r: 200, color: P.candle, intensity: 0.45, flicker: 0.15, halo: 30 }));
       chimneys.push(...right.chimneys);
       A.streetSign(ctx, 1600, 176, 'MITRE SQUARE  E.C.');
-      A.poster(ctx, 1800, 470, 110, 70, [['CITY POLICE', 14], ['NOTICE', 12]], { seed: 9, tilt: 0.02 });
-      A.poster(ctx, 1930, 476, 84, 64, [['LOST', 13], ['SPANIEL', 11], ['REWARD', 11]], { seed: 10, tilt: -0.04, color: '#c4b892' });
+      A.poster(ctx, 1690, 470, 96, 70, [['CITY POLICE', 14], ['NOTICE', 12]], { seed: 9, tilt: 0.02 });
+      A.poster(ctx, 1882, 476, 84, 64, [['LOST', 13], ['SPANIEL', 11], ['REWARD', 11]], { seed: 10, tilt: -0.04, color: '#c4b892' });
       A.wires(ctx, 640, 180, 1560, 240, { count: 2, sag: 50 });
       A.flagstones(ctx, 0, GROUND - 12, WIDTH, 18);
       A.kerb(ctx, 0, GROUND + 6, WIDTH);
@@ -61,7 +61,7 @@ export default {
       // the darkest corner, far from the lamp: the chalk outline the City police left
       ctx.strokeStyle = 'rgba(225,225,215,0.55)'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.ellipse(820, GROUND + 34, 90, 12, 0, 0, Math.PI * 2); ctx.stroke();
-      const lamp = A.lampPost(ctx, 1460, GROUND, 230);
+      const lamp = A.lampPost(ctx, 1460, GROUND, 320);
       lights.push({ x: lamp.x, y: lamp.y, r: 460, color: P.gas, intensity: 0.85, flicker: 0.1, halo: 110, shaft: true, shaftW: 110 });
     });
     lights.push({ id: 'watch', x: 1190, y: GROUND - 110, r: 260, color: P.candle, intensity: 0.6, flicker: 0.2, halo: 30 });
@@ -83,7 +83,7 @@ export default {
       new Drip({ x: 1250, y: GROUND - 212, ground: GROUND - 6, period: 2.8 }),
       new Rat({ x0: 600, x1: 1200, y: GROUND + 18, seed: 11 }),
       new Crow({ x: 1110, y: 54, facing: -1, seed: 12 }),
-      new Moths({ x: 1460, y: GROUND - 210 }),
+      new Moths({ x: 1460, y: GROUND - 300 }),
       new Paper({ x0: 200, x1: 2200, y: GROUND + 70, seed: 13 }),
       new Ripples({ x: 1460, y: GROUND + 50, w: 180 }),
     ];
@@ -113,7 +113,7 @@ export default {
 
   hotspots: [
     {
-      id: 'watkins', name: 'Agente Watkins (Policía de la City)', cursor: 'talk', rect: (G) => { const a = G.actor('Watkins'); return [a.x - 40, GROUND - 220, 80, 220]; }, walk: (G) => G.actor('Watkins').x - 90, face: 1,
+      id: 'watkins', name: 'Agente Watkins (Policía de la City)', cursor: 'talk', rect: (G) => { const a = G.actor('Watkins'); return [a.x - 40, GROUND - 189, 80, 189]; }, walk: (G) => G.actor('Watkins').x - 90, face: 1,
       act: async (G) => {
         const w = G.actor('Watkins'); w.facing = -1; w.talking = true;
         if (!G.flag('mitre_badge')) { await G.say('Agente Watkins', 'Sin identificación no pasa nadie. Ni la reina.'); w.talking = false; return; }
@@ -173,7 +173,7 @@ export default {
       },
     },
     {
-      id: 'morris', name: 'Morris, el vigilante', cursor: 'talk', rect: [1200, GROUND - 200, 80, 200], walk: 1140, face: 1,
+      id: 'morris', name: 'Morris, el vigilante', cursor: 'talk', rect: [1200, GROUND - 172, 80, 172], walk: 1140, face: 1,
       act: async (G) => {
         const m = G.actor('Morris'); m.talking = true;
         await G.say('Morris', 'Estaba barriendo ahí dentro, con la puerta entornada. No oí nada, señor. Nada de nada.');

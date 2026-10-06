@@ -128,7 +128,7 @@ export default {
       A.crate(ctx, 1500, GROUND - 60, 56, 48, 4);
       A.bollard(ctx, 1611, GROUND);
       // backs of terraces
-      const tl = facade(ctx, { x: 1680, w: 520, top: 250, base: GROUND - 12, seed: 77, floors: 2, windows: 3, litMap: [4], figures: [4], roof: 'parapet', kind: 'plaster', door: 360 });
+      const tl = facade(ctx, { x: 1680, w: 520, top: 116, base: GROUND - 12, seed: 77, floors: 2, windows: 3, litMap: [4], figures: [4], roof: 'parapet', kind: 'plaster', door: 360 });
       tl.forEach((c) => lights.push({ x: c.x, y: c.y, r: 200, color: P.candle, intensity: 0.5, flicker: 0.2, halo: 30, haloK: 0.5 }));
       chimneys.push(...tl.chimneys);
       ctx.strokeStyle = '#141414'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(1690, 330); ctx.quadraticCurveTo(1940, 370, 2190, 324); ctx.stroke();
@@ -186,7 +186,7 @@ export default {
     const list = [];
     const brennan = new Actor('Brennan', { x: 1180, y: GROUND, h: 222, hat: 'cap', hatColor: '#2a241e', coat: '#4a3e34', coatLen: 0.66, apron: '#3a2416', build: 1.35, facing: 1, trousers: '#2a2420', rolled: true, beard: '#2e2216', hair: '#2e2216' });
     list.push(brennan);
-    const wren = { h: 128, hat: 'cap', hatColor: '#2e2a26', coat: '#4a4036', skirt: true, patches: true, shawl: '#3a3a44', hair: '#5a3a22', boots: '#1a1612' };
+    const wren = { h: 150, hat: 'cap', hatColor: '#2e2a26', coat: '#4a4036', skirt: true, patches: true, shawl: '#3a3a44', hair: '#5a3a22', boots: '#1a1612' };
     if (!isMob(G)) {
       list.push(new Actor('Wren', { ...wren, x: 1474, y: GROUND - 74, facing: -1, z: 2 }));
     } else {
@@ -254,7 +254,7 @@ export default {
 
   hotspots: [
     {
-      id: 'brennan', name: 'Silas Brennan', cursor: 'talk', when: (G) => !isMob(G), rect: [1130, GROUND - 230, 110, 230], walk: 1330, face: -1,
+      id: 'brennan', name: 'Silas Brennan', cursor: 'talk', when: (G) => !isMob(G), rect: [1130, GROUND - 198, 110, 198], walk: 1330, face: -1,
       act: async (G) => {
         const b = G.actor('Brennan');
         const opts = [];

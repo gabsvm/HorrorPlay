@@ -39,7 +39,7 @@ export default {
       // New Cottages, stock brick, doors straight onto the pavement
       for (let i = 0; i < 5; i++) {
         const x = 940 + i * 170;
-        const ls = facade(ctx, { x, w: 170, top: GROUND - 300, base: GROUND - 12, seed: 40 + i, floors: 2, windows: 1, door: 120, number: String(i + 1), stock: true, litMap: i === 1 ? [0] : i === 4 ? [1] : [], figures: i === 4 ? [1] : [], nets: [0], roof: 'parapet', boards: i === 3 ? [0] : [] });
+        const ls = facade(ctx, { x, w: 170, top: GROUND - 512, base: GROUND - 12, seed: 40 + i, floors: 2, windows: 1, door: 120, number: String(i + 1), stock: true, litMap: i === 1 ? [0] : i === 4 ? [1] : [], figures: i === 4 ? [1] : [], nets: [0], roof: 'parapet', boards: i === 3 ? [0] : [] });
         ls.forEach((c) => lights.push({ x: c.x, y: c.y, r: 200, color: P.candle, intensity: 0.55, flicker: 0.15, halo: 34, haloK: 0.6 }));
         chimneys.push(...ls.chimneys);
       }
@@ -84,7 +84,7 @@ export default {
       A.bollard(ctx, 1550, GROUND - 6);
       A.sack(ctx, 260, GROUND - 8, 4); A.sack(ctx, 300, GROUND - 6, 5);
       A.crate(ctx, 160, GROUND - 70, 66, 58, 9, { stencil: 'E.W.' });
-      const lamp = A.lampPost(ctx, 1640, GROUND, 270);
+      const lamp = A.lampPost(ctx, 1640, GROUND, 320);
       lights.push({ id: 'lamp', x: lamp.x, y: lamp.y, r: 520, color: P.gas, intensity: 1.15, flicker: 0.08, halo: 130, shaft: true, shaftW: 130 });
     });
     layers.push({ canvas: near, parallax: 1, kind: 'near' });
@@ -104,12 +104,12 @@ export default {
     return [
       ...(b.chimneys || []).map((c, i) => new Smoke({ x: c.x, y: c.y, rate: 0.8 + i * 0.13, size: 0.8 })),
       new Drip({ x: 312, y: GROUND - 160, ground: GROUND - 8 }),
-      new Drip({ x: 1180, y: GROUND - 306, ground: GROUND - 10, period: 3.1 }),
+      new Drip({ x: 1180, y: GROUND - 518, ground: GROUND - 10, period: 3.1 }),
       new Drip({ x: 2345, y: 130, ground: GROUND - 6, period: 2.6 }),
       new Rat({ x0: 160, x1: 900, y: GROUND + 16, seed: 2 }),
       new Cat({ x: 690, y: 238, facing: 1 }),
       new Crow({ x: 2070, y: -112, facing: -1, seed: 4 }),
-      new Moths({ x: 1640, y: GROUND - 250 }),
+      new Moths({ x: 1640, y: GROUND - 300 }),
       new Paper({ x0: 1200, x1: 2500, y: GROUND + 60, seed: 7 }),
       new Ripples({ x: 1640, y: GROUND + 60, w: 200 }),
       new Ripples({ x: 520, y: GROUND + 76, w: 160, n: 4 }),
@@ -120,7 +120,7 @@ export default {
     return [
       new Actor('Pike', { x: 980, y: GROUND, h: 200, hat: 'bowler', coat: '#2c2a26', coatLen: 0.9, cape: true, facing: 1, build: 1.05, moustache: '#3a2a1e', buttons: 'double', notebook: true, hair: '#3a2a1e' }),
       new Actor('Neil', { x: 1500, y: GROUND, h: 212, hat: 'helmet', coat: '#161c30', trousers: '#12151f', coatLen: 0.8, flare: 1.02, facing: -1, lantern: true, lanternOn: true, belt: true, number: true, moustache: '#4a3424' }),
-      new Actor('Chico', { x: 760, y: GROUND, h: 140, hat: 'cap', coat: '#4a3a2a', coatLen: 0.58, facing: -1, stoop: 1, pose: 'kneel', patches: true, hair: '#4a3020' }),
+      new Actor('Chico', { x: 760, y: GROUND, h: 156, hat: 'cap', coat: '#4a3a2a', coatLen: 0.58, facing: -1, stoop: 1, pose: 'kneel', patches: true, hair: '#4a3020' }),
     ];
   },
 
@@ -141,7 +141,7 @@ export default {
 
   hotspots: [
     {
-      id: 'pike', name: 'Sargento Pike', cursor: 'talk', rect: (G) => { const a = G.actor('Pike'); return [a.x - 40, GROUND - 210, 80, 210]; }, walk: (G) => G.actor('Pike').x + 90, face: -1,
+      id: 'pike', name: 'Sargento Pike', cursor: 'talk', rect: (G) => { const a = G.actor('Pike'); return [a.x - 40, GROUND - 181, 80, 181]; }, walk: (G) => G.actor('Pike').x + 90, face: -1,
       act: async (G) => {
         const pike = G.actor('Pike'); pike.facing = 1;
         const opts = [];
@@ -184,7 +184,7 @@ export default {
       },
     },
     {
-      id: 'neil', name: 'Agente Neil', cursor: 'talk', rect: [1460, GROUND - 220, 80, 220], walk: 1400, face: 1,
+      id: 'neil', name: 'Agente Neil', cursor: 'talk', rect: [1460, GROUND - 189, 80, 189], walk: 1400, face: 1,
       act: async (G) => {
         const neil = G.actor('Neil'); neil.facing = -1; neil.talking = true;
         if (!G.hasClue('ronda')) {
@@ -200,7 +200,7 @@ export default {
       },
     },
     {
-      id: 'boy', name: 'Chico con un cubo', cursor: 'talk', rect: [720, GROUND - 110, 90, 110], walk: 860, face: -1,
+      id: 'boy', name: 'Chico con un cubo', cursor: 'talk', rect: [720, GROUND - 95, 90, 95], walk: 860, face: -1,
       act: async (G) => {
         const b = G.actor('Chico'); b.talking = true;
         if (!G.hasClue('silencio')) {
@@ -239,11 +239,11 @@ export default {
       act: async (G) => { await G.think('Una rejilla de alcantarilla. Desde aquí abajo sube el olor del Ditch.'); },
     },
     {
-      id: 'lamp', name: 'Farola', rect: [1610, GROUND - 300, 60, 300], walk: 1580,
+      id: 'lamp', name: 'Farola', rect: [1600, GROUND - 350, 80, 350], walk: 1580,
       act: async (G) => { await G.think('La farola más cercana al portón está a treinta yardas. Allí estaba tan oscuro como en el fondo de un pozo.'); },
     },
     {
-      id: 'window', name: 'Ventana de la señora Green', rect: [1110, GROUND - 270, 90, 110], walk: 1150,
+      id: 'window', name: 'Ventana de la señora Green', rect: [1150, 160, 95, 160], walk: 1190,
       act: async (G) => { await G.think('Una vela encendida detrás de la cortina. Alguien nos está mirando.'); G.audio.whisper(0.8, 0.05); },
     },
     {

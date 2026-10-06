@@ -32,7 +32,7 @@ export default {
     });
     const near = R.paintLayer(WIDTH, (ctx) => {
       // back of No. 29: three storeys of soot-black stock brick, back door with two stone steps
-      const back = facade(ctx, { x: 0, w: 760, top: 40, base: GROUND - 10, seed: 101, floors: 3, windows: 3, roof: 'parapet', broken: [1], litMap: [5], nets: [5], stock: true });
+      const back = facade(ctx, { x: 0, w: 760, top: -130, base: GROUND - 10, seed: 101, floors: 3, windows: 3, roof: 'parapet', broken: [1], litMap: [5], nets: [5], stock: true });
       back.forEach((c) => lights.push({ x: c.x, y: c.y, r: 220, color: P.candle, intensity: 0.4, flicker: 0.15, halo: 30 }));
       chimneys.push(...back.chimneys);
       ctx.fillStyle = '#0a0a0a'; ctx.fillRect(560, GROUND - 210, 96, 200);
@@ -52,6 +52,10 @@ export default {
       ctx.fillStyle = P.iron; ctx.fillRect(452, GROUND - 120, 6, 110); ctx.fillRect(500, GROUND - 120, 6, 110); ctx.fillRect(452, GROUND - 120, 54, 6);
       ctx.fillStyle = P.wood; ctx.fillRect(458, GROUND - 104, 42, 10); ctx.fillRect(458, GROUND - 92, 42, 10);
       ctx.strokeStyle = P.iron; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(530, GROUND - 98, 18, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = P.iron; ctx.fillRect(546, GROUND - 100, 14, 4);
+      // neighbouring houses, their ground floor hidden by the fence
+      const mid = facade(ctx, { x: 760, w: 520, top: 118, base: GROUND - 10, seed: 102, floors: 2, windows: 3, roof: 'parapet', kind: 'plaster', litMap: [1], nets: [1] });
+      mid.forEach((c) => lights.push({ x: c.x, y: c.y, r: 180, color: P.candle, intensity: 0.35, flicker: 0.15, halo: 24 }));
+      chimneys.push(...mid.chimneys);
       // the fence, about five feet high, between this yard and No. 27
       ctx.fillStyle = '#121110'; ctx.fillRect(690, GROUND - 160, 870, 160);
       const r = rng(9);
@@ -65,11 +69,7 @@ export default {
       }
       ctx.fillStyle = P.woodDark; ctx.fillRect(690, GROUND - 120, 870, 9); ctx.fillRect(690, GROUND - 40, 870, 9);
       A.stain(ctx, 690, GROUND - 160, 870, 160, { seed: 5, alpha: 0.55 });
-      // neighbouring houses behind the fence
-      const mid = facade(ctx, { x: 760, w: 520, top: 120, base: GROUND - 150, seed: 102, floors: 2, windows: 3, roof: 'parapet', kind: 'plaster', litMap: [1], nets: [1] });
-      mid.forEach((c) => lights.push({ x: c.x, y: c.y, r: 180, color: P.candle, intensity: 0.35, flicker: 0.15, halo: 24 }));
-      chimneys.push(...mid.chimneys);
-      const right = facade(ctx, { x: 1280, w: 720, top: 70, base: GROUND - 10, seed: 103, floors: 3, windows: 4, roof: 'parapet', broken: [2, 7], boards: [5], stock: true });
+      const right = facade(ctx, { x: 1280, w: 720, top: -130, base: GROUND - 10, seed: 103, floors: 3, windows: 4, roof: 'parapet', broken: [2, 7], boards: [5], stock: true });
       chimneys.push(...right.chimneys);
       // the tap over a stone sink against the wall
       ctx.fillStyle = '#5e5a52'; ctx.fillRect(1600, GROUND - 60, 120, 50); ctx.fillStyle = '#121a1c'; ctx.fillRect(1606, GROUND - 58, 108, 8);
@@ -129,7 +129,7 @@ export default {
 
   drawNear(ctx, t) {
     // neighbours leaning out of the windows next door (they charge a penny for the view)
-    for (const [x, y, k] of [[1550, 160, 0], [1370, 342, 1], [1730, 342, 2]]) {
+    for (const [x, y, k] of [[1370, 262, 0], [1730, 262, 1], [1550, 506, 2]]) {
       ctx.fillStyle = '#16120f';
       ctx.beginPath(); ctx.ellipse(x + Math.sin(t * 0.7 + k) * 2, y, 11, 14, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillRect(x - 22, y + 12, 44, 30);
@@ -159,7 +159,7 @@ export default {
 
   hotspots: [
     {
-      id: 'pike', name: 'Sargento Pike', cursor: 'talk', rect: [860, GROUND - 210, 80, 210], walk: 800, face: 1,
+      id: 'pike', name: 'Sargento Pike', cursor: 'talk', rect: [860, GROUND - 181, 80, 181], walk: 800, face: 1,
       act: async (G) => {
         const pike = G.actor('Pike'); pike.facing = -1; pike.talking = true;
         if (!G.hasClue('ordenados')) {
@@ -185,7 +185,7 @@ export default {
       },
     },
     {
-      id: 'greaves', name: 'Dr. Lionel Greaves', cursor: 'talk', rect: [1100, GROUND - 230, 90, 230], walk: 1040, face: 1,
+      id: 'greaves', name: 'Dr. Lionel Greaves', cursor: 'talk', rect: [1100, GROUND - 198, 90, 198], walk: 1040, face: 1,
       act: async (G) => {
         const g = G.actor('Greaves'); g.facing = -1; g.talking = true;
         if (!G.flag('greaves_met')) {
@@ -214,7 +214,7 @@ export default {
       },
     },
     {
-      id: 'amelia', name: 'Sra. Richardson, la casera', cursor: 'talk', rect: [430, GROUND - 190, 80, 190], walk: 540, face: -1,
+      id: 'amelia', name: 'Sra. Richardson, la casera', cursor: 'talk', rect: [430, GROUND - 163, 80, 163], walk: 540, face: -1,
       act: async (G) => {
         const a = G.actor('Amelia'); a.talking = true; a.facing = 1;
         if (!G.flag('amelia1')) {
@@ -259,7 +259,7 @@ export default {
       },
     },
     {
-      id: 'window', name: 'Ventana trasera', rect: [336, 456, 90, 120], walk: 300, face: 1,
+      id: 'window', name: 'Ventana trasera', rect: [334, 414, 92, 150], walk: 300, face: 1,
       act: async (G) => {
         if (G.hasClue('reflejo')) { await G.think('Ahora solo se ve la cocina de la señora Richardson.'); return; }
         await G.think('En el cristal sucio se refleja el patio, la valla y yo. Y alguien detrás de mí, muy cerca.');
@@ -279,7 +279,7 @@ export default {
       },
     },
     {
-      id: 'neighbours', name: 'Vecinos en las ventanas', rect: [1380, 120, 300, 340], walk: 1500,
+      id: 'neighbours', name: 'Vecinos en las ventanas', rect: [1300, 150, 600, 190], walk: 1500,
       act: async (G) => { await G.think('Los de la casa de al lado cobran un penique por asomarse a mirar el patio. Ya hay cola en la calle.'); },
     },
     {

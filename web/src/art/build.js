@@ -83,24 +83,29 @@ export function facade(ctx, {
     const cx = x + r.range(w * 0.12, w * 0.62);
     chimneys.push(chimney(ctx, cx, (roof === 'gable' ? top - w * 0.18 : top - 20), seed + 3, { pots: r.int(2, 4) }));
   }
-  if (ghost) A.ghostSign(ctx, x + 24, top + 20, ghost, { seed: seed + 8 });
+  if (ghost) A.ghostSign(ctx, x + 24, Math.max(top + 20, 24), ghost, { seed: seed + 8 });
   const floorH = (base - top) / floors;
   for (let f = 1; f < floors; f++) { ctx.fillStyle = '#5c574d'; ctx.fillRect(x, top + f * floorH - 4, w, 6); ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(x, top + f * floorH + 2, w, 2); }
   for (let f = 0; f < floors; f++) {
     const fy = top + f * floorH;
     if (f === floors - 1 && shopfront) continue;
     for (let i = 0; i < windows; i++) {
-      const ww = Math.min(62, (w / windows) * 0.44), wh = floorH * 0.52;
+      // sash windows: about a person's height, a little narrower than a door
+      const ww = Math.min(76, (w / windows) * 0.46), wh = Math.min(170, floorH * 0.56);
       const wx = x + (w / windows) * (i + 0.5) - ww / 2;
-      if (f === floors - 1 && door != null && Math.abs(wx + ww / 2 - (x + door)) < ww) continue;
+      if (f === floors - 1 && door != null && Math.abs(wx + ww / 2 - (x + door)) < ww / 2 + 52) continue;
       const idx = f * windows + i;
       const lit = litMap.includes(idx);
-      const wy = fy + floorH * 0.24;
+      const wy = fy + floorH * (f === floors - 1 ? 0.2 : 0.22);
       const c = A.windowFrame(ctx, wx, wy, ww, wh, { lit, seed: seed + idx, curtain: r.chance(0.55), broken: broken.includes(idx), board: boards.includes(idx), arch: arches, figure: figures.includes(idx), net: nets.includes(idx) });
       if (c) lights.push({ ...c, rect: [wx, wy, ww, wh] });
     }
   }
-  if (door != null) A.door(ctx, x + door - 28, base - 118, 56, 118, { arch: arches, steps: 1, number, fanlight: !arches });
+  if (door != null) {
+    // a street door is a head taller than the people who use it (~2.1 m against ~1.75 m)
+    const dh = Math.min(200, floorH - 64), dw = 84;
+    A.door(ctx, x + door - dw / 2, base - dh, dw, dh, { arch: arches, steps: 1, number, fanlight: !arches });
+  }
   if (area) {
     ctx.fillStyle = '#060606'; ctx.fillRect(x + 8, base - 26, w - 16, 26);
     A.railing(ctx, x + 8, base - 64, w * 0.5, 54, { gap: 11 });
@@ -117,7 +122,7 @@ export function facade(ctx, {
     }
     A.awning(ctx, x + 18, sy + 38, w - 36, { down: false, color: '#2e1c18' });
     ctx.fillStyle = shopfront.color || '#2a1d16'; ctx.fillRect(x + 16, sy + 50, w - 32, floorH - 50);
-    const dw = Math.min(58, w * 0.24);
+    const dw = Math.min(84, w * 0.24);
     const winW = w - 32 - dw - 20;
     const c = A.windowFrame(ctx, x + 22, sy + 58, winW, floorH - 98, { lit: !!shopfront.lit, warm: shopfront.warm || '#d9964a', panes: 0, sill: false, seed, frame: '#3a3228' });
     if (c) lights.push({ ...c, rect: [x + 22, sy + 58, winW, floorH - 98] });

@@ -35,14 +35,14 @@ export default {
       while (x < WIDTH) {
         const w = r.range(260, 480);
         const ls = facade(ctx, {
-          x, w, top: r.range(30, 140), base: GROUND - 12, seed: 400 + k, floors: 3, windows: r.int(1, 3), roof: 'parapet',
+          x, w, top: r.range(-150, -90), base: GROUND - 12, seed: 400 + k, floors: 3, windows: r.int(1, 3), roof: 'parapet',
           kind: r.chance(0.4) ? 'plaster' : 'brick', stock: r.chance(0.6), boards: [r.int(0, 6)], broken: [r.int(0, 6)],
           litMap: r.chance(0.4) ? [r.int(0, 5)] : [], figures: [r.int(0, 5)],
           sign: r.chance(0.35) ? { x: 10, text: signs[k % signs.length], w: 120, h: 40 } : null,
         });
         ls.forEach((c) => lights.push({ x: c.x, y: c.y, r: 190, color: P.candle, intensity: 0.4, flicker: 0.25, halo: 24 }));
         chimneys.push(...ls.chimneys);
-        if (r.chance(0.5)) { ctx.fillStyle = '#020202'; ctx.fillRect(x + w * 0.4, GROUND - 200, 70, 188); ctx.fillStyle = '#5c574d'; ctx.fillRect(x + w * 0.4 - 6, GROUND - 208, 82, 8); }
+        if (r.chance(0.5)) { ctx.fillStyle = '#020202'; ctx.fillRect(x + w * 0.4, GROUND - 218, 80, 206); ctx.fillStyle = '#5c574d'; ctx.fillRect(x + w * 0.4 - 6, GROUND - 226, 92, 8); }
         x += w; k++;
       }
       // laundry lines strung across the court

@@ -252,7 +252,7 @@ export default {
     if (!this.G || !is1866(this.G) || this.G.flag('boat')) return;
     const x = 1130, y = GROUND + 30;
     ctx.save();
-    ctx.translate(x, y); ctx.rotate(-0.18); ctx.scale(1.8, 1.8);
+    ctx.translate(x, y); ctx.rotate(-0.18); ctx.scale(1.35, 1.35);
     ctx.fillStyle = '#6a4428';
     ctx.beginPath(); ctx.moveTo(-26, -6); ctx.lineTo(24, -6); ctx.lineTo(16, 6); ctx.lineTo(-20, 6); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#7a5232'; ctx.fillRect(-24, -8, 46, 3);
@@ -269,7 +269,7 @@ export default {
     // the reflection that does not kneel with him
     if (!this.reflection || !this.G) return;
     const p = this.G.player;
-    if (!this._ghost) this._ghost = new this.G.Actor('Reflejo', { h: 206, hat: 'top', coat: '#0c0d0e', coatLen: 0.95, flare: 1.25 });
+    if (!this._ghost) this._ghost = new this.G.Actor('Reflejo', { h: Math.round(206 * (this.G.game.sceneScale ?? 1)), hat: 'top', coat: '#0c0d0e', coatLen: 0.95, flare: 1.25 });
     const g = this._ghost;
     g.x = p.x + 60; g.y = GROUND + 4; g.facing = -1;
     ctx.save();

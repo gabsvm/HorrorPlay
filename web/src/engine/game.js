@@ -284,17 +284,19 @@ export class Game {
     this.actors = [this.player];
     this.player.visible = scene.noPlayer ? false : true;
     this.player.y = scene.groundY;
-    this.player.h = scene.playerH || 206;
+    // one scale per scene: everyone in it (and the architecture) shares the same metres-to-pixels
+    this.sceneScale = scene.scale ?? (scene.indoor ? 1.12 : 0.84);
+    this.player.h = Math.round((scene.playerH || 206) * this.sceneScale);
     this.player.lanternOn = !!scene.lantern;
     this.player.pose = null;
     this.player.alpha = 1;
-    this.player.speed = scene.playerSpeed || (this.player.h < 160 ? 120 : 150);
+    this.player.speed = scene.playerSpeed || (this.player.h < 140 ? 120 : 150);
     this.player.stop();
     this.camFocus = null;
     this.menuPan = false;
     this.player.x = x ?? scene.spawn ?? scene.walk[0] + 40;
     this.player.facing = facing ?? 1;
-    if (scene.actors) for (const a of scene.actors(this.G)) this.actors.push(a);
+    if (scene.actors) for (const a of scene.actors(this.G)) this.addActor(a);
     scene.life = scene.makeLife ? scene.makeLife(this.G) : [];
     this.r.cam.x = this.camTarget();
     audio.setBeds(scene.beds || {}, 1.5);
@@ -323,7 +325,10 @@ export class Game {
     });
   }
 
-  addActor(a) { this.actors.push(a); return a; }
+  addActor(a) {
+    if (!a._scaled) { a.h = Math.round(a.h * (this.sceneScale ?? 1)); a._scaled = true; }
+    this.actors.push(a); return a;
+  }
   actor(name) { return this.actors.find((a) => a.name === name); }
 
   // ------------------------------------------------------------ loop

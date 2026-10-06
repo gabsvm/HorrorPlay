@@ -13,7 +13,6 @@ export default {
   groundY: GROUND,
   walk: [200, 1340],
   spawn: 230,
-  playerH: 252,
   surface: 'wood',
   indoor: true,
   lantern: false,
