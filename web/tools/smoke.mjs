@@ -121,6 +121,7 @@ for (const name of names) {
       player.isPlayer = true;
       const actors = [player, ...(scene.actors ? scene.actors(G) : [])];
       G.game.actors = actors;
+      G.game.r = R;
       G.player = player;
       scene.life = scene.makeLife ? scene.makeLife(G) : [];
       if (scene.reflection !== undefined) scene.reflection = true;

@@ -1,6 +1,7 @@
 // Thomas's rented room, Thrawl Street. Revisited in chapters 1 and 3; what is in it changes.
 import * as A from '../art/paint.js';
-import { wallpaper, wainscot, floorboards, rug, interiorWindow, bed, desk, chair } from '../art/build.js';
+import { wallpaper, wainscot, floorboards, rug, interiorWindow, bed, desk, chair, bookcase } from '../art/build.js';
+import { Moths } from '../engine/life.js';
 import { P } from '../art/palette.js';
 
 const WIDTH = 1500, GROUND = 662;
@@ -28,44 +29,68 @@ export default {
       ctx.fillStyle = '#0b0a09'; ctx.fillRect(0, 0, WIDTH, 720);
       wallpaper(ctx, 0, 40, WIDTH, GROUND - 160, { seed: 21 });
       wainscot(ctx, 0, GROUND - 120, WIDTH, 120);
-      // ceiling beam & cornice
+      // low ceiling: joists, a water stain, a crack running to the window
       ctx.fillStyle = '#100d0b'; ctx.fillRect(0, 0, WIDTH, 46);
+      for (let x = 30; x < WIDTH; x += 160) { ctx.fillStyle = '#1a1410'; ctx.fillRect(x, 0, 26, 46); ctx.fillStyle = 'rgba(255,230,200,0.06)'; ctx.fillRect(x, 0, 3, 46); }
       ctx.fillStyle = '#1e1813'; ctx.fillRect(0, 40, WIDTH, 10);
+      ctx.strokeStyle = 'rgba(0,0,0,0.6)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(620, 52); ctx.lineTo(700, 90); ctx.lineTo(690, 140); ctx.lineTo(760, 170); ctx.lineTo(820, 260); ctx.stroke();
+      const g = ctx.createRadialGradient(760, 60, 4, 760, 60, 90); g.addColorStop(0, 'rgba(40,34,20,0.6)'); g.addColorStop(1, 'rgba(40,34,20,0)'); ctx.fillStyle = g; ctx.fillRect(670, 40, 180, 120);
       floorboards(ctx, 0, GROUND - 6, WIDTH, 720 - GROUND + 6);
       rug(ctx, 520, GROUND + 8, 460, 46);
-      // door (left)
-      A.door(ctx, 70, GROUND - 270, 120, 270, { color: '#2c2016', steps: 0 });
+      // door with a bolt and a calendar beside it
+      A.door(ctx, 70, GROUND - 270, 120, 270, { color: '#2c2016', steps: 0, fanlight: false, scraper: false, knocker: false });
       ctx.fillStyle = '#b08a4e'; ctx.beginPath(); ctx.arc(170, GROUND - 130, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = P.iron; ctx.fillRect(150, GROUND - 200, 30, 6); ctx.fillRect(176, GROUND - 204, 6, 14);
+      ctx.fillStyle = '#c9bc98'; ctx.fillRect(210, GROUND - 470, 54, 72); ctx.fillStyle = '#7a1a14'; ctx.fillRect(210, GROUND - 470, 54, 16);
+      ctx.font = '600 11px Georgia, serif'; ctx.fillStyle = '#e6dcc0'; ctx.textAlign = 'center'; ctx.fillText('1888', 237, GROUND - 458);
+      ctx.fillStyle = 'rgba(40,30,20,0.5)'; for (let i = 0; i < 4; i++) for (let k = 0; k < 6; k++) ctx.fillRect(214 + k * 8, GROUND - 446 + i * 10, 5, 5);
       // coat hooks
       ctx.fillStyle = '#1a1410'; ctx.fillRect(236, GROUND - 330, 110, 10);
       ctx.fillStyle = '#6b5a3a'; ctx.fillRect(256, GROUND - 322, 5, 16); ctx.fillRect(316, GROUND - 322, 5, 16);
-      // washstand with a sheet over the mirror
-      ctx.fillStyle = '#2a2018'; ctx.fillRect(400, GROUND - 120, 130, 14); ctx.fillRect(408, GROUND - 106, 10, 106); ctx.fillRect(512, GROUND - 106, 10, 106);
+      // washstand: marble top, jug in basin, soap dish, a razor strop; the sheet over the mirror
+      ctx.fillStyle = '#2a2018'; ctx.fillRect(400, GROUND - 120, 130, 14); ctx.fillRect(408, GROUND - 106, 10, 106); ctx.fillRect(512, GROUND - 106, 10, 106); ctx.fillRect(408, GROUND - 40, 114, 6);
+      ctx.fillStyle = '#8a8478'; ctx.fillRect(398, GROUND - 124, 134, 6);
       ctx.fillStyle = '#d6cfc0'; ctx.beginPath(); ctx.ellipse(465, GROUND - 126, 38, 9, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#c9c1ae'; ctx.fillRect(452, GROUND - 160, 26, 34);
+      ctx.fillStyle = '#c9c1ae'; ctx.beginPath(); ctx.moveTo(452, GROUND - 126); ctx.lineTo(448, GROUND - 160); ctx.lineTo(472, GROUND - 166); ctx.lineTo(480, GROUND - 126); ctx.fill();
+      ctx.fillStyle = 'rgba(80,110,140,0.5)'; ctx.fillRect(452, GROUND - 150, 26, 4);
+      ctx.fillStyle = '#4a3420'; ctx.fillRect(522, GROUND - 260, 6, 60);
       ctx.fillStyle = '#1a1410'; ctx.fillRect(420, GROUND - 330, 90, 150);
       ctx.fillStyle = '#9a917c';
       ctx.beginPath(); ctx.moveTo(410, GROUND - 336); ctx.lineTo(520, GROUND - 336); ctx.quadraticCurveTo(528, GROUND - 240, 516, GROUND - 168); ctx.quadraticCurveTo(470, GROUND - 180, 414, GROUND - 166); ctx.quadraticCurveTo(402, GROUND - 250, 410, GROUND - 336); ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 3;
+      for (const fx of [440, 468, 494]) { ctx.beginPath(); ctx.moveTo(fx, GROUND - 330); ctx.quadraticCurveTo(fx + 4, GROUND - 250, fx - 2, GROUND - 176); ctx.stroke(); }
       A.stain(ctx, 404, GROUND - 336, 124, 170, { seed: 33, alpha: 0.5 });
-      // bed
+      // a framed photograph over the bed: two boys on the Limehouse steps
+      ctx.fillStyle = '#3a2a16'; ctx.fillRect(680, GROUND - 400, 110, 84); ctx.fillStyle = '#6a5428'; ctx.fillRect(680, GROUND - 400, 110, 3);
+      A.vgrad(ctx, 688, GROUND - 392, 94, 68, [[0, '#8a8272'], [1, '#5a544a']]);
+      ctx.fillStyle = '#2a2622';
+      ctx.beginPath(); ctx.ellipse(716, GROUND - 368, 7, 8, 0, 0, Math.PI * 2); ctx.ellipse(752, GROUND - 364, 6, 7, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillRect(706, GROUND - 360, 20, 30); ctx.fillRect(744, GROUND - 357, 16, 27);
+      A.stain(ctx, 688, GROUND - 392, 94, 68, { seed: 61, alpha: 0.5 });
+      // bed, a trunk at its foot and a chamber pot beneath
       bed(ctx, 590, GROUND, 330);
+      ctx.fillStyle = '#e0d8c8'; ctx.beginPath(); ctx.ellipse(700, GROUND - 8, 18, 9, 0, 0, Math.PI * 2); ctx.fill();
       // window
       const win = interiorWindow(ctx, 990, 190, 160, 230);
       lights.push({ id: 'window', x: win.x, y: win.y + 40, r: 360, color: [0.32, 0.4, 0.5], intensity: 0.55, halo: 0, reflect: false });
-      // desk, chair, shelf
+      // desk, chair, shelf of books, a pile of old newspapers
       desk(ctx, 1190, GROUND, 230);
       chair(ctx, 1150, GROUND, 1);
-      ctx.fillStyle = '#1e1610'; ctx.fillRect(1180, GROUND - 330, 250, 10);
-      const r = [0.8, 0.6, 1.0, 0.7, 0.9, 0.75, 0.65];
-      for (let i = 0; i < 9; i++) { ctx.fillStyle = ['#3a1a14', '#22301e', '#2a2430', '#4a3a20'][i % 4]; ctx.fillRect(1190 + i * 18, GROUND - 330 - 70 * r[i % 7], 15, 70 * r[i % 7]); }
+      bookcase(ctx, 1176, GROUND - 400, 170, 80, 12);
+      for (let i = 0; i < 6; i++) { ctx.fillStyle = i % 2 ? '#a89c7e' : '#968a6c'; ctx.fillRect(1430 - i * 2, GROUND - 14 - i * 8, 60, 8); }
       // clock
-      ctx.fillStyle = '#20170f'; ctx.fillRect(1366, GROUND - 470, 60, 84);
+      ctx.fillStyle = '#20170f'; ctx.fillRect(1366, GROUND - 474, 60, 92); ctx.beginPath(); ctx.moveTo(1362, GROUND - 474); ctx.lineTo(1396, GROUND - 496); ctx.lineTo(1430, GROUND - 474); ctx.fill();
       ctx.fillStyle = '#c9bc98'; ctx.beginPath(); ctx.arc(1396, GROUND - 440, 22, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = '#20170f'; ctx.lineWidth = 2; ctx.stroke();
-      // map of Whitechapel pinned to the wall
+      ctx.fillStyle = '#20170f'; for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; ctx.fillRect(1396 + Math.cos(a) * 17 - 1, GROUND - 440 + Math.sin(a) * 17 - 1, 2, 2); }
+      ctx.fillStyle = '#0e0b08'; ctx.fillRect(1376, GROUND - 414, 40, 30);
+      // map of Whitechapel pinned to the wall, with pins
       ctx.fillStyle = '#b4a47e'; ctx.fillRect(1206, GROUND - 520, 130, 96);
-      ctx.strokeStyle = 'rgba(40,30,20,0.5)'; ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(40,30,20,0.5)'; ctx.lineWidth = 2;
       for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.moveTo(1206, GROUND - 520 + i * 13); ctx.lineTo(1336, GROUND - 512 + i * 11); ctx.stroke(); }
+      for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(1216 + i * 22, GROUND - 520); ctx.lineTo(1206 + i * 24, GROUND - 424); ctx.stroke(); }
+      ctx.fillStyle = 'rgba(40,60,80,0.4)'; ctx.beginPath(); ctx.moveTo(1206, GROUND - 440); ctx.quadraticCurveTo(1270, GROUND - 450, 1336, GROUND - 432); ctx.lineTo(1336, GROUND - 424); ctx.lineTo(1206, GROUND - 424); ctx.fill();
+      for (const [px, py] of [[1240, GROUND - 480], [1262, GROUND - 470], [1288, GROUND - 486], [1300, GROUND - 462], [1252, GROUND - 452]]) { ctx.fillStyle = '#a3170f'; ctx.fillRect(px, py, 5, 5); }
       A.stain(ctx, 1206, GROUND - 520, 130, 96, { seed: 4, alpha: 0.4 });
     });
     lights.push({ id: 'candle', x: 1300, y: GROUND - 150, r: 560, color: P.candle, intensity: 1.0, flicker: 0.22, halo: 70 });
@@ -73,53 +98,71 @@ export default {
     const fg = R.paintLayer(WIDTH * 1.2, (ctx) => {
       ctx.fillStyle = '#050403';
       ctx.fillRect(0, 0, 70, 720);
+      ctx.fillRect(1700, 600, 90, 120); ctx.fillRect(1690, 590, 110, 14);
     });
     return { layers: [{ canvas: near, parallax: 1, kind: 'near' }, { canvas: fg, parallax: 1.2, kind: 'fg' }], lights };
+  },
+
+  makeLife() {
+    return [new Moths({ x: 1300, y: GROUND - 160, n: 2 })];
   },
 
   drawNear(ctx, t) {
     const G = this.G;
     const p = G ? phase(G) : 'c1';
-    // desk top objects
-    ctx.fillStyle = '#c4b48c'; ctx.fillRect(1230, GROUND - 104, 70, 8); // papers
+    // desk: papers covered in his left-leaning hand, a pen, ink wells, a candle with wax runs
+    ctx.fillStyle = '#c4b48c'; ctx.fillRect(1230, GROUND - 104, 70, 8);
     ctx.fillStyle = '#d8ccaa'; ctx.save(); ctx.translate(1290, GROUND - 100); ctx.rotate(0.08); ctx.fillRect(0, -4, 60, 6); ctx.restore();
-    // ink wells: black and red
-    ctx.fillStyle = '#121416'; ctx.fillRect(1320, GROUND - 116, 16, 16);
-    if (!G?.has('tinta')) { ctx.fillStyle = '#121416'; ctx.fillRect(1342, GROUND - 116, 16, 16); ctx.fillStyle = G?.flag('tinta_vacia') ? '#3a0a08' : '#7e1510'; ctx.fillRect(1344, G?.flag('tinta_vacia') ? GROUND - 104 : GROUND - 112, 12, G?.flag('tinta_vacia') ? 4 : 10); }
-    // candle
+    ctx.fillStyle = 'rgba(40,30,20,0.6)'; ctx.fillRect(1236, GROUND - 102, 50, 1.5);
+    ctx.fillStyle = '#1a1410'; ctx.save(); ctx.translate(1262, GROUND - 106); ctx.rotate(-0.5); ctx.fillRect(0, 0, 30, 2.5); ctx.restore();
+    ctx.fillStyle = '#121416'; ctx.fillRect(1320, GROUND - 116, 16, 16); ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fillRect(1322, GROUND - 114, 3, 10);
+    if (!G?.has('tinta')) {
+      ctx.fillStyle = '#121416'; ctx.fillRect(1342, GROUND - 116, 16, 16);
+      ctx.fillStyle = G?.flag('tinta_vacia') ? '#3a0a08' : '#7e1510'; ctx.fillRect(1344, G?.flag('tinta_vacia') ? GROUND - 104 : GROUND - 112, 12, G?.flag('tinta_vacia') ? 4 : 10);
+      ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fillRect(1344, GROUND - 114, 3, 10);
+      if (G?.flag('tinta_vacia')) { ctx.fillStyle = '#6a1210'; ctx.fillRect(1330, GROUND - 99, 30, 3); ctx.fillRect(1356, GROUND - 98, 4, 10); }
+    }
     ctx.fillStyle = '#e4d8bc'; ctx.fillRect(1296, GROUND - 136, 9, 34);
-    ctx.fillStyle = '#ffd38a'; ctx.beginPath(); ctx.ellipse(1300.5, GROUND - 142 + Math.sin(t * 9) * 0.6, 3, 7, 0, 0, Math.PI * 2); ctx.fill();
-    // laudanum
-    ctx.fillStyle = '#2e1c10'; ctx.fillRect(1386, GROUND - 124, 12, 24); ctx.fillRect(1389, GROUND - 130, 6, 6);
-    // clock hands
+    ctx.fillRect(1293, GROUND - 120, 4, 10); ctx.fillRect(1304, GROUND - 128, 3, 14);
+    ctx.fillStyle = '#5a4a30'; ctx.fillRect(1288, GROUND - 104, 25, 4);
+    ctx.fillStyle = '#ffd38a'; ctx.beginPath(); ctx.ellipse(1300.5, GROUND - 143 + Math.sin(t * 9) * 0.8, 3.2, 7.5, Math.sin(t * 5) * 0.08, 0, Math.PI * 2); ctx.fill();
+    // laudanum bottle with a paper label
+    ctx.fillStyle = '#2e1c10'; ctx.fillRect(1386, GROUND - 124, 12, 24); ctx.fillRect(1389, GROUND - 132, 6, 8);
+    ctx.fillStyle = '#c9bc98'; ctx.fillRect(1387, GROUND - 116, 10, 8); ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(1387, GROUND - 122, 2, 18);
+    // clock hands and pendulum
     const hands = G?.state.clockHands || [3, 40];
     const cx = 1396, cy = GROUND - 440;
-    ctx.strokeStyle = '#141210'; ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#141210'; ctx.lineWidth = 3;
     const ha = ((hands[0] % 12) + hands[1] / 60) / 12 * Math.PI * 2 - Math.PI / 2, ma = hands[1] / 60 * Math.PI * 2 - Math.PI / 2;
     ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ha) * 11, cy + Math.sin(ha) * 11); ctx.stroke();
-    ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ma) * 17, cy + Math.sin(ma) * 17); ctx.stroke();
-    ctx.fillStyle = '#6b5a3a'; ctx.fillRect(cx - 1, cy + 24, 2, 30 + Math.sin(t * 3) * 0); // pendulum rod
-    ctx.beginPath(); ctx.arc(cx + Math.sin(t * Math.PI) * 10, cy + 56, 5, 0, Math.PI * 2); ctx.fill();
-    // coat and lantern on the hooks
+    ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(ma) * 17, cy + Math.sin(ma) * 17); ctx.stroke();
+    const sw = Math.sin(t * Math.PI) * 9;
+    ctx.strokeStyle = '#8a7444'; ctx.beginPath(); ctx.moveTo(cx, cy + 24); ctx.lineTo(cx + sw, cy + 52); ctx.stroke();
+    ctx.fillStyle = '#9a8350'; ctx.beginPath(); ctx.arc(cx + sw, cy + 54, 5, 0, Math.PI * 2); ctx.fill();
+    // coat, bowler and lantern on the hooks
     if (!G?.flag('coat_on')) {
-      ctx.fillStyle = '#24262a';
-      ctx.beginPath(); ctx.moveTo(250, GROUND - 312); ctx.lineTo(276, GROUND - 312); ctx.lineTo(292, GROUND - 160); ctx.lineTo(236, GROUND - 160); ctx.fill();
+      ctx.fillStyle = '#23262b';
+      ctx.beginPath(); ctx.moveTo(250, GROUND - 312); ctx.lineTo(278, GROUND - 312); ctx.lineTo(296, GROUND - 160); ctx.lineTo(232, GROUND - 160); ctx.fill();
+      ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(262, GROUND - 300, 4, 140);
       ctx.fillStyle = '#111214'; ctx.beginPath(); ctx.ellipse(318, GROUND - 316, 18, 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(318, GROUND - 320, 12, Math.PI, 0); ctx.fill();
     }
     if (!G?.flag('lantern_taken')) {
-      ctx.fillStyle = '#2a2420'; ctx.fillRect(306, GROUND - 300, 22, 28); ctx.fillStyle = '#4a3a20'; ctx.beginPath(); ctx.arc(328, GROUND - 286, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#2a2420'; ctx.fillRect(306, GROUND - 300, 22, 28); ctx.fillRect(310, GROUND - 306, 14, 6);
+      ctx.fillStyle = '#4a3a20'; ctx.beginPath(); ctx.arc(328, GROUND - 286, 6, 0, Math.PI * 2); ctx.fill();
     }
-    // boots by the door, wet and black
+    // boots by the door, wet and black, leaking a puddle of river mud
     if (p === 'c1' && !G?.flag('boots_on')) {
+      ctx.fillStyle = 'rgba(20,24,20,0.85)'; ctx.beginPath(); ctx.ellipse(240, GROUND + 6, 54, 7, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#0e0d0c';
       ctx.fillRect(210, GROUND - 30, 22, 30); ctx.fillRect(210, GROUND - 6, 34, 8);
       ctx.fillRect(244, GROUND - 28, 22, 28); ctx.fillRect(244, GROUND - 4, 34, 8);
-      ctx.fillStyle = 'rgba(20,24,20,0.85)'; ctx.beginPath(); ctx.ellipse(240, GROUND + 6, 50, 6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#1e1a14'; ctx.fillRect(210, GROUND - 10, 34, 4); ctx.fillRect(244, GROUND - 8, 34, 4);
+      ctx.fillStyle = 'rgba(160,170,160,0.25)'; ctx.fillRect(214, GROUND - 26, 3, 14);
     }
-    // newspaper slipped under the door
-    if (p === 'c3b' && !G?.flag('paper_read')) { ctx.fillStyle = '#b8ab8a'; ctx.save(); ctx.translate(200, GROUND + 18); ctx.rotate(-0.12); ctx.fillRect(0, 0, 70, 16); ctx.restore(); }
-    // dissection case under the bed
+    if (p === 'c3b' && !G?.flag('paper_read')) { ctx.fillStyle = '#b8ab8a'; ctx.save(); ctx.translate(200, GROUND + 18); ctx.rotate(-0.12); ctx.fillRect(0, 0, 70, 16); ctx.fillStyle = 'rgba(30,20,10,0.6)'; ctx.fillRect(4, 3, 40, 2); ctx.fillRect(4, 8, 56, 1.5); ctx.restore(); }
     if (p === 'c3b') { ctx.fillStyle = '#2a1a12'; ctx.fillRect(820, GROUND - 22, 80, 20); ctx.fillStyle = '#7d6b48'; ctx.fillRect(856, GROUND - 16, 8, 4); }
+    // by chapter three the face of the older boy in the photograph has been scratched away
+    if (p !== 'c1') { ctx.fillStyle = '#c9c0ae'; ctx.fillRect(709, GROUND - 377, 14, 16); ctx.strokeStyle = '#7a7060'; ctx.lineWidth = 1.5; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(708 + i * 4, GROUND - 378); ctx.lineTo(712 + i * 3, GROUND - 361); ctx.stroke(); } }
   },
 
   drawGlow(ctx, t) {
@@ -218,6 +261,20 @@ export default {
           return;
         }
         await G.think('Las sábanas están revueltas y hay barro en el borde del colchón.');
+      },
+    },
+    {
+      id: 'photo', name: 'Fotografía', rect: [676, GROUND - 404, 118, 92], walk: 740,
+      act: async (G) => {
+        const p = phase(G);
+        if (p === 'c1') {
+          await G.think('Nat y yo en las escaleras de Limehouse, el verano antes del cólera. Él tenía nueve años y yo doce.');
+          await G.think('Es la única fotografía que nos hicieron.');
+        } else {
+          await G.think('Alguien ha rascado la cara del niño mayor con la punta de algo afilado. La de Nat está intacta.');
+          await G.think('La del niño mayor es la mía.');
+          G.sanity(-4); G.audio.whisper(1.2, 0.08);
+        }
       },
     },
     {

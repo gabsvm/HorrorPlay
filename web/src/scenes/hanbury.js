@@ -4,6 +4,7 @@ import { facade } from '../art/build.js';
 import { P, shade } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
 import { rng } from '../art/noise.js';
+import { Smoke, Drip, Crow, Cat } from '../engine/life.js';
 
 const WIDTH = 2000, GROUND = 630;
 
@@ -23,60 +24,106 @@ export default {
 
   build(R) {
     const lights = [];
+    const chimneys = [];
     const sky = R.paintLayer(1280 + (WIDTH - 1280) * 0.2, (ctx, w, h) => {
-      A.sky(ctx, w, h, { top: '#2a3238', mid: '#4a5458', low: '#7a8180', glow: 'rgba(200,190,170,0.25)', glowY: 0.4, seed: 81 });
+      A.sky(ctx, w, h, { top: '#232b31', mid: '#46525a', low: '#8a8e88', glow: 'rgba(220,200,170,0.3)', glowY: 0.42, seed: 81, rim: '#9aa2a0' });
       A.skyline(ctx, { w, baseY: 300, seed: 82, color: '#2a3034', minH: 60, maxH: 160, spire: { x: 700, h: 360 } });
-      A.vgrad(ctx, 0, 100, w, 260, [[0, 'rgba(120,130,130,0)'], [1, 'rgba(120,130,130,0.45)']]);
+      A.vgrad(ctx, 0, 100, w, 260, [[0, 'rgba(130,140,140,0)'], [1, 'rgba(130,140,140,0.5)']]);
     });
     const near = R.paintLayer(WIDTH, (ctx) => {
-      // back of No. 29: three storeys of soot-black brick, back door with two stone steps
-      facade(ctx, { x: 0, w: 760, top: 40, base: GROUND - 10, seed: 101, floors: 3, windows: 3, roof: 'parapet', broken: [1], litMap: [] });
+      // back of No. 29: three storeys of soot-black stock brick, back door with two stone steps
+      const back = facade(ctx, { x: 0, w: 760, top: 40, base: GROUND - 10, seed: 101, floors: 3, windows: 3, roof: 'parapet', broken: [1], litMap: [5], nets: [5], stock: true });
+      back.forEach((c) => lights.push({ x: c.x, y: c.y, r: 220, color: P.candle, intensity: 0.4, flicker: 0.15, halo: 30 }));
+      chimneys.push(...back.chimneys);
       ctx.fillStyle = '#0a0a0a'; ctx.fillRect(560, GROUND - 210, 96, 200);
-      A.door(ctx, 566, GROUND - 204, 84, 194, { color: '#3a2c20', open: 0.35, steps: 0 });
+      A.door(ctx, 566, GROUND - 204, 84, 194, { color: '#3a2c20', open: 0.35, steps: 0, fanlight: false, knocker: false, scraper: false });
       ctx.fillStyle = shade(P.stone, 0.85); ctx.fillRect(546, GROUND - 22, 126, 12); ctx.fillStyle = shade(P.stone, 0.75); ctx.fillRect(536, GROUND - 10, 146, 12);
-      // the passage to the street on the far left
+      ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(546, GROUND - 12, 126, 2);
+      // the passage through the house to the street
       ctx.fillStyle = '#060606'; ctx.fillRect(40, GROUND - 240, 110, 230);
+      ctx.fillStyle = '#2a2018'; ctx.fillRect(32, GROUND - 248, 126, 10);
+      // packing cases from the cellar workshop, stacked against the house
+      A.crate(ctx, 190, GROUND - 74, 80, 64, 21, { stencil: 'RICHARDSON' });
+      A.crate(ctx, 200, GROUND - 130, 64, 56, 22);
+      A.crate(ctx, 280, GROUND - 58, 60, 48, 23);
+      // dolly tub, washboard and a mangle by the back wall
+      A.barrel(ctx, 380, GROUND - 52, 46, 42);
+      ctx.fillStyle = '#6a6458'; ctx.fillRect(398, GROUND - 74, 14, 26);
+      ctx.fillStyle = P.iron; ctx.fillRect(452, GROUND - 120, 6, 110); ctx.fillRect(500, GROUND - 120, 6, 110); ctx.fillRect(452, GROUND - 120, 54, 6);
+      ctx.fillStyle = P.wood; ctx.fillRect(458, GROUND - 104, 42, 10); ctx.fillRect(458, GROUND - 92, 42, 10);
+      ctx.strokeStyle = P.iron; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(530, GROUND - 98, 18, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = P.iron; ctx.fillRect(546, GROUND - 100, 14, 4);
       // the fence, about five feet high, between this yard and No. 27
       ctx.fillStyle = '#121110'; ctx.fillRect(690, GROUND - 160, 870, 160);
+      const r = rng(9);
       for (let x = 690; x < 1560; x += 22) {
-        ctx.fillStyle = shade(P.wood, 0.7 + ((x / 22) % 4) * 0.06);
-        ctx.fillRect(x, GROUND - 150 - (x % 3) * 3, 20, 150 + (x % 3) * 3);
+        ctx.fillStyle = shade(P.wood, r.range(0.62, 0.88));
+        const top = GROUND - 150 - r.range(0, 8);
+        ctx.fillRect(x, top, 20, GROUND - top);
+        ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x + 10, top - 8); ctx.lineTo(x + 20, top); ctx.fill();
+        ctx.fillStyle = 'rgba(255,230,200,0.06)'; ctx.fillRect(x + 2, top, 2, GROUND - top);
+        if (r.chance(0.2)) { ctx.fillStyle = '#0a0a0a'; ctx.fillRect(x + r.range(4, 14), GROUND - r.range(30, 120), 3, 6); }
       }
-      ctx.fillStyle = P.woodDark; ctx.fillRect(690, GROUND - 120, 870, 8); ctx.fillRect(690, GROUND - 40, 870, 8);
+      ctx.fillStyle = P.woodDark; ctx.fillRect(690, GROUND - 120, 870, 9); ctx.fillRect(690, GROUND - 40, 870, 9);
       A.stain(ctx, 690, GROUND - 160, 870, 160, { seed: 5, alpha: 0.55 });
       // neighbouring houses behind the fence
-      facade(ctx, { x: 760, w: 520, top: 120, base: GROUND - 150, seed: 102, floors: 2, windows: 3, roof: 'parapet', kind: 'plaster' });
-      facade(ctx, { x: 1280, w: 720, top: 70, base: GROUND - 10, seed: 103, floors: 3, windows: 4, roof: 'parapet', broken: [2, 7], boards: [5] });
-      // the tap and a stone trough against the wall
-      ctx.fillStyle = P.stoneDark; ctx.fillRect(1600, GROUND - 60, 120, 50);
+      const mid = facade(ctx, { x: 760, w: 520, top: 120, base: GROUND - 150, seed: 102, floors: 2, windows: 3, roof: 'parapet', kind: 'plaster', litMap: [1], nets: [1] });
+      mid.forEach((c) => lights.push({ x: c.x, y: c.y, r: 180, color: P.candle, intensity: 0.35, flicker: 0.15, halo: 24 }));
+      chimneys.push(...mid.chimneys);
+      const right = facade(ctx, { x: 1280, w: 720, top: 70, base: GROUND - 10, seed: 103, floors: 3, windows: 4, roof: 'parapet', broken: [2, 7], boards: [5], stock: true });
+      chimneys.push(...right.chimneys);
+      // the tap over a stone sink against the wall
+      ctx.fillStyle = '#5e5a52'; ctx.fillRect(1600, GROUND - 60, 120, 50); ctx.fillStyle = '#121a1c'; ctx.fillRect(1606, GROUND - 58, 108, 8);
       ctx.fillStyle = P.iron; ctx.fillRect(1650, GROUND - 150, 10, 90); ctx.fillRect(1650, GROUND - 150, 34, 8); ctx.fillRect(1678, GROUND - 146, 6, 18);
-      // privy and a packing case
+      ctx.fillStyle = '#9a8350'; ctx.fillRect(1672, GROUND - 160, 18, 6);
+      // privy with a heart cut in the door
       A.crate(ctx, 1760, GROUND - 70, 80, 60, 7);
-      ctx.fillStyle = shade(P.wood, 0.6); ctx.fillRect(1860, GROUND - 230, 120, 220); ctx.fillStyle = '#0c0c0c'; ctx.fillRect(1880, GROUND - 200, 70, 190);
-      // yard: beaten earth and broken flagstones
-      A.vgrad(ctx, 0, GROUND - 10, WIDTH, 720 - GROUND + 10, [[0, '#3a3530'], [1, '#2a2622']]);
-      const r = rng(9);
-      for (let i = 0; i < 40; i++) { ctx.fillStyle = shade(P.stone, r.range(0.5, 0.8)); ctx.fillRect(r.range(0, WIDTH), r.range(GROUND, 710), r.range(40, 110), r.range(4, 10)); }
+      ctx.fillStyle = shade(P.wood, 0.6); ctx.fillRect(1860, GROUND - 230, 120, 220);
+      for (let x = 1862; x < 1980; x += 14) { ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x, GROUND - 230, 2, 220); }
+      ctx.fillStyle = '#16120e'; ctx.beginPath(); ctx.moveTo(1850, GROUND - 230); ctx.lineTo(1990, GROUND - 230); ctx.lineTo(1980, GROUND - 252); ctx.lineTo(1860, GROUND - 252); ctx.fill();
+      ctx.fillStyle = '#0c0c0c'; ctx.fillRect(1880, GROUND - 200, 70, 190);
+      ctx.fillStyle = shade(P.wood, 0.75); ctx.fillRect(1882, GROUND - 198, 66, 186);
+      ctx.fillStyle = '#060606'; ctx.beginPath(); ctx.arc(1909, GROUND - 170, 5, 0, Math.PI * 2); ctx.arc(1921, GROUND - 170, 5, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.moveTo(1904, GROUND - 168); ctx.lineTo(1915, GROUND - 156); ctx.lineTo(1926, GROUND - 168); ctx.fill();
+      // yard: beaten earth, broken flagstones, a drain
+      A.vgrad(ctx, 0, GROUND - 10, WIDTH, 720 - GROUND + 10, [[0, '#3a3530'], [1, '#262320']]);
+      for (let i = 0; i < 48; i++) { ctx.fillStyle = shade(P.stone, r.range(0.5, 0.8)); const fx = r.range(0, WIDTH), fy = r.range(GROUND, 710); ctx.fillRect(fx, fy, r.range(40, 110), r.range(4, 10)); ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(fx, fy + 6, 60, 2); }
       A.stain(ctx, 0, GROUND - 10, WIDTH, 100, { seed: 31, alpha: 0.6 });
+      A.grit(ctx, 0, GROUND - 10, WIDTH, 100, { seed: 4, density: 1.5 });
+      ctx.fillStyle = '#0b0b0b'; ctx.fillRect(1640, GROUND + 12, 40, 10);
+      // sawdust strewn over the place between the steps and the fence
+      ctx.fillStyle = 'rgba(190,160,110,0.4)'; for (let i = 0; i < 70; i++) ctx.fillRect(560 + r.range(0, 170), GROUND - 4 + r.range(0, 30), 3, 2);
       // laundry line across the yard
-      ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(300, 220); ctx.quadraticCurveTo(1000, 290, 1700, 210); ctx.stroke();
-      ctx.fillStyle = '#8a857a'; ctx.fillRect(820, 262, 46, 70); ctx.fillStyle = '#6a6458'; ctx.fillRect(1220, 262, 60, 50);
+      ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(300, 220); ctx.quadraticCurveTo(1000, 290, 1700, 210); ctx.stroke();
+      for (const [lx, lw, lh, c] of [[820, 46, 70, '#8a857a'], [900, 30, 44, '#5a3a32'], [1220, 60, 50, '#6a6458'], [1300, 26, 60, '#7a7462']]) {
+        const ly = 262 + Math.round((lx - 820) * 0.0);
+        ctx.fillStyle = c; ctx.fillRect(lx, ly, lw, lh); ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(lx, ly + lh - 6, lw, 6);
+        ctx.fillStyle = '#3a2a1e'; ctx.fillRect(lx + 4, ly - 4, 3, 7); ctx.fillRect(lx + lw - 7, ly - 4, 3, 7);
+      }
     });
     lights.push({ x: 1000, y: -200, r: 2200, color: [0.42, 0.46, 0.5], intensity: 0.6, halo: 0, reflect: false });
     const fg = R.paintLayer(WIDTH * 1.25, (ctx) => {
       ctx.fillStyle = '#0a0b0c';
-      ctx.fillRect(0, 0, 120, 720);
+      ctx.fillRect(0, 0, 120, 720); ctx.fillRect(110, 0, 18, 720);
       ctx.fillRect(1500, 520, 30, 200); ctx.fillRect(1460, 600, 120, 8);
       ctx.fillRect(2380, 0, 120, 720);
     });
-    return { layers: [{ canvas: sky, parallax: 0.2, kind: 'far' }, { canvas: near, parallax: 1, kind: 'near' }, { canvas: fg, parallax: 1.25, kind: 'fg' }], lights };
+    return { layers: [{ canvas: sky, parallax: 0.2, kind: 'far' }, { canvas: near, parallax: 1, kind: 'near' }, { canvas: fg, parallax: 1.25, kind: 'fg' }], lights, chimneys };
+  },
+
+  makeLife() {
+    const b = this.built || {};
+    return [
+      ...(b.chimneys || []).map((c, i) => new Smoke({ x: c.x, y: c.y, rate: 0.7 + i * 0.1, drift: 30 })),
+      new Drip({ x: 1679, y: GROUND - 130, ground: GROUND - 56, period: 1.4 }),
+      new Crow({ x: 1300, y: GROUND - 160, facing: -1, seed: 3 }),
+      new Cat({ x: 1100, y: GROUND - 156, facing: -1 }),
+    ];
   },
 
   actors() {
     return [
-      new Actor('Pike', { x: 900, y: GROUND, h: 200, hat: 'bowler', coat: '#2c2a26', coatLen: 0.9, cape: true, facing: -1, build: 1.05 }),
-      new Actor('Greaves', { x: 1150, y: GROUND, h: 214, hat: 'top', coat: '#1d1b1c', coatLen: 0.95, cane: true, beard: '#6a6a66', facing: -1, flare: 1.05 }),
-      new Actor('Amelia', { x: 470, y: GROUND, h: 176, hat: 'bonnet', skirt: true, coat: '#3a3432', facing: 1, stoop: 1 }),
+      new Actor('Pike', { x: 900, y: GROUND, h: 200, hat: 'bowler', coat: '#2c2a26', coatLen: 0.9, cape: true, facing: -1, build: 1.05, moustache: '#3a2a1e', buttons: 'double', notebook: true, hair: '#3a2a1e' }),
+      new Actor('Greaves', { x: 1150, y: GROUND, h: 214, hat: 'top', coat: '#1d1b1c', coatLen: 0.95, cane: true, beard: '#7a7a74', hair: '#8a8a84', facing: -1, flare: 1.05, tails: true, chain: true, waistcoat: '#3a2a20', buttons: 'double' }),
+      new Actor('Amelia', { x: 470, y: GROUND, h: 176, hat: 'bonnet', hatColor: '#1e1a18', skirt: true, coat: '#3a3432', shawl: '#2e2826', facing: 1, stoop: 1, hair: '#6a6660' }),
     ];
   },
 
@@ -86,13 +133,14 @@ export default {
       ctx.fillStyle = '#16120f';
       ctx.beginPath(); ctx.ellipse(x + Math.sin(t * 0.7 + k) * 2, y, 11, 14, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillRect(x - 22, y + 12, 44, 30);
-      if (k === 0) { ctx.beginPath(); ctx.ellipse(x, y - 4, 16, 18, 0, Math.PI, 0); ctx.fill(); }
+      ctx.fillStyle = '#4a3a30'; ctx.fillRect(x - 6 + Math.sin(t * 0.7 + k) * 2, y - 2, 12, 10);
+      if (k === 0) { ctx.fillStyle = '#16120f'; ctx.beginPath(); ctx.ellipse(x, y - 4, 16, 18, 0, Math.PI, 0); ctx.fill(); }
     }
-    // Annie's belongings, already removed; only the outline of where they lay, and the comb half-hidden by the fence
-    if (!this.G?.has('peine') && !this.G?.flag('peine_taken')) { ctx.fillStyle = '#5a4630'; ctx.fillRect(760, GROUND + 6, 22, 5); }
+    if (!this.G?.has('peine') && !this.G?.flag('peine_taken')) { ctx.fillStyle = '#5a4630'; ctx.fillRect(760, GROUND + 6, 22, 5); ctx.fillStyle = '#2a1e14'; for (let i = 0; i < 6; i++) ctx.fillRect(761 + i * 3.5, GROUND + 10, 2, 3); }
     // the leather apron by the tap
     ctx.fillStyle = '#4a2e1c';
     ctx.beginPath(); ctx.moveTo(1610, GROUND - 4); ctx.quadraticCurveTo(1640, GROUND - 30, 1700, GROUND - 8); ctx.lineTo(1706, GROUND + 6); ctx.lineTo(1604, GROUND + 6); ctx.fill();
+    ctx.fillStyle = 'rgba(255,230,200,0.12)'; ctx.fillRect(1626, GROUND - 16, 40, 3);
   },
 
   async enter(G) {

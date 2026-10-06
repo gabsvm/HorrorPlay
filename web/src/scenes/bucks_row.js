@@ -3,6 +3,7 @@ import * as A from '../art/paint.js';
 import { nightBackdrop, facade, warehouse } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
+import { Smoke, Drip, Rat, Cat, Crow, Moths, Paper, Ripples } from '../engine/life.js';
 
 const WIDTH = 2600, GROUND = 628;
 
@@ -23,73 +24,104 @@ export default {
   date: '31 de agosto de 1888',
 
   build(R) {
-    const layers = nightBackdrop(R, WIDTH, { seed: 12, spireX: 980, spireH: 380, horizon: 450 });
+    const layers = nightBackdrop(R, WIDTH, { seed: 12, spireX: 980, spireH: 380, domeX: 300, horizon: 450 });
     const lights = [];
+    const chimneys = [];
     const near = R.paintLayer(WIDTH, (ctx) => {
       warehouse(ctx, { x: 0, w: 640, top: 70, base: GROUND - 12, seed: 3, name: 'ESSEX WHARF' });
-      // Brown's stable yard gateway
-      A.brickWall(ctx, 640, 250, 300, GROUND - 262, { seed: 8 });
-      ctx.fillStyle = P.stoneDark; ctx.fillRect(636, 240, 308, 14);
+      // Brown's stable yard: high wall with coping
+      A.brickWall(ctx, 640, 250, 300, GROUND - 262, { seed: 8, palette: A.BRICK.stock });
+      ctx.fillStyle = '#5c574d'; ctx.fillRect(636, 238, 308, 14); ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(636, 252, 308, 4);
       A.gate(ctx, 690, GROUND - 230, 200, 218);
       ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(690, GROUND - 236, 200, 8);
-      A.chalk(ctx, 704, GROUND - 204, "BROWN'S\nSTABLE YARD", { size: 15 });
-      // New Cottages
-      const cottageLights = [];
+      A.chalk(ctx, 704, GROUND - 204, "BROWN'S\nSTABLE YARD", { size: 17 });
+      A.poster(ctx, 900, 300, 70, 96, [['POLICE', 13], ['NOTICE', 13], ['', 6], ['MURDER', 11]], { seed: 21, tilt: 0.03, color: '#c4b892' });
+      // New Cottages, stock brick, doors straight onto the pavement
       for (let i = 0; i < 5; i++) {
         const x = 940 + i * 170;
-        cottageLights.push(...facade(ctx, { x, w: 170, top: GROUND - 300, base: GROUND - 12, seed: 40 + i, floors: 2, windows: 1, door: 120, litMap: i === 1 ? [0] : i === 4 ? [1] : [], roof: 'parapet', boards: i === 3 ? [0] : [] }));
+        const ls = facade(ctx, { x, w: 170, top: GROUND - 300, base: GROUND - 12, seed: 40 + i, floors: 2, windows: 1, door: 120, number: String(i + 1), stock: true, litMap: i === 1 ? [0] : i === 4 ? [1] : [], figures: i === 4 ? [1] : [], nets: [0], roof: 'parapet', boards: i === 3 ? [0] : [] });
+        ls.forEach((c) => lights.push({ x: c.x, y: c.y, r: 200, color: P.candle, intensity: 0.55, flicker: 0.15, halo: 34, haloK: 0.6 }));
+        chimneys.push(...ls.chimneys);
       }
-      cottageLights.forEach((c) => lights.push({ x: c.x, y: c.y, r: 190, color: P.candle, intensity: 0.55, flicker: 0.15, halo: 34, haloK: 0.6 }));
-      // Board school
+      // Board school: tall gothic block with a bell turret
       A.brickWall(ctx, 1790, 40, 560, GROUND - 52, { seed: 66, palette: ['#4b352d', '#56392f', '#44302a'] });
-      ctx.fillStyle = '#121518';
+      ctx.fillStyle = '#1a1e21';
       ctx.beginPath(); ctx.moveTo(1770, 46); ctx.lineTo(2070, -120); ctx.lineTo(2370, 46); ctx.fill();
+      ctx.save(); ctx.beginPath(); ctx.moveTo(1770, 46); ctx.lineTo(2070, -120); ctx.lineTo(2370, 46); ctx.clip();
+      for (let yy = -120; yy < 46; yy += 8) for (let xx = 1770 + (Math.abs(Math.round(yy / 8)) % 2) * 9; xx < 2370; xx += 18) { ctx.fillStyle = (xx + yy) % 3 ? '#22282c' : '#1c2124'; ctx.fillRect(xx, yy, 16, 7); }
+      ctx.restore();
+      ctx.fillStyle = '#16191b'; ctx.fillRect(2050, -60, 40, 50); ctx.beginPath(); ctx.moveTo(2044, -60); ctx.lineTo(2070, -110); ctx.lineTo(2096, -60); ctx.fill();
+      ctx.fillStyle = '#0a0b0c'; ctx.fillRect(2060, -48, 20, 26);
       for (let i = 0; i < 4; i++) {
-        A.windowFrame(ctx, 1840 + i * 128, 110, 62, 150, { arch: true, seed: 70 + i, panes: 4 });
-        A.windowFrame(ctx, 1840 + i * 128, 330, 62, 130, { arch: true, seed: 80 + i, panes: 3, broken: i === 2 });
+        A.windowFrame(ctx, 1840 + i * 128, 110, 62, 150, { arch: true, seed: 70 + i, panes: 4, frame: '#8a8270' });
+        A.windowFrame(ctx, 1840 + i * 128, 330, 62, 130, { arch: true, seed: 80 + i, panes: 3, broken: i === 2, frame: '#8a8270' });
       }
+      ctx.font = '600 22px "IM Fell English SC", Georgia, serif'; ctx.fillStyle = 'rgba(210,200,175,0.5)'; ctx.textAlign = 'center';
+      ctx.fillText('LONDON SCHOOL BOARD', 2070, 300);
       A.poster(ctx, 1900, 500, 120, 76, [['£100 REWARD', 18], ['INFORMATION', 11], ['WHITECHAPEL', 11]], { seed: 3, tilt: -0.03 });
+      A.poster(ctx, 2160, 506, 96, 66, [['THE PAVILION', 13], ['THEATRE', 13], ['TO-NIGHT', 10]], { seed: 5, tilt: 0.04, color: '#b48a62' });
       A.railing(ctx, 1790, GROUND - 70, 560, 58);
-      ctx.fillStyle = '#050607'; ctx.fillRect(2350, 120, 250, GROUND - 120);
-      A.brickWall(ctx, 2470, 150, 130, GROUND - 162, { seed: 90 });
+      // the mouth of an alley, then a blind wall
+      ctx.fillStyle = '#040505'; ctx.fillRect(2350, 120, 120, GROUND - 120);
+      A.brickWall(ctx, 2470, 150, 130, GROUND - 162, { seed: 90, palette: A.BRICK.stock });
+      A.poster(ctx, 2490, 380, 90, 110, [['LODGINGS', 14], ['4d.', 18], ['DOUBLE 8d.', 11]], { seed: 9, tilt: -0.05 });
       A.streetSign(ctx, 1000, 258, "BUCK'S ROW  E.");
+      A.wires(ctx, 600, 120, 1180, 210, { count: 2, sag: 40 });
+      A.wires(ctx, 1600, 230, 2060, 120, { count: 2, sag: 30 });
+      // pavement and street
       A.flagstones(ctx, 0, GROUND - 12, WIDTH, 18);
       A.kerb(ctx, 0, GROUND + 6, WIDTH);
       A.cobbles(ctx, 0, GROUND + 22, WIDTH, 720 - GROUND - 22, { seed: 14, rows: 9, puddles: 12 });
       // the gutter grate where Wren will later say she found the scalpel
       ctx.fillStyle = '#0b0b0b'; ctx.fillRect(560, GROUND + 14, 54, 10);
       ctx.fillStyle = '#2a2a2a'; for (let i = 0; i < 6; i++) ctx.fillRect(563 + i * 9, GROUND + 15, 4, 8);
+      // the boy's bucket and the patch he is scrubbing; footprints of black mud heading west
+      A.barrel(ctx, 700, GROUND - 24, 22, 24);
+      ctx.fillStyle = 'rgba(30,22,20,0.65)'; ctx.beginPath(); ctx.ellipse(800, GROUND + 26, 70, 9, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(140,150,140,0.25)'; ctx.beginPath(); ctx.ellipse(790, GROUND + 24, 40, 4, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(8,8,6,0.8)';
+      for (let i = 0; i < 12; i++) { const x = 640 - i * 40, y = GROUND + 30 + (i % 2) * 10; ctx.beginPath(); ctx.ellipse(x, y, 9, 3.2, 0, 0, Math.PI * 2); ctx.ellipse(x + 8, y, 4, 2.6, 0, 0, Math.PI * 2); ctx.fill(); }
+      A.bollard(ctx, 1550, GROUND - 6);
+      A.sack(ctx, 260, GROUND - 8, 4); A.sack(ctx, 300, GROUND - 6, 5);
+      A.crate(ctx, 160, GROUND - 70, 66, 58, 9, { stencil: 'E.W.' });
       const lamp = A.lampPost(ctx, 1640, GROUND, 270);
-      lights.push({ id: 'lamp', x: lamp.x, y: lamp.y, r: 520, color: P.gas, intensity: 1.15, flicker: 0.08, halo: 130 });
+      lights.push({ id: 'lamp', x: lamp.x, y: lamp.y, r: 520, color: P.gas, intensity: 1.15, flicker: 0.08, halo: 130, shaft: true, shaftW: 130 });
     });
     layers.push({ canvas: near, parallax: 1, kind: 'near' });
     const fg = R.paintLayer(WIDTH * 1.3, (ctx) => {
       ctx.fillStyle = '#060708';
-      // a bollard and hanging sign bracket at the left edge, a cart on the right
       ctx.fillRect(120, 610, 34, 110); ctx.fillRect(112, 600, 50, 14);
-      ctx.fillRect(0, 70, 150, 8); ctx.fillRect(140, 70, 6, 60); ctx.fillRect(110, 128, 70, 46);
+      A.hangingSign(ctx, 0, 70, 'COFFEE ROOMS', { w: 150, h: 46 });
       A.cart(ctx, 2600, 760);
-      ctx.fillRect(3100, 0, 70, 720);
+      ctx.fillStyle = '#060708'; ctx.fillRect(3100, 0, 70, 720);
     });
     layers.push({ canvas: fg, parallax: 1.3, kind: 'fg' });
-    return { layers, lights };
+    return { layers, lights, chimneys };
+  },
+
+  makeLife() {
+    const b = this.built || {};
+    return [
+      ...(b.chimneys || []).map((c, i) => new Smoke({ x: c.x, y: c.y, rate: 0.8 + i * 0.13, size: 0.8 })),
+      new Drip({ x: 312, y: GROUND - 160, ground: GROUND - 8 }),
+      new Drip({ x: 1180, y: GROUND - 306, ground: GROUND - 10, period: 3.1 }),
+      new Drip({ x: 2345, y: 130, ground: GROUND - 6, period: 2.6 }),
+      new Rat({ x0: 160, x1: 900, y: GROUND + 16, seed: 2 }),
+      new Cat({ x: 690, y: 238, facing: 1 }),
+      new Crow({ x: 2070, y: -112, facing: -1, seed: 4 }),
+      new Moths({ x: 1640, y: GROUND - 250 }),
+      new Paper({ x0: 1200, x1: 2500, y: GROUND + 60, seed: 7 }),
+      new Ripples({ x: 1640, y: GROUND + 60, w: 200 }),
+      new Ripples({ x: 520, y: GROUND + 76, w: 160, n: 4 }),
+    ];
   },
 
   actors() {
     return [
-      new Actor('Pike', { x: 980, y: GROUND, h: 200, hat: 'bowler', coat: '#2c2a26', coatLen: 0.9, cape: true, facing: 1, build: 1.05 }),
-      new Actor('Neil', { x: 1500, y: GROUND, h: 212, hat: 'helmet', coat: '#1b2030', coatLen: 0.82, facing: -1, lantern: true, lanternOn: true }),
-      new Actor('Chico', { x: 760, y: GROUND, h: 140, hat: 'cap', coat: '#3a3229', coatLen: 0.6, facing: -1, stoop: 1, pose: 'kneel' }),
+      new Actor('Pike', { x: 980, y: GROUND, h: 200, hat: 'bowler', coat: '#2c2a26', coatLen: 0.9, cape: true, facing: 1, build: 1.05, moustache: '#3a2a1e', buttons: 'double', notebook: true, hair: '#3a2a1e' }),
+      new Actor('Neil', { x: 1500, y: GROUND, h: 212, hat: 'helmet', coat: '#161c30', trousers: '#12151f', coatLen: 0.8, flare: 1.02, facing: -1, lantern: true, lanternOn: true, belt: true, number: true, moustache: '#4a3424' }),
+      new Actor('Chico', { x: 760, y: GROUND, h: 140, hat: 'cap', coat: '#4a3a2a', coatLen: 0.58, facing: -1, stoop: 1, pose: 'kneel', patches: true, hair: '#4a3020' }),
     ];
-  },
-
-  drawNear(ctx) {
-    // the boy's bucket and the wet patch he is scrubbing
-    A.barrel(ctx, 700, GROUND - 24, 22, 24);
-    ctx.fillStyle = 'rgba(30,22,20,0.65)'; ctx.beginPath(); ctx.ellipse(800, GROUND + 26, 70, 9, 0, 0, Math.PI * 2); ctx.fill();
-    // footprints of black mud heading west, only legible in lantern light
-    ctx.fillStyle = 'rgba(8,8,6,0.75)';
-    for (let i = 0; i < 12; i++) { const x = 640 - i * 40, y = GROUND + 30 + (i % 2) * 10; ctx.beginPath(); ctx.ellipse(x, y, 9, 3.2, 0, 0, Math.PI * 2); ctx.fill(); }
   },
 
   async enter(G) {

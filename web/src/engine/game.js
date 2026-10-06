@@ -35,7 +35,7 @@ export class Game {
     this.pointer = { x: W / 2, y: H / 2, inside: false, touch: false };
     this.madTarget = 0;
     this.layerCache = new Map();
-    this.player = new Actor('Thomas', { h: 206, hat: 'bowler', coat: '#24262a', coatLen: 0.86, flare: 1.18, lantern: true, speed: 150, z: 10 });
+    this.player = new Actor('Thomas', { h: 206, hat: 'bowler', coat: '#23262b', coatLen: 0.88, flare: 1.2, lantern: true, speed: 150, z: 10, collarUp: true, sideburns: true, hair: '#1a1410' });
     this.player.isPlayer = true;
     this.player.onStep = () => audio.step(this.scene?.surface || 'stone');
     this.fitStage();

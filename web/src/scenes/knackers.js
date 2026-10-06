@@ -3,9 +3,50 @@ import * as A from '../art/paint.js';
 import { nightBackdrop, facade } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
+import { Smoke, Drip, Rat, Crow, Moths, Ripples } from '../engine/life.js';
 
 const WIDTH = 2200, GROUND = 628;
 const isMob = (G) => G.flag('mob');
+
+// A Great Eastern train crossing the viaduct: carriage windows, sparks and a long tail of steam.
+class Train {
+  constructor() { this.t = 6; this.x = -2000; this.active = false; }
+  update(dt, G) {
+    this.t -= dt;
+    if (!this.active && this.t <= 0) { this.active = true; this.x = -900; G.audio.thud(); G.game.r.cam.shake = 3; }
+    if (this.active) {
+      this.x += 520 * dt;
+      if (Math.random() < dt * 4) G.game.r.cam.shake = Math.max(G.game.r.cam.shake, 1.5);
+      if (this.x > 1500) { this.active = false; this.t = 35 + Math.random() * 25; }
+    }
+  }
+  draw(ctx) {
+    if (!this.active) return;
+    const y = 68;
+    ctx.fillStyle = '#0b0c0d';
+    ctx.fillRect(this.x + 520, y - 44, 120, 44); ctx.fillRect(this.x + 600, y - 70, 18, 28); ctx.fillRect(this.x + 520, y - 56, 46, 14);
+    for (let i = 0; i < 4; i++) {
+      const cx = this.x + i * 128;
+      ctx.fillStyle = '#121416'; ctx.fillRect(cx, y - 40, 120, 40);
+      ctx.fillStyle = '#d8a050'; for (let k = 0; k < 4; k++) ctx.fillRect(cx + 10 + k * 28, y - 32, 14, 12);
+    }
+  }
+  drawGlow(ctx) {
+    if (!this.active) return;
+    ctx.fillStyle = 'rgba(255,170,80,0.5)';
+    for (let i = 0; i < 4; i++) for (let k = 0; k < 4; k++) ctx.fillRect(this.x + i * 128 + 10 + k * 28, 36, 14, 12);
+    ctx.fillStyle = 'rgba(255,120,40,0.8)'; ctx.fillRect(this.x + 560 + Math.random() * 60, 70 + Math.random() * 6, 3, 3);
+  }
+  drawFog(ctx, t) {
+    if (!this.active) return;
+    for (let i = 0; i < 8; i++) {
+      const px = this.x + 609 - i * 70, py = -10 - i * 6 + Math.sin(t * 3 + i) * 4, r = 30 + i * 12;
+      const g = ctx.createRadialGradient(px, py, 2, px, py, r);
+      g.addColorStop(0, `rgba(255,255,255,${0.55 - i * 0.05})`); g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g; ctx.fillRect(px - r, py - r, r * 2, r * 2);
+    }
+  }
+}
 
 export default {
   id: 'knackers',
@@ -25,90 +66,141 @@ export default {
 
   build(R, G) {
     const mob = isMob(G);
-    const layers = nightBackdrop(R, WIDTH, { seed: 31, spireX: 520, spireH: 330, horizon: 440 });
+    const layers = nightBackdrop(R, WIDTH, { seed: 31, spireX: 520, spireH: 330, gasX: 1500, horizon: 440 });
     const lights = [];
+    const chimneys = [];
     const near = R.paintLayer(WIDTH, (ctx) => {
-      // railway viaduct
-      A.brickWall(ctx, 0, 120, 560, GROUND - 132, { seed: 5, palette: ['#3d2a24', '#45302a', '#382620'], soot: 1 });
+      // railway viaduct: brick piers, a rubbed-brick arch ring, iron girder deck with rivets
+      A.brickWall(ctx, 0, 120, 560, GROUND - 132, { seed: 5, palette: A.BRICK.stock, soot: 1, salt: 0.8 });
       ctx.fillStyle = '#030303';
       ctx.beginPath(); ctx.moveTo(90, GROUND - 12); ctx.lineTo(90, 330); ctx.arc(280, 330, 190, Math.PI, 0); ctx.lineTo(470, GROUND - 12); ctx.fill();
-      ctx.fillStyle = P.iron; ctx.fillRect(0, 100, 560, 24); ctx.fillRect(0, 90, 560, 6);
-      for (let x = 0; x < 560; x += 18) ctx.fillRect(x, 70, 4, 22);
-      // Barber's yard wall + open gates
+      ctx.strokeStyle = '#4a3226'; ctx.lineWidth = 14; ctx.beginPath(); ctx.arc(280, 330, 198, Math.PI, 0); ctx.stroke();
+      ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 2;
+      for (let i = 0; i <= 24; i++) { const a = Math.PI + (Math.PI / 24) * i; ctx.beginPath(); ctx.moveTo(280 + Math.cos(a) * 191, 330 + Math.sin(a) * 191); ctx.lineTo(280 + Math.cos(a) * 205, 330 + Math.sin(a) * 205); ctx.stroke(); }
+      // under the arch: sleepers rolled in sacking, a bracket lamp
+      for (const [sx, sw] of [[130, 70], [214, 54], [330, 80]]) { ctx.fillStyle = '#16120e'; ctx.beginPath(); ctx.ellipse(sx + sw / 2, GROUND - 22, sw / 2, 16, 0, Math.PI, 0); ctx.fill(); ctx.fillRect(sx, GROUND - 22, sw, 10); }
+      A.lampPost(ctx, 290, 420 + 160, 160, { bracket: true });
+      ctx.fillStyle = P.iron; ctx.fillRect(0, 98, 560, 26); ctx.fillRect(0, 88, 560, 8);
+      ctx.fillStyle = '#2a2d30'; for (let x = 6; x < 560; x += 14) { ctx.fillRect(x, 104, 3, 3); ctx.fillRect(x, 116, 3, 3); }
+      for (let x = 0; x < 560; x += 18) ctx.fillRect(x, 66, 4, 24);
+      ctx.fillRect(0, 62, 560, 5);
+      A.poster(ctx, 476, 380, 74, 96, [['GREAT', 12], ['EASTERN', 12], ['RAILWAY', 12], ['TO SOUTHEND', 9]], { seed: 13, color: '#9c8a6a' });
+      // Barber's yard wall and open gates
       A.brickWall(ctx, 560, 230, 820, GROUND - 242, { seed: 12, soot: 0.8 });
-      ctx.fillStyle = P.stoneDark; ctx.fillRect(556, 222, 828, 12);
-      ctx.font = '600 26px "IM Fell English SC", Georgia, serif'; ctx.fillStyle = 'rgba(210,200,170,0.5)'; ctx.textAlign = 'left';
-      ctx.fillText('BARBER  ·  HORSE SLAUGHTERER', 600, 270);
-      // yard interior through the gateway
+      ctx.fillStyle = '#5c574d'; ctx.fillRect(556, 220, 828, 13); ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(556, 233, 828, 4);
+      ctx.fillStyle = '#d8cdb0'; ctx.globalAlpha = 0.45;
+      ctx.font = '600 28px "IM Fell English SC", Georgia, serif'; ctx.textAlign = 'left';
+      ctx.fillText('BARBER  ·  HORSE SLAUGHTERER', 600, 272);
+      ctx.font = '600 15px "IM Fell English SC", Georgia, serif'; ctx.fillText('ESTABLISHED 1841 · CATS MEAT SUPPLIED', 640, 296);
+      ctx.globalAlpha = 1;
+      // yard interior: a rail of hooks with hides, lime sacks, a cart wheel against the far wall
       ctx.fillStyle = '#2a1712'; ctx.fillRect(820, 300, 300, GROUND - 312);
-      A.vgrad(ctx, 820, 300, 300, GROUND - 312, [[0, 'rgba(0,0,0,0.6)'], [1, 'rgba(60,20,10,0.4)']]);
-      ctx.fillStyle = '#0d0907';
-      // hanging hides on hooks, shapes only
+      A.brickWall(ctx, 820, 300, 300, GROUND - 312, { seed: 15, palette: ['#3a1e16', '#2e1812', '#44241a'], soot: 1, salt: 0, holes: 0 });
+      A.vgrad(ctx, 820, 300, 300, GROUND - 312, [[0, 'rgba(0,0,0,0.7)'], [1, 'rgba(60,20,10,0.35)']]);
+      ctx.fillStyle = P.iron; ctx.fillRect(830, 318, 280, 5);
       for (let i = 0; i < 4; i++) {
-        const hx = 850 + i * 70;
-        ctx.fillRect(hx + 18, 316, 3, 30);
-        ctx.beginPath(); ctx.moveTo(hx, 346); ctx.quadraticCurveTo(hx + 20, 330, hx + 40, 346); ctx.lineTo(hx + 34, 460 + (i % 2) * 30); ctx.quadraticCurveTo(hx + 20, 480, hx + 6, 460 + (i % 2) * 30); ctx.fill();
+        const hx = 846 + i * 66;
+        ctx.fillStyle = P.iron; ctx.fillRect(hx + 18, 322, 3, 22);
+        ctx.fillStyle = i % 2 ? '#3a1c12' : '#2a1610';
+        ctx.beginPath(); ctx.moveTo(hx, 346); ctx.quadraticCurveTo(hx + 20, 334, hx + 40, 346); ctx.lineTo(hx + 34, 460 + (i % 2) * 30); ctx.quadraticCurveTo(hx + 20, 480, hx + 6, 460 + (i % 2) * 30); ctx.fill();
+        ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(hx + 22, 350, 6, 100);
       }
-      ctx.fillStyle = '#1a0f0a'; ctx.fillRect(820, 300, 300, 16);
-      // gate leaves swung open
+      A.sack(ctx, 880, GROUND - 14, 7); A.sack(ctx, 920, GROUND - 14, 8);
+      ctx.strokeStyle = '#20150e'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(1000, GROUND - 70, 44, 0, Math.PI * 2); ctx.stroke();
       A.gate(ctx, 760, 300, 60, GROUND - 312);
       A.gate(ctx, 1120, 300, 60, GROUND - 312);
-      // brazier in the yard
+      // brazier
       ctx.fillStyle = P.iron; ctx.fillRect(1040, GROUND - 70, 40, 46); ctx.fillRect(1046, GROUND - 24, 4, 24); ctx.fillRect(1070, GROUND - 24, 4, 24);
-      ctx.fillStyle = '#ff9a4a'; ctx.fillRect(1044, GROUND - 74, 32, 8);
-      // grindstone outside the gate
-      ctx.fillStyle = P.woodDark; ctx.fillRect(1206, GROUND - 60, 70, 10); ctx.fillRect(1210, GROUND - 50, 8, 50); ctx.fillRect(1264, GROUND - 50, 8, 50);
-      ctx.fillStyle = '#5a5650'; ctx.beginPath(); ctx.arc(1240, GROUND - 76, 30, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#2a2826'; ctx.beginPath(); ctx.arc(1240, GROUND - 76, 6, 0, Math.PI * 2); ctx.fill();
-      // low wall and crates where Wren perches
-      A.brickWall(ctx, 1380, 430, 300, GROUND - 442, { seed: 41 });
-      A.crate(ctx, 1440, GROUND - 74, 70, 62, 3);
+      for (let i = 0; i < 5; i++) { ctx.fillStyle = '#0a0a0a'; ctx.fillRect(1042 + i * 8, GROUND - 68, 3, 40); }
+      ctx.fillStyle = '#ff9a4a'; ctx.fillRect(1044, GROUND - 74, 32, 8); ctx.fillStyle = '#ffd27a'; ctx.fillRect(1052, GROUND - 76, 12, 4);
+      // grindstone on its wooden frame with a treadle and a drip-can
+      ctx.fillStyle = P.woodDark;
+      ctx.fillRect(1200, GROUND - 62, 84, 10); ctx.fillRect(1204, GROUND - 52, 8, 52); ctx.fillRect(1272, GROUND - 52, 8, 52);
+      ctx.save(); ctx.translate(1212, GROUND - 6); ctx.rotate(-0.2); ctx.fillRect(0, 0, 70, 6); ctx.restore();
+      ctx.fillStyle = '#625d55'; ctx.beginPath(); ctx.arc(1240, GROUND - 80, 32, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#4a4640'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(1240, GROUND - 80, 26, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#2a2826'; ctx.beginPath(); ctx.arc(1240, GROUND - 80, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#3a3a3c'; ctx.fillRect(1214, GROUND - 130, 16, 20); ctx.fillRect(1220, GROUND - 112, 3, 14);
+      // low wall, crates, bollard where Wren perches
+      A.brickWall(ctx, 1380, 430, 300, GROUND - 442, { seed: 41, palette: A.BRICK.stock });
+      ctx.fillStyle = '#5c574d'; ctx.fillRect(1376, 424, 308, 10);
+      A.crate(ctx, 1440, GROUND - 74, 70, 62, 3, { stencil: 'BARBER' });
       A.crate(ctx, 1500, GROUND - 60, 56, 48, 4);
-      ctx.fillStyle = P.stone; ctx.fillRect(1600, GROUND - 56, 22, 56); ctx.fillRect(1596, GROUND - 60, 30, 8); // bollard
+      A.bollard(ctx, 1611, GROUND);
       // backs of terraces
-      const tl = facade(ctx, { x: 1680, w: 520, top: 250, base: GROUND - 12, seed: 77, floors: 2, windows: 3, litMap: [4], roof: 'parapet', kind: 'plaster', door: 360 });
+      const tl = facade(ctx, { x: 1680, w: 520, top: 250, base: GROUND - 12, seed: 77, floors: 2, windows: 3, litMap: [4], figures: [4], roof: 'parapet', kind: 'plaster', door: 360 });
       tl.forEach((c) => lights.push({ x: c.x, y: c.y, r: 200, color: P.candle, intensity: 0.5, flicker: 0.2, halo: 30, haloK: 0.5 }));
-      // water trough
-      ctx.fillStyle = P.stoneDark; ctx.fillRect(1720, GROUND - 44, 140, 32); ctx.fillStyle = '#0d1416'; ctx.fillRect(1726, GROUND - 42, 128, 8);
-      A.streetSign(ctx, 1720, 300, 'WINTHROP STREET');
+      chimneys.push(...tl.chimneys);
+      ctx.strokeStyle = '#141414'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(1690, 330); ctx.quadraticCurveTo(1940, 370, 2190, 324); ctx.stroke();
+      ctx.fillStyle = '#7a756a'; ctx.fillRect(1760, 348, 40, 56); ctx.fillStyle = '#5a564c'; ctx.fillRect(1840, 356, 30, 40); ctx.fillStyle = '#6a5a4a'; ctx.fillRect(2010, 352, 46, 30);
+      // granite cattle trough of the Drinking Fountain Association
+      ctx.fillStyle = '#5e5a52'; ctx.fillRect(1716, GROUND - 52, 150, 40); ctx.fillStyle = '#4a4740'; ctx.fillRect(1712, GROUND - 56, 158, 7);
+      ctx.fillStyle = '#0d1416'; ctx.fillRect(1722, GROUND - 52, 138, 6);
+      ctx.font = '600 9px Georgia, serif'; ctx.fillStyle = 'rgba(30,28,24,0.8)'; ctx.textAlign = 'center';
+      ctx.fillText('METROPOLITAN DRINKING FOUNTAIN', 1791, GROUND - 34); ctx.fillText('AND CATTLE TROUGH ASSOCIATION', 1791, GROUND - 22);
+      A.streetSign(ctx, 1720, 296, 'WINTHROP STREET');
+      A.wires(ctx, 560, 210, 1700, 260, { count: 3, sag: 60 });
       A.flagstones(ctx, 0, GROUND - 12, WIDTH, 18);
       A.kerb(ctx, 0, GROUND + 6, WIDTH);
-      A.cobbles(ctx, 0, GROUND + 22, WIDTH, 720 - GROUND - 22, { seed: 22, rows: 9, puddles: 10 });
+      A.cobbles(ctx, 0, GROUND + 22, WIDTH, 720 - GROUND - 22, { seed: 22, rows: 9, puddles: 10, litter: 2 });
       // blood-dark runoff from the yard into the gutter
-      ctx.fillStyle = 'rgba(40,10,8,0.55)';
+      ctx.fillStyle = 'rgba(48,10,8,0.6)';
       ctx.beginPath(); ctx.moveTo(900, GROUND + 6); ctx.quadraticCurveTo(980, GROUND + 30, 1100, GROUND + 26); ctx.lineTo(1300, GROUND + 30); ctx.lineTo(1300, GROUND + 36); ctx.quadraticCurveTo(1000, GROUND + 40, 880, GROUND + 12); ctx.fill();
-      if (mob) A.chalk(ctx, 600, 330, 'LEATHER APRON', { size: 30, rot: -0.06 });
+      if (mob) {
+        A.chalk(ctx, 600, 330, 'LEATHER APRON', { size: 34, rot: -0.06 });
+        A.chalk(ctx, 1400, 446, 'HANG HIM', { size: 22, rot: 0.04 });
+      }
     });
     layers.push({ canvas: near, parallax: 1, kind: 'near' });
     lights.push({ id: 'brazier', x: 1060, y: GROUND - 80, r: 520, color: [1, 0.42, 0.18], intensity: 1.0, flicker: 0.3, halo: 90 });
-    lights.push({ id: 'arch', x: 280, y: 380, r: 260, color: P.gas, intensity: 0.45, flicker: 0.1, halo: 40 });
+    lights.push({ id: 'arch', x: 230, y: 420 + 160 - 140, r: 300, color: P.gas, intensity: 0.5, flicker: 0.1, halo: 50, shaft: true, shaftW: 90 });
     if (mob) {
       [1300, 1500, 1700, 1900].forEach((x, i) => lights.push({ id: `torch${i}`, x, y: GROUND - 250, r: 420, color: [1, 0.5, 0.2], intensity: 0.9, flicker: 0.45, halo: 70 }));
     }
     const fg = R.paintLayer(WIDTH * 1.3, (ctx) => {
       ctx.fillStyle = '#050505';
-      // barrels and a broken cart wheel along the bottom edge
       for (const x of [520, 560]) { ctx.beginPath(); ctx.ellipse(x, 690, 22, 50, 0, 0, Math.PI * 2); ctx.fill(); }
       ctx.lineWidth = 8; ctx.strokeStyle = '#050505'; ctx.beginPath(); ctx.arc(2240, 720, 70, Math.PI, Math.PI * 2); ctx.stroke();
       for (let i = 0; i < 5; i++) { const a = Math.PI + i * Math.PI / 4; ctx.beginPath(); ctx.moveTo(2240, 720); ctx.lineTo(2240 + Math.cos(a) * 70, 720 + Math.sin(a) * 70); ctx.lineWidth = 4; ctx.stroke(); }
     });
     layers.push({ canvas: fg, parallax: 1.3, kind: 'fg' });
-    return { layers, lights };
+    return { layers, lights, chimneys };
+  },
+
+  makeLife(G) {
+    const b = this.built || {};
+    const list = [
+      ...(b.chimneys || []).map((c) => new Smoke({ x: c.x, y: c.y, rate: 0.9, size: 0.8 })),
+      new Drip({ x: 120, y: 128, ground: GROUND - 6 }),
+      new Drip({ x: 460, y: 128, ground: GROUND - 6, period: 3.4 }),
+      new Rat({ x0: 840, x1: 1360, y: GROUND + 18, seed: 5 }),
+      new Crow({ x: 1420, y: 424, facing: -1, seed: 9 }),
+      new Moths({ x: 230, y: 440 }),
+      new Ripples({ x: 1100, y: GROUND + 70, w: 220 }),
+    ];
+    if (!isMob(G)) list.push(new Train());
+    return list;
   },
 
   actors(G) {
     const list = [];
-    const brennan = new Actor('Brennan', { x: 1180, y: GROUND, h: 222, hat: 'cap', coat: '#3b302a', coatLen: 0.66, apron: '#3a2416', build: 1.35, facing: 1, trousers: '#2a2420' });
+    const brennan = new Actor('Brennan', { x: 1180, y: GROUND, h: 222, hat: 'cap', hatColor: '#2a241e', coat: '#4a3e34', coatLen: 0.66, apron: '#3a2416', build: 1.35, facing: 1, trousers: '#2a2420', rolled: true, beard: '#2e2216', hair: '#2e2216' });
     list.push(brennan);
+    const wren = { h: 128, hat: 'cap', hatColor: '#2e2a26', coat: '#4a4036', skirt: true, patches: true, shawl: '#3a3a44', hair: '#5a3a22', boots: '#1a1612' };
     if (!isMob(G)) {
-      list.push(new Actor('Wren', { x: 1474, y: GROUND - 74, h: 128, hat: 'cap', coat: '#4a4036', skirt: true, facing: -1, z: 2 }));
+      list.push(new Actor('Wren', { ...wren, x: 1474, y: GROUND - 74, facing: -1, z: 2 }));
     } else {
       brennan.x = 980; brennan.facing = 1; brennan.pose = 'cower';
       const coats = ['#2a2620', '#30302c', '#1f2226', '#3a3026', '#28241f', '#33302a'];
+      const extras = [
+        { hat: 'cap', moustache: '#3a2a1e' }, { hat: 'bowler', beard: '#2a2018' }, { hat: 'none', hair: '#3a2a1a', rolled: true },
+        { hat: 'shawl', skirt: true, shawl: '#2e2a30' }, { hat: 'cap', apron: '#4a4438' }, { hat: 'bowler', moustache: '#5a4a3a', stoop: 1 },
+        { hat: 'cap', scarf: '#4a2a22' }, { hat: 'bonnet', skirt: true }, { hat: 'cap', beard: '#3a3026', build: 1.2 },
+      ];
       for (let i = 0; i < 9; i++) {
-        list.push(new Actor(`Vecino${i}`, { x: 1180 + i * 95 + (i % 2) * 20, y: GROUND, h: 190 + (i * 13) % 30, hat: ['cap', 'bowler', 'none', 'shawl', 'cap'][i % 5], skirt: i % 5 === 3, coat: coats[i % coats.length], facing: -1, build: 0.95 + (i % 3) * 0.08 }));
+        list.push(new Actor(`Vecino${i}`, { x: 1180 + i * 95 + (i % 2) * 20, y: GROUND, h: 190 + (i * 13) % 30, coat: coats[i % coats.length], facing: -1, build: 0.95 + (i % 3) * 0.08, ...extras[i] }));
       }
-      list.push(new Actor('Wren', { x: 2040, y: GROUND, h: 128, hat: 'cap', coat: '#4a4036', skirt: true, facing: -1 }));
+      list.push(new Actor('Wren', { ...wren, x: 2040, y: GROUND, facing: -1 }));
     }
     return list;
   },
