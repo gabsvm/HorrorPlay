@@ -1,5 +1,6 @@
 // DOM user interface: dialogue, choices, documents, notebook, inventory, cards.
 import { audio } from './audio.js';
+import { prefs } from './prefs.js';
 import { pixelize } from '../art/pixel.js';
 
 const $ = (id) => document.getElementById(id);
@@ -65,7 +66,8 @@ export class UI {
     let done = false;
     let skip = false;
     this._advance = () => { skip = true; };
-    const speed = style === 'voice' ? 55 : 22;
+    const speed = (style === 'voice' ? 55 : 22) * prefs.text;
+    if (!speed) skip = true;
     if (style !== 'thought' && style !== 'voice') this._portraitMode = 'talk';
     for (let i = 1; i <= plain.length && !skip; i++) {
       dlgText.textContent = plain.slice(0, i);

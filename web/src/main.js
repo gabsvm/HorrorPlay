@@ -1,3 +1,4 @@
+import { prefs, savePrefs, cycle, labelOf, VOLUMES, SPEEDS } from './engine/prefs.js';
 import { Game, freshState } from './engine/game.js';
 import { audio } from './engine/audio.js';
 import { ITEMS, CLUES, DEDUCTIONS } from './story/data.js';
@@ -32,6 +33,35 @@ function begin(chapterId, snapshot) {
   game.startChapter(chapterId);
 }
 
+function optionsMenu(back) {
+  const render = () => game.ui.menu([
+    { label: `Volumen: ${labelOf(VOLUMES, prefs.volume)}`, action: () => { prefs.volume = cycle(VOLUMES, prefs.volume); audio.setVolume(prefs.volume); savePrefs(); render(); } },
+    { label: `Texto: ${labelOf(SPEEDS, prefs.text)}`, action: () => { prefs.text = cycle(SPEEDS, prefs.text); savePrefs(); render(); } },
+    { label: 'Volver', action: back },
+  ]);
+  render();
+}
+
+async function credits() {
+  game.ui.hideMenu();
+  await game.ui.doc(`<h3>El Huésped</h3>
+    <p class="small" style="text-align:center">Whitechapel, 1888</p>
+    <p>Idea y dirección: <b>gabsvm</b>.</p>
+    <p>Programación, arte procedural, sonido sintetizado y textos desarrollados con Claude (Anthropic).</p>
+    <p class="small">Grabaciones CC0: lluvia de Ylmir, tormenta de kindland y bucles de agua de rubberduck (OpenGameArt); pasos de TinyWorlds (OpenGameArt); pasos de madera, puertas, telas y papeles de Kenney (kenney.nl).</p>
+    <p class="small">Tipografías: IM Fell English (Igino Marini) y Special Elite (Astigmatic), bajo la licencia SIL Open Font.</p>
+    <p class="small">Mary Ann Nichols, Annie Chapman, Elizabeth Stride, Catherine Eddowes y Mary Jane Kelly existieron. Thomas Ashgrove, el Huésped y el resto de personajes son ficticios.</p>
+    <p class="hand" style="text-align:center">En memoria de las cinco.</p>`);
+  mainMenu();
+}
+
+function resumeGame(r) {
+  audio.init();
+  game.ui.hideMenu();
+  game.inMenu = false;
+  game.resume(r);
+}
+
 function mainMenu() {
   game.inMenu = true;
   game.stage.classList.remove('cinema');
@@ -40,9 +70,13 @@ function mainMenu() {
   const saved = Game.loadSave();
   const unlocked = Game.unlocked();
   const items = [];
-  if (saved && saved.chapter) items.push({ label: 'Continuar', action: () => begin(saved.chapter, Game.chapterSnapshot(saved.chapter) || saved) });
+  const resumePoint = Game.loadResume();
+  if (resumePoint && resumePoint.state && resumePoint.state.scene) items.push({ label: 'Continuar', action: () => resumeGame(resumePoint) });
+  else if (saved && saved.chapter) items.push({ label: 'Continuar', action: () => begin(saved.chapter, Game.chapterSnapshot(saved.chapter) || saved) });
   items.push({ label: 'Nueva partida', action: () => { Game.clearSave(); game.introNext = true; begin('prologue'); } });
   if (unlocked.length > 1) items.push({ label: 'Capítulos', action: () => chapterMenu() });
+  items.push({ label: 'Opciones', action: () => optionsMenu(() => mainMenu()) });
+  items.push({ label: 'Créditos', action: () => credits() });
   game.ui.menu(items);
   menuBackdrop();
 }
@@ -76,10 +110,12 @@ game.onPause = () => {
   if (game.ui.notebookOpen) game.ui.closeNotebook();
   game.paused = true; game.inMenu = true;
   game.ui.hover(null);
-  game.ui.menu([
+  const pauseMenu = () => game.ui.menu([
     { label: 'Continuar', action: () => { game.paused = false; game.inMenu = false; game.ui.hideMenu(); } },
+    { label: 'Opciones', action: () => optionsMenu(pauseMenu) },
     { label: 'Volver al menú', action: () => { game.paused = false; game.ui.hideMenu(); mainMenu(); } },
   ]);
+  pauseMenu();
 };
 document.getElementById('btn-menu').addEventListener('click', () => game.onPause());
 

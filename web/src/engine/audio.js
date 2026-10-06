@@ -5,6 +5,7 @@
 const SAMPLES = ['rain', 'storm', 'river', 'step_stone', 'step_gravel', 'step_mud', 'step_wood0', 'step_wood1', 'step_wood2',
   'step_wood3', 'step_wood4', 'door_open', 'door_close', 'creak1', 'creak2', 'creak3', 'cloth1', 'cloth2', 'leather',
   'book_open', 'book_close', 'book_flip1', 'book_flip2', 'latch', 'metal_click', 'knife'];
+import { prefs } from './prefs.js';
 
 class AudioEngine {
   constructor() {
@@ -18,7 +19,7 @@ class AudioEngine {
     if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     this.ctx = ctx;
-    this.master = ctx.createGain(); this.master.gain.value = 0.9;
+    this.master = ctx.createGain(); this.master.gain.value = 0.9 * prefs.volume;
     const comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -16; comp.ratio.value = 3;
     this.master.connect(comp).connect(ctx.destination);
@@ -32,6 +33,10 @@ class AudioEngine {
     // whatever the scene asked for before the first click can start now
     if (this.wantBeds) this.setBeds(this.wantBeds, 1.5);
     if (this.wantMusic) this.playMusic(this.wantMusic);
+  }
+
+  setVolume(v) {
+    if (this.ctx) this.master.gain.setTargetAtTime(0.9 * v, this.ctx.currentTime, 0.05);
   }
 
   // ------------------------------------------------------------ recordings

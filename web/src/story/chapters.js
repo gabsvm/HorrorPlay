@@ -102,6 +102,9 @@ export function makeChapters() {
   };
 
   const hooks = {
+    // after loading a resume point: the boy in the prologue, the inspector after it
+    restoreLook(G) { look(G, G.state.chapter === 'prologue' ? 'child' : 'adult'); },
+
     // ------------------------------------------------------------ prologue
     async prologueBoat(G) {
       G.player.pose = 'kneel';

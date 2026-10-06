@@ -64,6 +64,7 @@ export default {
   beds: { rain: 0.3, wind: 0.3, drone: 0.1 },
   music: 'dread',
   variant: (G) => (isMob(G) ? 'mob' : 'calm'),
+  canSave: (G) => !isMob(G),
 
   build(R, G) {
     const mob = isMob(G);

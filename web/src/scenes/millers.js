@@ -11,6 +11,7 @@ export default {
   id: 'millers',
   width: WIDTH,
   groundY: GROUND,
+  noSave: true,
   reflectY: 640,
   walk: [140, 1240],
   spawn: 160,

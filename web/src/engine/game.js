@@ -244,7 +244,7 @@ export class Game {
     try { await fn(this.G); } catch (err) { console.error(err); }
     finally {
       this.running--;
-      if (!this.running) { this.ui.busy(false); this.ui.hideDialogue(); if (!this.zoomTarget?.hold) this.zoomTarget = null; }
+      if (!this.running) { this.ui.busy(false); this.ui.hideDialogue(); if (!this.zoomTarget?.hold) this.zoomTarget = null; this.autosave(); }
     }
   }
 
@@ -521,7 +521,40 @@ export class Game {
     try { const s = localStorage.getItem(SAVE_KEY); return s ? JSON.parse(s) : null; } catch { return null; }
   }
 
-  static clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch { /* ignore */ } }
+  static clearSave() { try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(`${SAVE_KEY}.resume`); } catch { /* ignore */ } }
+
+  // A resume point: the whole state plus where Ashgrove stands. Written every time a script ends
+  // and the player gets control back, except in scenes that are one continuous script.
+  autosave() {
+    const sc = this.scene;
+    if (!sc || this.inMenu || window.FAST || !this.state.chapter || !this.player.visible) return;
+    if (sc.noSave || (sc.canSave && !sc.canSave(this.G))) return;
+    try { localStorage.setItem(`${SAVE_KEY}.resume`, JSON.stringify({ state: this.state, x: Math.round(this.player.x), facing: this.player.facing, at: Date.now() })); } catch { /* storage unavailable */ }
+  }
+
+  static loadResume() {
+    try { const s = localStorage.getItem(`${SAVE_KEY}.resume`); return s ? JSON.parse(s) : null; } catch { return null; }
+  }
+
+  async resume(r) {
+    this.state = JSON.parse(JSON.stringify(r.state));
+    this.selectedItem = null;
+    this.madTarget = 0;
+    this.r.fx.desat = 0; this.r.fx.mad = 0;
+    this.stage.classList.remove('cinema');
+    if (this.chapterHooks.restoreLook) this.chapterHooks.restoreLook(this.G);
+    this.ui.showHud(this.state.chapter !== 'prologue');
+    this.ui.setSanity(this.state.sanity);
+    this.ui.setObjective(this.state.objective || '');
+    this.ui.setBadge(this.state.unread || 0);
+    this.ui.setDate(this.state.date || '', this.state.clock || '');
+    this.refreshInventory();
+    this.r.fx.fade = 1;
+    await this.run(async () => {
+      await this.goto(this.state.scene, { x: r.x, facing: r.facing, fade: false });
+      await this.fadeTo(0, 1200);
+    });
+  }
 
   static unlocked() {
     try { return JSON.parse(localStorage.getItem(`${SAVE_KEY}.unlocked`) || '["prologue"]'); } catch { return ['prologue']; }

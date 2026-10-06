@@ -13,6 +13,7 @@ export default {
   id: 'alleys',
   width: WIDTH,
   groundY: GROUND,
+  noSave: true,
   walk: [100, 4100],
   spawn: 160,
   lantern: true,
