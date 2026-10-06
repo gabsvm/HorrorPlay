@@ -39,9 +39,36 @@ web/
   tools/serve.py            servidor de desarrollo sin caché
 ```
 
-Todo el arte se pinta por código con una sola paleta y se ilumina en un único pase de shader (albedo × mapa de luz, niebla iluminada, halos y reflejos en el suelo mojado). El audio también es procedural. No hay assets de terceros.
+### Dirección de arte: pixel-art HD
+
+Todo el arte se pinta por código a resolución completa, se reduce a una rejilla de 640×360 y se ajusta a una única paleta curada (`src/art/pixel.js`) con un *dithering* ordenado suave. Así fachadas, objetos y personajes comparten el mismo acabado. La luz y la niebla se mantienen suaves por encima, en un único pase de shader: albedo × mapa de luz, niebla iluminada con conos de luz bajo las farolas, halos, reflejos en el suelo mojado y salpicaduras de lluvia.
+
+- `src/art/paint.js`: biblioteca de materiales y mobiliario urbano (ladrillo en aparejo flamenco, ventanas de guillotina, adoquines de granito, farolas de hierro, carteles, letreros, cables...).
+- `src/art/build.js`: composiciones (fachadas, almacenes, horizontes con hitos como Christ Church, San Pablo o los gasómetros, e interiores).
+- `src/engine/actor.js`: personajes procedurales con anatomía, ciclo de paso, vestuario, caras de perfil y miradas por encima del hombro, convertidos en sprites en cada fotograma.
+- `src/engine/life.js`: vida ambiental (humo, goteras, ratas, gatos, cuervos, siluetas tras las cortinas, polillas, periódicos al viento, ondas en los charcos).
+
+El audio también es procedural, con música compuesta para cada estado: cuerdas para la tensión, una caja de música para los recuerdos y un pulso para la persecución. No hay assets de terceros.
 
 ## Pruebas
+
+Sin navegador, desde la raíz del repositorio:
+
+```bash
+node web/tools/smoke.mjs
+```
+
+```bash
+node web/tools/walk.mjs
+```
+
+```bash
+node web/tools/audio-smoke.mjs
+```
+
+- `smoke.mjs` pinta todas las escenas y sus variantes y renderiza fotogramas contra un canvas/WebGL simulado y estricto (detecta radios negativos, coordenadas no finitas, errores de código).
+- `walk.mjs` arranca el juego real con un DOM simulado y juega la partida entera, del prólogo a los créditos.
+- `audio-smoke.mjs` ejecuta todos los sonidos y la música contra un grafo de Web Audio simulado.
 
 Con el juego abierto en el navegador, en la consola:
 

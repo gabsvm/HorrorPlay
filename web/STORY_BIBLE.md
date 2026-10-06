@@ -119,6 +119,6 @@ Cada deducción correcta añade un rasgo al **Perfil del sospechoso**: *zurdo, s
 
 ## 8. Reglas de producción
 
-- Todo el arte se pinta por código con una sola paleta (`src/art/palette.js`). No se usan packs de terceros.
+- Todo el arte se pinta por código y se termina como pixel-art HD (640×360, una paleta curada en `src/art/pixel.js`) con iluminación suave por encima. No se usan packs de terceros.
 - No se muestra gore. La violencia ocurre fuera de plano y se cuenta por sus consecuencias humanas.
 - Los diálogos son breves: nunca más de tres líneas seguidas sin que el jugador haga algo.
