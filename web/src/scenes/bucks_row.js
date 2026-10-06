@@ -120,11 +120,12 @@ export default {
 
   drawNear(ctx, t) {
     // Polly Nichols where the carter found her, Neil's cape over her, waiting for the mortuary barrow
-    const gone = !this.G || this.G.flag('polly_taken');
+    const gone = !this.G || this.G.flag('polly_taken') || this.G.game.inMenu;
     const L = this.lights && this.lights.find((l) => l.id === 'bodylamp');
     if (L) L.off = gone;
     if (!gone) groundLantern(ctx, 892, GROUND + 22);
-    if (this.G && !this.G.flag('polly_taken')) drawCorpse(ctx, t, { key: 'polly', x: 800, y: GROUND + 20, h: 150, cover: '#161c30', look: { hat: 'bonnet', hatColor: '#0e0d0d', coat: '#4a3a2c', hair: '#4a3a2a' } });
+    if (!gone) drawCorpse(ctx, t, { key: 'polly', x: 800, y: GROUND + 20, h: 150, cover: '#161c30', look: { hat: 'none', coat: '#4a3a2c', hair: '#4a3a2a' } });
+    if (!gone) { ctx.fillStyle = '#0e0d0d'; ctx.beginPath(); ctx.ellipse(712, GROUND + 26, 14, 6, 0.3, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#2a2622'; ctx.fillRect(700, GROUND + 22, 22, 2); }
   },
 
   actors() {
@@ -216,7 +217,7 @@ export default {
       act: async (G) => {
         const b = G.actor('Chico'); b.talking = true;
         if (!G.hasClue('silencio')) {
-          await G.say('Chico', 'Mi madre dice que hay que fregarlo antes de que la gente se despierte y venga a mirar.');
+          await G.say('Chico', 'Mi madre dice que en cuanto se la lleven hay que fregarlo, antes de que la gente se despierte y venga a mirar.');
           await G.say('Chico', 'Ella duerme ahí mismo, detrás de esa ventana. Lo oye todo: los gatos, los borrachos, los trenes. Y esta noche no oyó nada, señor. Nada.');
           G.clue('silencio');
           b.talking = false;
@@ -239,6 +240,13 @@ export default {
     {
       id: 'polly', name: 'El cuerpo de Polly Nichols', verb: 'Examinar', when: (G) => !G.flag('polly_taken'), rect: [690, GROUND - 30, 200, 70], walk: 930, face: -1, gesture: false,
       act: async (G) => {
+        const first = !G.flag('polly_seen');
+        G.flag('polly_seen', true);
+        if (first) {
+          const neil = G.actor('Neil'); neil.talking = true;
+          await G.say('Neil', 'Le eché la capa por encima, señor. No me parecía bien dejarla así, con la cara al aire.');
+          neil.talking = false;
+        }
         await G.think('Levanto la capa de Neil.');
         await G.inspect('polly', {
           title: 'Mary Ann "Polly" Nichols', body: 'nichols',

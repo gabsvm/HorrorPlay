@@ -130,7 +130,7 @@ export default {
 
   drawNear(ctx, t) {
     // Annie Chapman between the steps and the fence, under the sacking Phillips threw over her
-    if (this.G && !this.G.flag('annie_taken')) drawCorpse(ctx, t, { key: 'annie', x: 650, y: GROUND + 14, h: 150, cover: '#5a4a36', look: { hat: 'none', coat: '#2a2420', hair: '#3a2a20', eyesClosed: true } });
+    if (this.G && !this.G.flag('annie_taken') && !this.G.game.inMenu) drawCorpse(ctx, t, { key: 'annie', x: 770, y: GROUND + 14, h: 150, cover: '#5a4a36', look: { hat: 'none', coat: '#2a2420', hair: '#3a2a20', eyesClosed: true } });
     // neighbours leaning out of the windows next door (they charge a penny for the view)
     for (const [x, y, k] of [[1370, 262, 0], [1730, 262, 1], [1550, 506, 2]]) {
       ctx.fillStyle = '#16120f';
@@ -139,7 +139,7 @@ export default {
       ctx.fillStyle = '#4a3a30'; ctx.fillRect(x - 6 + Math.sin(t * 0.7 + k) * 2, y - 2, 12, 10);
       if (k === 0) { ctx.fillStyle = '#16120f'; ctx.beginPath(); ctx.ellipse(x, y - 4, 16, 18, 0, Math.PI, 0); ctx.fill(); }
     }
-    if (!this.G?.has('peine') && !this.G?.flag('peine_taken')) { ctx.fillStyle = '#5a4630'; ctx.fillRect(760, GROUND + 6, 22, 5); ctx.fillStyle = '#2a1e14'; for (let i = 0; i < 6; i++) ctx.fillRect(761 + i * 3.5, GROUND + 10, 2, 3); }
+    if (!this.G?.has('peine') && !this.G?.flag('peine_taken')) { ctx.fillStyle = '#5a4630'; ctx.fillRect(990, GROUND + 10, 22, 5); ctx.fillStyle = '#2a1e14'; for (let i = 0; i < 6; i++) ctx.fillRect(991 + i * 3.5, GROUND + 14, 2, 3); }
     // the leather apron by the tap
     ctx.fillStyle = '#4a2e1c';
     ctx.beginPath(); ctx.moveTo(1610, GROUND - 4); ctx.quadraticCurveTo(1640, GROUND - 30, 1700, GROUND - 8); ctx.lineTo(1706, GROUND + 6); ctx.lineTo(1604, GROUND + 6); ctx.fill();
@@ -151,7 +151,7 @@ export default {
     if (G.flag('hb_intro')) return;
     G.flag('hb_intro', true);
     G.date('8 de septiembre de 1888', '6:20');
-    await G.walk(800);
+    await G.walk(560);
     await G.think('En la calle hay vecinos cobrando un penique por asomarse a la ventana a mirar el patio.');
     const pike = G.actor('Pike'); pike.facing = -1;
     await G.say('Pike', 'Annie Chapman. Cuarenta y siete años. Vendía flores y ganchillo cuando estaba sana. Ya no lo estaba.');
@@ -244,7 +244,7 @@ export default {
       },
     },
     {
-      id: 'comb', name: 'Algo junto a la valla', when: (G) => !G.flag('peine_taken'), rect: [740, GROUND - 6, 70, 30], walk: 720, face: 1,
+      id: 'comb', name: 'Algo junto a la valla', when: (G) => !G.flag('peine_taken'), rect: [970, GROUND - 2, 70, 30], walk: 1060, face: -1,
       act: async (G) => {
         G.player.pose = 'kneel';
         await G.think('Un peine de bolsillo con dos púas rotas, apartado de las otras cosas. Se les ha pasado.');
@@ -282,7 +282,7 @@ export default {
       },
     },
     {
-      id: 'annie', name: 'El cuerpo de Annie Chapman', verb: 'Examinar', when: (G) => !G.flag('annie_taken'), rect: [560, GROUND - 30, 180, 60], walk: 790, face: -1, gesture: false,
+      id: 'annie', name: 'El cuerpo de Annie Chapman', verb: 'Examinar', when: (G) => !G.flag('annie_taken'), rect: [690, GROUND - 30, 170, 60], walk: 640, face: 1, gesture: false,
       act: async (G) => {
         await G.think('Aparto el saco.');
         await G.inspect('annie', {

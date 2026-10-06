@@ -67,6 +67,7 @@ export class Actor {
   }
 
   walkTo(x, { speed } = {}) {
+    if (this.pose === 'write') this.pose = null;
     if (this._resolve) this._resolve(false);
     this._target = x;
     this._speed = speed || this.speed;

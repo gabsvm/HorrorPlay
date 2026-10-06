@@ -173,7 +173,7 @@ export default {
       },
     },
     {
-      id: 'corner', name: 'La esquina más oscura', rect: [700, GROUND - 10, 260, 70], walk: 820,
+      id: 'corner', name: 'El cuerpo, en la esquina más oscura', verb: 'Examinar', rect: [700, GROUND - 30, 260, 90], walk: 690, face: 1, gesture: false,
       act: async (G) => {
         if (!G.flag('mitre_badge')) { await G.think('Watkins no me deja acercarme sin enseñarle la placa.'); return; }
         await G.think('El rincón donde no llega la farola. Desde aquí no se ve ninguna ventana con luz.');
@@ -212,6 +212,16 @@ export default {
             } },
           ],
         });
+        const seen = G.state.seen['insp:kate'] || {};
+        if (seen.pulso && !G.flag('watkins_touch')) {
+          G.flag('watkins_touch', true);
+          const w = G.actor('Watkins'); w.facing = 1; w.talking = true;
+          await G.say('Agente Watkins', '¡Le he dicho que no la toque! ¿Qué hace con las manos en ella?');
+          w.talking = false;
+          const c = await G.choice(['Buscarle el pulso.', '(Esconder las manos en los bolsillos)']);
+          if (c === 0) { w.talking = true; await G.say('Agente Watkins', '¿El pulso? Mírela, inspector. Mírela bien.'); w.talking = false; }
+          else { await G.think('Meto las manos en los bolsillos del abrigo. Están pegajosos por dentro también.'); G.sanity(-2); }
+        }
       },
     },
     {

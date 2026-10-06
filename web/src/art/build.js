@@ -369,7 +369,8 @@ export function fgDressing(ctx, width, { seed = 1, indoor = false } = {}) {
   ctx.fillStyle = '#040506'; ctx.strokeStyle = '#040506';
   let x = r.range(200, 700);
   while (x < width - 100) {
-    const kind = indoor ? r.pick(['lampChain', 'swag', 'chair']) : r.pick(['chain', 'laundry', 'railing', 'barrel', 'chain', 'laundry']);
+    // only things hanging from above: anything at the bottom could hide what lies on the ground
+    const kind = indoor ? r.pick(['lampChain', 'swag']) : r.pick(['chain', 'laundry']);
     if (kind === 'chain') {
       // a hoist chain hanging from a beam out of shot, with its hook
       const len = r.range(90, 200);

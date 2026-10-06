@@ -207,7 +207,7 @@ export class UI {
   // ------------------------------------------------------------ crime-scene close-up
   // A painted close-up explored in the dark: the pointer carries the lantern, and anything worth
   // examining names itself when the light falls on it. `onPoint(point)` runs the examination.
-  async inspect({ title, paint, points, seen = {} }, onPoint) {
+  async inspect({ title, paint, points, seen = {}, fx = null }, onPoint) {
     const box = $('inspect'), img = $('insp-img'), dark = $('insp-dark'), label = $('insp-label');
     this.hideDialogue();
     const hi = document.createElement('canvas'); hi.width = 1280; hi.height = 720;
@@ -217,7 +217,7 @@ export class UI {
     $('insp-title').textContent = title || '';
     box.classList.remove('hidden', 'busy');
     const dc = dark.getContext('2d');
-    let lx = 640, ly = 360, hover = null, busy = false, closed = false, raf = 0;
+    let lx = 640, ly = 360, hover = null, armed = null, busy = false, closed = false, raf = 0;
     const toLocal = (e) => { const r = box.getBoundingClientRect(); return { x: ((e.clientX - r.left) / r.width) * 1280, y: ((e.clientY - r.top) / r.height) * 720 }; };
     const at = (x, y) => points.find((p) => Math.hypot(p.x - x, p.y - y) < (p.r || 60)) || null;
     const draw = () => {
@@ -245,6 +245,10 @@ export class UI {
         dc.lineWidth = 1;
         dc.beginPath(); dc.arc(p.x / 2, p.y / 2, (seen[p.id] ? 4 : 6) + Math.sin(t * 4) * 1, 0, Math.PI * 2); dc.stroke();
       }
+      // the shocks of the scene reach the close-up: a wash of red, a jolt
+      const f = fx ? fx() : null;
+      if (f && f.red > 0.01) { dc.fillStyle = `rgba(130,0,0,${Math.min(0.6, f.red * 0.6)})`; dc.fillRect(0, 0, 640, 360); }
+      box.style.transform = f && f.shake > 0.5 ? `translate(${(Math.random() - 0.5) * f.shake * 0.4}px, ${(Math.random() - 0.5) * f.shake * 0.3}px)` : '';
       raf = requestAnimationFrame(draw);
     };
     draw();
@@ -255,14 +259,24 @@ export class UI {
       label.style.left = `calc(${hover.x} * var(--u))`; label.style.top = `calc(${hover.y} * var(--u))`;
     };
     const move = (e) => { const p = toLocal(e); lx = p.x; ly = p.y; hover = at(lx, ly); box.style.cursor = hover && !busy ? 'pointer' : 'none'; showLabel(); };
+    const tally = () => {
+      const n = points.filter((p) => seen[p.id]).length;
+      $('insp-hint').textContent = n ? `Examinado: ${n} de ${points.length}` : this.coarse ? 'Toca para llevar la luz; toca otra vez para examinar.' : 'Mueve la luz. Haz clic en lo que quieras examinar.';
+      $('insp-close').classList.toggle('done', n === points.length);
+    };
+    tally();
     const down = async (e) => {
       if (e.target.id === 'insp-close') return;
+      if (this._advance) { this.advance(); return; }
       move(e);
       if (busy || !hover) return;
+      // on a touch screen the first tap brings the light and names the thing; the second examines it
+      if (e.pointerType === 'touch' && armed !== hover) { armed = hover; return; }
+      armed = null;
       busy = true; box.classList.add('busy'); showLabel();
       audio.click();
       const p = hover;
-      try { await onPoint(p); } finally { seen[p.id] = true; this.hideDialogue(); busy = false; box.classList.remove('busy'); showLabel(); }
+      try { await onPoint(p); } finally { seen[p.id] = true; this.hideDialogue(); busy = false; box.classList.remove('busy'); tally(); showLabel(); }
     };
     box.addEventListener('pointermove', move);
     box.addEventListener('pointerdown', down);
@@ -275,7 +289,7 @@ export class UI {
     this._inspectClose = null;
     box.removeEventListener('pointermove', move);
     box.removeEventListener('pointerdown', down);
-    box.classList.add('hidden'); label.classList.add('hidden');
+    box.classList.add('hidden'); label.classList.add('hidden'); box.style.transform = '';
   }
 
   // A flash of something he does not remember doing, a few frames long, twice.

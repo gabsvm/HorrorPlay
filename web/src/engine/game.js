@@ -604,10 +604,10 @@ export class Game {
         p.pose = 'kneel';
         if (window.FAST) { for (const pt of points) { await pt.act(G); seen[pt.id] = true; } }
         else {
+          // the scene stays black behind the close-up, and comes back when he stands up
           await G.fade(1, 450);
-          game.r.fx.fade = 0;
-          await game.ui.inspect({ title, paint: (ctx, w, h) => paintBody(ctx, w, h, body), points, seen }, (pt) => pt.act(G));
-          game.r.fx.fade = 1; await G.fade(0, 600);
+          await game.ui.inspect({ title, paint: (ctx, w, h) => paintBody(ctx, w, h, body), points, seen, fx: () => ({ red: game.r.fx.red, shake: game.r.cam.shake }) }, (pt) => pt.act(G));
+          await G.fade(0, 600);
         }
         p.pose = null;
       },
