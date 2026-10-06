@@ -29,10 +29,10 @@ button { font-family: var(--sc); color: var(--ink); background: none; border: 0;
 @media (orientation: portrait) and (max-width: 900px) { #rotate { display: flex; } }
 
 /* Cinematic letterbox */
-.bar { position: absolute; left: 0; right: 0; height: calc(64 * var(--u)); background: #000; pointer-events: none; transition: transform 1.2s cubic-bezier(.6,0,.2,1); z-index: 0; }
-#bar-top { top: 0; transform: translateY(-100%); }
-#bar-bottom { bottom: 0; transform: translateY(100%); }
-#stage.cinema #bar-top, #stage.cinema #bar-bottom { transform: none; }
+.bar { position: absolute; left: 0; right: 0; height: 0; background: #000; pointer-events: none; transition: height 1.2s cubic-bezier(.6,0,.2,1); z-index: 0; }
+#bar-top { top: 0; }
+#bar-bottom { bottom: 0; }
+#stage.cinema .bar { height: calc(64 * var(--u)); }
 #stage.cinema #hud { opacity: 0; transition: opacity .6s; }
 
 /* HUD */

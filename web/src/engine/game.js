@@ -290,7 +290,7 @@ export class Game {
       const target = this.camTarget();
       this.r.cam.x += (target - this.r.cam.x) * Math.min(1, dt * 3.2);
       this.r.cam.shake = Math.max(0, this.r.cam.shake - dt * 20);
-      const sanityMad = Math.max(0, (65 - this.state.sanity) / 65);
+      const sanityMad = Math.max(0, (65 - this.state.sanity) / 65) * 0.6;
       const mad = Math.max(sanityMad, this.madTarget);
       this.r.fx.mad += (mad - this.r.fx.mad) * Math.min(1, dt * 1.5);
       this.r.fx.flash = Math.max(0, this.r.fx.flash - dt * 2.5);

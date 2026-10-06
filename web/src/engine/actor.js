@@ -89,7 +89,7 @@ export class Actor {
   light() {
     if (!this.lantern || !this.lanternOn) {
       // the protagonist always keeps a faint fill so he never vanishes in the dark
-      return this.isPlayer ? { x: this.x, y: this.y - this.h * 0.55, r: this.h * 1.3, color: [0.55, 0.6, 0.7], intensity: 0.16, halo: 0, reflect: false } : null;
+      return this.isPlayer ? { x: this.x, y: this.y - this.h * 0.55, r: this.h * 1.3, color: [0.55, 0.6, 0.7], intensity: 0.24, halo: 0, reflect: false } : null;
     }
     const s = this.h / 200;
     return {

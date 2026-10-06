@@ -99,12 +99,16 @@ export default {
       ctx.fillStyle = '#6a5a30'; ctx.fillRect(700, GROUND - 150, 6, 50); ctx.fillRect(686, GROUND - 100, 34, 6);
       ctx.fillStyle = '#1f5a3e'; ctx.beginPath(); ctx.moveTo(672, GROUND - 150); ctx.lineTo(734, GROUND - 150); ctx.lineTo(722, GROUND - 170); ctx.lineTo(684, GROUND - 170); ctx.fill();
       ctx.fillStyle = 'rgba(160,255,200,0.2)'; ctx.fillRect(684, GROUND - 168, 38, 3);
+      // a second gas bracket above the case files
+      ctx.fillStyle = '#4a3e28'; ctx.fillRect(1318, GROUND - 426, 24, 6); ctx.fillRect(1328, GROUND - 436, 4, 12);
+      ctx.fillStyle = '#e8d4a0'; ctx.beginPath(); ctx.ellipse(1330, GROUND - 442, 7, 9, 0, 0, Math.PI * 2); ctx.fill();
       // gas bracket on the wall by the door
       ctx.fillStyle = '#4a3e28'; ctx.fillRect(250, 196, 24, 6); ctx.fillRect(266, 186, 4, 12);
       ctx.fillStyle = '#e8d4a0'; ctx.beginPath(); ctx.ellipse(268, 182, 7, 9, 0, 0, Math.PI * 2); ctx.fill();
     });
     lights.push({ id: 'lamp', x: 703, y: GROUND - 140, r: 560, color: [0.95, 0.85, 0.55], intensity: 1.0, flicker: 0.04, halo: 50 });
     lights.push({ id: 'gas', x: 268, y: 182, r: 360, color: P.gas, intensity: 0.45, flicker: 0.08, halo: 40 });
+    lights.push({ id: 'gas2', x: 1330, y: GROUND - 440, r: 380, color: P.gas, intensity: 0.5, flicker: 0.08, halo: 34 });
     const fg = R.paintLayer(WIDTH * 1.2, (ctx) => {
       ctx.fillStyle = '#040404'; ctx.fillRect(0, 0, 60, 720); ctx.fillRect(1700, 0, 100, 720);
     });

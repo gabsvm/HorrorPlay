@@ -73,8 +73,8 @@ void main(){
   // grain on the pixel grid, plus ordered dither so smooth light falls off in clean pixel bands
   vec2 px = floor(vUv * uRes);
   float g = hash(px + fract(uTime * 7.31) * 100.0) - 0.5;
-  col += g * (0.03 + 0.05 * m);
-  col += bayer(px) / 40.0;
+  col += g * (0.02 + 0.05 * m);
+  col += bayer(px) / 110.0;
   // pulses and fades
   col = mix(col, vec3(0.55, 0.03, 0.02), uRedFlash);
   col = mix(col, vec3(0.95, 0.97, 1.0), uFlash);
@@ -165,7 +165,7 @@ export class Renderer {
 
   // Paint a static layer once at full logical resolution, then reduce it to the pixel grid
   // and snap it to the palette. `width` is in logical px.
-  paintLayer(width, painter, height = H, { dither = 14 } = {}) {
+  paintLayer(width, painter, height = H, { dither = 9 } = {}) {
     const c = mk2d(Math.ceil(width), Math.ceil(height));
     const ctx = c.getContext('2d');
     painter(ctx, width, height);
