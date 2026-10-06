@@ -111,7 +111,7 @@ export class Game {
   }
 
   toggleNotebook() {
-    if (this.running || !this.scene) return;
+    if (this.running || !this.scene || this.inMenu) return;
     if (this.ui.notebookOpen) this.ui.closeNotebook();
     else this.ui.openNotebook(this);
   }
@@ -162,6 +162,10 @@ export class Game {
       return;
     }
     const item = this.selectedItem;
+    {
+      const [hx, hy, hw, hh] = typeof h.rect === 'function' ? h.rect(this.G) : h.rect;
+      this.actingAt = { x: hx + hw / 2 - this.r.cam.x, y: Math.min(660, hy + hh / 2) };
+    }
     await this.run(async (G) => {
       if (h.walk != null) {
         const tx = typeof h.walk === 'function' ? h.walk(G) : h.walk;
@@ -362,7 +366,16 @@ export class Game {
     }
   }
 
+  // The satchel shows itself when the pointer goes near it, while an item is held, just after
+  // something new arrives, and always on touch screens.
+  updateSatchel() {
+    const p = this.pointer;
+    const show = !!this.selectedItem || p.touch || this.ui.coarse || this.ui.invHover || (p.inside && p.y > 560) || performance.now() < (this.invShowUntil || 0) || this.ui.notebookOpen;
+    this.ui.invTuck(!show);
+  }
+
   updateHover() {
+    this.updateSatchel();
     const p = this.pointer;
     const c = this.cursorEl;
     if (this.cursorItemEl && (!p.inside || p.touch || this.inMenu)) this.cursorItemEl.classList.add('hidden');
@@ -522,10 +535,11 @@ export class Game {
         const npc = !speaking && who ? game.actors.find((a) => a !== game.player && (a.name === who || a.name === who.split(' ').pop()) && a.visible) : null;
         const was = npc && npc.talking;
         if (npc) { npc.talking = true; if (!npc.pose && game.player.visible) npc.facing = game.player.x >= npc.x ? 1 : -1; }
-        try { await game.ui.say(who, text, opts); } finally { if (speaking) game.player.talking = false; if (npc && !was) npc.talking = false; }
+        const portrait = speaking ? game.player : npc;
+        try { await game.ui.say(who, text, { portrait, ...opts }); } finally { if (speaking) game.player.talking = false; if (npc && !was) npc.talking = false; }
       },
-      think: (text) => game.ui.say('Ashgrove', text, { style: 'thought' }),
-      voice: (text, opts = {}) => { audio.whisper(2.2, 0.16); return game.ui.say(opts.name ?? '', text, { style: 'voice', ...opts }); },
+      think: (text) => game.ui.say('Ashgrove', text, { style: 'thought', portrait: game.player.visible ? game.player : null }),
+      voice: (text, opts = {}) => { audio.whisper(2.2, 0.16); return game.ui.say(opts.name ?? '', text, { style: 'voice', portrait: game.player.visible ? game.player : null, ...opts }); },
       narrate: (text) => game.ui.say('', text, { style: 'thought' }),
       choice: (opts, o) => { game.ui.hideDialogue(); return game.ui.choice(opts, o); },
       doc: (html) => game.ui.doc(html),
@@ -561,6 +575,12 @@ export class Game {
         game.refreshInventory(id);
         game.ui.toast(`Obtienes: ${game.itemDefs[id].name}`);
         audio.pickup();
+        // the satchel opens to receive it and the icon flies there from where it was found
+        game.invShowUntil = performance.now() + 3200;
+        game.ui.invTuck(false);
+        const p = game.player, from = game.actingAt || { x: p.x - game.r.cam.x, y: p.y - p.h * 0.5 };
+        if (!window.FAST) game.ui.flyItem(game.itemDefs[id], id, from);
+        game.actingAt = null;
       },
       take: (id) => {
         game.state.items = game.state.items.filter((i) => i !== id);

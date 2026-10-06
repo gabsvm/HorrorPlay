@@ -70,10 +70,15 @@ async function menuBackdrop() {
 }
 
 game.onPause = () => {
-  if (game.inMenu || game.running) return;
+  if (game.running) return;
+  if (game.paused) { game.paused = false; game.inMenu = false; game.ui.hideMenu(); return; }
+  if (game.inMenu) return;
+  if (game.ui.notebookOpen) game.ui.closeNotebook();
+  game.paused = true; game.inMenu = true;
+  game.ui.hover(null);
   game.ui.menu([
-    { label: 'Continuar', action: () => game.ui.hideMenu() },
-    { label: 'Volver al menú', action: () => { game.ui.hideMenu(); mainMenu(); } },
+    { label: 'Continuar', action: () => { game.paused = false; game.inMenu = false; game.ui.hideMenu(); } },
+    { label: 'Volver al menú', action: () => { game.paused = false; game.ui.hideMenu(); mainMenu(); } },
   ]);
 };
 document.getElementById('btn-menu').addEventListener('click', () => game.onPause());
