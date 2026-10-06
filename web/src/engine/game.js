@@ -513,7 +513,11 @@ export class Game {
       say: async (who, text, opts) => {
         const speaking = (who === 'Ashgrove' || who === 'Thomas') && !(opts && opts.style);
         if (speaking) game.player.talking = true;
-        try { await game.ui.say(who, text, opts); } finally { if (speaking) game.player.talking = false; }
+        // the NPC who speaks moves their mouth and turns to whoever they are talking to
+        const npc = !speaking && who ? game.actors.find((a) => a !== game.player && (a.name === who || a.name === who.split(' ').pop()) && a.visible) : null;
+        const was = npc && npc.talking;
+        if (npc) { npc.talking = true; if (!npc.pose && game.player.visible) npc.facing = game.player.x >= npc.x ? 1 : -1; }
+        try { await game.ui.say(who, text, opts); } finally { if (speaking) game.player.talking = false; if (npc && !was) npc.talking = false; }
       },
       think: (text) => game.ui.say('Ashgrove', text, { style: 'thought' }),
       voice: (text, opts = {}) => { audio.whisper(2.2, 0.16); return game.ui.say(opts.name ?? '', text, { style: 'voice', ...opts }); },

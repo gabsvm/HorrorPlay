@@ -210,6 +210,7 @@ export default {
     if (!isMob(G)) {
       // Brennan works the grindstone with his left hand
       const b = G.actor('Brennan');
+      if (b) b.grind = !b.talking;
       if (b && !b.talking) { b.pose = 'reach'; b.facing = 1; }
     } else {
       for (const a of G.game.actors) if (a.name.startsWith('Vecino')) a.y = GROUND - Math.abs(Math.sin(this._t * 6 + a.x)) * 3;

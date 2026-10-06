@@ -14,6 +14,7 @@ const DEF = {
 
 const TAU = Math.PI * 2;
 const STRIDE = 50;           // distance the body travels in half a walk cycle (logical px at h = 200)
+const TURN = 0.17;           // seconds spent facing the viewer when turning round
 
 // a capsule between two points
 function limb(ctx, x0, y0, x1, y1, w0, w1) {
@@ -80,7 +81,18 @@ export class Actor {
     this.idleT += dt;
     const s = this.h / 200;
     if (this.v === undefined) { this.v = 0; this.walkAmt = 0; this.vf = this.facing; }
-    if (this._target != null) {
+    if (this._lastFacing === undefined) this._lastFacing = this.facing;
+    if (this.facing !== this._lastFacing) {
+      this._lastFacing = this.facing;
+      const fast = typeof window !== 'undefined' && window.FAST;
+      if (!this.pose && this.visible && !fast) { this.turnT = TURN; this.v *= 0.3; }
+    }
+    if (this.turnT > 0) this.turnT = Math.max(0, this.turnT - dt);
+    if (this._target != null && this.turnT > 0) {
+      // plant the feet and turn round before setting off the other way
+      this.facing = Math.sign(this._target - this.x) || this.facing; this._lastFacing = this.facing;
+      this.moving = false;
+    } else if (this._target != null) {
       const d = this._target - this.x;
       const dir = Math.sign(d) || this.facing;
       this.facing = dir;
@@ -104,8 +116,7 @@ export class Actor {
     }
     const wantWalk = this.moving ? Math.min(1, this.v / (this._speed || 1) + 0.35) : 0;
     this.walkAmt += (wantWalk - this.walkAmt) * Math.min(1, dt * (this.moving ? 6 : 9));
-    // turning round takes a moment instead of snapping
-    this.vf += Math.max(-dt * 12, Math.min(dt * 12, this.facing - this.vf));
+    this.vf = this.facing;
     // an idle glance over the shoulder every few seconds (never while talking or walking)
     const want = !this.moving && !this.talking && (!this.pose || this.fidget === 'look') && (this.idleT % 9) > 7.6 && this.fidget !== 'lantern' ? 1 : 0;
     this.look += (want - this.look) * Math.min(1, dt * 4);
@@ -164,15 +175,17 @@ export class Actor {
     }
     const ox = W / 2, oy = Hh - this.h * 0.12;
     // still characters only need a fresh sprite a few times per second
-    const key = `${this.moving}|${this.talking}|${this.pose}|${this.facing}|${this.lanternOn}|${Math.round(this.look * 4)}|${Math.round(this.x)}|${Math.round((this.vf ?? 0) * 8)}|${Math.round((this.walkAmt ?? 0) * 8)}|${Math.round((this.shiver || 0) * 2)}`;
-    const stale = this.moving || this.talking || Math.abs((this.vf ?? this.facing) - this.facing) > 0.01 || (this.walkAmt ?? 0) > 0.01 || key !== this._key || t - (this._drawnAt ?? -1) > 0.12 || t < (this._drawnAt ?? 0);
+    this.blink = this.blinkAt(t);
+    const key = `${this.moving}|${this.talking}|${this.pose}|${this.facing}|${this.lanternOn}|${Math.round(this.look * 4)}|${Math.round(this.x)}|${this.turnT > 0}|${this.blink}|${Math.round((this.walkAmt ?? 0) * 8)}|${Math.round((this.shiver || 0) * 2)}`;
+    const stale = this.moving || this.talking || this.turnT > 0 || this.grind || (this.walkAmt ?? 0) > 0.01 || key !== this._key || t - (this._drawnAt ?? -1) > 0.12 || t < (this._drawnAt ?? 0);
     if (!stale) { this.blit(ctx, rs, ox, oy, W, Hh); return; }
     this._key = key; this._drawnAt = t;
     const b = this._hi, bc = b.getContext('2d', { willReadFrequently: true });
     bc.setTransform(1, 0, 0, 1, 0, 0);
     bc.clearRect(0, 0, W, Hh);
     bc.translate(ox - this.x, oy - this.y);
-    this.drawFigure(bc, t);
+    if (this.turnT > 0 && !this.pose) this.drawFront(bc, t);
+    else this.drawFigure(bc, t);
     bc.setTransform(1, 0, 0, 1, 0, 0);
     bc.globalCompositeOperation = 'source-atop';
     // rim light from the strongest nearby light
@@ -239,6 +252,13 @@ export class Actor {
     ctx.fillRect(mx - 30 * s, my - 30 * s, 60 * s, 60 * s);
   }
 
+  // Everyone blinks every few seconds, each on their own rhythm (and now and then twice).
+  blinkAt(t) {
+    const per = 3.1 + (this.seed % 17) / 6;
+    const k = ((t + this.seed * 0.37) % per + per) % per;
+    return k < 0.13 || (this.seed % 3 === 0 && k > 0.3 && k < 0.42);
+  }
+
   // ------------------------------------------------------------ figure
   // Where each foot is during the walk. Stance: planted and sliding back under the body at
   // exactly the speed the body moves forward. Swing: an arc forward with the toe lifting.
@@ -268,8 +288,7 @@ export class Actor {
 
     ctx.save();
     ctx.translate(this.x + (this.shiver || 0), this.y);
-    const vf = Math.sign(this.vf || this.facing) * Math.max(0.22, Math.abs(this.vf ?? this.facing));
-    ctx.scale(vf * s, s);
+    ctx.scale(this.facing * s, s);
     ctx.translate(0, lower);
 
     const bw = 24 * this.build;                           // half shoulder width
@@ -410,13 +429,221 @@ export class Actor {
 
     // ---- front arm
     let armA = sw * 0.42 * walk;
-    if (reach) armA = -1.25;
+    if (reach) armA = this.grind ? -1.15 + Math.sin(t * 7 + this.seed) * 0.16 : -1.25;
     else if (take) armA = -0.55;
     else if (inspect) armA = -1.35;
     else if (this.lantern && this.lanternOn) armA = -0.18 + sw * 0.07 * walk;
+    else if (this.talking && !this.notebook && !this.moving) {
+      // a hand that comes up to make a point, then drops again
+      const g = Math.max(0, Math.sin(t * 1.3 + this.seed));
+      armA = -0.5 * g * g + Math.sin(t * 5.2) * 0.06 * g;
+    }
     this.arm(ctx, 1, shoulderY, lean, bw, armA, this.rolled ? this.coat : shade(this.coat, 1.06), t, true);
 
     ctx.restore();
+  }
+
+  // Turning round: for a beat the figure faces the viewer, the face already leading toward the
+  // new direction, the knees dipping slightly as the weight shifts. No horizontal squash.
+  drawFront(ctx, t) {
+    const s = this.h / 200, dir = this.facing;
+    const k = 1 - this.turnT / TURN;                     // 0..1 through the turn
+    const dip = Math.sin(k * Math.PI) * 3;
+    const breathe = Math.sin(t * 1.7 + this.seed) * 0.8;
+    const bw = 24 * this.build;
+    const hipY = -97 + dip, shoulderY = -158 + this.stoop * 6 + breathe * 0.4 + dip;
+    const hemY = this.skirt ? -2 : hipY + (this.coatLen - 0.5) * 140;
+    const lead = dir * 2.5;                              // the head turns before the body
+
+    ctx.save();
+    ctx.translate(this.x + (this.shiver || 0), this.y);
+    ctx.scale(s, s);
+
+    // legs, slightly apart, weight on the foot toward the new direction
+    for (const side of [-1, 1]) {
+      const hx = side * 9, fxp = side * 11 + (side === dir ? 2 : 0);
+      const lift = side === dir ? 0 : Math.sin(k * Math.PI) * 4;
+      ctx.fillStyle = side === dir ? this.trousers : shade(this.trousers, 0.75);
+      limb(ctx, hx, hipY, (hx + fxp) / 2, -50 + dip * 0.5 - lift * 0.5, 15, 12);
+      limb(ctx, (hx + fxp) / 2, -50 + dip * 0.5 - lift * 0.5, fxp, -8 - lift, 12, 10);
+      ctx.fillStyle = side === dir ? this.boots : shade(this.boots, 0.7);
+      ctx.beginPath(); ctx.ellipse(fxp + side * 2, -3 - lift, 8.5, 6, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#050505'; ctx.fillRect(fxp + side * 2 - 8, 1 - lift, 17, 2.5);
+    }
+
+    // arms hang at the sides, behind the coat edge
+    const armX = bw * 0.98;
+    for (const side of [-1, 1]) {
+      const swingOut = side === dir ? 4 : 1;
+      const hx = side * (armX + swingOut), hy = shoulderY + 76;
+      ctx.fillStyle = side === dir ? shade(this.coat, 1.06) : shade(this.coat, 0.7);
+      limb(ctx, side * armX, shoulderY + 8, side * (armX + 2), shoulderY + 44, 14, 12);
+      limb(ctx, side * (armX + 2), shoulderY + 44, hx, hy - 4, 12, 10);
+      ctx.fillStyle = this.gloves || this.skin;
+      ctx.beginPath(); ctx.ellipse(hx, hy, 5.5, 7, 0, 0, TAU); ctx.fill();
+      if (side === dir && this.lantern && this.lanternOn) {
+        ctx.strokeStyle = '#3a3026'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(hx, hy + 6, 6, Math.PI, 0); ctx.stroke();
+        ctx.fillStyle = '#1e1a16'; ctx.fillRect(hx - 10, hy + 8, 20, 24); ctx.fillRect(hx - 6, hy + 4, 12, 5);
+        ctx.fillStyle = '#ffd795'; ctx.fillRect(hx - 6, hy + 12, 12, 14);
+        ctx.fillStyle = '#fff4d8'; ctx.fillRect(hx - 2, hy + 16, 4, 6);
+        ctx.fillStyle = '#7a6440'; ctx.fillRect(hx - 10, hy + 10, 20, 2); ctx.fillRect(hx - 10, hy + 26, 20, 2);
+        ctx.fillStyle = '#2a2420'; ctx.fillRect(hx - 12, hy + 30, 24, 4);
+      }
+      if (side === dir && this.cane) { ctx.fillStyle = '#100c09'; ctx.fillRect(hx - 2, hy, 4, -hy - 4); ctx.fillStyle = '#b9a36a'; ctx.fillRect(hx - 3, hy - 4, 6, 6); }
+    }
+
+    // coat / dress, seen from the front
+    ctx.fillStyle = this.coat;
+    ctx.beginPath();
+    const fl = this.skirt ? 1.6 : this.flare;
+    const waistY = hipY - 12;
+    ctx.moveTo(-bw, shoulderY + 4);
+    ctx.quadraticCurveTo(-bw * 0.95, waistY - 20, -bw * 0.8, waistY);
+    ctx.quadraticCurveTo(-bw * 0.95, hipY + 10, -bw * fl, hemY);
+    ctx.quadraticCurveTo(0, hemY + 4, bw * fl, hemY);
+    ctx.quadraticCurveTo(bw * 0.95, hipY + 10, bw * 0.8, waistY);
+    ctx.quadraticCurveTo(bw * 0.95, waistY - 20, bw, shoulderY + 4);
+    ctx.quadraticCurveTo(0, shoulderY - 9, -bw, shoulderY + 4);
+    ctx.fill();
+    // the side away from the light falls into shadow; a lit edge on the other
+    ctx.fillStyle = 'rgba(0,0,0,0.26)';
+    ctx.beginPath(); ctx.moveTo(-dir * bw, shoulderY + 6); ctx.lineTo(-dir * bw * 0.35, shoulderY + 6); ctx.lineTo(-dir * bw * 0.45, hemY); ctx.lineTo(-dir * bw * fl, hemY); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = shade(this.coat, 1.18); ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.moveTo(dir * bw * 0.92, shoulderY + 8); ctx.lineTo(dir * bw * 0.8, waistY); ctx.lineTo(dir * bw * fl * 0.96, hemY - 2); ctx.stroke();
+
+    if (!this.skirt) {
+      // the opening of the coat, waistcoat, lapels and buttons down the middle
+      ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(-1, shoulderY + 30, 2, hemY - shoulderY - 32);
+      ctx.fillStyle = this.waistcoat || '#2a2622';
+      ctx.beginPath(); ctx.moveTo(-bw * 0.32, shoulderY + 2); ctx.lineTo(bw * 0.32, shoulderY + 2); ctx.lineTo(0, shoulderY + 42); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = this.lapel;
+      ctx.beginPath(); ctx.moveTo(-bw * 0.12, shoulderY + 2); ctx.lineTo(bw * 0.12, shoulderY + 2); ctx.lineTo(0, shoulderY + 16); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = shade(this.coat, 0.85);
+      for (const side of [-1, 1]) { ctx.beginPath(); ctx.moveTo(side * bw * 0.32, shoulderY + 2); ctx.lineTo(side * bw * 0.6, shoulderY + 4); ctx.lineTo(side * bw * 0.08, shoulderY + 40); ctx.closePath(); ctx.fill(); }
+      ctx.fillStyle = this.belt ? '#b9a36a' : 'rgba(0,0,0,0.55)';
+      const cols = this.buttons === 'double' ? [-6, 6] : [3];
+      for (const cx of cols) for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(cx, shoulderY + 46 + i * 14, 1.8, 0, TAU); ctx.fill(); }
+      if (this.chain) { ctx.strokeStyle = '#c9a24a'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-bw * 0.4, hipY - 22); ctx.quadraticCurveTo(0, hipY - 12, bw * 0.4, hipY - 22); ctx.stroke(); }
+      if (this.belt) { ctx.fillStyle = '#0c0d10'; ctx.fillRect(-bw * 0.82, hipY - 10, bw * 1.64, 7); ctx.fillStyle = '#b9a36a'; ctx.fillRect(-3, hipY - 10, 6, 7); }
+      ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(-bw * 0.7, hipY + 4, 14, 3); ctx.fillRect(bw * 0.7 - 14, hipY + 4, 14, 3);
+      if (this.number) { ctx.fillStyle = '#b9a36a'; ctx.fillRect(-bw * 0.7, shoulderY - 2, 8, 4); ctx.fillRect(bw * 0.7 - 8, shoulderY - 2, 8, 4); }
+    } else {
+      ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fillRect(-bw * 0.72, hipY - 8, bw * 1.44, 5);
+      ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(-bw * 1.6, hemY - 6, bw * 3.2, 6);
+    }
+    if (this.patches) { ctx.fillStyle = shade(this.coat, 1.35); ctx.fillRect(-bw * 0.5, hipY - 30, 10, 9); ctx.fillRect(bw * 0.3, hipY + 22, 9, 11); }
+    if (this.cape) {
+      ctx.fillStyle = shade(this.coat, 0.9);
+      ctx.beginPath(); ctx.moveTo(-bw - 5, shoulderY - 1); ctx.quadraticCurveTo(-bw * 1.5, shoulderY + 40, -bw * 1.3, shoulderY + 62); ctx.lineTo(bw * 1.3, shoulderY + 62); ctx.quadraticCurveTo(bw * 1.5, shoulderY + 40, bw + 5, shoulderY - 1); ctx.fill();
+    }
+    if (this.apron) {
+      ctx.fillStyle = this.apron;
+      ctx.beginPath(); ctx.moveTo(-bw * 0.55, shoulderY + 12); ctx.lineTo(bw * 0.55, shoulderY + 12); ctx.lineTo(bw * 0.8, hemY - 4); ctx.lineTo(-bw * 0.8, hemY - 4); ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 2;
+      for (const side of [-1, 1]) { ctx.beginPath(); ctx.moveTo(side * bw * 0.45, shoulderY + 12); ctx.lineTo(side * bw * 0.25, shoulderY - 2); ctx.stroke(); }
+      ctx.fillStyle = 'rgba(60,10,8,0.45)'; ctx.beginPath(); ctx.ellipse(bw * 0.2, hipY + 18, 7, 11, 0.3, 0, TAU); ctx.fill();
+    }
+    if (this.shawl) {
+      ctx.fillStyle = this.shawl;
+      ctx.beginPath(); ctx.moveTo(-bw * 1.08, shoulderY - 4); ctx.lineTo(bw * 1.08, shoulderY - 4); ctx.lineTo(bw * 0.9, shoulderY + 40); ctx.lineTo(0, shoulderY + 58); ctx.lineTo(-bw * 0.9, shoulderY + 40); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = shade(this.shawl, 0.6); ctx.lineWidth = 1.5;
+      for (let i = 0; i < 7; i++) { const x = -bw * 0.8 + i * bw * 0.27; const y = shoulderY + 40 + (1 - Math.abs(x) / bw) * 16; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 7); ctx.stroke(); }
+    }
+    if (this.scarf) {
+      ctx.fillStyle = this.scarf;
+      ctx.fillRect(-bw * 0.62, shoulderY - 3, bw * 1.24, 12);
+      ctx.fillRect(dir * bw * 0.15 - 5, shoulderY + 6, 10, 30);
+      ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(dir * bw * 0.15 - 5, shoulderY + 32, 10, 4);
+    }
+    if (this.bag) { ctx.fillStyle = shade(P.wood, 0.7); ctx.fillRect(-dir * bw * 1.1 - 9, hipY - 8, 18, 30); }
+    ctx.fillStyle = shade(this.coat, this.collarUp ? 0.95 : 0.8);
+    if (this.collarUp) { ctx.beginPath(); ctx.moveTo(-bw * 0.6, shoulderY + 4); ctx.lineTo(-bw * 0.56, shoulderY - 10); ctx.lineTo(bw * 0.56, shoulderY - 10); ctx.lineTo(bw * 0.6, shoulderY + 4); ctx.lineTo(0, shoulderY + 10); ctx.closePath(); ctx.fill(); }
+    else if (!this.skirt) ctx.fillRect(-bw * 0.55, shoulderY - 3, bw * 1.1, 6);
+
+    this.headFront(ctx, lead * 0.6, shoulderY - 22, lead, t);
+    ctx.restore();
+  }
+
+  headFront(ctx, hx, hy, lead, t) {
+    const longHair = this.skirt || this.hat === 'bonnet' || this.hat === 'shawl';
+    const fx = hx + lead;                                 // the features, a little ahead of the skull
+    ctx.fillStyle = shade(this.skin, 0.72);
+    ctx.fillRect(hx - 6, hy + 9, 12, 13);
+    if (longHair) { ctx.fillStyle = this.hair || '#1e1712'; ctx.beginPath(); ctx.ellipse(hx, hy + 2, 15, 17, 0, 0, TAU); ctx.fill(); }
+    // ears, then the face: a long oval with a firm jaw
+    ctx.fillStyle = shade(this.skin, 0.82);
+    ctx.beginPath(); ctx.ellipse(hx - 12.5, hy, 3, 4.6, 0, 0, TAU); ctx.ellipse(hx + 12.5, hy, 3, 4.6, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = this.skin;
+    ctx.beginPath(); ctx.ellipse(hx, hy - 3, 12, 14, 0, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(hx - 11, hy + 2); ctx.quadraticCurveTo(hx - 9, hy + 13, fx, hy + 15); ctx.quadraticCurveTo(hx + 9, hy + 13, hx + 11, hy + 2); ctx.fill();
+    // the side turned from the light
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
+    ctx.beginPath(); ctx.ellipse(hx - Math.sign(lead || 1) * 7, hy + 1, 5.5, 12, 0, 0, TAU); ctx.fill();
+    if (this.stubble) { ctx.fillStyle = this.stubble; ctx.beginPath(); ctx.moveTo(hx - 10, hy + 4); ctx.quadraticCurveTo(hx - 8, hy + 13, fx, hy + 15); ctx.quadraticCurveTo(hx + 8, hy + 13, hx + 10, hy + 4); ctx.lineTo(fx + 5, hy + 5); ctx.lineTo(fx - 5, hy + 5); ctx.closePath(); ctx.fill(); }
+    // sockets, eyes, brows
+    ctx.fillStyle = 'rgba(20,10,8,0.4)';
+    ctx.beginPath(); ctx.ellipse(fx - 5, hy - 3.5, 3.4, 2.6, 0, 0, TAU); ctx.ellipse(fx + 5, hy - 3.5, 3.4, 2.6, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#120c0a';
+    for (const ex of [fx - 5, fx + 5]) {
+      if (this.blink) ctx.fillRect(ex - 2, hy - 3.5, 4, 1);
+      else { ctx.beginPath(); ctx.ellipse(ex + lead * 0.25, hy - 3.5, 1.6, 1.4, 0, 0, TAU); ctx.fill(); }
+    }
+    ctx.fillStyle = shade(this.hair || '#1e1712', 1.1); ctx.fillRect(fx - 8, hy - 7.5, 6, 1.6); ctx.fillRect(fx + 2, hy - 7.5, 6, 1.6);
+    // nose: a shadow down one side and under the tip
+    ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(fx - Math.sign(lead || 1) * 1.5 - 0.5, hy - 2, 1.5, 6); ctx.fillRect(fx - 2, hy + 4, 4, 1.4);
+    const open = this.talking ? Math.abs(Math.sin(t * 11)) * 2.2 : 0;
+    ctx.fillStyle = '#2a1410'; ctx.fillRect(fx - 3.5, hy + 8, 7, 1.2 + open);
+    if (this.moustache) { ctx.fillStyle = this.moustache; ctx.beginPath(); ctx.ellipse(fx, hy + 6, 6, 2, 0, 0, TAU); ctx.fill(); }
+    if (this.beard) { ctx.fillStyle = this.beard; ctx.beginPath(); ctx.moveTo(hx - 11, hy + 3); ctx.quadraticCurveTo(hx - 10, hy + 20, fx, hy + 21); ctx.quadraticCurveTo(hx + 10, hy + 20, hx + 11, hy + 3); ctx.lineTo(fx + 5, hy + 10); ctx.lineTo(fx - 5, hy + 10); ctx.closePath(); ctx.fill(); }
+    // hair
+    ctx.fillStyle = this.hair || '#1e1712';
+    if (longHair) { ctx.beginPath(); ctx.ellipse(hx, hy - 11, 13, 7, 0, Math.PI, TAU); ctx.fill(); }
+    else { ctx.beginPath(); ctx.ellipse(hx, hy - 10, 12.5, 7, 0, Math.PI, TAU); ctx.fill(); ctx.fillRect(hx - 12.5, hy - 10, 3, 8); ctx.fillRect(hx + 9.5, hy - 10, 3, 8); }
+    if (this.sideburns) { ctx.fillRect(hx - 12, hy - 6, 3.5, 13); ctx.fillRect(hx + 8.5, hy - 6, 3.5, 13); }
+    // hats, front on
+    const c = this.hatColor, hi = shade(/^#[0-9a-f]{6}$/i.test(c) ? c : '#121316', 1.9);
+    const y = hy - 1;
+    ctx.fillStyle = c;
+    switch (this.hat) {
+      case 'top':
+        ctx.fillRect(hx - 20, y - 16, 40, 4);
+        ctx.beginPath(); ctx.moveTo(hx - 13, y - 14); ctx.lineTo(hx - 14, y - 52); ctx.lineTo(hx + 14, y - 52); ctx.lineTo(hx + 13, y - 14); ctx.fill();
+        ctx.fillStyle = '#2a1d16'; ctx.fillRect(hx - 13, y - 22, 26, 5);
+        ctx.fillStyle = hi; ctx.fillRect(hx + lead * 2, y - 50, 3, 26);
+        break;
+      case 'bowler':
+        ctx.fillRect(hx - 19, y - 15, 38, 4);
+        ctx.beginPath(); ctx.ellipse(hx, y - 18, 14, 15, 0, Math.PI, 0); ctx.fill();
+        ctx.fillRect(hx - 14, y - 19, 28, 6);
+        ctx.fillStyle = '#26201a'; ctx.fillRect(hx - 14, y - 19, 28, 3);
+        ctx.fillStyle = hi; ctx.beginPath(); ctx.arc(hx + lead * 2, y - 27, 3.5, Math.PI * 1.1, Math.PI * 1.9); ctx.fill();
+        break;
+      case 'cap':
+        ctx.beginPath(); ctx.ellipse(hx, y - 13, 16, 10, 0, Math.PI, 0); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(fx, y - 12, 13, 4, 0, 0, Math.PI); ctx.fill();
+        ctx.fillStyle = hi; ctx.fillRect(hx - 5, y - 21, 10, 2);
+        break;
+      case 'helmet':
+        ctx.fillRect(hx - 17, y - 14, 34, 4);
+        ctx.beginPath(); ctx.moveTo(hx - 14, y - 12); ctx.quadraticCurveTo(hx - 15, y - 52, hx, y - 55); ctx.quadraticCurveTo(hx + 15, y - 52, hx + 14, y - 12); ctx.fill();
+        ctx.fillRect(hx - 2, y - 60, 4, 6);
+        ctx.fillStyle = '#b9a36a'; ctx.beginPath(); ctx.moveTo(hx, y - 36); ctx.lineTo(hx + 5, y - 29); ctx.lineTo(hx, y - 22); ctx.lineTo(hx - 5, y - 29); ctx.fill();
+        break;
+      case 'bonnet':
+        ctx.beginPath(); ctx.ellipse(hx, y - 4, 19, 21, 0, Math.PI * 0.9, Math.PI * 2.1); ctx.lineTo(hx + 13, y - 2); ctx.ellipse(hx, y - 4, 13, 15, 0, Math.PI * 2.05, Math.PI * 0.95, true); ctx.fill();
+        ctx.fillStyle = '#5a1e1a'; ctx.fillRect(hx - 12, y + 8, 3, 16); ctx.fillRect(hx + 9, y + 8, 3, 16);
+        break;
+      case 'shawl':
+        ctx.fillStyle = this.shawl || c;
+        ctx.beginPath(); ctx.ellipse(hx, y - 4, 18, 21, 0, Math.PI * 0.85, Math.PI * 2.15); ctx.lineTo(hx + 12, y - 2); ctx.ellipse(hx, y - 4, 12.5, 15, 0, Math.PI * 2.1, Math.PI * 0.9, true); ctx.fill();
+        break;
+      default: break;
+    }
+    if (this.hat !== 'none' && this.hat !== 'shawl' && this.hat !== 'bonnet') {
+      const g = ctx.createLinearGradient(0, hy - 13, 0, hy + 1);
+      g.addColorStop(0, 'rgba(0,0,0,0.6)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g; ctx.fillRect(hx - 12, hy - 13, 24, 14);
+    }
   }
 
   // Two-bone leg solved from hip to ankle; the knee always bends forward.
@@ -528,8 +755,11 @@ export class Actor {
     ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(hx - 4 + turn * 3, hy - 1, 1.5, 3);
     // eye: a glint when the light catches it
     ctx.fillStyle = '#120c0a';
-    ctx.beginPath(); ctx.ellipse(fx - 3, hy - 3.5, 1.8, 1.4, 0, 0, TAU); ctx.fill();
-    ctx.fillStyle = 'rgba(230,220,200,0.6)'; ctx.fillRect(fx - 2.5, hy - 4.5, 1.2, 1.2);
+    if (this.blink) ctx.fillRect(fx - 5, hy - 3.5, 4, 1);
+    else {
+      ctx.beginPath(); ctx.ellipse(fx - 3, hy - 3.5, 1.8, 1.4, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = 'rgba(230,220,200,0.6)'; ctx.fillRect(fx - 2.5, hy - 4.5, 1.2, 1.2);
+    }
     if (turn > 0.5) { ctx.fillStyle = '#120c0a'; ctx.beginPath(); ctx.ellipse(fx - 9, hy - 3.5, 1.6, 1.3, 0, 0, TAU); ctx.fill(); }
     // brow
     ctx.fillStyle = shade(this.hair || '#1e1712', 1.1); ctx.fillRect(fx - 6, hy - 7, 6, 1.6);
