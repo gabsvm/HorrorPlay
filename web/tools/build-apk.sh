@@ -12,6 +12,7 @@ PLAT="$SDK/platforms/android-35/android.jar"
 EXE=""; [ -f "$BT/aapt2.exe" ] && EXE=".exe"
 BAT=""; [ -f "$BT/d8.bat" ] && BAT=".bat"
 VERSION="${VERSION:-1.0-rc}"
+VERSION_CODE="${VERSION_CODE:-$(git rev-list --count HEAD)}"   # grows with every commit, so a new APK installs over the last
 OUT=dist/apk
 rm -rf "$OUT"; mkdir -p "$OUT/assets" "$OUT/gen" "$OUT/obj" "$OUT/res"
 
@@ -24,7 +25,7 @@ echo "· recursos"
 "$BT/aapt2$EXE" compile --dir android/res -o "$OUT/res/res.zip"
 "$BT/aapt2$EXE" link -o "$OUT/base.apk" -I "$PLAT" --manifest android/AndroidManifest.xml \
   -A "$OUT/assets" --java "$OUT/gen" "$OUT/res/res.zip" \
-  --min-sdk-version 24 --target-sdk-version 35 --version-code 1 --version-name "$VERSION"
+  --min-sdk-version 24 --target-sdk-version 35 --version-code "$VERSION_CODE" --version-name "$VERSION"
 
 echo "· código"
 javac -nowarn -source 1.8 -target 1.8 -classpath "$PLAT" -d "$OUT/obj" \
