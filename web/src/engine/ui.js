@@ -116,13 +116,43 @@ export class UI {
     this._toastT = setTimeout(() => t.classList.remove('show'), ms);
   }
 
-  hover(text, x, y) {
+  // Label over the thing under the pointer: a small verb line and the name.
+  hover(text, x, y, verb = '', kind = '', arrow = 0) {
     const h = this.el.hover;
     if (!text) { h.classList.add('hidden'); return; }
     h.classList.remove('hidden');
-    h.textContent = text;
-    h.style.left = `calc(${x} * var(--u))`;
-    h.style.top = `calc(${y} * var(--u))`;
+    h.className = kind;
+    const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    const l = arrow < 0 ? '<span class="arrow">←</span>' : '', r = arrow > 0 ? '<span class="arrow">→</span>' : '';
+    h.innerHTML = (verb ? `<span class="verb">${esc(verb)}</span>` : '') + l + esc(text) + r;
+    // keep the whole label on screen, however long the name
+    const u = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--u')) || 1;
+    const half = (h.offsetWidth || 0) / u / 2 + 12;
+    h.style.left = `calc(${Math.max(half, Math.min(1280 - half, x))} * var(--u))`;
+    h.style.top = `calc(${Math.max(70, y)} * var(--u))`;
+  }
+
+  setObjective(text) {
+    const el = document.getElementById('hud-objective');
+    if (el.textContent === (text || '')) return;
+    el.textContent = text || '';
+    if (text) this.toast('Nuevo objetivo', 2200);
+  }
+
+  setBadge(n) {
+    const b = document.getElementById('nb-badge');
+    b.textContent = n > 9 ? '9+' : String(n);
+    b.classList.toggle('hidden', !n);
+  }
+
+  async tip(html, ms = 6500) {
+    const t = document.getElementById('tip');
+    t.innerHTML = html;
+    t.classList.remove('hidden');
+    await wait(30);
+    t.classList.add('show');
+    clearTimeout(this._tipT);
+    this._tipT = setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.classList.add('hidden'), 900); }, ms);
   }
 
   async doc(html) {
@@ -181,6 +211,8 @@ export class UI {
     this.game = game;
     this.selectedClues = [];
     this.el.nbFeedback.textContent = '';
+    game.state.unread = 0;
+    this.setBadge(0);
     this.renderNotebook();
     this.el.nb.classList.remove('hidden');
     audio.paper();

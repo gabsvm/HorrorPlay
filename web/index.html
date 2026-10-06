@@ -17,17 +17,19 @@
   <div id="bar-top" class="bar"></div><div id="bar-bottom" class="bar"></div>
   <div id="ui">
     <div id="hud" class="hidden">
-      <div id="datecard"><span id="date"></span><span id="clock"></span></div>
+      <div id="datecard"><span id="date"></span><span id="clock"></span><span id="hud-objective"></span></div>
       <div id="sanity" title="Cordura"><div id="sanity-fill"></div></div>
       <div id="hud-buttons">
         <button id="btn-reveal" class="hud-btn" title="Revelar puntos de interés (Espacio)">Revelar</button>
-        <button id="btn-notebook" class="hud-btn" title="Cuaderno (N)">Cuaderno</button>
+        <button id="btn-notebook" class="hud-btn" title="Cuaderno (N)">Cuaderno<span id="nb-badge" class="hidden"></span></button>
         <button id="btn-menu" class="hud-btn" title="Menú (Esc)">Menú</button>
       </div>
     </div>
     <div id="inventory" class="hidden"></div>
     <div id="hover-label" class="hidden"></div>
     <div id="cursor"></div>
+    <canvas id="cursor-item" width="48" height="48" class="hidden"></canvas>
+    <div id="tip" class="hidden"></div>
     <div id="dialogue" class="hidden">
       <div id="dlg-name"></div>
       <div id="dlg-text"></div>

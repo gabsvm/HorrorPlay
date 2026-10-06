@@ -267,6 +267,7 @@ export default {
           await G.think('Afila un cuchillo de desollar en la muela, con la mano izquierda. Lo hace sin mirar, como quien lo ha hecho diez mil veces.');
           await G.think('Lleva un delantal de cuero hasta las rodillas.');
           G.clue('brennan_zurdo');
+          if (G.flag('bisturi_taken')) G.game.chapterHooks.c1Objective(G);
           return;
         }
         b.talking = true; b.pose = null; b.facing = 1;

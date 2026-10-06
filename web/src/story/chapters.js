@@ -36,6 +36,10 @@ export function makeChapters() {
       await G.narrate('Desde entonces bajaba cada tarde con la marea baja a buscarlo. Mamá decía que ya no iba a volver, pero yo bajaba igual.');
       await G.think('Hoy encontraré algo suyo. Lo sé.');
       G.objective('Buscar en el barro algo de Nat.');
+      G.tipOnce('controls', {
+        mouse: 'Haz <b>clic</b> para caminar. Pasa el cursor por la escena: lo que se puede examinar se enmarca. <kbd>Espacio</kbd> revela todo lo interactuable.',
+        touch: '<b>Toca</b> para caminar. Toca algo una vez para ver qué es y otra vez para examinarlo. <b>Revelar</b> muestra todo lo interactuable.',
+      }, 9000);
     },
 
     async c1(G) {
@@ -157,8 +161,14 @@ export function makeChapters() {
       w.talking = false;
       G.clue('regla');
       G.sanity(-5);
-      G.objective('En el cuaderno: relacionar a Brennan y el bisturí con lo que dijo el forense.');
+      hooks.c1Objective(G);
       await G.think('Brennan es zurdo. El bisturí es del hospital. En el cuaderno tengo que relacionarlo con lo que dijo Llewellyn.');
+    },
+
+    // what the player still needs to close chapter one
+    c1Objective(G) {
+      if (!G.hasClue('brennan_zurdo')) G.objective('Fijarse en cómo trabaja Brennan. Luego, en el cuaderno, relacionarlo con lo que dijo el forense.');
+      else if (!G.deduced('d_brennan') || !G.deduced('d_bisturi')) G.objective('En el cuaderno: relacionar a Brennan y el bisturí con lo que dijo el forense.');
     },
 
     async endC1(G) {

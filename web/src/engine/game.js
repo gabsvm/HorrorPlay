@@ -24,6 +24,8 @@ export class Game {
     this.view = document.getElementById('view');
     this.stage = document.getElementById('stage');
     this.cursorEl = document.getElementById('cursor');
+    this.cursorItemEl = document.getElementById('cursor-item');
+    this.idleClock = 0;
     this.r = new Renderer(this.view);
     this.ui = new UI();
     this.ui.game = this;
@@ -74,6 +76,18 @@ export class Game {
       Object.assign(this.pointer, p, { touch: e.pointerType === 'touch' });
       if (this.ui._advance) { this.ui.advance(); return; }
       if (e.button === 2) { this.onClick(p, true); return; }
+      if (e.pointerType === 'touch' && !this.running && !this.inMenu && this.scene) {
+        const h = this.hotspotAt(p);
+        if (h && this.armed !== h) {
+          // first tap on something only points it out; a second tap acts
+          this.armed = h; this.armedAt = performance.now();
+          const [x, y, w] = typeof h.rect === 'function' ? h.rect(this.G) : h.rect;
+          this.ui.hover(h.name, x + w / 2 - this.r.cam.x, y, this.verbFor(h), h.cursor === 'exit' ? 'exit' : '', h.cursor === 'exit' ? this.exitDir(h) : 0);
+          audio.click();
+          return;
+        }
+        this.armed = null;
+      }
       this.onClick(p, false);
     });
     v.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -114,12 +128,29 @@ export class Game {
     return null;
   }
 
+  // How a hotspot presents itself to the player.
+  verbFor(h) {
+    if (this.selectedItem) return `Usar ${this.itemDefs[this.selectedItem].name.toLowerCase()} con`;
+    if (h.cursor === 'talk') return 'Hablar con';
+    if (h.cursor === 'exit') return 'Ir';
+    return h.verb || 'Examinar';
+  }
+
+  exitDir(h) {
+    if (h.dir) return h.dir;
+    const [x, , w] = typeof h.rect === 'function' ? h.rect(this.G) : h.rect;
+    return x + w / 2 < this.scene.width / 2 ? -1 : 1;
+  }
+
+  seenKey(h) { return `${this.scene.id}:${h.id}`; }
+
   activeHotspots() {
     return (this.scene.hotspots || []).filter((h) => !h.when || h.when(this.G));
   }
 
   async onClick(p, look) {
     if (this.inMenu || this.running || !this.scene || this.ui.notebookOpen) return;
+    this.idleClock = 0;
     if (this.player.fidget) { if (this.player.pose === 'inspect') this.player.pose = null; this.player.fidget = null; this.player.shiver = 0; this.player.stillT = 0; }
     const h = this.hotspotAt(p);
     if (!h) {
@@ -159,7 +190,7 @@ export class Game {
       if (look && h.look) await h.look(G);
       else if (h.act) await h.act(G);
       else if (h.look) await h.look(G);
-      } finally { settle(); }
+      } finally { settle(); (this.state.seen ||= {})[this.seenKey(h)] = true; }
     });
   }
 
@@ -321,6 +352,7 @@ export class Game {
       this.updateHover();
       if (this.clickMark) this.clickMark.t += dt;
       if (this.revealT > 0) this.revealT -= dt;
+      this.idleClock = this.running || this.inMenu || this.ui.notebookOpen ? 0 : (this.idleClock || 0) + dt;
       this.r.frame(this.scene, this.actors, dt, (ctx) => this.drawOverlay(ctx));
     }
   }
@@ -328,28 +360,92 @@ export class Game {
   updateHover() {
     const p = this.pointer;
     const c = this.cursorEl;
+    if (this.cursorItemEl && (!p.inside || p.touch || this.inMenu)) this.cursorItemEl.classList.add('hidden');
+    if (p.touch && this.armed && !this.running) { this.hoverH = this.armed; if (performance.now() - this.armedAt > 4000) { this.armed = null; this.ui.hover(null); } return; }
     if (!p.inside || p.touch || this.inMenu) { c.style.display = this.inMenu && p.inside && !p.touch ? 'block' : 'none'; c.style.left = `calc(${p.x} * var(--u))`; c.style.top = `calc(${p.y} * var(--u))`; c.className = ''; this.ui.hover(null); return; }
     c.style.display = 'block';
     c.style.left = `calc(${p.x} * var(--u))`;
     c.style.top = `calc(${p.y} * var(--u))`;
     if (this.running || this.ui.notebookOpen) { c.className = 'wait'; this.ui.hover(null); return; }
     const h = this.hotspotAt(p);
-    c.className = h ? (h.cursor || 'look') : (this.selectedItem ? 'item' : '');
-    if (h) this.ui.hover(this.selectedItem ? `Usar ${this.itemDefs[this.selectedItem].name.toLowerCase()} con ${h.name.toLowerCase()}` : h.name, p.x, p.y);
+    this.hoverH = h;
+    const exit = h && h.cursor === 'exit';
+    c.className = h ? (exit ? (this.exitDir(h) < 0 ? 'exit-left' : 'exit-right') : (h.cursor || 'look')) : (this.selectedItem ? 'item' : '');
+    if (h) this.ui.hover(h.name, p.x, p.y, this.verbFor(h), this.selectedItem ? 'item' : exit ? 'exit' : '', exit ? this.exitDir(h) : 0);
     else this.ui.hover(null);
+    const ci = this.cursorItemEl;
+    if (this.selectedItem) {
+      if (ci._for !== this.selectedItem) {
+        const d = this.itemDefs[this.selectedItem];
+        const cc = ci.getContext('2d'); cc.clearRect(0, 0, 48, 48);
+        if (d._pix) cc.drawImage(d._pix, 0, 0);
+        ci._for = this.selectedItem;
+      }
+      ci.classList.remove('hidden');
+      ci.style.left = `calc(${p.x} * var(--u))`; ci.style.top = `calc(${p.y} * var(--u))`;
+    } else ci.classList.add('hidden');
   }
 
   drawOverlay(ctx) {
-    if (this.revealT > 0 && this.scene && !this.running) {
+    if (!this.scene) return;
+    const now = performance.now() / 1000;
+    const cam = this.r.cam.x;
+    const seen = this.state.seen || {};
+    const playing = !this.running && !this.inMenu && !this.scene.noPlayer;
+    const list = playing ? this.activeHotspots() : [];
+    // exits: chevrons by the ground that always show where you can go
+    for (const h of list) {
+      if (h.cursor !== 'exit') continue;
+      const [x, y, w, hh] = typeof h.rect === 'function' ? h.rect(this.G) : h.rect;
+      const dir = this.exitDir(h), hov = this.hoverH === h;
+      const cx = x + w / 2 - cam, cy = Math.min(this.scene.groundY - 26, y + hh - 30);
+      if (cx < -40 || cx > 1320) continue;
+      for (let k = 0; k < 3; k++) {
+        const ph = (now * 1.6 - k * 0.33) % 1;
+        const a = (hov ? 0.9 : 0.5) * Math.sin(Math.max(0, ph) * Math.PI);
+        const px = cx + dir * (k * 12 + ph * 8);
+        ctx.strokeStyle = `rgba(170,210,225,${a})`; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(px - dir * 8, cy - 12); ctx.lineTo(px + dir * 4, cy); ctx.lineTo(px - dir * 8, cy + 12); ctx.stroke();
+      }
+    }
+    // the thing under the pointer gets corner brackets
+    const hv = playing ? this.hoverH : null;
+    if (hv && hv.cursor !== 'exit') {
+      let [x, y, w, hh] = typeof hv.rect === 'function' ? hv.rect(this.G) : hv.rect;
+      x -= cam;
+      const pad = 4 + Math.sin(now * 5) * 2, L = Math.min(18, w / 3, hh / 3);
+      const col = this.selectedItem ? '230,120,95' : hv.cursor === 'talk' ? '255,214,140' : '255,224,170';
+      ctx.strokeStyle = `rgba(${col},0.75)`; ctx.lineWidth = 2.5;
+      const X0 = x - pad, Y0 = y - pad, X1 = x + w + pad, Y1 = Math.min(712, y + hh + pad);
+      for (const [px, py, sx, sy] of [[X0, Y0, 1, 1], [X1, Y0, -1, 1], [X0, Y1, 1, -1], [X1, Y1, -1, -1]]) {
+        ctx.beginPath(); ctx.moveTo(px + sx * L, py); ctx.lineTo(px, py); ctx.lineTo(px, py + sy * L); ctx.stroke();
+      }
+    }
+    // reveal: gold for what you have not examined yet, grey for what you have
+    if (this.revealT > 0 && playing) {
       const a = Math.min(1, this.revealT) * 0.9;
-      for (const h of this.activeHotspots()) {
+      for (const h of list) {
         const [x, y, w, hh] = typeof h.rect === 'function' ? h.rect(this.G) : h.rect;
-        const cx = x + w / 2 - this.r.cam.x, cy = Math.min(690, y + hh / 2);
+        const cx = x + w / 2 - cam, cy = Math.min(690, y + hh / 2);
         if (cx < -20 || cx > 1300) continue;
-        ctx.strokeStyle = h.cursor === 'exit' ? `rgba(160,200,220,${a})` : `rgba(255,214,140,${a})`;
+        const done = seen[this.seenKey(h)];
+        ctx.strokeStyle = h.cursor === 'exit' ? `rgba(160,200,220,${a})` : done ? `rgba(150,150,140,${a * 0.6})` : `rgba(255,214,140,${a})`;
         ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.arc(cx, cy, 9 + Math.sin(performance.now() / 200) * 1.5, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx, cy, (done ? 7 : 10) + Math.sin(now * 5) * 1.5, 0, Math.PI * 2); ctx.stroke();
         ctx.fillStyle = ctx.strokeStyle; ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    // stuck for a while? what you have not examined glints now and then
+    if (playing && this.idleClock > 25) {
+      for (const h of list) {
+        if (h.cursor === 'exit' || seen[this.seenKey(h)]) continue;
+        const [x, y, w, hh] = typeof h.rect === 'function' ? h.rect(this.G) : h.rect;
+        const k = ((now * 0.5 + (x % 97) / 97) % 1);
+        if (k > 0.25) continue;
+        const a = Math.sin((k / 0.25) * Math.PI) * 0.7;
+        const cx = x + w / 2 - cam, cy = Math.min(690, y + hh / 2);
+        ctx.fillStyle = `rgba(255,230,180,${a})`;
+        ctx.fillRect(cx - 1, cy - 9, 2, 18); ctx.fillRect(cx - 9, cy - 1, 18, 2);
       }
     }
     // a soft lantern-coloured ripple where the player clicked to walk
@@ -394,6 +490,8 @@ export class Game {
       if (!u.includes(id)) { u.push(id); localStorage.setItem(`${SAVE_KEY}.unlocked`, JSON.stringify(u)); }
     } catch { /* storage unavailable */ }
     this.ui.setSanity(this.state.sanity);
+    this.ui.setObjective(this.state.objective || '');
+    this.ui.setBadge(this.state.unread || 0);
     this.refreshInventory();
     await this.run((G) => this.chapters[id](G));
   }
@@ -447,6 +545,10 @@ export class Game {
       give: (id) => {
         if (game.state.items.includes(id)) return;
         game.state.items.push(id);
+        G.tipOnce('item', {
+          mouse: 'Para usar un objeto, haz clic en él en el inventario y luego en lo que quieras usarlo. Dos clics sobre el objeto lo examinan. <kbd>Esc</kbd> lo suelta.',
+          touch: 'Para usar un objeto, tócalo en el inventario y luego toca dónde usarlo. Tócalo dos veces para examinarlo.',
+        }, 8000);
         game.refreshInventory(id);
         game.ui.toast(`Obtienes: ${game.itemDefs[id].name}`);
         audio.paper();
@@ -459,6 +561,19 @@ export class Game {
       clue: (id) => {
         if (game.state.clues.includes(id)) return false;
         game.state.clues.push(id);
+        G.tipOnce('clue', {
+          mouse: 'Las pistas se anotan solas en el <b>cuaderno</b>. Ábrelo con <kbd>N</kbd> o con el botón de arriba.',
+          touch: 'Las pistas se anotan solas en el <b>cuaderno</b>. Ábrelo con el botón de arriba.',
+        });
+        game.state.unread = (game.state.unread || 0) + 1;
+        const has = (c) => game.state.clues.includes(c);
+        if (game.deductions.some((d) => !d.final && has(d.a) && has(d.b) && !game.state.deductions.includes(d.id))) {
+          G.tipOnce('deduce', {
+            mouse: 'Algunas pistas encajan entre sí. En el <b>cuaderno</b>, haz clic en dos pistas para relacionarlas y sacar una deducción.',
+            touch: 'Algunas pistas encajan entre sí. En el <b>cuaderno</b>, toca dos pistas para relacionarlas y sacar una deducción.',
+          }, 8000);
+        }
+        game.ui.setBadge(game.state.unread);
         game.ui.toast('Anotado en el cuaderno');
         audio.pen();
         document.getElementById('btn-notebook').classList.remove('pulse');
@@ -472,7 +587,16 @@ export class Game {
         if (delta < 0) { audio.heartbeat(Math.min(1, -delta / 10)); }
       },
       chapter: (id) => game.startChapter(id),
-      objective: (text) => { game.state.objective = text; },
+      objective: (text) => { game.state.objective = text; game.ui.setObjective(text); },
+      tip: (html, ms) => game.ui.tip(html, ms),
+      // show a tip once per save; `variants` = { mouse, touch }
+      tipOnce: (key, variants, ms) => {
+        const f = (game.state.tips ||= {});
+        if (f[key]) return;
+        f[key] = true;
+        const touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+        game.ui.tip(touch ? variants.touch : variants.mouse, ms);
+      },
       cinema: (on) => { game.stage.classList.toggle('cinema', !!on); },
       save: () => game.save(),
       nameEntry: (prompt, forced) => game.ui.nameEntry(prompt, forced),
