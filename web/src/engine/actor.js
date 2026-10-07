@@ -222,7 +222,7 @@ export class Actor {
     // still characters only need a fresh sprite a few times per second
     this.blink = this.blinkAt(t);
     const key = `${this.moving}|${this.talking}|${this.pose}|${this.facing}|${this.lanternOn}|${Math.round(this.look * 4)}|${Math.round(this.x)}|${this.turnT > 0}|${this.blink}|${Math.round((this.walkAmt ?? 0) * 8)}|${Math.round((this.shiver || 0) * 2)}`;
-    const stale = this.moving || this.talking || this.turnT > 0 || this.grind || Math.abs(this.coatV || 0) > 0.6 || (this.walkAmt ?? 0) > 0.01 || key !== this._key || t - (this._drawnAt ?? -1) > 0.12 || t < (this._drawnAt ?? 0);
+    const stale = this.moving || this.talking || this.turnT > 0 || this.grind || Math.abs(this.coatV || 0) > 0.6 || (this.walkAmt ?? 0) > 0.01 || key !== this._key || t - (this._drawnAt ?? -1) > (this.pose || this.shiver ? 0.12 : 0.2) || t < (this._drawnAt ?? 0);
     if (!stale) { this.blit(ctx, rs, ox, oy, W, Hh); return; }
     this._key = key; this._drawnAt = t;
     const b = this._hi, bc = b.getContext('2d', { willReadFrequently: true });
@@ -315,15 +315,23 @@ export class Actor {
     L.push({ x: 0, y: -0.7, z: 0.7, w: 0.3 });
     let sumW = 0;
     for (const l of L) { const m = Math.hypot(l.x, l.y, l.z); l.x /= m; l.y /= m; l.z /= m; sumW += l.w; }
+    // flattened into scalars (three lights at most, unused ones weightless): this loop runs for
+    // every pixel of every sprite rebuilt
+    while (L.length < 3) L.push({ x: 0, y: 0, z: 1, w: 0 });
+    const [a, b, e] = L, iw = 0.92 / sumW;
+    const ax = a.x * a.w, ay = a.y * a.w, az = a.z * a.w, bx = b.x * b.w, by = b.y * b.w, bz = b.z * b.w, ex = e.x * e.w, ey = e.y * e.w, ez = e.z * e.w;
+    const aw = a.w, bw = b.w, ew = e.w;
     for (let y = 1; y < h - 1; y++) {
       for (let x = 1; x < w - 1; x++) {
         const i = y * w + x, p = i * 4;
         if (d[p + 3] === 0) continue;
-        let nx = -(H[i + 1] - H[i - 1]) * 2.4, ny = -(H[i + w] - H[i - w]) * 2.4, nz = 1;
-        const m = Math.hypot(nx, ny, nz); nx /= m; ny /= m; nz /= m;
-        let lit = 0;
-        for (const l of L) lit += l.w * Math.max(0, nx * l.x + ny * l.y + nz * l.z);
-        const f = 0.48 + 0.92 * (lit / sumW);
+        const nx = -(H[i + 1] - H[i - 1]) * 2.4, ny = -(H[i + w] - H[i - w]) * 2.4;
+        const im = 1 / Math.sqrt(nx * nx + ny * ny + 1);
+        let lit = 0, q;
+        if (aw) { q = (nx * ax + ny * ay + az) * im; if (q > 0) lit += q; }
+        if (bw) { q = (nx * bx + ny * by + bz) * im; if (q > 0) lit += q; }
+        if (ew) { q = (nx * ex + ny * ey + ez) * im; if (q > 0) lit += q; }
+        const f = 0.48 + lit * iw;
         d[p] = Math.min(255, d[p] * f); d[p + 1] = Math.min(255, d[p + 1] * f); d[p + 2] = Math.min(255, d[p + 2] * f * (f < 0.8 ? 1.06 : 1));
       }
     }

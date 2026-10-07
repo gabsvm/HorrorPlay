@@ -375,11 +375,18 @@ export class Renderer {
     if (scene.drawNearOver) this.dynamicPass(cn, (c, tt) => scene.drawNearOver(c, tt), camX, camY, t);
 
     // foreground
-    const cg = this.cFg;
-    if (this.staticDirty) {
+    const cg = this.cFg, swings = scene.fgSwings || [];
+    // a sign hanging in the foreground keeps it moving, so then it is redrawn every frame
+    this.fgDirty = this.staticDirty || (swings.length > 0 && !this.lowFx);
+    if (this.fgDirty) {
       cg.setTransform(1, 0, 0, 1, 0, 0);
       cg.clearRect(0, 0, this.fg.width, this.fg.height);
       for (const L of scene.layers) if (L.kind === 'fg') cg.drawImage(L.canvas, Math.round(-camX * L.parallax * rs), 0);
+      if (swings.length) {
+        cg.setTransform(rs, 0, 0, rs, Math.round(-camX * 1.3 * rs), 0);
+        for (const s of swings) s.draw(cg, t);
+        cg.setTransform(1, 0, 0, 1, 0, 0);
+      }
     }
 
     // lightmap
@@ -676,7 +683,8 @@ export class Renderer {
 
   present(scene, camX = 0) {
     const gl = this.gl, u = this.u, fx = this.fx;
-    if (this.staticDirty) { this.upload('tFar', this.far); this.upload('tFg', this.fg); if (!this.lowFx) this.upload('tStat', this.stat); }
+    if (this.staticDirty) { this.upload('tFar', this.far); if (!this.lowFx) this.upload('tStat', this.stat); }
+    if (this.fgDirty) this.upload('tFg', this.fg);
     if (!this.lowFx) this.upload('tFront', this.front);
     gl.uniform1f(u.uFx, this.lowFx ? 0 : 1);
     if (!this.lowFx) {

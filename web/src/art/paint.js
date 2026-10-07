@@ -675,7 +675,7 @@ export function pawnSign(ctx, x, y) {
 }
 
 // A painted board hanging from an iron bracket.
-export function hangingSign(ctx, x, y, text, { w = 110, h = 44, color = '#2a1c14', ink = '#c9a860', still = false } = {}) {
+export function hangingSign(ctx, x, y, text, { w = 110, h = 44, color = '#2a1c14', ink = '#c9a860', still = false, fg = false } = {}) {
   ctx.fillStyle = P.iron;
   ctx.fillRect(x, y, w + 24, 4);
   ctx.fillRect(x, y - 10, 4, 22);
@@ -689,7 +689,7 @@ export function hangingSign(ctx, x, y, text, { w = 110, h = 44, color = '#2a1c14
     c.fillText(text, 0, 10 + h / 2 + 1);
     stain(c, -w / 2, 10, w, h, { seed: text.length, alpha: 0.5 });
   };
-  if (live.on && !still) live.list.push({ x: px, y: py, paint: board, mass: 1 });
+  if (live.on && !still) live.list.push({ x: px, y: py, paint: board, mass: 1, fg });
   else { ctx.save(); ctx.translate(px, py); board(ctx); ctx.restore(); }
 }
 

@@ -546,26 +546,36 @@ function makeRelight(ic, lo) {
   }
   const out = ic.createImageData(w, h), o = out.data;
   const AMB = 0.07, R0 = 128, Z = 34;
-  let last = '';
+  // one pixel in the dark: only the ambient reaches it
+  const dark = (j) => {
+    o[j] = src[j] * AMB * 1.08; o[j + 1] = src[j + 1] * AMB * 0.94; o[j + 2] = src[j + 2] * (AMB * 0.8 + 0.02); o[j + 3] = 255;
+  };
+  for (let i = 0; i < n; i++) dark(i * 4);
+  ic.putImageData(out, 0, 0);
+  let last = '', prev = null;
   return (lx, ly, fl) => {
     // the flame's flicker is felt at a few steps, so a still light is not recomputed every frame
     const key = `${Math.round(lx)},${Math.round(ly)},${Math.round(fl * 60)}`;
     if (key === last) return;
     last = key;
     const R = R0 * fl;
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    // only the circle the light reaches now, and the one it reached before, need painting
+    const cur = [Math.max(0, Math.floor(lx - R - 1)), Math.max(0, Math.floor(ly - R - 1)), Math.min(w, Math.ceil(lx + R + 1)), Math.min(h, Math.ceil(ly + R + 1))];
+    const box = prev ? [Math.min(cur[0], prev[0]), Math.min(cur[1], prev[1]), Math.max(cur[2], prev[2]), Math.max(cur[3], prev[3])] : cur;
+    prev = cur;
+    if (box[2] <= box[0] || box[3] <= box[1]) return;
+    for (let y = box[1]; y < box[3]; y++) for (let x = box[0]; x < box[2]; x++) {
       const i = y * w + x, j = i * 4;
       const dx = lx - x, dy = ly - y, d2 = dx * dx + dy * dy;
+      if (d2 >= R * R) { dark(j); continue; }
       let k = AMB, sp = 0;
-      if (d2 < R * R) {
-        const att = (1 - Math.sqrt(d2) / R) ** 1.6;
-        const l = Math.sqrt(d2 + Z * Z), ux = dx / l, uy = dy / l, uz = Z / l;
-        const lam = Math.max(0, NX[i] * ux + NY[i] * uy + NZ[i] * uz);
-        k += att * (0.35 + lam * 1.45);
-        if (wet[i]) {
-          const hz = uz + 1, hl = Math.sqrt(ux * ux + uy * uy + hz * hz);
-          sp = att * Math.max(0, (NX[i] * ux + NY[i] * uy + NZ[i] * hz) / hl) ** 30 * 255;
-        }
+      const att = (1 - Math.sqrt(d2) / R) ** 1.6;
+      const l = Math.sqrt(d2 + Z * Z), ux = dx / l, uy = dy / l, uz = Z / l;
+      const lam = Math.max(0, NX[i] * ux + NY[i] * uy + NZ[i] * uz);
+      k += att * (0.35 + lam * 1.45);
+      if (wet[i]) {
+        const hz = uz + 1, hl = Math.sqrt(ux * ux + uy * uy + hz * hz);
+        sp = att * Math.max(0, (NX[i] * ux + NY[i] * uy + NZ[i] * hz) / hl) ** 30 * 255;
       }
       // the lantern is warm; the dark around it a little cold
       o[j] = Math.min(255, src[j] * k * 1.08 + sp);
@@ -573,6 +583,6 @@ function makeRelight(ic, lo) {
       o[j + 2] = Math.min(255, src[j + 2] * (k * 0.8 + 0.02) + sp * 0.7);
       o[j + 3] = 255;
     }
-    ic.putImageData(out, 0, 0);
+    ic.putImageData(out, 0, 0, box[0], box[1], box[2] - box[0], box[3] - box[1]);
   };
 }

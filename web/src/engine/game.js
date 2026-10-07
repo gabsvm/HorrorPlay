@@ -359,7 +359,9 @@ export class Game {
     this.player.facing = facing ?? 1;
     if (scene.actors) for (const a of scene.actors(this.G)) this.addActor(a);
     scene.life = scene.makeLife ? scene.makeLife(this.G) : [];
-    for (const s of scene.built.swings || []) scene.life.push(new Swing(s));
+    // what swings in the street joins its life; what swings in the foreground is drawn with that layer
+    for (const s of scene.built.swings || []) if (!s.fg) scene.life.push(new Swing(s));
+    scene.fgSwings = (scene.built.swings || []).filter((s) => s.fg).map((s) => new Swing(s));
     this.r.cam.x = this.camTarget();
     this.zoomTarget = null;
     this.zoom = { z: window.FAST ? 1 : 1.07, x: this.player.x, y: scene.groundY - 160 };
