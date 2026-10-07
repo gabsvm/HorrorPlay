@@ -10,7 +10,7 @@
 // painted albedo, raked by the nearest lights (the player's lantern among them), wet ground that
 // mirrors what stands on it, a little bloom on bright things and rays from lamps through fog.
 import { noiseCanvas } from '../art/noise.js';
-import { pixelize, quantizeData } from '../art/pixel.js';
+import { pixelize, quantizeData, paletteLut } from '../art/pixel.js';
 import { Actor } from './actor.js';
 
 export const W = 1280, H = 720;
@@ -28,7 +28,8 @@ precision highp float;
 #else
 precision mediump float;
 #endif
-uniform sampler2D tFar, tNear, tFg, tLight, tFog, tGlow, tStat, tFront;
+uniform sampler2D tFar, tNear, tFg, tLight, tFog, tGlow, tStat, tFront, tPal;
+uniform float uQuant;
 uniform vec2 uRes;
 uniform float uTime, uMad, uFade, uFlash, uFogAmt, uRedFlash, uDesat;
 uniform vec3 uFogCol;
@@ -43,6 +44,11 @@ float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453)
 float vnoise(vec2 p){
   vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+// nearest palette colour, from a 32x32x32 lookup laid out as 32 slices of 32x32 side by side
+vec3 pal(vec3 c){
+  vec3 q = floor(clamp(c, 0.0, 1.0) * 31.99);
+  return texture2D(tPal, vec2((q.b * 32.0 + q.r + 0.5) / 1024.0, 1.0 - (q.g + 0.5) / 32.0)).rgb;
 }
 float luma(vec3 c){ return dot(c, vec3(0.3, 0.59, 0.11)); }
 vec2 toUv(vec2 p){ return vec2(p.x / 1280.0, 1.0 - p.y / 720.0); }
@@ -74,6 +80,8 @@ vec3 compose(vec2 uv){
   vec3 L = texture2D(tLight, uv).rgb * 2.0;
   vec4 far = texture2D(tFar, uv);
   vec4 near = texture2D(tNear, uv);
+  // live props arrive soft-edged and in true colour: cut their edges and snap them like the rest
+  if (uQuant > 0.5) { near.a = step(0.35, near.a); near.rgb = pal(near.rgb); }
   // distance haze: what is far off sits deeper in the fog than the street
   if (uFx > 0.5) far.rgb = mix(far.rgb, uFogCol * 0.42, 0.22 * uFogAmt);
   vec3 lit = near.rgb * L;
@@ -240,14 +248,16 @@ export class Renderer {
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     this.u = {};
     for (const n of ['uRes', 'uTime', 'uMad', 'uFade', 'uFlash', 'uFogAmt', 'uFogCol', 'uRedFlash', 'uDesat', 'uZoom',
-      'uFx', 'uReflY', 'uWet', 'uCamX', 'uL', 'uLC', 'uRay0', 'uRay1', 'uRayC0', 'uRayC1']) this.u[n] = gl.getUniformLocation(prog, n);
+      'uFx', 'uReflY', 'uWet', 'uCamX', 'uL', 'uLC', 'uRay0', 'uRay1', 'uRayC0', 'uRayC1', 'uQuant']) this.u[n] = gl.getUniformLocation(prog, n);
     this.lightU = new Float32Array(NL * 4); this.lightC = new Float32Array(NL * 3);
     this.tex = {};
-    ['tFar', 'tNear', 'tFg', 'tLight', 'tFog', 'tGlow', 'tStat', 'tFront'].forEach((n, i) => {
+    // a ninth unit for the palette lookup; without it the props are snapped on the CPU instead
+    this.gpuQuant = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS) >= 9;
+    ['tFar', 'tNear', 'tFg', 'tLight', 'tFog', 'tGlow', 'tStat', 'tFront', ...(this.gpuQuant ? ['tPal'] : [])].forEach((n, i) => {
       const t = gl.createTexture();
       gl.activeTexture(gl.TEXTURE0 + i);
       gl.bindTexture(gl.TEXTURE_2D, t);
-      const f = i < 3 || i === 6 ? gl.NEAREST : gl.LINEAR; // art layers stay crisp, light and fog stay soft
+      const f = i < 3 || i === 6 || i === 8 ? gl.NEAREST : gl.LINEAR; // art layers stay crisp, light and fog stay soft
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, f);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, f);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -256,6 +266,8 @@ export class Renderer {
       this.tex[n] = { t, unit: i };
     });
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    if (this.gpuQuant) this.upload('tPal', paletteLut());
+    gl.uniform1f(this.u.uQuant, this.gpuQuant ? 1 : 0);
   }
 
   // Fixed pixel grid: the output never depends on the screen size.
@@ -289,9 +301,18 @@ export class Renderer {
     return pixelize(c, this.rs, { dither });
   }
 
-  // Draw per-frame props on a scratch buffer and quantize them so they match the painted layers.
+  // Per-frame props (corpses, rats, drips, swinging signs...). Where the GPU has a texture unit to
+  // spare they are drawn straight into the frame and the shader snaps them to the palette; reading
+  // them back to snap them on the CPU cost more than everything else in a frame together.
   dynamicPass(target, draw, camX, camY, t) {
-    const c = this.cDyn, rs = this.rs;
+    const rs = this.rs;
+    if (this.gpuQuant) {
+      target.setTransform(rs, 0, 0, rs, -camX * rs, camY * rs);
+      draw(target, t);
+      target.setTransform(1, 0, 0, 1, 0, 0);
+      return;
+    }
+    const c = this.cDyn;
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.clearRect(0, 0, this.dyn.width, this.dyn.height);
     c.setTransform(rs, 0, 0, rs, -camX * rs, camY * rs);
@@ -687,3 +708,4 @@ export class Renderer {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 }
+

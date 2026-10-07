@@ -412,10 +412,18 @@ export class Game {
     let low = q === 'baja';
     if (q === 'auto') {
       this._cost = this._cost == null ? cost : this._cost * 0.97 + cost * 0.03;
-      if (!this._autoLow && now > 6000 && this._cost > 15) this._autoLow = true;
+      // the GPU's share does not show in the cost, so watch the real frame rate too: sustained under
+      // 25 fps means the per-pixel lighting is too much for this phone (pauses and stalls ignored)
+      const iv = this._lastNow != null ? now - this._lastNow : 16;
+      this._lastNow = now;
+      if (iv < 120) this._iv = this._iv == null ? iv : this._iv * 0.98 + iv * 0.02;
+      if (!this._autoLow && now > 8000 && (this._cost > 15 || this._iv > 40)) this._autoLow = true;
       low = !!this._autoLow;
     }
-    if (low !== !!this.r.lowFx) { this.r.lowFx = low; Actor.lowFx = low; }
+    if (low !== !!this.r.lowFx) {
+      this.r.lowFx = low; Actor.lowFx = low;
+      this.r._staticKey = null;   // the static copy the lighting reads is only kept while it is on
+    }
   }
 
   tick(now, dt) {

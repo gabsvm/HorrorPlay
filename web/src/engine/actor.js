@@ -262,7 +262,7 @@ export class Actor {
     if (!this._rim || this._rim.width !== W || this._rim.height !== Hh) {
       this._rim = document.createElement('canvas'); this._rim.width = W; this._rim.height = Hh;
     }
-    const rc = this._rim.getContext('2d');
+    const rc = this._rim.getContext('2d', { willReadFrequently: true });   // on the CPU, like the sprite it is drawn into
     const pass = (ux, uy, width, fill, mode) => {
       rc.globalCompositeOperation = 'copy'; rc.drawImage(this._hi, 0, 0);
       rc.globalCompositeOperation = 'destination-out'; rc.drawImage(this._hi, -ux * width, -uy * width);

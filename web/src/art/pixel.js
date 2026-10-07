@@ -41,19 +41,12 @@ const LUT = new Uint8Array(32 * 32 * 32);
 
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => v / 16 - 0.47);
 
+// the palette packed as RGBA words in the platform's byte order, for writing a pixel in one store
+const LE = new Uint8Array(new Uint32Array([1]).buffer)[0] === 1;
+const PAL32 = new Uint32Array(PALETTE.map(([r, g, b]) => (LE ? (255 << 24) | (b << 16) | (g << 8) | r : (r << 24) | (g << 16) | (b << 8) | 255) >>> 0));
+
 export function quantizeData(data, w, h, { dither = 14, alphaCut = 110, edge = 0 } = {}) {
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const i = (y * w + x) * 4;
-      const a = data[i + 3];
-      if (a < alphaCut) { data[i + 3] = 0; continue; }
-      const k = 1;
-      const o = BAYER[(y & 3) * 4 + (x & 3)] * dither;
-      const r = Math.max(0, Math.min(255, data[i] * k + o)), g = Math.max(0, Math.min(255, data[i + 1] * k + o)), b = Math.max(0, Math.min(255, data[i + 2] * k + o));
-      const p = PALETTE[LUT[((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)]];
-      data[i] = p[0]; data[i + 1] = p[1]; data[i + 2] = p[2]; data[i + 3] = 255;
-    }
-  }
+  quantizeRect(data, w, 0, 0, w, h, dither, alphaCut);
   if (edge) {
     // inner outline: darken opaque pixels that touch transparency (sprites read better)
     const copy = new Uint8ClampedArray(data);
@@ -66,6 +59,44 @@ export function quantizeData(data, w, h, { dither = 14, alphaCut = 110, edge = 0
       }
     }
   }
+}
+
+// Snap the rectangle (x0, y0, w, h) of an image `stride` pixels wide. Used every frame for the live
+// props, so it stays tight: transparent pixels are skipped at once, each pixel written as one word.
+export function quantizeRect(data, stride, x0, y0, w, h, dither = 14, alphaCut = 110) {
+  const words = new Uint32Array(data.buffer, data.byteOffset, data.length >> 2);
+  const bay = new Float32Array(16);
+  for (let i = 0; i < 16; i++) bay[i] = BAYER[i] * dither;
+  for (let y = y0; y < y0 + h; y++) {
+    const row = y * stride, by = (y & 3) * 4;
+    for (let x = x0; x < x0 + w; x++) {
+      const n = row + x, i = n * 4;
+      const a = data[i + 3];
+      if (a < alphaCut) { if (a) data[i + 3] = 0; continue; }
+      const o = bay[by + (x & 3)];
+      let r = data[i] + o, g = data[i + 1] + o, b = data[i + 2] + o;
+      r = r < 0 ? 0 : r > 255 ? 255 : r; g = g < 0 ? 0 : g > 255 ? 255 : g; b = b < 0 ? 0 : b > 255 ? 255 : b;
+      words[n] = PAL32[LUT[((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3)]];
+    }
+  }
+}
+
+// The lookup as an image for the shader: 1024x32, slice b at x = b * 32, then r across and g down.
+export function paletteLut() {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 32;
+  const x = c.getContext('2d'), img = x.createImageData(1024, 32), d = img.data;
+  for (let r = 0; r < 32; r++) for (let g = 0; g < 32; g++) for (let b = 0; b < 32; b++) {
+    const p = PALETTE[LUT[(r << 10) | (g << 5) | b]], i = (g * 1024 + b * 32 + r) * 4;
+    d[i] = p[0]; d[i + 1] = p[1]; d[i + 2] = p[2]; d[i + 3] = 255;
+  }
+  // a colour already in the palette must come back as itself, or the painted layers would shift
+  for (const p of PALETTE) {
+    const [r, g, b] = p.map((v) => Math.floor((v / 255) * 31.99)), i = (g * 1024 + b * 32 + r) * 4;
+    d[i] = p[0]; d[i + 1] = p[1]; d[i + 2] = p[2];
+  }
+  x.putImageData(img, 0, 0);
+  return c;
 }
 
 // Reduce a supersampled canvas to `scale` of its size and snap it to the palette.
