@@ -2,6 +2,8 @@
 import { Renderer, W, H } from './renderer.js';
 import { Actor } from './actor.js';
 import { fgDressing } from '../art/build.js';
+import { live } from '../art/paint.js';
+import { Swing } from './life.js';
 import { paintBody, paintVision } from '../art/bodies.js';
 import { UI } from './ui.js';
 import { audio } from './audio.js';
@@ -312,7 +314,10 @@ export class Game {
   buildLayers(scene) {
     const key = `${scene.id}@${this.r.rs}@${scene.variant ? scene.variant(this.G) : ''}`;
     if (!this.layerCache.has(key)) {
-      const built = scene.build(this.r, this.G);
+      live.on = true; live.list = [];
+      let built;
+      try { built = scene.build(this.r, this.G); } finally { live.on = false; }
+      built.swings = live.list;
       this.layerCache.set(key, built);
     }
     const built = this.layerCache.get(key);
@@ -354,6 +359,7 @@ export class Game {
     this.player.facing = facing ?? 1;
     if (scene.actors) for (const a of scene.actors(this.G)) this.addActor(a);
     scene.life = scene.makeLife ? scene.makeLife(this.G) : [];
+    for (const s of scene.built.swings || []) scene.life.push(new Swing(s));
     this.r.cam.x = this.camTarget();
     this.zoomTarget = null;
     this.zoom = { z: window.FAST ? 1 : 1.07, x: this.player.x, y: scene.groundY - 160 };

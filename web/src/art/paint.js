@@ -6,6 +6,10 @@ import { P, shade, mix } from './palette.js';
 
 const TAU = Math.PI * 2;
 const cache = new Map();
+
+// While a scene is being built, things that should swing in the wind (hanging signs, the pawnbroker's
+// balls) leave only their iron bracket in the painting and are collected here, to be drawn live.
+export const live = { on: false, list: [] };
 export function noiseTex(key, w, h, opts) {
   if (!cache.has(key)) cache.set(key, noiseCanvas(w, h, opts));
   return cache.get(key);
@@ -656,25 +660,37 @@ export function pawnSign(ctx, x, y) {
   ctx.fillRect(x, y, 60, 4);
   ctx.fillRect(x, y - 16, 4, 24);
   ctx.beginPath(); ctx.moveTo(x + 4, y - 14); ctx.quadraticCurveTo(x + 30, y - 12, x + 50, y + 2); ctx.lineWidth = 2; ctx.strokeStyle = P.iron; ctx.stroke();
-  for (const [bx, by] of [[x + 44, y + 22], [x + 60, y + 22], [x + 52, y + 36]]) {
-    ctx.fillStyle = P.iron; ctx.fillRect(bx - 1, y + 4, 2, by - y - 12);
-    const g = ctx.createRadialGradient(bx - 3, by - 3, 1, bx, by, 9);
-    g.addColorStop(0, '#f3d27a'); g.addColorStop(1, '#7a5418');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(bx, by, 8, 0, TAU); ctx.fill();
-  }
+  // the three balls hang from the end of the bar
+  const px = x + 52, py = y + 4;
+  const balls = (c) => {
+    for (const [bx, by] of [[-8, 18], [8, 18], [0, 32]]) {
+      c.fillStyle = P.iron; c.fillRect(bx - 1, 0, 2, by - 8);
+      const g = c.createRadialGradient(bx - 3, by - 3, 1, bx, by, 9);
+      g.addColorStop(0, '#f3d27a'); g.addColorStop(1, '#7a5418');
+      c.fillStyle = g; c.beginPath(); c.arc(bx, by, 8, 0, TAU); c.fill();
+    }
+  };
+  if (live.on) live.list.push({ x: px, y: py, paint: balls, mass: 0.7 });
+  else { ctx.save(); ctx.translate(px, py); balls(ctx); ctx.restore(); }
 }
 
 // A painted board hanging from an iron bracket.
-export function hangingSign(ctx, x, y, text, { w = 110, h = 44, color = '#2a1c14', ink = '#c9a860' } = {}) {
+export function hangingSign(ctx, x, y, text, { w = 110, h = 44, color = '#2a1c14', ink = '#c9a860', still = false } = {}) {
   ctx.fillStyle = P.iron;
   ctx.fillRect(x, y, w + 24, 4);
   ctx.fillRect(x, y - 10, 4, 22);
-  ctx.fillRect(x + 20, y + 4, 2, 10); ctx.fillRect(x + 20 + w - 8, y + 4, 2, 10);
-  ctx.fillStyle = color; ctx.fillRect(x + 14, y + 14, w, h);
-  ctx.strokeStyle = ink; ctx.lineWidth = 2; ctx.strokeRect(x + 18, y + 18, w - 8, h - 8);
-  ctx.font = '600 15px "IM Fell English SC", Georgia, serif'; ctx.fillStyle = ink; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(text, x + 14 + w / 2, y + 14 + h / 2 + 1);
-  stain(ctx, x + 14, y + 14, w, h, { seed: text.length, alpha: 0.5 });
+  // the board on its two rods, drawn about the middle of the bar it hangs from
+  const px = x + 14 + w / 2, py = y + 4;
+  const board = (c) => {
+    c.fillStyle = P.iron; c.fillRect(6 - w / 2, 0, 2, 10); c.fillRect(w / 2 - 2, 0, 2, 10);
+    c.fillStyle = color; c.fillRect(-w / 2, 10, w, h);
+    c.strokeStyle = ink; c.lineWidth = 2; c.strokeRect(4 - w / 2, 14, w - 8, h - 8);
+    c.font = '600 15px "IM Fell English SC", Georgia, serif'; c.fillStyle = ink; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(text, 0, 10 + h / 2 + 1);
+    stain(c, -w / 2, 10, w, h, { seed: text.length, alpha: 0.5 });
+  };
+  if (live.on && !still) live.list.push({ x: px, y: py, paint: board, mass: 1 });
+  else { ctx.save(); ctx.translate(px, py); board(ctx); ctx.restore(); }
 }
 
 // Telegraph / bell wires sagging between two points.

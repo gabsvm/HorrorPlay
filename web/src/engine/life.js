@@ -2,18 +2,34 @@
 // Each element may implement update(dt, G), draw(ctx, t) (albedo, pixel-snapped with the props),
 // drawGlow(ctx, t) (additive light) and drawFog(ctx, t) (lit like fog). All coordinates are world space.
 import { rng } from '../art/noise.js';
+import { Actor } from './actor.js';
 
 const TAU = Math.PI * 2;
+
+// The wind comes in gusts: mostly a breath, now and then a shove.
+export const gust = (t) => 0.35 + 0.65 * Math.max(0, Math.sin(t * 0.23) * Math.sin(t * 0.71 + 1.3));
+
+// Something hanging from a bracket, rocking in the wind about its pivot (unless quality is low).
+export class Swing {
+  constructor({ x, y, paint, mass = 1 }) { Object.assign(this, { x, y, paint, mass }); this.ph = (x * 0.013) % TAU; }
+  draw(ctx, t) {
+    const a = Actor.lowFx ? 0 : (Math.sin(t * 1.7 / this.mass + this.ph) * 0.05 + Math.sin(t * 3.1 + this.ph * 2) * 0.012) * gust(t) * 1.6;
+    ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(a); this.paint(ctx); ctx.restore();
+  }
+}
 
 export class Smoke {
   constructor({ x, y, rate = 1, drift = 18, size = 1 }) { Object.assign(this, { x, y, rate, drift, size }); }
   drawFog(ctx, t) {
-    for (let i = 0; i < 6; i++) {
-      const k = ((t * 0.07 * this.rate + i / 6) % 1);
-      const px = this.x + k * this.drift * 6 + Math.sin(t * 0.5 + i) * 6, py = this.y - k * 160;
-      const r = (10 + k * 46) * this.size;
+    // at full quality the plume is thicker and curls: more puffs, each turning as it rises, bent by the gusts
+    const rich = !Actor.lowFx, n = rich ? 11 : 6, g0 = rich ? gust(t) : 0.5;
+    for (let i = 0; i < n; i++) {
+      const k = ((t * 0.07 * this.rate + i / n) % 1);
+      const curl = rich ? Math.sin(t * 0.9 + i * 1.7) * (4 + k * 18) : 0;
+      const px = this.x + k * this.drift * 6 * (0.6 + g0 * 0.8) + Math.sin(t * 0.5 + i) * 6 + curl, py = this.y - k * 160 * (1.1 - g0 * 0.3);
+      const r = (10 + k * 46) * this.size * (rich ? 1.15 : 1);
       const g = ctx.createRadialGradient(px, py, 1, px, py, r);
-      g.addColorStop(0, `rgba(255,255,255,${0.32 * (1 - k)})`); g.addColorStop(1, 'rgba(255,255,255,0)');
+      g.addColorStop(0, `rgba(255,255,255,${(rich ? 0.4 : 0.32) * (1 - k) ** 1.2})`); g.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.fillStyle = g; ctx.fillRect(px - r, py - r, r * 2, r * 2);
     }
   }

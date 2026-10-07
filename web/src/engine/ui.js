@@ -2,6 +2,7 @@
 import { audio } from './audio.js';
 import { prefs } from './prefs.js';
 import { pixelize } from '../art/pixel.js';
+import { Actor } from './actor.js';
 
 const $ = (id) => document.getElementById(id);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -216,6 +217,9 @@ export class UI {
     paint(hi.getContext('2d'), 1280, 720);
     const lo = pixelize(hi, 0.5, { dither: 8 });
     const ic = img.getContext('2d'); ic.imageSmoothingEnabled = false; ic.drawImage(lo, 0, 0);
+    // unless quality is low, the lantern really lights the close-up: relief read from the painting,
+    // raked from wherever the light is held
+    const relight = Actor.lowFx ? null : makeRelight(ic, lo);
     $('insp-title').textContent = title || '';
     box.classList.remove('hidden', 'busy');
     const dc = dark.getContext('2d');
@@ -227,14 +231,17 @@ export class UI {
       const t = performance.now() / 1000, fl = 1 + Math.sin(t * 9) * 0.02 + Math.sin(t * 23) * 0.015;
       dc.globalCompositeOperation = 'source-over';
       dc.clearRect(0, 0, 640, 360);
-      dc.fillStyle = 'rgba(2,2,4,0.94)'; dc.fillRect(0, 0, 640, 360);
-      dc.globalCompositeOperation = 'destination-out';
-      const g = dc.createRadialGradient(lx / 2, ly / 2, 10, lx / 2, ly / 2, 120 * fl);
-      g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.55, 'rgba(0,0,0,0.85)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-      dc.fillStyle = g; dc.fillRect(0, 0, 640, 360);
-      // a little ambient so the shape of the body is always there
-      dc.fillStyle = 'rgba(0,0,0,0.12)'; dc.fillRect(0, 0, 640, 360);
-      dc.globalCompositeOperation = 'source-over';
+      if (relight) relight(lx / 2, ly / 2, fl);
+      else {
+        dc.fillStyle = 'rgba(2,2,4,0.94)'; dc.fillRect(0, 0, 640, 360);
+        dc.globalCompositeOperation = 'destination-out';
+        const g = dc.createRadialGradient(lx / 2, ly / 2, 10, lx / 2, ly / 2, 120 * fl);
+        g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.55, 'rgba(0,0,0,0.85)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        dc.fillStyle = g; dc.fillRect(0, 0, 640, 360);
+        // a little ambient so the shape of the body is always there
+        dc.fillStyle = 'rgba(0,0,0,0.12)'; dc.fillRect(0, 0, 640, 360);
+        dc.globalCompositeOperation = 'source-over';
+      }
       // warm lantern tint where the light falls
       const w = dc.createRadialGradient(lx / 2, ly / 2, 4, lx / 2, ly / 2, 110 * fl);
       w.addColorStop(0, 'rgba(255,170,90,0.10)'); w.addColorStop(1, 'rgba(255,170,90,0)');
@@ -506,4 +513,66 @@ export class UI {
   }
 
   hideMenu() { this.el.menu.classList.add('hidden'); }
+}
+
+// The close-up lit per pixel by a lantern at (lx, ly): a height field from the painting's lightness
+// (gaps and wounds sink, cloth and skin stand), its slopes as normals, each pixel lit by how it
+// faces the lamp held a little above the picture, with a warm falloff and wet things glinting.
+function makeRelight(ic, lo) {
+  const w = lo.width, h = lo.height, n = w * h;
+  const src = lo.getContext('2d').getImageData(0, 0, w, h).data;
+  const H = new Float32Array(n), T = new Float32Array(n);
+  for (let i = 0; i < n; i++) H[i] = (src[i * 4] * 0.3 + src[i * 4 + 1] * 0.59 + src[i * 4 + 2] * 0.11) / 255;
+  for (let pass = 0; pass < 2; pass++) {          // soften it a little so the dither does not sparkle
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = y * w + x;
+      T[i] = (H[i] * 2 + H[y * w + Math.max(0, x - 1)] + H[y * w + Math.min(w - 1, x + 1)]) / 4;
+    }
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = y * w + x;
+      H[i] = (T[i] * 2 + T[Math.max(0, y - 1) * w + x] + T[Math.min(h - 1, y + 1) * w + x]) / 4;
+    }
+  }
+  const NX = new Float32Array(n), NY = new Float32Array(n), NZ = new Float32Array(n), wet = new Uint8Array(n);
+  const S = 7;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x;
+    const nx = (H[y * w + Math.max(0, x - 1)] - H[y * w + Math.min(w - 1, x + 1)]) * S;
+    const ny = (H[Math.max(0, y - 1) * w + x] - H[Math.min(h - 1, y + 1) * w + x]) * S;
+    const l = Math.sqrt(nx * nx + ny * ny + 1);
+    NX[i] = nx / l; NY[i] = ny / l; NZ[i] = 1 / l;
+    const r = src[i * 4], g = src[i * 4 + 1], b = src[i * 4 + 2];
+    wet[i] = r > g * 2.2 && r > b * 1.7 && r > 16 ? 1 : 0;
+  }
+  const out = ic.createImageData(w, h), o = out.data;
+  const AMB = 0.07, R0 = 128, Z = 34;
+  let last = '';
+  return (lx, ly, fl) => {
+    // the flame's flicker is felt at a few steps, so a still light is not recomputed every frame
+    const key = `${Math.round(lx)},${Math.round(ly)},${Math.round(fl * 60)}`;
+    if (key === last) return;
+    last = key;
+    const R = R0 * fl;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = y * w + x, j = i * 4;
+      const dx = lx - x, dy = ly - y, d2 = dx * dx + dy * dy;
+      let k = AMB, sp = 0;
+      if (d2 < R * R) {
+        const att = (1 - Math.sqrt(d2) / R) ** 1.6;
+        const l = Math.sqrt(d2 + Z * Z), ux = dx / l, uy = dy / l, uz = Z / l;
+        const lam = Math.max(0, NX[i] * ux + NY[i] * uy + NZ[i] * uz);
+        k += att * (0.35 + lam * 1.45);
+        if (wet[i]) {
+          const hz = uz + 1, hl = Math.sqrt(ux * ux + uy * uy + hz * hz);
+          sp = att * Math.max(0, (NX[i] * ux + NY[i] * uy + NZ[i] * hz) / hl) ** 30 * 255;
+        }
+      }
+      // the lantern is warm; the dark around it a little cold
+      o[j] = Math.min(255, src[j] * k * 1.08 + sp);
+      o[j + 1] = Math.min(255, src[j + 1] * k * 0.94 + sp * 0.85);
+      o[j + 2] = Math.min(255, src[j + 2] * (k * 0.8 + 0.02) + sp * 0.7);
+      o[j + 3] = 255;
+    }
+    ic.putImageData(out, 0, 0);
+  };
 }

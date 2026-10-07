@@ -151,10 +151,10 @@ export default {
       }
     });
     layers.push({ canvas: near, parallax: 1, kind: 'near' });
-    lights.push({ id: 'brazier', x: 1060, y: GROUND - 80, r: 520, color: [1, 0.42, 0.18], intensity: 1.0, flicker: 0.3, halo: 90 });
+    lights.push({ id: 'brazier', x: 1060, y: GROUND - 80, r: 520, color: [1, 0.42, 0.18], intensity: 1.0, flicker: 0.3, halo: 90, sparks: 18 });
     lights.push({ id: 'arch', x: 230, y: 420 + 160 - 140, r: 300, color: P.gas, intensity: 0.5, flicker: 0.1, halo: 50, shaft: true, shaftW: 90 });
     if (mob) {
-      [1300, 1500, 1700, 1900].forEach((x, i) => lights.push({ id: `torch${i}`, x, y: GROUND - 250, r: 420, color: [1, 0.5, 0.2], intensity: 0.9, flicker: 0.45, halo: 70 }));
+      [1300, 1500, 1700, 1900].forEach((x, i) => lights.push({ id: `torch${i}`, x, y: GROUND - 250, r: 420, color: [1, 0.5, 0.2], intensity: 0.9, flicker: 0.45, halo: 70, sparks: 7 }));
     }
     const fg = R.paintLayer(WIDTH * 1.3, (ctx) => {
       ctx.fillStyle = '#050505';

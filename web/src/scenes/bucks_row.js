@@ -93,7 +93,7 @@ export default {
     const fg = R.paintLayer(WIDTH * 1.3, (ctx) => {
       ctx.fillStyle = '#060708';
       ctx.fillRect(120, 610, 34, 110); ctx.fillRect(112, 600, 50, 14);
-      A.hangingSign(ctx, 0, 70, 'COFFEE ROOMS', { w: 150, h: 46 });
+      A.hangingSign(ctx, 0, 70, 'COFFEE ROOMS', { w: 150, h: 46, still: true });
       A.cart(ctx, 2600, 760);
       ctx.fillStyle = '#060708'; ctx.fillRect(3100, 0, 70, 720);
     });

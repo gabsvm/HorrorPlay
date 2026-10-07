@@ -5,8 +5,13 @@
 //   light : low-res lightmap (half-strength encoded)
 //   fog   : animated fog alpha, shaded by the lightmap (volumetric look)
 //   glow  : additive halos, wet reflections, rain
+//   stat  : the static part of near alone, so the shader can tell scenery from figures
+// Unless quality is low, the shader also lights the scenery per pixel: relief read from the
+// painted albedo, raked by the nearest lights (the player's lantern among them), wet ground that
+// mirrors what stands on it, a little bloom on bright things and rays from lamps through fog.
 import { noiseCanvas } from '../art/noise.js';
 import { pixelize, quantizeData } from '../art/pixel.js';
+import { Actor } from './actor.js';
 
 export const W = 1280, H = 720;
 // The game is drawn on a 640x360 pixel grid and scaled up with nearest-neighbour filtering.
@@ -16,15 +21,45 @@ const VS = `
 attribute vec2 p; varying vec2 vUv;
 void main(){ vUv = p*0.5+0.5; gl_Position = vec4(p,0.,1.); }`;
 
+const NL = 8;
 const FS = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
 precision mediump float;
-uniform sampler2D tFar, tNear, tFg, tLight, tFog, tGlow;
+#endif
+uniform sampler2D tFar, tNear, tFg, tLight, tFog, tGlow, tStat, tFront;
 uniform vec2 uRes;
 uniform float uTime, uMad, uFade, uFlash, uFogAmt, uRedFlash, uDesat;
 uniform vec3 uFogCol;
 uniform vec3 uZoom;
+uniform float uFx, uReflY, uWet, uCamX;
+uniform vec4 uL[${NL}];
+uniform vec3 uLC[${NL}];
+uniform vec4 uRay0, uRay1;
+uniform vec3 uRayC0, uRayC1;
 varying vec2 vUv;
 float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
+float vnoise(vec2 p){
+  vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+}
+float luma(vec3 c){ return dot(c, vec3(0.3, 0.59, 0.11)); }
+vec2 toUv(vec2 p){ return vec2(p.x / 1280.0, 1.0 - p.y / 720.0); }
+// rays from a lamp through the fog: march toward it, gathering fog the foreground does not hide
+vec3 rays(vec2 fp, vec4 R, vec3 c, float j){
+  if (R.z <= 0.0) return vec3(0.0);
+  vec2 d = R.xy - fp;
+  float fall = clamp(1.0 - length(d) / R.w, 0.0, 1.0);
+  if (fall <= 0.0) return vec3(0.0);
+  float acc = 0.0, w = 1.0;
+  for (int i = 0; i < 8; i++) {
+    vec2 su = toUv(fp + d * ((float(i) + j) / 8.0) * 0.9);
+    acc += texture2D(tFog, su).a * (1.0 - texture2D(tFg, su).a) * w;
+    w *= 0.86;
+  }
+  return c * acc * fall * fall * R.z;
+}
 float bayer(vec2 p){
   vec2 q = mod(floor(p), 4.0);
   float i = q.x + q.y * 4.0;
@@ -39,7 +74,58 @@ vec3 compose(vec2 uv){
   vec3 L = texture2D(tLight, uv).rgb * 2.0;
   vec4 far = texture2D(tFar, uv);
   vec4 near = texture2D(tNear, uv);
-  vec3 col = mix(far.rgb, near.rgb * L, near.a);
+  // distance haze: what is far off sits deeper in the fog than the street
+  if (uFx > 0.5) far.rgb = mix(far.rgb, uFogCol * 0.42, 0.22 * uFogAmt);
+  vec3 lit = near.rgb * L;
+  if (uFx > 0.5 && near.a > 0.5) {
+    vec2 px1 = 1.0 / uRes;
+    vec4 st = texture2D(tStat, uv);
+    // scenery is where the frame still shows the static layer; figures and props drawn live are not
+    float stat = st.a > 0.5 && distance(st.rgb, near.rgb) < 0.03 ? 1.0 : 0.0;
+    // relief from the painting itself: mortar and gaps are darker, so read darker as deeper
+    // (scenery reads its relief from the static layer alone, so a figure passing does not emboss the wall)
+    float hl, hr, hu, hd;
+    if (stat > 0.5) {
+      hl = luma(texture2D(tStat, uv - vec2(px1.x, 0.0)).rgb); hr = luma(texture2D(tStat, uv + vec2(px1.x, 0.0)).rgb);
+      hu = luma(texture2D(tStat, uv + vec2(0.0, px1.y)).rgb); hd = luma(texture2D(tStat, uv - vec2(0.0, px1.y)).rgb);
+    } else {
+      hl = luma(texture2D(tNear, uv - vec2(px1.x, 0.0)).rgb); hr = luma(texture2D(tNear, uv + vec2(px1.x, 0.0)).rgb);
+      hu = luma(texture2D(tNear, uv + vec2(0.0, px1.y)).rgb); hd = luma(texture2D(tNear, uv - vec2(0.0, px1.y)).rgb);
+    }
+    vec3 N = normalize(vec3((hl - hr) * 5.0, (hu - hd) * 5.0, 1.0));
+    vec2 fp = vec2(uv.x * 1280.0, (1.0 - uv.y) * 720.0);
+    // fresh blood stays wet: it catches the light as a sharp highlight
+    float blood = near.r > near.g * 2.2 && near.r > near.b * 1.7 && near.r > 0.06 ? 1.0 : 0.0;
+    vec3 add = vec3(0.0), shine = vec3(0.0);
+    for (int i = 0; i < ${NL}; i++) {
+      vec4 Li = uL[i];
+      if (Li.z <= 0.0) break;
+      vec2 d = Li.xy - fp;
+      float dist = length(d);
+      float att = clamp(1.0 - dist / Li.z, 0.0, 1.0);
+      att *= att;
+      if (att <= 0.0) continue;
+      // a bull's-eye lantern lights what is in front of it, and only spills behind
+      float cone = Li.w == 0.0 ? 1.0 : 0.2 + 0.8 * smoothstep(-0.25, 0.4, -d.x * Li.w / max(dist, 1.0));
+      vec3 ld = normalize(vec3(d, 44.0));
+      add += uLC[i] * att * cone * (dot(N, ld) - ld.z);
+      shine += uLC[i] * att * cone * pow(max(dot(N, normalize(ld + vec3(0.0, 0.0, 1.0))), 0.0), 26.0);
+    }
+    lit = near.rgb * max(L + add * mix(0.15, 2.4, stat), 0.0) + shine * blood * 0.9;
+    // wet ground mirrors the street: rippled, in puddles, strongest far off where the eye grazes it
+    if (uReflY > 0.0 && fp.y > uReflY && stat > 0.5) {
+      float dy = fp.y - uReflY, wx = fp.x + uCamX;
+      float rip = sin(dy * 0.6 - uTime * 2.2 + vnoise(vec2(wx * 0.04, dy * 0.12)) * 6.0) * (0.8 + dy * 0.035);
+      vec2 ruv = vec2(uv.x + rip / 1280.0, clamp(1.0 - (uReflY - dy * 1.15) / 720.0, 0.0, 1.0));
+      vec4 rs = texture2D(tStat, ruv);
+      vec3 refl = mix(texture2D(tFar, ruv).rgb, rs.rgb * texture2D(tLight, ruv).rgb * 2.0, rs.a);
+      float pud = smoothstep(0.4, 0.66, vnoise(vec2(wx * 0.012, dy * 0.07 + 3.0)));
+      float fres = mix(0.8, 0.22, clamp(dy / 80.0, 0.0, 1.0));
+      float k = clamp(uWet, 0.0, 1.5) * fres * (0.25 + 0.75 * pud) * 0.85;
+      lit = mix(lit, lit * 0.5 + refl, k);
+    }
+  }
+  vec3 col = mix(far.rgb, lit, near.a);
   vec4 fog = texture2D(tFog, uv);
   vec3 fogLit = uFogCol * (0.28 + L * 0.95);
   col = mix(col, fogLit, clamp(fog.a * uFogAmt, 0.0, 1.0));
@@ -51,6 +137,11 @@ vec3 compose(vec2 uv){
   fg += texture2D(tFg, uv + vec2(1.5, 1.5) * px1) * 0.1; fg += texture2D(tFg, uv - vec2(1.5, 1.5) * px1) * 0.1;
   fg += texture2D(tFg, uv + vec2(1.5, -1.5) * px1) * 0.1; fg += texture2D(tFg, uv - vec2(1.5, -1.5) * px1) * 0.1;
   col = mix(col, fg.rgb * (L * 0.55 + 0.04), fg.a);
+  if (uFx > 0.5) {
+    // a bank of fog passing close to the camera, in front of everything
+    float fr = texture2D(tFront, uv).a;
+    col = mix(col, uFogCol * (0.22 + L * 0.7), clamp(fr * uFogAmt * 0.55, 0.0, 0.6));
+  }
   col += texture2D(tGlow, uv).rgb;
   return col;
 }
@@ -67,6 +158,20 @@ void main(){
   if (m > 0.02) {
     col.r = compose(uv + c * ca).r;
     col.b = compose(uv - c * ca).b;
+  }
+  if (uFx > 0.5) {
+    // bloom: whatever burns brightest bleeds a little into its neighbours
+    // (read from the soft light and glow buffers, so it blooms without ghosting the crisp art)
+    vec3 b = vec3(0.0);
+    for (int i = 0; i < 6; i++) {
+      float a = float(i) * 1.047 + 0.5;
+      vec2 u2 = uv + vec2(cos(a), sin(a)) * 7.0 / uRes;
+      b += max(texture2D(tGlow, u2).rgb - 0.18, 0.0) + max(texture2D(tLight, u2).rgb * 2.0 - 1.25, 0.0) * 0.2;
+    }
+    col += b * 0.07;
+    vec2 fp = vec2(uv.x * 1280.0, (1.0 - uv.y) * 720.0);
+    float j = hash(floor(vUv * uRes) + fract(uTime) * 31.0);
+    col += rays(fp, uRay0, uRayC0, j) + rays(fp, uRay1, uRayC1, j);
   }
   // grading: teal shadows, warm highlights, gentle filmic shoulder
   float lum = dot(col, vec3(0.299, 0.587, 0.114));
@@ -134,13 +239,15 @@ export class Renderer {
     gl.enableVertexAttribArray(loc);
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     this.u = {};
-    for (const n of ['uRes', 'uTime', 'uMad', 'uFade', 'uFlash', 'uFogAmt', 'uFogCol', 'uRedFlash', 'uDesat', 'uZoom']) this.u[n] = gl.getUniformLocation(prog, n);
+    for (const n of ['uRes', 'uTime', 'uMad', 'uFade', 'uFlash', 'uFogAmt', 'uFogCol', 'uRedFlash', 'uDesat', 'uZoom',
+      'uFx', 'uReflY', 'uWet', 'uCamX', 'uL', 'uLC', 'uRay0', 'uRay1', 'uRayC0', 'uRayC1']) this.u[n] = gl.getUniformLocation(prog, n);
+    this.lightU = new Float32Array(NL * 4); this.lightC = new Float32Array(NL * 3);
     this.tex = {};
-    ['tFar', 'tNear', 'tFg', 'tLight', 'tFog', 'tGlow'].forEach((n, i) => {
+    ['tFar', 'tNear', 'tFg', 'tLight', 'tFog', 'tGlow', 'tStat', 'tFront'].forEach((n, i) => {
       const t = gl.createTexture();
       gl.activeTexture(gl.TEXTURE0 + i);
       gl.bindTexture(gl.TEXTURE_2D, t);
-      const f = i < 3 ? gl.NEAREST : gl.LINEAR; // art layers stay crisp, light and fog stay soft
+      const f = i < 3 || i === 6 ? gl.NEAREST : gl.LINEAR; // art layers stay crisp, light and fog stay soft
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, f);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, f);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -159,9 +266,10 @@ export class Renderer {
     this.view.height = Math.round(H * rs);
     this.gl.viewport(0, 0, this.view.width, this.view.height);
     const fw = this.view.width, fh = this.view.height;
-    this.far = mk2d(fw, fh); this.near = mk2d(fw, fh); this.fg = mk2d(fw, fh);
+    this.far = mk2d(fw, fh); this.near = mk2d(fw, fh); this.fg = mk2d(fw, fh); this.stat = mk2d(fw, fh);
     this.light = mk2d(320, 180);
     this.fog = mk2d(640, 360);
+    this.front = mk2d(320, 180);
     this.glow = mk2d(640, 360);
     this.dyn = mk2d(fw, fh);
     this.cDyn = this.dyn.getContext('2d', { willReadFrequently: true });
@@ -220,6 +328,12 @@ export class Renderer {
     cn.setTransform(1, 0, 0, 1, 0, 0);
     cn.clearRect(0, 0, this.near.width, this.near.height);
     for (const L of scene.layers) if (L.kind === 'near') cn.drawImage(L.canvas, Math.round(-camX * rs), Math.round(camY * rs));
+    if (!this.lowFx && this.staticDirty) {
+      const cs = this.stat.getContext('2d');
+      cs.clearRect(0, 0, this.stat.width, this.stat.height);
+      cs.drawImage(this.near, 0, 0);
+    }
+    Actor.lightsNow = this.lightsFrame || scene.lights;
     if (scene.drawNear || scene.life) this.dynamicPass(cn, (c, tt) => { if (scene.drawNear) scene.drawNear(c, tt); if (scene.life) for (const l of scene.life) l.draw && l.draw(c, tt); }, camX, camY, t);
     cn.setTransform(rs, 0, 0, rs, -camX * rs, camY * rs);
     const sorted = actors.filter((a) => a.visible).sort((a, b) => (a.z || 0) - (b.z || 0));
@@ -262,6 +376,7 @@ export class Renderer {
       if (L.off) continue;
       const fl = L.flicker ? 1 - L.flicker * (0.5 + 0.5 * Math.sin(t * 13 + L.x) * Math.sin(t * 7.3 + L.y)) * Math.random() * 0.6 - L.flicker * 0.15 : 1;
       const k = (L.intensity ?? 1) * fl;
+      L._k = k;
       const x = L.x, y = L.y;
       if (L.cone) {
         // directional lamp (bull's-eye lantern): a cone plus a small spill
@@ -314,6 +429,18 @@ export class Renderer {
       cfo.beginPath(); cfo.moveTo(L.x - w0, y0); cfo.lineTo(L.x + w0, y0); cfo.lineTo(L.x + sk + w1, y0 + len); cfo.lineTo(L.x + sk - w1, y0 + len); cfo.closePath(); cfo.fill();
     }
     if (scene.life) for (const l of scene.life) if (l.drawFog) l.drawFog(cfo, t);
+    if (!this.lowFx) {
+      // the near bank: big soft shapes, faster than the street, thin enough to see through
+      const cfr = this.front.getContext('2d'), k = 320 / W;
+      cfr.setTransform(1, 0, 0, 1, 0, 0);
+      cfr.clearRect(0, 0, 320, 180);
+      if (fog.front !== false && (fog.density ?? 0.5) > 0.2) {
+        const ox = ((-camX * 1.6 - drift * 2.2) * k) % (320 * 2.2);
+        cfr.globalAlpha = Math.min(1, 0.5 * (fog.density ?? 0.5) * (scene.indoor ? 0.4 : 1));
+        for (let i = -1; i < 3; i++) cfr.drawImage(this.fogTex2, ox + i * 320 * 2.2, 40 * k, 320 * 2.2, 760 * k);
+        cfr.globalAlpha = 1;
+      }
+    }
     if (!scene.indoor) for (const a of sorted) a.breath(cfo, t);
 
     // glow (halos, reflections, rain)
@@ -366,6 +493,7 @@ export class Renderer {
         cgl.fillRect(x, y, 2, 2);
       }
     }
+    if (!this.lowFx) this.atmosphere(cgl, scene, lights, t);
     if (wet && !this.lowFx) for (const a of sorted) if (!a.noRain) a.rainHits(cgl, t, scene.rain);
     if (this.drops && this.drops.length) {
       for (const d of this.drops) {
@@ -384,7 +512,44 @@ export class Renderer {
     if (scene.rain) this.drawRain(cgl, scene, camX, dt);
     if (overlay) { cgl.setTransform(fs, 0, 0, fs, 0, 0); overlay(cgl, t); }
 
-    this.present(scene);
+    if (!this.lowFx) this.pickLights(scene, lights, camX, camY);
+    this.present(scene, camX);
+  }
+
+  // Small things in the air: embers rising from fires, and indoors the dust that hangs in a room,
+  // seen only where a light reaches it.
+  atmosphere(ctx, scene, lights, t) {
+    for (const L of lights) {
+      if (L.off || !L.sparks) continue;
+      for (let i = 0; i < L.sparks; i++) {
+        const h1 = ((i * 7919 + L.x) % 1000) / 1000, h2 = ((i * 104729) % 997) / 997;
+        const life = 1.6 + h1 * 1.8, k = ((t + h2 * life) % life) / life;
+        const x = L.x + (h1 - 0.5) * 30 + Math.sin(t * (2 + h2 * 3) + i) * (6 + k * 26) + k * k * 40 * Math.sin(t * 0.23 + h1);
+        const y = L.y - 10 - k * (120 + h2 * 160);
+        const a = (1 - k) * (0.6 + 0.4 * Math.sin(t * 20 + i * 3)) * (L.intensity ?? 1);
+        if (a < 0.05) continue;
+        ctx.fillStyle = `rgba(255,${150 + (1 - k) * 90 | 0},${60 + (1 - k) * 60 | 0},${Math.min(1, a)})`;
+        ctx.fillRect(x, y, 2, 2);
+      }
+    }
+    if (scene.indoor) {
+      const span = scene.width || W;
+      for (let i = 0; i < 90; i++) {
+        const h1 = ((i * 7919) % 1000) / 1000, h2 = ((i * 104729) % 997) / 997, h3 = ((i * 15485863) % 991) / 991;
+        const x = h1 * span + Math.sin(t * 0.13 + i) * 30 + t * (2 + h3 * 4) % 60;
+        const y = 60 + ((h2 * (scene.groundY - 60) + Math.sin(t * 0.21 + i * 1.3) * 24 + t * (1 + h3 * 3)) % (scene.groundY - 60));
+        let lum = 0;
+        for (const L of lights) {
+          if (L.off || L.r > 1000) continue;
+          const d = Math.hypot(L.x - x, L.y - y);
+          if (d < L.r * 0.8) lum += (L._k ?? L.intensity ?? 1) * (1 - d / (L.r * 0.8));
+        }
+        const a = Math.min(0.5, lum * 0.7) * (0.5 + 0.5 * Math.sin(t * 1.7 + i * 2.1));
+        if (a < 0.03) continue;
+        ctx.fillStyle = `rgba(255,236,200,${a})`;
+        ctx.fillRect(x, y, 2, 2);
+      }
+    }
   }
 
   // droplets kicked up by a boot on a wet street
@@ -419,6 +584,31 @@ export class Renderer {
       ctx.moveTo(d.x, d.y); ctx.lineTo(d.x + 4 * d.s, d.y - 22 * d.s);
     }
     ctx.stroke();
+    if (!this.lowFx) {
+      // fine drizzle hanging in the air, blown about by the gusts, and a few big drops passing close to the eye
+      const g = 0.35 + 0.65 * Math.max(0, Math.sin(this.time * 0.23) * Math.sin(this.time * 0.71 + 1.3));
+      const fine = Math.round(220 * scene.rain), big = Math.round(10 * scene.rain);
+      (this.mist ||= []);
+      while (this.mist.length < fine + big) this.mist.push({ x: Math.random() * W, y: Math.random() * H, s: Math.random() });
+      this.mist.length = fine + big;
+      ctx.fillStyle = 'rgba(160,180,186,0.16)';
+      for (let i = 0; i < fine; i++) {
+        const d = this.mist[i];
+        d.y += (160 + d.s * 120) * dt; d.x -= (40 + g * 160) * (0.5 + d.s) * dt + Math.sin(this.time * 2 + i) * 0.3;
+        if (d.y > H) { d.y = -4; d.x = Math.random() * (W + 300); }
+        if (d.x < -10) d.x += W + 20;
+        ctx.fillRect(d.x, d.y, 2, 2 + d.s * 3);
+      }
+      ctx.strokeStyle = 'rgba(170,190,196,0.1)'; ctx.lineWidth = 5;
+      ctx.beginPath();
+      for (let i = fine; i < fine + big; i++) {
+        const d = this.mist[i];
+        d.y += 1500 * dt; d.x -= (180 + g * 120) * dt;
+        if (d.y > H + 60) { d.y = -80; d.x = Math.random() * (W + 300); }
+        ctx.moveTo(d.x, d.y); ctx.lineTo(d.x + 9, d.y - 60);
+      }
+      ctx.stroke();
+    }
     // splashes where drops hit the street
     if (scene.groundY) {
       ctx.fillStyle = 'rgba(170,190,195,0.22)';
@@ -430,6 +620,32 @@ export class Renderer {
     ctx.restore();
   }
 
+  // The few lights that rake the scenery per pixel this frame: those reaching the view, nearest and
+  // strongest first, the player's lantern always among them. Plus up to two lamps to throw rays.
+  pickLights(scene, lights, camX, camY) {
+    const cx = W / 2, cy = H / 2, cand = [];
+    for (const L of lights) {
+      if (L.off || !(L._k > 0.02) || L.r > 1000) continue;
+      const sx = L.x - camX, sy = L.y + camY;
+      const out = Math.max(0, Math.abs(sx - cx) - W / 2, Math.abs(sy - cy) - H / 2);
+      if (out > L.r) continue;
+      cand.push({ L, sx, sy, score: L._k * L.r / (300 + out) + (L.cone ? 100 : 0) });
+    }
+    cand.sort((a, b) => b.score - a.score);
+    const lu = this.lightU, lc = this.lightC;
+    lu.fill(0); lc.fill(0);
+    cand.slice(0, NL).forEach(({ L, sx, sy }, i) => {
+      lu.set([sx, sy, L.r * 0.9, L.cone ? L.cone.dir : 0], i * 4);
+      const k = L._k * (L.cone ? 1.15 : 0.9);
+      lc.set([L.color[0] * k, L.color[1] * k, L.color[2] * k], i * 3);
+    });
+    // rays only where there is fog to carry them
+    const fog = (scene.fog?.density ?? 0.5) * (scene.fog?.amount ?? 0.55);
+    this.rayU = cand.filter(({ L }) => !L.cone && L.rays !== false && (L.halo || 0) >= 40).slice(0, 2).map(({ L, sx, sy }) => ({
+      p: [sx, sy, Math.min(0.5, 0.95 * fog * L._k * (scene.indoor ? 0.6 : 1) * (L.raysK ?? 1)), Math.min(560, L.r * 1.05)], c: L.color,
+    }));
+  }
+
   upload(name, canvas) {
     const gl = this.gl, tx = this.tex[name];
     gl.activeTexture(gl.TEXTURE0 + tx.unit);
@@ -437,9 +653,23 @@ export class Renderer {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
   }
 
-  present(scene) {
+  present(scene, camX = 0) {
     const gl = this.gl, u = this.u, fx = this.fx;
-    if (this.staticDirty) { this.upload('tFar', this.far); this.upload('tFg', this.fg); }
+    if (this.staticDirty) { this.upload('tFar', this.far); this.upload('tFg', this.fg); if (!this.lowFx) this.upload('tStat', this.stat); }
+    if (!this.lowFx) this.upload('tFront', this.front);
+    gl.uniform1f(u.uFx, this.lowFx ? 0 : 1);
+    if (!this.lowFx) {
+      gl.uniform4fv(u.uL, this.lightU); gl.uniform3fv(u.uLC, this.lightC);
+      gl.uniform1f(u.uReflY, scene.reflectY && (scene.wet ?? 0) > 0 ? scene.reflectY : -1);
+      gl.uniform1f(u.uWet, scene.wet ?? 0);
+      gl.uniform1f(u.uCamX, camX);
+      const r = this.rayU || [];
+      for (let i = 0; i < 2; i++) {
+        const q = r[i];
+        gl.uniform4f(u['uRay' + i], ...(q ? q.p : [0, 0, 0, 1]));
+        gl.uniform3f(u['uRayC' + i], ...(q ? q.c : [0, 0, 0]));
+      }
+    }
     this.upload('tNear', this.near);
     this.upload('tLight', this.light); this.upload('tFog', this.fog); this.upload('tGlow', this.glow);
     gl.uniform2f(u.uRes, this.view.width, this.view.height);
