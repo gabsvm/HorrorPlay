@@ -14,6 +14,14 @@ WEB = os.path.dirname(os.path.dirname(HERE))
 OUT = os.path.join(WEB, 'assets', 'voices')
 REFS = os.path.join(HERE, '.refs')   # reference clips, rebuilt from cast.json (not committed)
 SR = 24000
+# what a reference reads: flat narration, or (ref: expr / boot) something with doubt and questions in it,
+# so the clone learns a voice that rises and falls
+EXPR = {
+    'man': ("No. No, that can't be right... I left them by the door, I know I did. "
+            "Who's been in here? Hello? Is someone there? ... Of course not. There's never anyone there."),
+    'child': ("Mum! Mum, look what I found down by the water! ... No, I wasn't near the edge, I promise. "
+              "Can I keep it? Please? I'll be ever so careful with it."),
+}
 REF_TEXT = ("It was a cold night in October, and the fog had come up from the river. "
             "I walked the length of the street twice, and I saw no one. Then I heard the bells.")
 
@@ -47,13 +55,25 @@ def kokoro(text, voice, speed=1.0):
 
 
 def reference(r):
+    """The clip Chatterbox clones. 'flat': Kokoro reads plain narration. 'expr': Kokoro reads the
+    expressive text. 'boot': Chatterbox performs the expressive text from the 'expr' clip, and that
+    performance is the reference, so the voice keeps a natural rise and fall."""
+    how = r.get('ref', 'flat')
     p = os.path.join(REFS, f"{r['name']}.wav")
-    if not os.path.exists(p):
-        wav = kokoro(REF_TEXT, r['kokoro'], 0.92)
-        if r.get('st'):
-            t = torch.from_numpy(wav).float()[None]
-            wav = torchaudio.functional.resample(t, round(SR * 2 ** (r['st'] / 12)), SR)[0].numpy()
+    if os.path.exists(p): return p
+    text = EXPR[r.get('text', 'man')] if how != 'flat' else REF_TEXT
+    wav = kokoro(text, r['kokoro'], 1.0 if how != 'flat' else 0.92)
+    if r.get('st'):
+        t = torch.from_numpy(wav).float()[None]
+        wav = torchaudio.functional.resample(t, round(SR * 2 ** (r['st'] / 12)), SR)[0].numpy()
+    if how != 'boot':
         sf.write(p, wav, SR)
+        return p
+    base = os.path.join(REFS, f"{r['name']}_kokoro.wav")
+    sf.write(base, wav, SR)
+    torch.manual_seed(11)
+    out = load_model().generate(text, audio_prompt_path=base, exaggeration=0.75, cfg_weight=0.3)
+    sf.write(p, torchaudio.functional.resample(out, load_model().sr, SR)[0].numpy(), SR)
     return p
 
 
@@ -93,6 +113,14 @@ def heard(wav, text):
 
 
 model = None
+def load_model():
+    global model
+    if model is None:
+        from chatterbox.tts import ChatterboxTTS
+        model = ChatterboxTTS.from_pretrained(device='cuda')
+    return model
+
+
 todo = [l for l in script if l['en'] and (not only or l['speaker'] in only) and (not ids or l['id'] in ids)]
 done = 0
 for line in todo:
@@ -103,9 +131,7 @@ for line in todo:
     path = os.path.join(OUT, line['id'] + '.ogg')
     if not force and not ids and index.get(line['id']) == stamp and os.path.exists(path):
         continue
-    if model is None:
-        from chatterbox.tts import ChatterboxTTS
-        model = ChatterboxTTS.from_pretrained(device='cuda')
+    load_model()
     exag, cfg = direction(line, r)
     takes = []
     for k in range(best):
