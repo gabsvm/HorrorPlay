@@ -239,21 +239,14 @@ export class Actor {
     const stale = this.moving || this.talking || this.turnT > 0 || this.grind || Math.abs(this.coatV || 0) > 0.6 || (this.walkAmt ?? 0) > 0.01 || key !== this._key || t - (this._drawnAt ?? -1) > (this.pose || this.shiver ? 0.12 : 0.2) || t < (this._drawnAt ?? 0);
     if (!stale) { this.blit(ctx, rs, ox, oy, W, Hh); return; }
     this._key = key; this._drawnAt = t;
+    if (mf) { this.drawModel(mf, lights, ox, oy, W, Hh); this.blit(ctx, rs, ox, oy, W, Hh); return; }
+    this._mf = null;
     const b = this._hi, bc = b.getContext('2d', { willReadFrequently: true });
     bc.setTransform(1, 0, 0, 1, 0, 0);
     bc.clearRect(0, 0, W, Hh);
-    if (mf) {
-      const M = this.model.meta, k = this.h / M.height, fx = (mf.i % M.cols) * M.w, fy = Math.floor(mf.i / M.cols) * M.h;
-      bc.translate(ox + (this.shiver || 0), oy);
-      bc.scale(mf.flip ? -k : k, k);
-      bc.drawImage(this.model.albedo, fx, fy, M.w, M.h, -M.ax, -M.ay, M.w, M.h);
-      this._mf = { ...mf, k, fx, fy, ox: ox + (this.shiver || 0), oy };
-    } else {
-      this._mf = null;
-      bc.translate(ox - this.x, oy - this.y);
-      if (this.turnT > 0 && !this.pose) this.drawFront(bc, t);
-      else this.drawFigure(bc, t);
-    }
+    bc.translate(ox - this.x, oy - this.y);
+    if (this.turnT > 0 && !this.pose) this.drawFront(bc, t);
+    else this.drawFigure(bc, t);
     bc.setTransform(1, 0, 0, 1, 0, 0);
     if (!Actor.lowFx) this.rimLights(bc, W, Hh, lights);
     bc.globalCompositeOperation = 'source-atop';
@@ -264,6 +257,32 @@ export class Actor {
     pixelizeInto(b, this._lo, { dither: 8, alphaCut: 100, edge: 0.62 });
     if (!Actor.lowFx) this.shadeVolume(this._lo, this._found || []);
     this.blit(ctx, rs, ox, oy, W, Hh);
+  }
+
+  // A modelled figure goes straight from its atlas to the pixel grid, with no full-size canvas in
+  // between: the frame is drawn reduced, then one pass lights it with its normals (rim included) and
+  // snaps it to the palette. Coordinates stay in the full-size sprite's frame (W x Hh) for normalsFor.
+  drawModel(mf, lights, ox, oy, W, Hh) {
+    const M = this.model.meta, k = this.h / M.height, fx = (mf.i % M.cols) * M.w, fy = Math.floor(mf.i / M.cols) * M.h;
+    const lo = this._lo, lw = lo.width, lh = lo.height, sx = lw / W, sy = lh / Hh, x0 = ox + (this.shiver || 0);
+    const c = lo.getContext('2d', { willReadFrequently: true });
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.clearRect(0, 0, lw, lh);
+    c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
+    c.setTransform((mf.flip ? -k : k) * sx, 0, 0, k * sy, x0 * sx, oy * sy);
+    c.drawImage(this.model.albedo, fx, fy, M.w, M.h, -M.ax, -M.ay, M.w, M.h);
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.globalCompositeOperation = 'source-atop';
+    const g2 = c.createLinearGradient(0, (oy - this.h) * sy, 0, oy * sy);
+    g2.addColorStop(0, 'rgba(150,170,190,0.10)'); g2.addColorStop(0.6, 'rgba(0,0,0,0)'); g2.addColorStop(1, 'rgba(0,0,0,0.4)');
+    c.fillStyle = g2; c.fillRect(0, 0, lw, lh);
+    c.globalCompositeOperation = 'source-over';
+    this._mf = { ...mf, k, fx, fy, ox: x0, oy };
+    const final = { dither: 8, alphaCut: 100, edge: 0.62 };
+    if (!Actor.lowFx) { this._found = this.lightsAround(lights); this.shadeVolume(lo, this._found, final); return; }
+    const img = c.getImageData(0, 0, lw, lh);
+    quantizeData(img.data, lw, lh, final);
+    c.putImageData(img, 0, 0);
   }
 
   // Which frame of the model to show: a hand toward a hotspot at the nearest height rendered, a pose
@@ -295,11 +314,10 @@ export class Actor {
     return (this.talking && cyc('talk', gesture)) || cyc('idle', breath);
   }
 
-  // Edge lighting from the actual lights in the scene. For each of the two strongest lights, the
-  // silhouette is subtracted from itself shifted toward the light: what remains is the rim that
-  // faces it, which is painted in the light's colour. The far side gets a band of shadow.
-  rimLights(bc, W, Hh, lights) {
-    const s = this.h / 200, cy = this.y - this.h * 0.6;
+  // The lights that reach this figure, strongest first, as unit vectors from its chest toward them
+  // with a strength (and the lantern it carries, from below and in front).
+  lightsAround(lights) {
+    const cy = this.y - this.h * 0.6;
     const found = [];
     for (const L of lights) {
       if (L.off || L.cone) continue;
@@ -310,7 +328,15 @@ export class Actor {
     // a lantern lights its bearer from below and in front
     if (this.lantern && this.lanternOn) found.push({ ux: this.facing * 0.6, uy: 0.8, k: 0.5, c: P.lantern || [1, 0.75, 0.45] });
     found.sort((a, b) => b.k - a.k);
-    this._found = found;
+    return found;
+  }
+
+  // Edge lighting from the actual lights in the scene. For each of the two strongest lights, the
+  // silhouette is subtracted from itself shifted toward the light: what remains is the rim that
+  // faces it, which is painted in the light's colour. The far side gets a band of shadow.
+  rimLights(bc, W, Hh, lights) {
+    const s = this.h / 200;
+    const found = (this._found = this.lightsAround(lights));
     if (!this._rim || this._rim.width !== W || this._rim.height !== Hh) {
       this._rim = document.createElement('canvas'); this._rim.width = W; this._rim.height = Hh;
     }
@@ -333,7 +359,7 @@ export class Actor {
   // dark each part is (folds, the gap between arm and coat), its slope gives a normal per pixel, and
   // every pixel is lit by the two strongest lights plus a faint sky. The side away from the lamp
   // sinks into shadow, the side toward it is modelled, like a body and not a cut-out.
-  shadeVolume(lo, found) {
+  shadeVolume(lo, found, final = null) {
     const w = lo.width, h = lo.height, n = w * h;
     const c = lo.getContext('2d', { willReadFrequently: true });
     const img = c.getImageData(0, 0, w, h), d = img.data;
@@ -372,6 +398,14 @@ export class Actor {
     // flattened into scalars (three lights at most, unused ones weightless): this loop runs for
     // every pixel of every sprite rebuilt
     while (L.length < 3) L.push({ x: 0, y: 0, z: 1, w: 0 });
+    // a modelled figure gets its rim light here instead of from rimLights: a pixel on the silhouette
+    // whose neighbour toward a light (one or two pixels off) is empty, and whose normal faces that
+    // light, catches its colour, as a thin band like the painted figures'. In the rain the tops of the
+    // shoulders and the hat shine faintly.
+    const rim = (ux, uy, c, a) => ({ x: ux, y: uy, r: c[0] * 255, g: c[1] * 255, b: c[2] * 255, a,
+      o1: Math.round(ux) + Math.round(uy) * w, o2: Math.round(ux * 2) + Math.round(uy * 2) * w });
+    const rims = NM ? found.slice(0, 2).map((f) => rim(f.ux, f.uy, f.c, Math.min(0.85, f.k * 1.2))) : [];
+    if (NM && this.wet) rims.push(rim(0, -1, [0.67, 0.75, 0.8], 0.13));
     const [a, b, e] = L, iw = 0.92 / sumW;
     const ax = a.x * a.w, ay = a.y * a.w, az = a.z * a.w, bx = b.x * b.w, by = b.y * b.w, bz = b.z * b.w, ex = e.x * e.w, ey = e.y * e.w, ez = e.z * e.w;
     const aw = a.w, bw = b.w, ew = e.w;
@@ -393,10 +427,19 @@ export class Actor {
         if (bw) { q = nx * bx + ny * by + nz * bz; if (q > 0) lit += q; }
         if (ew) { q = nx * ex + ny * ey + nz * ez; if (q > 0) lit += q; }
         const f = 0.48 + lit * iw;
-        d[p] = Math.min(255, d[p] * f); d[p + 1] = Math.min(255, d[p + 1] * f); d[p + 2] = Math.min(255, d[p + 2] * f * (f < 0.8 ? 1.06 : 1));
+        let r = d[p] * f, g = d[p + 1] * f, bl = d[p + 2] * f * (f < 0.8 ? 1.06 : 1);
+        for (const m of rims) {
+          q = nx * m.x + ny * m.y;
+          if (q <= 0) continue;
+          const j1 = i + m.o1, j2 = i + m.o2;
+          if ((j1 >= 0 && j1 < n && d[j1 * 4 + 3]) && (j2 >= 0 && j2 < n && d[j2 * 4 + 3])) continue;
+          const a = m.a * (0.55 + 0.45 * q);
+          r += m.r * a; g += m.g * a; bl += m.b * a;
+        }
+        d[p] = r > 255 ? 255 : r; d[p + 1] = g > 255 ? 255 : g; d[p + 2] = bl > 255 ? 255 : bl;
       }
     }
-    quantizeData(d, w, h, { dither: 6, alphaCut: 100 });
+    quantizeData(d, w, h, final || { dither: 6, alphaCut: 100 });
     c.putImageData(img, 0, 0);
   }
 

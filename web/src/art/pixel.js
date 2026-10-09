@@ -45,17 +45,26 @@ const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => 
 const LE = new Uint8Array(new Uint32Array([1]).buffer)[0] === 1;
 const PAL32 = new Uint32Array(PALETTE.map(([r, g, b]) => (LE ? (255 << 24) | (b << 16) | (g << 8) | r : (r << 24) | (g << 16) | (b << 8) | 255) >>> 0));
 
+let edgeBuf = null;
+
 export function quantizeData(data, w, h, { dither = 14, alphaCut = 110, edge = 0 } = {}) {
   quantizeRect(data, w, 0, 0, w, h, dither, alphaCut);
   if (edge) {
-    // inner outline: darken opaque pixels that touch transparency (sprites read better)
-    const copy = new Uint8ClampedArray(data);
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      const i = (y * w + x) * 4;
-      if (!copy[i + 3]) continue;
-      const open = (xx, yy) => xx < 0 || yy < 0 || xx >= w || yy >= h || !copy[(yy * w + xx) * 4 + 3];
-      if (open(x - 1, y) || open(x + 1, y) || open(x, y - 1) || open(x, y + 1)) {
-        data[i] *= edge; data[i + 1] *= edge; data[i + 2] *= edge;
+    // inner outline: darken opaque pixels that touch transparency (sprites read better). Done on a
+    // copy of the alpha alone, since every sprite rebuild runs through here.
+    const n = w * h;
+    if (!edgeBuf || edgeBuf.length < n) edgeBuf = new Uint8Array(n);
+    const A = edgeBuf;
+    for (let i = 0; i < n; i++) A[i] = data[i * 4 + 3] ? 1 : 0;
+    for (let y = 0; y < h; y++) {
+      const row = y * w;
+      for (let x = 0; x < w; x++) {
+        const j = row + x;
+        if (!A[j]) continue;
+        if (x === 0 || y === 0 || x === w - 1 || y === h - 1 || !A[j - 1] || !A[j + 1] || !A[j - w] || !A[j + w]) {
+          const i = j * 4;
+          data[i] *= edge; data[i + 1] *= edge; data[i + 2] *= edge;
+        }
       }
     }
   }

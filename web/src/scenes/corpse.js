@@ -44,7 +44,9 @@ export function drawCorpse(ctx, t, opts) {
     c._mf = mf && { ...mf, ox: mf.ox - ox, oy: mf.oy - oy };
     // rim and volume as if she were a figure lying across the middle of the sprite
     Object.assign(c, { x, y: y - 20 * s + h * 0.6, _hi: sp.hi, lantern: false, wet: false });
-    c.rimLights(bc, W, Hh, Actor.lightsNow || []);
+    // the painted body gets its rim from the silhouette; the modelled one from its normals, in shadeVolume
+    if (c._mf) c._found = c.lightsAround(Actor.lightsNow || []);
+    else c.rimLights(bc, W, Hh, Actor.lightsNow || []);
     pixelizeInto(sp.hi, sp.lo, { dither: 8, alphaCut: 100, edge: 0.5 });
     c.shadeVolume(sp.lo, c._found || []);
     Object.assign(c, keep);
