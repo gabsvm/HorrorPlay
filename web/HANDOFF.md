@@ -24,14 +24,14 @@ hosted publicly.
 | Full playthrough (expects 22 deductions, no errors) | `node tools/walk.mjs` |
 | Bad-player playthrough | `node tools/walk.mjs alt` (expects `"ok": true`) |
 | Audio | `node tools/audio-smoke.mjs` |
-| Sprite lab | `tests/sprites.html?who=&s=&cols=&only=&portrait=1` |
+| Sprite lab | `tests/sprites.html?who=&s=&cols=&only=` |
 | Artifact build | `npx esbuild src/main.js --bundle --format=iife --minify --outfile=<scratch>/bundle.js`, then `python tools/build-artifact.py <scratch>/el-huesped.html` (it reads `bundle.js` next to the output) |
 | Republish | Artifact publish to `https://claude.ai/artifact/AZiipwBV3rbng52121UQsX` |
 | APK | `VERSION=1.0-rcN bash tools/build-apk.sh`, then copy `dist/el-huesped.apk` to `dist/ElHuesped-1.0-rcN.apk` and send it with SendUserFile. The version code is the git commit count, so each build installs over the previous one. The debug keystore `android/debug.keystore` is local and gitignored. |
 | Character models | `blender -b --factory-startup -P tools/blender/figure.py -- <scratch>/m/<who> <who> [anims]`, then `python tools/blender/pack.py <scratch>/m/<who> <who>` (writes `assets/models/<who>/`). The cast is in `tools/blender/cast.py`; Blender 5.2 is installed with winget; pack needs Pillow and numpy. |
 | Scenery props | `blender -b --factory-startup -P tools/blender/props.py -- <scratch>/props [names]`, then `python tools/blender/pack_props.py <scratch>/props` (writes `assets/props/`). Painters call `drawProp(ctx, name, x, y)` from `src/art/models.js` and fall back to their own shapes. |
 | Close-ups | Generate with `CLOSEUPS.md`, then `python tools/closeups.py <folder>` (writes `assets/closeups/`); `paintBody` uses them when present. |
-| Portraits | Generate with `PORTRAITS.md`, then `python tools/portraits.py <folder>` (writes `assets/portraits/`). Missing ones fall back to the painted bust. |
+| Script | `node tools/script/export.mjs` writes `GUION.md`: every line, choice and document, by scene, with the story bible as context (run `npm i` in `tools/script` once). |
 | Rebuild audio | `python tools/build-audio.py` (CC0 sources in the gitignored `assets-src/audio/`; credits in `assets/audio/CREDITS.md`) |
 
 Dev URL parameters: `?scene=<id>&x=<px>&noenter&flags=a,b` or `?chapter=<n>`.
@@ -95,8 +95,6 @@ not rendered, which falls back to `drawFigure`. `shadeVolume` lights the frame w
 lantern glass lit (Actor dims it when the lantern is out). `releaseModels` (called by `goto`) drops the
 decoded atlases nobody in the new scene uses; `loadModel` reloads them on demand. The victims (polly,
 annie, kate) are models too, drawn by `corpse.js`, with the cape or sacking draped in Blender.
-Portraits: `src/engine/portraits.js` (preloaded at start), `Actor.drawPainted`. Mrs Richardson has
-none yet: the image sent for her was the widow's.
 
 Corpses: `src/scenes/corpse.js` `drawCorpse` puts the figure on its back. Above low quality it goes
 through the same sprite pass (rim and volume, re-rendered at about 3 fps).
@@ -115,7 +113,7 @@ Atmosphere, in `renderer.atmosphere`:
 - Denser, curling `Smoke`.
 
 UI is in `src/engine/ui.js`.
-- `say` handles dialogue and portraits; there are also the notebook and the satchel inventory.
+- `say` shows dialogue as subtitles (name over the line, nothing behind it, no portraits); there are also the notebook and the satchel inventory.
 - `inspect()` is the crime-scene close-up. Above low quality it is relit per pixel by `makeRelight`
   from the pointer, repainting only the circle around the light. `vision()` shows flash visions.
 

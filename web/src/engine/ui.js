@@ -1,7 +1,6 @@
 // DOM user interface: dialogue, choices, documents, notebook, inventory, cards.
 import { audio } from './audio.js';
 import { prefs } from './prefs.js';
-import { lineKey } from './voicekey.js';
 import { pixelize } from '../art/pixel.js';
 import { Actor } from './actor.js';
 
@@ -12,7 +11,7 @@ export class UI {
   constructor() {
     this.el = {
       ui: $('ui'), hud: $('hud'), date: $('date'), clock: $('clock'), sanity: $('sanity-fill'),
-      dlg: $('dialogue'), dlgName: $('dlg-name'), dlgText: $('dlg-text'), dlgNext: $('dlg-next'), dlgPortrait: $('dlg-portrait'),
+      dlg: $('dialogue'), dlgName: $('dlg-name'), dlgText: $('dlg-text'), dlgNext: $('dlg-next'),
       choices: $('choices'), toast: $('toast'), hover: $('hover-label'),
       inv: $('inventory'), nb: $('notebook'), clueList: $('clue-list'), dedList: $('deduction-list'),
       profList: $('profile-list'), profTitle: $('profile-title'), nbFeedback: $('nb-feedback'),
@@ -51,17 +50,18 @@ export class UI {
 
   advance() { if (this._advance) this._advance(); }
 
-  // Typewriter dialogue. Click once to complete the line, again to continue.
-  async say(name, text, { style = '', auto = 0, portrait = null } = {}) {
+  // Typewriter dialogue, as subtitles: the name over the line, nothing behind it to cover the scene.
+  // Click once to complete the line, again to continue. Thoughts carry no name.
+  async say(name, text, { style = '', auto = 0 } = {}) {
     if (window.FAST) { (window.LOG ||= []).push(`${name || '·'}: ${text.replace(/<[^>]+>/g, '')}`); return; }
     const { dlg, dlgName, dlgText, dlgNext } = this.el;
-    const fresh = dlg.classList.contains('hidden') || this._portraitOf !== portrait;
+    const speaker = style === 'thought' ? '' : name || '';
+    const fresh = dlg.classList.contains('hidden') || this._speaker !== speaker;
+    this._speaker = speaker;
     dlg.classList.remove('hidden');
-    dlg.classList.toggle('has-portrait', !!portrait);
     dlg.classList.toggle('voice', style === 'voice');
     if (fresh) { dlg.classList.remove('enter'); void dlg.offsetWidth; dlg.classList.add('enter'); }
-    this.portrait(portrait, style === 'voice' ? 'voice' : 'listen');
-    dlgName.textContent = name || '';
+    dlgName.textContent = speaker;
     dlgText.className = style;
     dlgNext.style.visibility = 'hidden';
     const html = text;
@@ -69,55 +69,25 @@ export class UI {
     let done = false;
     let skip = false;
     this._advance = () => { skip = true; };
-    // the recorded line, if there is one: the text then keeps pace with the voice
-    const voiced = await audio.speak(lineKey(name, style, text), {
-      kind: style === 'thought' ? 'thought' : style === 'voice' ? (name ? 'trance' : 'voice') : 'say',
-      x: portrait && portrait.x,
-    });
-    this._voiced = voiced;
-    const beat = (ch) => (ch === '.' || ch === '?' || ch === '!' ? 7 : ch === ',' ? 3 : 1);
-    let speed = (style === 'voice' ? 55 : 22) * prefs.text;
-    if (voiced) speed = Math.min(speed || 22, (voiced.dur * 850) / [...plain].reduce((n, ch) => n + beat(ch), 0));
+    const speed = (style === 'voice' ? 55 : 22) * prefs.text;
     if (!speed) skip = true;
-    if (style !== 'thought' && style !== 'voice') this._portraitMode = 'talk';
     for (let i = 1; i <= plain.length && !skip; i++) {
       dlgText.textContent = plain.slice(0, i);
       const ch = plain[i - 1];
-      if (i % 3 === 0 && style !== 'voice' && !voiced) audio.tick();
-      await wait(speed * beat(ch));
+      if (i % 3 === 0 && style !== 'voice') audio.tick();
+      await wait(ch === '.' || ch === '?' || ch === '!' ? speed * 7 : ch === ',' ? speed * 3 : speed);
     }
     dlgText.innerHTML = html;
-    if (this._portraitMode === 'talk') this._portraitMode = 'listen';
     dlgNext.style.visibility = 'visible';
-    if (voiced && this._portraitMode === 'listen' && style !== 'thought' && style !== 'voice') {
-      // still speaking after the text is out: the mouth keeps going until the voice stops
-      this._portraitMode = 'talk';
-      voiced.ended.then(() => { if (this._voiced === voiced && this._portraitMode === 'talk') this._portraitMode = 'listen'; });
-    }
     await new Promise((res) => {
       this._advance = () => { if (!done) { done = true; res(); } };
-      // a line that goes on by itself waits for its voice to finish too
-      if (auto) Promise.all([wait(auto), voiced ? voiced.ended : null]).then(() => this._advance && this._advance());
+      if (auto) setTimeout(() => this._advance && this._advance(), auto);
     });
     this._advance = null;
-    if (voiced) voiced.stop();
-    this._voiced = null;
     audio.click();
   }
 
-  hideDialogue() { this.el.dlg.classList.add('hidden'); this.portrait(null); }
-
-  // The speaker's animated bust beside the text, redrawn a dozen times a second.
-  portrait(actor, mode = 'listen') {
-    this._portraitOf = actor;
-    this._portraitMode = mode;
-    if (!actor) { clearInterval(this._portraitT); this._portraitT = null; return; }
-    const draw = () => {
-      try { this._portraitOf.drawPortrait(this.el.dlgPortrait, performance.now() / 1000, this._portraitMode); } catch (e) { console.error(e); }
-    };
-    draw();
-    if (!this._portraitT) this._portraitT = setInterval(() => { if (this._portraitOf) draw(); }, 80);
-  }
+  hideDialogue() { this.el.dlg.classList.add('hidden'); this._speaker = null; }
 
   async choice(options, { timeout = 0, def = 0 } = {}) {
     if (window.FAST) { const k = (window.PICKS || []).length ? window.PICKS.shift() : 0; (window.LOG ||= []).push(`  > ${options[Math.min(k, options.length - 1)]}`); return Math.min(k, options.length - 1); }

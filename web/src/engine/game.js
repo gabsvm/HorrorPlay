@@ -2,7 +2,6 @@
 import { Renderer, W, H } from './renderer.js';
 import { Actor } from './actor.js';
 import { modelFor, releaseModels } from './model.js';
-import { loadPortraits } from './portraits.js';
 import { loadCloseups } from '../art/closeups.js';
 import { loadProps } from '../art/models.js';
 import { buzz } from './haptics.js';
@@ -50,7 +49,6 @@ export class Game {
     this.player = new Actor('Thomas', { h: 206, hat: 'bowler', coat: '#23262b', coatLen: 0.88, flare: 1.2, lantern: true, speed: 150, z: 10, collarUp: true, sideburns: true, hair: '#1a1410', gloves: '#2a221c', scarf: '#4a1612', stubble: 'rgba(30,22,18,0.35)' });
     this.player.isPlayer = true;
     this.player.model = modelFor('Thomas');
-    loadPortraits();
     loadCloseups();
     loadProps();
     this.player.onStep = (a) => {
@@ -710,16 +708,15 @@ export class Game {
           npc.lookAt = { x: p.x, y: p.y - p.h * 0.9 };
           if (p.visible && !p.pose && !game.player.moving) { p.facing = npc.x >= p.x ? 1 : -1; p.lookAt = { x: npc.x, y: npc.y - npc.h * 0.9 }; }
         }
-        const portrait = speaking ? game.player : npc;
-        if (portrait) game.frameDialogue(npc);
-        try { await game.ui.say(who, text, { portrait, ...opts }); } finally {
+        if (speaking || npc) game.frameDialogue(npc);
+        try { await game.ui.say(who, text, opts); } finally {
           if (speaking) game.player.talking = false;
           if (npc && !was) npc.talking = false;
           if (npc) { npc.lookAt = null; game.player.lookAt = null; }
         }
       },
-      think: (text) => (game.frameDialogue(null, 1.05), game.ui.say('Ashgrove', text, { style: 'thought', portrait: game.player.visible ? game.player : null })),
-      voice: (text, opts = {}) => { audio.whisper(2.2, 0.16); return game.ui.say(opts.name ?? '', text, { style: 'voice', portrait: game.player.visible ? game.player : null, ...opts }); },
+      think: (text) => (game.frameDialogue(null, 1.05), game.ui.say('Ashgrove', text, { style: 'thought' })),
+      voice: (text, opts = {}) => { audio.whisper(2.2, 0.16); return game.ui.say(opts.name ?? '', text, { style: 'voice', ...opts }); },
       narrate: (text) => game.ui.say('', text, { style: 'thought' }),
       choice: (opts, o) => { game.ui.hideDialogue(); return game.ui.choice(opts, o); },
       doc: (html) => game.ui.doc(html),

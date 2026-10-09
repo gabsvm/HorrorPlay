@@ -148,6 +148,6 @@ Cada deducción correcta añade un rasgo al **Perfil del sospechoso**: *zurdo, s
 
 ## 8. Reglas de producción
 
-- Los escenarios se pintan por código; los personajes se modelan en Blender (`tools/blender`) y los retratos de diálogo son pinturas generadas con IA (`PORTRAITS.md`). Todo se termina como pixel-art HD (640×360, una paleta curada en `src/art/pixel.js`) con iluminación por encima. No se usan packs de terceros.
+- Los escenarios se pintan por código; los personajes se modelan en Blender (`tools/blender`). Todo se termina como pixel-art HD (640×360, una paleta curada en `src/art/pixel.js`) con iluminación por encima. No se usan packs de terceros.
 - La violencia ocurre fuera de plano; lo que se ve es su resultado, con el realismo de un expediente policial de 1888, y sus consecuencias humanas.
 - Los diálogos son breves: nunca más de tres líneas seguidas sin que el jugador haga algo.

@@ -10,44 +10,30 @@ import { Smoke, Drip, Rat, Crow, Moths, Ripples } from '../engine/life.js';
 const WIDTH = 2200, GROUND = 628;
 const isMob = (G) => G.flag('mob');
 
-// A Great Eastern train crossing the viaduct: carriage windows, sparks and a long tail of steam.
-class Train {
-  constructor() { this.t = 6; this.x = -2000; this.active = false; }
-  update(dt, G) {
-    this.t -= dt;
-    if (!this.active && this.t <= 0) { this.active = true; this.x = -900; G.audio.thud(); G.audio.train(); G.game.r.cam.shake = 3; }
-    if (this.active) {
-      this.x += 520 * dt;
-      if (Math.random() < dt * 4) G.game.r.cam.shake = Math.max(G.game.r.cam.shake, 1.5);
-      if (this.x > 1500) { this.active = false; this.t = 35 + Math.random() * 25; }
-    }
-  }
-  draw(ctx) {
-    if (!this.active) return;
-    const y = 68;
-    ctx.fillStyle = '#0b0c0d';
-    ctx.fillRect(this.x + 520, y - 44, 120, 44); ctx.fillRect(this.x + 600, y - 70, 18, 28); ctx.fillRect(this.x + 520, y - 56, 46, 14);
-    for (let i = 0; i < 4; i++) {
-      const cx = this.x + i * 128;
-      ctx.fillStyle = '#121416'; ctx.fillRect(cx, y - 40, 120, 40);
-      ctx.fillStyle = '#d8a050'; for (let k = 0; k < 4; k++) ctx.fillRect(cx + 10 + k * 28, y - 32, 14, 12);
-    }
-  }
-  drawGlow(ctx) {
-    if (!this.active) return;
-    ctx.fillStyle = 'rgba(255,170,80,0.5)';
-    for (let i = 0; i < 4; i++) for (let k = 0; k < 4; k++) ctx.fillRect(this.x + i * 128 + 10 + k * 28, 36, 14, 12);
-    ctx.fillStyle = 'rgba(255,120,40,0.8)'; ctx.fillRect(this.x + 560 + Math.random() * 60, 70 + Math.random() * 6, 3, 3);
-  }
-  drawFog(ctx, t) {
-    if (!this.active) return;
-    for (let i = 0; i < 8; i++) {
-      const px = this.x + 609 - i * 70, py = -10 - i * 6 + Math.sin(t * 3 + i) * 4, r = 30 + i * 12;
-      const g = ctx.createRadialGradient(px, py, 2, px, py, r);
-      g.addColorStop(0, `rgba(255,255,255,${0.55 - i * 0.05})`); g.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = g; ctx.fillRect(px - r, py - r, r * 2, r * 2);
-    }
-  }
+// Paying Wren: she won't come near him, so the penny goes on the hitching post and he steps back.
+// Started by talking to her or by offering her the penny; Thomas finds the post on his own.
+async function payWren(G) {
+  G.take('penique');
+  G.flag('penique_given', true);
+  G.flag('wren_paid', true);
+  await G.walk(1660);
+  G.player.facing = -1;
+  G.audio.tick();
+  await G.think('Dejo el penique en el poste de piedra y me aparto.');
+  await G.walk(1860);
+  const w = G.actor('Wren');
+  await w.walkTo(1610);
+  w.pose = 'reach';
+  await G.wait(500);
+  w.pose = null;
+  w.talking = true;
+  await G.say('Wren', "Esto estaba en la rejilla de Buck's Row, antes de que llegaran los suyos. Brillaba.");
+  w.talking = false;
+  await w.walkTo(1474);
+  w.facing = -1;
+  await G.walk(1660);
+  G.player.facing = -1;
+  await G.game.chapterHooks.takeScalpel(G);
 }
 
 export default {
@@ -192,7 +178,6 @@ export default {
       new Moths({ x: 230, y: 440 }),
       new Ripples({ x: 1100, y: GROUND + 70, w: 220 }),
     ];
-    if (!isMob(G)) list.push(new Train());
     return list;
   },
 
@@ -337,19 +322,26 @@ export default {
           await G.say('Wren', 'Me llamo Wren. Busco cosas en el fango y las vendo. Esta noche he encontrado algo, pero las cosas cuestan.');
           w.talking = false;
           await G.think('Pide un penique. No se va a acercar a mí.');
-          G.objective('Dejar un penique en el poste de piedra para Wren, sin acercarse (inventario).');
+          if (G.has('penique')) {
+            const c = await G.choice(['Dejarle el penique en el poste.', 'Ahora no.']);
+            if (c === 0) { await payWren(G); return; }
+          }
+          G.objective('Darle un penique a Wren.');
           return;
         }
         if (G.flag('wren_paid')) {
           await G.say('Wren', 'Ya se lo he dicho. Si el agua dice su nombre, no conteste.');
-        } else {
-          await G.say('Wren', 'Déjelo en el poste y apártese.');
+          w.talking = false;
+          return;
         }
         w.talking = false;
+        if (G.has('penique')) { await payWren(G); return; }
+        await G.say('Wren', 'Un penique, señor. Las cosas cuestan.');
+        await G.think('No llevo ni un penique encima. En mi cuarto, entre los informes, había uno suelto.');
       },
       use: async (G, item) => {
-        if (item !== 'penique') return false;
-        await G.think('Mejor en el poste.');
+        if (item !== 'penique' || G.flag('wren_paid')) return false;
+        await payWren(G);
         return true;
       },
     },
@@ -360,25 +352,8 @@ export default {
         await G.think('Un poste para amarrar caballos, gastado por las cuerdas.');
       },
       use: async (G, item) => {
-        if (item !== 'penique' || !G.flag('wren_met')) return false;
-        G.take('penique');
-        G.flag('penique_given', true);
-        G.flag('wren_paid', true);
-        G.audio.tick();
-        await G.think('Dejo el penique en el poste y me aparto.');
-        await G.walk(1860);
-        const w = G.actor('Wren');
-        await w.walkTo(1610);
-        w.pose = 'reach';
-        await G.wait(500);
-        w.pose = null;
-        w.talking = true;
-        await G.say('Wren', 'Esto estaba en la rejilla de Buck\'s Row, antes de que llegaran los suyos. Brillaba.');
-        w.talking = false;
-        await w.walkTo(1474);
-        w.facing = -1;
-        await G.think('Ha dejado algo en el poste a cambio.');
-        G.objective('Recoger lo que Wren ha dejado en el poste.');
+        if (item !== 'penique' || !G.flag('wren_met') || G.flag('wren_paid')) return false;
+        await payWren(G);
         return true;
       },
     },
@@ -393,7 +368,6 @@ export default {
       id: 'arch', name: 'Arco del ferrocarril', rect: [90, 140, 380, GROUND - 140], walk: 300,
       act: async (G) => {
         await G.think('Bajo el arco del Great Eastern duermen los que no tienen cuatro peniques para una cama.');
-        if (!G.flag('arch_train')) { G.flag('arch_train', true); G.shake(14); G.audio.thud(); await G.think('Pasa un tren por encima y todo tiembla. Después vuelve el silencio, y en el silencio oigo agua corriendo bajo los adoquines.'); G.sanity(-2); }
       },
     },
     {

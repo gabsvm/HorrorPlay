@@ -26,29 +26,6 @@ const frames = [];
 for (let i = 0; i < 8; i++) frames.push({ label: `paso ${i}`, phase: (i / 8) * Math.PI * 2, moving: true });
 frames.push({ label: 'quieto', phase: 0 }, { label: 'kneel', pose: 'kneel' }, { label: 'reach', pose: 'reach' }, { label: 'examina', pose: 'inspect' }, { label: 'recoge', pose: 'take' }, { label: 'sit', pose: 'sit' }, { label: 'cower', pose: 'cower' }, { label: 'mira atrás', look: 1 }, { label: 'habla', talking: true }, { label: 'sin farol', lanternOn: false }, { label: 'giro', turn: 0.1 }, { label: 'giro izq', turn: 0.1, facing: -1 }, { label: 'parpadeo', blink: true }, { label: 'corre A', phase: 0.4, moving: true, run: 1 }, { label: 'corre B', phase: 2.0, moving: true, run: 1 }, { label: 'coge', pose: 'take', reach: [70, -8] }, { label: 'alcanza', reach: [80, -120] }, { label: 'mira abajo', lookAt: 40 });
 
-if (params.get('portrait')) {
-  // dialogue portraits: talk / listen / blink / the Host's voice, for each look
-  const extra = {
-    pike: { hat: 'bowler', coat: '#2c2a26', coatLen: 0.9, cape: true, build: 1.05, moustache: '#3a2a1e', buttons: 'double', hair: '#3a2a1e' },
-    greaves: { hat: 'top', coat: '#1d1b1c', coatLen: 0.95, beard: '#7a7a74', hair: '#8a8a84', waistcoat: '#3a2a20', buttons: 'double', chain: true },
-    wren: { hat: 'cap', hatColor: '#2e2a26', coat: '#4a4036', skirt: true, patches: true, shawl: '#3a3a44', hair: '#5a3a22' },
-    wexley: { hat: 'shawl', shawl: '#3a1a2a', skirt: true, coat: '#2a1c22', hair: '#1a1210' },
-  };
-  const all = { ...looks, ...extra };
-  const ps = Number(params.get('s')) || 3;
-  const cv = document.getElementById('c');
-  const names = Object.keys(all), modes = ['talk', 'listen', 'voice'];
-  cv.width = modes.length * 76 * ps; cv.height = names.length * 76 * ps;
-  const ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
-  ctx.fillStyle = '#16120e'; ctx.fillRect(0, 0, cv.width, cv.height);
-  names.forEach((n, r) => modes.forEach((m, c) => {
-    const a = new Actor(n, { ...all[n], x: 0, y: 0 });
-    const o = document.createElement('canvas'); o.width = o.height = 72;
-    a.drawPortrait(o, 0.3 + c, m);
-    ctx.drawImage(o, c * 76 * ps, r * 76 * ps, 72 * ps, 72 * ps);
-  }));
-  throw 0;
-}
 const only = params.get('only');
 if (only) { const keep = only.split(',').map(Number); frames.splice(0, frames.length, ...frames.filter((f, i) => keep.includes(i))); }
 const cellW = 110, cellH = 130, cols = Number(params.get('cols')) || 6;

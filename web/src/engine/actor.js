@@ -5,7 +5,6 @@
 // posture identify people in the dark.
 import { P, shade } from '../art/palette.js';
 import { pixelizeInto, quantizeData } from '../art/pixel.js';
-import { portraitFor } from './portraits.js';
 
 const DEF = {
   h: 200, hat: 'bowler', hatColor: '#121316', coat: P.coat, coatLen: 0.78, flare: 1.15, build: 1, skin: P.skin,
@@ -553,79 +552,6 @@ export class Actor {
     g.addColorStop(0, `rgba(255,255,255,${0.5 * (1 - p)})`); g.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = g;
     ctx.fillRect(mx - 30 * s, my - 30 * s, 60 * s, 60 * s);
-  }
-
-  // A head-and-shoulders portrait for the dialogue box, painted from the same figure as the sprite
-  // and reduced to the same pixel grid. mode: 'talk' (mouth moves), 'listen', or 'voice' (the Host:
-  // Ashgrove's own face, mirrored like a reflection, drowned in green and red).
-  drawPortrait(out, t, mode = 'listen') {
-    const S = 192;
-    if (!this._port) { this._port = document.createElement('canvas'); this._port.width = this._port.height = S; }
-    const c = this._port.getContext('2d', { willReadFrequently: true });
-    c.setTransform(1, 0, 0, 1, 0, 0);
-    c.clearRect(0, 0, S, S);
-    const pic = portraitFor(this.name);
-    if (pic) { this.drawPainted(c, S, pic, t, mode, out); return; }
-    const keep = ['x', 'y', 'h', 'pose', 'walkAmt', 'look', 'facing', 'shiver', 'turnT', 'talking', 'moving', 'blink', 'phase'];
-    const saved = Object.fromEntries(keep.map((k) => [k, this[k]]));
-    Object.assign(this, { x: 0, y: 0, h: 200, pose: null, walkAmt: 0, look: 0, facing: 1, shiver: 0, turnT: 0, moving: false, phase: 0 });
-    this.talking = mode === 'talk';
-    this.blink = mode === 'voice' ? false : this.blinkAt(t);
-    const k = 2.7, headY = -183 + this.stoop * 6;
-    c.save();
-    if (mode === 'voice') { c.translate(S, 0); c.scale(-1, 1); }
-    c.translate(S / 2 - (6 + this.stoop * 17) * k, 82 - headY * k);
-    c.scale(k, k);
-    // a slight sway, as if breathing in front of the lamp
-    c.rotate(Math.sin(t * 0.9 + this.seed) * 0.01);
-    this.drawFigure(c, t);
-    c.restore();
-    Object.assign(this, saved);
-    // light: warm key from the lamp side, cold fill, the bottom fading into the dark
-    c.globalCompositeOperation = 'source-atop';
-    const key = c.createLinearGradient(S, 0, 0, 0);
-    if (mode === 'voice') { key.addColorStop(0, 'rgba(90,230,170,0.45)'); key.addColorStop(1, 'rgba(120,10,10,0.55)'); }
-    else { key.addColorStop(0, 'rgba(255,190,120,0.28)'); key.addColorStop(0.55, 'rgba(0,0,0,0)'); key.addColorStop(1, 'rgba(20,30,50,0.35)'); }
-    c.fillStyle = key; c.fillRect(0, 0, S, S);
-    const fall = c.createLinearGradient(0, S * 0.55, 0, S);
-    fall.addColorStop(0, 'rgba(0,0,0,0)'); fall.addColorStop(1, 'rgba(0,0,0,0.9)');
-    c.fillStyle = fall; c.fillRect(0, 0, S, S);
-    c.globalCompositeOperation = 'source-over';
-    if (!this._portLo) { this._portLo = document.createElement('canvas'); this._portLo.width = this._portLo.height = 72; }
-    pixelizeInto(this._port, this._portLo, { dither: 8, alphaCut: 60, edge: 0.62 });
-    const o = out.getContext('2d');
-    o.imageSmoothingEnabled = false;
-    o.clearRect(0, 0, out.width, out.height);
-    if (mode === 'voice' && Math.random() < 0.12) o.drawImage(this._portLo, (Math.random() - 0.5) * 6, 0, out.width, out.height);
-    else o.drawImage(this._portLo, 0, 0, out.width, out.height);
-  }
-
-  // The painted portrait: the mouth opens and closes in an irregular rhythm while talking, the eyes
-  // blink like the sprite's, and the Host's voice gets the same mirror, colours and jitter.
-  drawPainted(c, S, pic, t, mode, out) {
-    const open = mode === 'talk' && Math.sin(t * 17 + this.seed) + Math.sin(t * 7.3) > 0.25;
-    const img = (open && pic.talk) || (mode !== 'voice' && this.blinkAt(t) && pic.blink) || pic.base;
-    c.save();
-    if (mode === 'voice') { c.translate(S, 0); c.scale(-1, 1); }
-    c.drawImage(img, 0, 0, S, S);
-    c.restore();
-    c.globalCompositeOperation = 'source-atop';
-    if (mode === 'voice') {
-      const key = c.createLinearGradient(S, 0, 0, 0);
-      key.addColorStop(0, 'rgba(90,230,170,0.45)'); key.addColorStop(1, 'rgba(120,10,10,0.55)');
-      c.fillStyle = key; c.fillRect(0, 0, S, S);
-    }
-    const fall = c.createLinearGradient(0, S * 0.65, 0, S);
-    fall.addColorStop(0, 'rgba(0,0,0,0)'); fall.addColorStop(1, 'rgba(0,0,0,0.6)');
-    c.fillStyle = fall; c.fillRect(0, 0, S, S);
-    c.globalCompositeOperation = 'source-over';
-    if (!this._portLo) { this._portLo = document.createElement('canvas'); this._portLo.width = this._portLo.height = 72; }
-    pixelizeInto(this._port, this._portLo, { dither: 8, alphaCut: 60, edge: 0 });
-    const o = out.getContext('2d');
-    o.imageSmoothingEnabled = false;
-    o.clearRect(0, 0, out.width, out.height);
-    if (mode === 'voice' && Math.random() < 0.12) o.drawImage(this._portLo, (Math.random() - 0.5) * 6, 0, out.width, out.height);
-    else o.drawImage(this._portLo, 0, 0, out.width, out.height);
   }
 
   // Everyone blinks every few seconds, each on their own rhythm (and now and then twice).

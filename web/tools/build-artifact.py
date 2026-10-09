@@ -28,11 +28,6 @@ models = {m: {'meta': json.load(open(os.path.join(mdir, m, 'model.json'))),
               **{f: 'data:image/png;base64,' + base64.b64encode(open(os.path.join(mdir, m, f + '.png'), 'rb').read()).decode()
                  for f in ('albedo', 'normal')}}
           for m in sorted(os.listdir(mdir)) if os.path.isfile(os.path.join(mdir, m, 'model.json'))}
-# and the painted portraits, when there are any (tools/portraits.py)
-pdir = os.path.join(web, 'assets', 'portraits')
-pidx = json.load(open(os.path.join(pdir, 'index.json'))) if os.path.isfile(os.path.join(pdir, 'index.json')) else {}
-portraits = {pid: {v: 'data:image/png;base64,' + base64.b64encode(open(os.path.join(pdir, f'{pid}_{v}.png'), 'rb').read()).decode()
-                   for v in vs} for pid, vs in pidx.items()}
 # and the painted crime-scene close-ups (tools/closeups.py)
 cdir = os.path.join(web, 'assets', 'closeups')
 cidx = json.load(open(os.path.join(cdir, 'index.json'))) if os.path.isfile(os.path.join(cdir, 'index.json')) else {}
@@ -41,12 +36,8 @@ closeups = {k: 'data:image/jpeg;base64,' + base64.b64encode(open(os.path.join(cd
 rdir = os.path.join(web, 'assets', 'props')
 ridx = json.load(open(os.path.join(rdir, 'index.json'))) if os.path.isfile(os.path.join(rdir, 'index.json')) else {}
 props = {n: {'meta': m, 'src': 'data:image/png;base64,' + base64.b64encode(open(os.path.join(rdir, n + '.png'), 'rb').read()).decode()} for n, m in ridx.items()}
-# and the recorded voices (tools/voices): one short clip per line, decoded only when the line is said
-vdir = os.path.join(web, 'assets', 'voices')
-vidx = json.load(open(os.path.join(vdir, 'index.json'))) if os.path.isfile(os.path.join(vdir, 'index.json')) else {}
-voices = {k: 'data:audio/ogg;base64,' + base64.b64encode(open(os.path.join(vdir, k + '.ogg'), 'rb').read()).decode() for k in vidx}
-sjs = ('<script>window.__VOICES=' + json.dumps(voices) + ';window.__SAMPLES=' + json.dumps(samples) + ';window.__MODELS=' + json.dumps(models)
-       + ';window.__PORTRAITS=' + json.dumps(portraits) + ';window.__CLOSEUPS=' + json.dumps(closeups) + ';window.__PROPS=' + json.dumps(props) + ';</script>' + NL)
+sjs = ('<script>window.__SAMPLES=' + json.dumps(samples) + ';window.__MODELS=' + json.dumps(models)
+       + ';window.__CLOSEUPS=' + json.dumps(closeups) + ';window.__PROPS=' + json.dumps(props) + ';</script>' + NL)
 style = '<style>' + NL + css + '</style>' + NL
 scripts = sjs + '<script type="module">' + NL + js + NL + '</script>' + NL
 if apk:

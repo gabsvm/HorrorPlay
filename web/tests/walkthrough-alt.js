@@ -37,7 +37,7 @@ export async function run({ log = true } = {}) {
     if (!game.state.flags.knackers_lead) await act('pike', null, [0]);
     await act('west'); expectScene('knackers');
     await act('brennan', null, [2]); if (!game.G.hasClue('brennan_zurdo')) await act('brennan', null, [1]);
-    await act('wren'); await act('bollard', 'penique'); await act('bollard');
+    await act('wren', null, [1]); await act('wren', 'penique');   // not now; then the penny offered to her
     need(game.G.has('bisturi'), 'Falta el bisturí');
     // back to Buck's Row, and the deductions are made there
     await act('east'); expectScene('bucks_row');

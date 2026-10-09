@@ -74,14 +74,15 @@ button { font-family: var(--sc); color: var(--ink); background: none; border: 0;
 #tip kbd { font-family: var(--sc); color: var(--gold); border: 1px solid rgba(176,138,78,0.5); padding: 0 calc(5*var(--u)); border-radius: 3px; font-size: 0.9em; }
 
 /* Dialogue */
-#dialogue { position: absolute; left: 50%; bottom: calc(24 * var(--u)); transform: translateX(-50%); width: calc(860 * var(--u)); min-height: calc(118 * var(--u)); padding: calc(18 * var(--u)) calc(30 * var(--u)) calc(20 * var(--u)); background: linear-gradient(180deg, rgba(10,12,14,0.92), rgba(4,5,6,0.95)); border-top: 1px solid rgba(176,138,78,0.45); border-bottom: 1px solid rgba(176,138,78,0.18); box-shadow: 0 0 calc(40*var(--u)) rgba(0,0,0,0.8); cursor: pointer; }
-#dlg-name { font-family: var(--sc); color: var(--gold); font-size: calc(19 * var(--u)); letter-spacing: 0.12em; margin-bottom: calc(6 * var(--u)); min-height: calc(19 * var(--u)); }
+#dialogue { position: absolute; left: 50%; bottom: calc(22 * var(--u)); transform: translateX(-50%); width: calc(980 * var(--u)); padding: calc(10 * var(--u)) calc(24 * var(--u)) calc(12 * var(--u)); text-align: center; cursor: pointer; text-shadow: 0 0 calc(3*var(--u)) #000, 0 calc(2*var(--u)) calc(4*var(--u)) #000, 0 0 calc(14*var(--u)) rgba(0,0,0,0.9); }
+#dlg-name { font-family: var(--sc); color: var(--gold); font-size: calc(17 * var(--u)); letter-spacing: 0.12em; margin-bottom: calc(3 * var(--u)); }
+#dlg-name:empty { display: none; }
 #dlg-text { font-size: calc(25 * var(--u)); line-height: 1.32; color: var(--ink); }
 #dlg-text.thought { font-style: italic; color: #c9bfae; }
-#dlg-text.voice { font-style: italic; color: #9fd0c0; letter-spacing: 0.03em; text-shadow: 0 0 calc(10*var(--u)) rgba(80, 200, 170, 0.5); }
+#dlg-text.voice { font-style: italic; color: #9fd0c0; letter-spacing: 0.03em; text-shadow: 0 0 calc(3*var(--u)) #000, 0 calc(2*var(--u)) calc(4*var(--u)) #000, 0 0 calc(12*var(--u)) rgba(80, 200, 170, 0.6); }
 #dlg-text.doc { font-family: var(--type); font-size: calc(21 * var(--u)); }
 #dlg-text .red { color: #d23a2e; }
-#dlg-next { position: absolute; right: calc(18 * var(--u)); bottom: calc(10 * var(--u)); color: var(--gold); animation: bob 1.2s ease-in-out infinite; }
+#dlg-next { position: absolute; right: calc(-4 * var(--u)); bottom: calc(10 * var(--u)); color: var(--gold); animation: bob 1.2s ease-in-out infinite; }
 @keyframes bob { 50% { transform: translateY(calc(4*var(--u))); } }
 
 #choices { position: absolute; left: 50%; bottom: calc(170 * var(--u)); transform: translateX(-50%); display: flex; flex-direction: column; gap: calc(8 * var(--u)); width: calc(720 * var(--u)); }
@@ -171,11 +172,6 @@ button { font-family: var(--sc); color: var(--ink); background: none; border: 0;
 .page .truth { font-family: var(--serif); font-style: italic; color: #8e1b16; font-size: 1.05em; letter-spacing: 0.02em; }
 .page s { color: rgba(42,33,22,0.6); text-decoration-color: #8e1b16; text-decoration-thickness: 2px; }
 
-/* ---- Dialogue portrait ---- */
-#dlg-portrait { display: none; position: absolute; left: calc(18 * var(--u)); bottom: calc(14 * var(--u)); width: calc(132 * var(--u)); height: calc(132 * var(--u)); image-rendering: pixelated; image-rendering: crisp-edges; background: radial-gradient(ellipse at 60% 35%, #2a2016 0%, #0c0b0a 70%); border: 1px solid rgba(176,138,78,0.55); box-shadow: inset 0 0 calc(18*var(--u)) #000, 0 0 0 calc(3*var(--u)) rgba(10,8,6,0.9), 0 0 0 calc(4*var(--u)) rgba(176,138,78,0.25); }
-#dialogue.has-portrait { padding-left: calc(172 * var(--u)); min-height: calc(140 * var(--u)); }
-#dialogue.has-portrait #dlg-portrait { display: block; }
-#dialogue.voice #dlg-portrait { background: radial-gradient(ellipse at 50% 40%, #0c2a22 0%, #050807 70%); border-color: rgba(90,200,160,0.5); filter: contrast(1.2); }
 #dialogue.enter { animation: dlgin .28s cubic-bezier(.2,.8,.2,1); }
 @keyframes dlgin { from { opacity: 0; transform: translateX(-50%) translateY(calc(14 * var(--u))); } }
 
@@ -249,7 +245,6 @@ html.touch #hud-objective { font-size: max(calc(15 * var(--u)), 11px); }
 html.touch #dlg-name { font-size: max(calc(19 * var(--u)), 11px); }
 html.touch #dlg-text { font-size: max(calc(25 * var(--u)), 15px); }
 html.touch #dialogue { width: calc(1000 * var(--u)); }
-html.touch #dialogue.has-portrait { padding-left: calc(172 * var(--u)); }
 html.touch .choice { font-size: max(calc(24 * var(--u)), 15px); padding: max(calc(10 * var(--u)), 10px) max(calc(22 * var(--u)), 14px); }
 html.touch #choices { width: calc(900 * var(--u)); }
 html.touch .inv-item { width: max(calc(68 * var(--u)), 46px); height: max(calc(68 * var(--u)), 46px); }

@@ -57,7 +57,7 @@ for (const x of [-2000, 0, 500, 5000]) { audio.listener = x; audio.updateEmitter
 audio.setEmitters([]);
 audio.setCity({ cab: 1, bell: 1, ship: 1 }); audio.cab(); audio.farBell(); audio.shipHorn();
 audio.setCity({ cab: 0.6, muffle: true }); audio.setCity(null);
-audio.train(); audio.drip(300);
+audio.drip(300);
 for (const x of [-1500, 0, 800]) audio.step('stone', 1, audio.spatial(x));
 for (const mood of ['dread', 'memory', 'chase', null]) {
   audio.playMusic(mood);

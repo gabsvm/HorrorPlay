@@ -74,9 +74,7 @@ export async function run({ log = true, second = false } = {}) {
     await act('brennan', null, [2]);          // look -> brennan_zurdo
     if (!game.G.hasClue('brennan_zurdo')) await act('brennan', null, [1]);
     need(game.G.hasClue('brennan_zurdo'), 'Falta brennan_zurdo');
-    await act('wren');
-    await act('bollard', 'penique');
-    await act('bollard', null, [0]);
+    await act('wren', null, [0, 0]);        // she asks a penny; he leaves it on the post and takes what she leaves
     need(game.G.has('bisturi'), 'Falta el bisturí');
     await act('trough');
     await deduce('brennan_zurdo', 'zurdo');
