@@ -3,6 +3,8 @@ import { Renderer, W, H } from './renderer.js';
 import { Actor } from './actor.js';
 import { modelFor, releaseModels } from './model.js';
 import { loadPortraits } from './portraits.js';
+import { loadCloseups } from '../art/closeups.js';
+import { loadProps } from '../art/models.js';
 import { fgDressing } from '../art/build.js';
 import { live } from '../art/paint.js';
 import { Swing } from './life.js';
@@ -48,6 +50,8 @@ export class Game {
     this.player.isPlayer = true;
     this.player.model = modelFor('Thomas');
     loadPortraits();
+    loadCloseups();
+    loadProps();
     this.player.onStep = (a) => {
       audio.step(this.scene?.surface || 'stone', a.h / 200);
       if (this.scene && (this.scene.wet || this.scene.rain) && !this.scene.indoor) this.r.splash(a.x + a.facing * 14 * (a.h / 200), a.y);
@@ -340,6 +344,8 @@ export class Game {
     const scene = this.scenes[id];
     if (!scene) throw new Error(`Escena desconocida: ${id}`);
     if (fade) await this.fadeTo(1, 700);
+    // the modelled props are painted into the layers when the scene is built: give them a moment to load
+    await Promise.race([loadProps(), wait(2000)]);
     this.ui.hover(null);
     if (this.scene?.leave) this.scene.leave(this.G);
     scene.G = this.G;

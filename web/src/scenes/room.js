@@ -4,6 +4,7 @@ import { coatOnPeg, bowlerOnPeg, bullseyeLantern, bootsPair, newspaper, bottle, 
 import { wallpaper, wainscot, floorboards, rug, interiorWindow, bed, desk, chair, bookcase } from '../art/build.js';
 import { Moths } from '../engine/life.js';
 import { P } from '../art/palette.js';
+import { drawProp } from '../art/models.js';
 
 const WIDTH = 1500, GROUND = 662;
 
@@ -51,6 +52,7 @@ export default {
       ctx.fillStyle = '#1a1410'; ctx.fillRect(236, GROUND - 330, 110, 10);
       ctx.fillStyle = '#6b5a3a'; ctx.fillRect(256, GROUND - 322, 5, 16); ctx.fillRect(316, GROUND - 322, 5, 16);
       // washstand: marble top, jug in basin, soap dish, a razor strop; the sheet over the mirror
+      if (!drawProp(ctx, 'washstand', 400, GROUND)) {
       ctx.fillStyle = '#2a2018'; ctx.fillRect(400, GROUND - 120, 130, 14); ctx.fillRect(408, GROUND - 106, 10, 106); ctx.fillRect(512, GROUND - 106, 10, 106); ctx.fillRect(408, GROUND - 40, 114, 6);
       ctx.fillStyle = '#8a8478'; ctx.fillRect(398, GROUND - 124, 134, 6);
       ctx.fillStyle = '#d6cfc0'; ctx.beginPath(); ctx.ellipse(465, GROUND - 126, 38, 9, 0, 0, Math.PI * 2); ctx.fill();
@@ -63,6 +65,7 @@ export default {
       ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 3;
       for (const fx of [440, 468, 494]) { ctx.beginPath(); ctx.moveTo(fx, GROUND - 330); ctx.quadraticCurveTo(fx + 4, GROUND - 250, fx - 2, GROUND - 176); ctx.stroke(); }
       A.stain(ctx, 404, GROUND - 336, 124, 170, { seed: 33, alpha: 0.5 });
+      }
       // a framed photograph over the bed: two boys on the Limehouse steps
       ctx.fillStyle = '#3a2a16'; ctx.fillRect(680, GROUND - 400, 110, 84); ctx.fillStyle = '#6a5428'; ctx.fillRect(680, GROUND - 400, 110, 3);
       A.vgrad(ctx, 688, GROUND - 392, 94, 68, [[0, '#8a8272'], [1, '#5a544a']]);
@@ -71,8 +74,7 @@ export default {
       ctx.fillRect(706, GROUND - 360, 20, 30); ctx.fillRect(744, GROUND - 357, 16, 27);
       A.stain(ctx, 688, GROUND - 392, 94, 68, { seed: 61, alpha: 0.5 });
       // bed, a trunk at its foot and a chamber pot beneath
-      bed(ctx, 590, GROUND, 330);
-      ctx.fillStyle = '#e0d8c8'; ctx.beginPath(); ctx.ellipse(700, GROUND - 8, 18, 9, 0, 0, Math.PI * 2); ctx.fill();
+      if (!bed(ctx, 590, GROUND, 330)) { ctx.fillStyle = '#e0d8c8'; ctx.beginPath(); ctx.ellipse(700, GROUND - 8, 18, 9, 0, 0, Math.PI * 2); ctx.fill(); }
       // window
       const win = interiorWindow(ctx, 990, 190, 160, 230);
       lights.push({ id: 'window', x: win.x, y: win.y + 40, r: 360, color: [0.32, 0.4, 0.5], intensity: 0.55, halo: 0, reflect: false, shaft: true, shaftY0: 196, shaftW0: 72, shaftW: 120, shaftSkew: -330, shaftK: 0.55 });

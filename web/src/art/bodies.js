@@ -2,6 +2,7 @@
 // lantern. Painted at 1280x720 and then reduced to the pixel grid like everything else. The gore is
 // there because the case is about it, but it is drawn the way a police surgeon's sketch would be:
 // what was done, where, and how carefully.
+import { closeupFor } from './closeups.js';
 import { rng } from './noise.js';
 
 const TAU = Math.PI * 2;
@@ -199,6 +200,8 @@ function hand(ctx, x, y, rot, skin = '#a89a86', marks = false) {
 
 // Body lying with the head to the left. kind: 'nichols' | 'chapman' | 'eddowes'
 export function paintBody(ctx, W, H, kind) {
+  const pic = closeupFor(kind);
+  if (pic) { ctx.drawImage(pic, 0, 0, W, H); return; }
   const r = rng(kind.length * 31);
   ground(ctx, W, H, kind === 'chapman' ? 'earth' : kind === 'eddowes' ? 'flags' : 'cobbles', kind.length * 7);
   const hx = 300, hy = 350;

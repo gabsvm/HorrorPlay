@@ -5,6 +5,7 @@ import { Smoke, Moths } from '../engine/life.js';
 import { P, shade } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
 import { seanceTrumpet } from '../art/props.js';
+import { drawProp } from '../art/models.js';
 
 const WIDTH = 1400, GROUND = 664;
 const TABLE_X = 760;
@@ -72,15 +73,23 @@ export default {
       ctx.fillStyle = 'rgba(200,170,90,0.5)';
       for (const [sx, sy] of [[1090, 220], [1110, 300], [1160, 260], [1180, 380], [1100, 420], [1170, 470]]) { ctx.fillRect(sx - 4, sy, 8, 2); ctx.fillRect(sx - 1, sy - 3, 2, 8); }
       // side table: trumpet, tambourine, a bell, and a stuffed raven under a glass dome
-      ctx.fillStyle = '#20150e'; ctx.fillRect(560, GROUND - 100, 110, 10); ctx.fillRect(608, GROUND - 90, 12, 90); ctx.fillRect(588, GROUND - 6, 52, 6);
-      ctx.fillStyle = '#5a4630'; ctx.beginPath(); ctx.ellipse(654, GROUND - 106, 14, 4, 0, 0, Math.PI * 2); ctx.fill();
+      if (!drawProp(ctx, 'side_table', 614, GROUND)) {
+        ctx.fillStyle = '#20150e'; ctx.fillRect(560, GROUND - 100, 110, 10); ctx.fillRect(608, GROUND - 90, 12, 90); ctx.fillRect(588, GROUND - 6, 52, 6);
+        ctx.fillStyle = '#5a4630'; ctx.beginPath(); ctx.ellipse(654, GROUND - 106, 14, 4, 0, 0, Math.PI * 2); ctx.fill();
+      }
       // a little oil lamp with a red glass shade on the mantel: Wexley's sanctuary light
       ctx.fillStyle = '#5a4520'; ctx.fillRect(402, GROUND - 168, 16, 8); ctx.fillRect(406, GROUND - 176, 8, 8);
       ctx.fillStyle = '#7a1612'; ctx.beginPath(); ctx.ellipse(410, GROUND - 186, 11, 12, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = 'rgba(255,140,110,0.5)'; ctx.fillRect(405, GROUND - 192, 3, 8);
+      if (!drawProp(ctx, 'raven_dome', 1000, GROUND)) {
       ctx.fillStyle = '#20150e'; ctx.fillRect(1000, GROUND - 150, 50, 150);
       ctx.fillStyle = '#0c0b0c'; ctx.beginPath(); ctx.ellipse(1025, GROUND - 176, 12, 18, 0.2, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.moveTo(1034, GROUND - 188); ctx.lineTo(1046, GROUND - 184); ctx.lineTo(1034, GROUND - 180); ctx.fill();
       ctx.strokeStyle = 'rgba(190,210,215,0.3)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(1004, GROUND - 152); ctx.lineTo(1004, GROUND - 196); ctx.arc(1025, GROUND - 196, 21, Math.PI, 0); ctx.lineTo(1046, GROUND - 152); ctx.stroke();
+      }
+      // the sitters' balloon-back chairs (Wexley's faces left, the widow's right); the young man's
+      // is hidden behind the table
+      drawProp(ctx, 'balloon_chair', TABLE_X + 178, GROUND, { flip: true });
+      drawProp(ctx, 'balloon_chair', TABLE_X - 168, GROUND);
       // framed "spirit" photographs and an astrological chart
       for (let i = 0; i < 3; i++) frame(ctx, 380 + i * 70 - 140, 200 + (i % 2) * 20, 46, 60, { seed: 70 + i });
       ctx.fillStyle = '#b4a47e'; ctx.fillRect(930, 150, 96, 96); ctx.strokeStyle = 'rgba(60,40,20,0.7)'; ctx.lineWidth = 2;
@@ -119,19 +128,29 @@ export default {
   },
 
   drawNearOver(ctx, t) {
-    // round table with a fringed velvet cloth and three candles (drawn over the seated figures)
+    // round table with a fringed velvet cloth and three candles (drawn over the seated figures):
+    // the model, with the flames drawn live on its candles, or else painted here
+    const out = this.G?.flag('candles_out');
+    if (drawProp(ctx, 'seance_table', TABLE_X, GROUND)) {
+      if (!out) {
+        for (const dx of [-30, 10, 50]) {
+          const top = GROUND - 162 + (dx === 10 ? -6 : 0);
+          ctx.fillStyle = '#ffd38a'; ctx.beginPath(); ctx.ellipse(TABLE_X + dx, top - 6 + Math.sin(t * 8 + dx) * 0.8, 2.8, 6.5, Math.sin(t * 4 + dx) * 0.1, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+    } else {
     ctx.fillStyle = '#1a0c0a'; ctx.fillRect(TABLE_X - 12, GROUND - 120, 24, 120);
     ctx.fillStyle = '#3a1814';
     ctx.beginPath(); ctx.ellipse(TABLE_X, GROUND - 124, 150, 18, 0, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.moveTo(TABLE_X - 150, GROUND - 124); ctx.lineTo(TABLE_X - 160, GROUND - 60); ctx.lineTo(TABLE_X + 160, GROUND - 60); ctx.lineTo(TABLE_X + 150, GROUND - 124); ctx.fill();
     ctx.fillStyle = 'rgba(0,0,0,0.3)'; for (let x = TABLE_X - 140; x < TABLE_X + 150; x += 34) ctx.fillRect(x, GROUND - 112, 6, 52);
     ctx.fillStyle = '#8a6a2a'; for (let x = TABLE_X - 158; x < TABLE_X + 160; x += 7) ctx.fillRect(x, GROUND - 60, 3, 9);
-    const out = this.G?.flag('candles_out');
     for (const dx of [-30, 10, 50]) {
       const top = GROUND - 160 + (dx === 10 ? -6 : 0);
       ctx.fillStyle = '#5a4520'; ctx.fillRect(TABLE_X + dx - 7, GROUND - 128, 15, 4);
       ctx.fillStyle = '#e0d4b4'; ctx.fillRect(TABLE_X + dx - 3, top, 7, 34); ctx.fillRect(TABLE_X + dx + 3, top + 6, 3, 12);
       if (!out) { ctx.fillStyle = '#ffd38a'; ctx.beginPath(); ctx.ellipse(TABLE_X + dx + 0.5, top - 6 + Math.sin(t * 8 + dx) * 0.8, 2.8, 6.5, Math.sin(t * 4 + dx) * 0.1, 0, Math.PI * 2); ctx.fill(); }
+    }
     }
     if (this.G?.flag('comb_on_table')) { ctx.fillStyle = '#6a5038'; ctx.fillRect(TABLE_X - 14, GROUND - 130, 28, 5); }
     if (this.G?.flag('mirror_cracked')) {

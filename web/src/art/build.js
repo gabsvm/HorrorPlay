@@ -2,6 +2,7 @@
 import * as A from './paint.js';
 import { P, shade } from './palette.js';
 import { rng } from './noise.js';
+import { drawProp } from './models.js';
 
 const TAU = Math.PI * 2;
 
@@ -276,6 +277,7 @@ export function interiorWindow(ctx, x, y, w, h, { seed = 3 } = {}) {
 }
 
 export function bed(ctx, x, y, w) {
+  if (drawProp(ctx, 'bed', x, y, { sx: w / 330 })) return true;   // the model has its chamber pot
   ctx.fillStyle = '#1b1c1e';
   ctx.fillRect(x, y - 120, 7, 120); ctx.fillRect(x + 36, y - 112, 5, 60);
   ctx.fillRect(x, y - 120, 44, 5); ctx.fillRect(x, y - 92, 44, 4);
@@ -296,6 +298,7 @@ export function bed(ctx, x, y, w) {
 }
 
 export function desk(ctx, x, y, w) {
+  if (drawProp(ctx, 'desk', x, y, { sx: w / 230 })) return;
   ctx.fillStyle = '#2b1f16'; ctx.fillRect(x - 4, y - 98, w + 8, 14);
   ctx.fillStyle = '#1e3a2a'; ctx.fillRect(x + 20, y - 98, w - 40, 4);
   ctx.fillStyle = 'rgba(255,230,200,0.08)'; ctx.fillRect(x - 4, y - 98, w + 8, 2);
@@ -308,6 +311,7 @@ export function desk(ctx, x, y, w) {
 }
 
 export function chair(ctx, x, y, flip = 1) {
+  if (drawProp(ctx, 'room_chair', x, y, { flip: flip < 0 })) return;
   ctx.save(); ctx.translate(x, y); ctx.scale(flip, 1);
   ctx.fillStyle = '#21180f';
   ctx.fillRect(0, -62, 54, 9); ctx.fillRect(3, -54, 6, 54); ctx.fillRect(45, -54, 6, 54);
@@ -320,6 +324,7 @@ export function chair(ctx, x, y, flip = 1) {
 
 // Cast-iron grate under a painted mantel. Returns the ember position when lit.
 export function fireplace(ctx, x, base, { lit = false, w = 170 } = {}) {
+  if (!lit && drawProp(ctx, 'fireplace', x, base, { sx: w / 160 })) return null;
   ctx.fillStyle = '#2a2420'; ctx.fillRect(x, base - 150, w, 150);
   ctx.fillStyle = '#3a332c'; ctx.fillRect(x - 12, base - 160, w + 24, 14);
   ctx.fillStyle = 'rgba(255,240,220,0.1)'; ctx.fillRect(x - 12, base - 160, w + 24, 2);
@@ -332,6 +337,7 @@ export function fireplace(ctx, x, base, { lit = false, w = 170 } = {}) {
 }
 
 export function bookcase(ctx, x, y, w, h, seed = 4) {
+  if (drawProp(ctx, 'bookshelf', x, y, { sx: w / 170, sy: h / 80 })) return;
   const r = rng(seed);
   ctx.fillStyle = '#1e150e'; ctx.fillRect(x, y, w, h);
   const shelves = Math.max(2, Math.round(h / 70));

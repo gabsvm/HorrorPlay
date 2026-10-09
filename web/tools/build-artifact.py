@@ -33,8 +33,16 @@ pdir = os.path.join(web, 'assets', 'portraits')
 pidx = json.load(open(os.path.join(pdir, 'index.json'))) if os.path.isfile(os.path.join(pdir, 'index.json')) else {}
 portraits = {pid: {v: 'data:image/png;base64,' + base64.b64encode(open(os.path.join(pdir, f'{pid}_{v}.png'), 'rb').read()).decode()
                    for v in vs} for pid, vs in pidx.items()}
+# and the painted crime-scene close-ups (tools/closeups.py)
+cdir = os.path.join(web, 'assets', 'closeups')
+cidx = json.load(open(os.path.join(cdir, 'index.json'))) if os.path.isfile(os.path.join(cdir, 'index.json')) else {}
+closeups = {k: 'data:image/jpeg;base64,' + base64.b64encode(open(os.path.join(cdir, f), 'rb').read()).decode() for k, f in cidx.items()}
+# and the modelled scenery props (tools/blender/props.py)
+rdir = os.path.join(web, 'assets', 'props')
+ridx = json.load(open(os.path.join(rdir, 'index.json'))) if os.path.isfile(os.path.join(rdir, 'index.json')) else {}
+props = {n: {'meta': m, 'src': 'data:image/png;base64,' + base64.b64encode(open(os.path.join(rdir, n + '.png'), 'rb').read()).decode()} for n, m in ridx.items()}
 sjs = ('<script>window.__SAMPLES=' + json.dumps(samples) + ';window.__MODELS=' + json.dumps(models)
-       + ';window.__PORTRAITS=' + json.dumps(portraits) + ';</script>' + NL)
+       + ';window.__PORTRAITS=' + json.dumps(portraits) + ';window.__CLOSEUPS=' + json.dumps(closeups) + ';window.__PROPS=' + json.dumps(props) + ';</script>' + NL)
 style = '<style>' + NL + css + '</style>' + NL
 scripts = sjs + '<script type="module">' + NL + js + NL + '</script>' + NL
 if apk:

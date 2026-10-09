@@ -29,6 +29,8 @@ hosted publicly.
 | Republish | Artifact publish to `https://claude.ai/artifact/AZiipwBV3rbng52121UQsX` |
 | APK | `VERSION=1.0-rcN bash tools/build-apk.sh`, then copy `dist/el-huesped.apk` to `dist/ElHuesped-1.0-rcN.apk` and send it with SendUserFile. The version code is the git commit count, so each build installs over the previous one. The debug keystore `android/debug.keystore` is local and gitignored. |
 | Character models | `blender -b --factory-startup -P tools/blender/figure.py -- <scratch>/m/<who> <who> [anims]`, then `python tools/blender/pack.py <scratch>/m/<who> <who>` (writes `assets/models/<who>/`). The cast is in `tools/blender/cast.py`; Blender 5.2 is installed with winget; pack needs Pillow and numpy. |
+| Scenery props | `blender -b --factory-startup -P tools/blender/props.py -- <scratch>/props [names]`, then `python tools/blender/pack_props.py <scratch>/props` (writes `assets/props/`). Painters call `drawProp(ctx, name, x, y)` from `src/art/models.js` and fall back to their own shapes. |
+| Close-ups | Generate with `CLOSEUPS.md`, then `python tools/closeups.py <folder>` (writes `assets/closeups/`); `paintBody` uses them when present. |
 | Portraits | Generate with `PORTRAITS.md`, then `python tools/portraits.py <folder>` (writes `assets/portraits/`). Missing ones fall back to the painted bust. |
 | Rebuild audio | `python tools/build-audio.py` (CC0 sources in the gitignored `assets-src/audio/`; credits in `assets/audio/CREDITS.md`) |
 
