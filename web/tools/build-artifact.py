@@ -28,7 +28,13 @@ models = {m: {'meta': json.load(open(os.path.join(mdir, m, 'model.json'))),
               **{f: 'data:image/png;base64,' + base64.b64encode(open(os.path.join(mdir, m, f + '.png'), 'rb').read()).decode()
                  for f in ('albedo', 'normal')}}
           for m in sorted(os.listdir(mdir)) if os.path.isfile(os.path.join(mdir, m, 'model.json'))}
-sjs = '<script>window.__SAMPLES=' + json.dumps(samples) + ';window.__MODELS=' + json.dumps(models) + ';</script>' + NL
+# and the painted portraits, when there are any (tools/portraits.py)
+pdir = os.path.join(web, 'assets', 'portraits')
+pidx = json.load(open(os.path.join(pdir, 'index.json'))) if os.path.isfile(os.path.join(pdir, 'index.json')) else {}
+portraits = {pid: {v: 'data:image/png;base64,' + base64.b64encode(open(os.path.join(pdir, f'{pid}_{v}.png'), 'rb').read()).decode()
+                   for v in vs} for pid, vs in pidx.items()}
+sjs = ('<script>window.__SAMPLES=' + json.dumps(samples) + ';window.__MODELS=' + json.dumps(models)
+       + ';window.__PORTRAITS=' + json.dumps(portraits) + ';</script>' + NL)
 style = '<style>' + NL + css + '</style>' + NL
 scripts = sjs + '<script type="module">' + NL + js + NL + '</script>' + NL
 if apk:

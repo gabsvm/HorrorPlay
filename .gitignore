@@ -23,3 +23,4 @@ web/assets-src/
 # Android build output and the local debug signing key
 web/dist/
 web/android/debug.keystore
+__pycache__/

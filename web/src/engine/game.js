@@ -1,7 +1,7 @@
 // Game controller: loop, camera, input, hotspots, state, and the script API (G) scenes are written against.
 import { Renderer, W, H } from './renderer.js';
 import { Actor } from './actor.js';
-import { loadModel } from './model.js';
+import { modelFor } from './model.js';
 import { fgDressing } from '../art/build.js';
 import { live } from '../art/paint.js';
 import { Swing } from './life.js';
@@ -45,8 +45,7 @@ export class Game {
     this.layerCache = new Map();
     this.player = new Actor('Thomas', { h: 206, hat: 'bowler', coat: '#23262b', coatLen: 0.88, flare: 1.2, lantern: true, speed: 150, z: 10, collarUp: true, sideburns: true, hair: '#1a1410', gloves: '#2a221c', scarf: '#4a1612', stubble: 'rgba(30,22,18,0.35)' });
     this.player.isPlayer = true;
-    // the modelled Thomas (tools/blender); ?procedural shows the painted one for comparison
-    if (!(typeof location !== 'undefined' && /[?&]procedural\b/.test(location.search || ''))) this.player.model = loadModel('thomas');
+    this.player.model = modelFor('Thomas');
     this.player.onStep = (a) => {
       audio.step(this.scene?.surface || 'stone', a.h / 200);
       if (this.scene && (this.scene.wet || this.scene.rain) && !this.scene.indoor) this.r.splash(a.x + a.facing * 14 * (a.h / 200), a.y);
@@ -396,6 +395,7 @@ export class Game {
 
   addActor(a) {
     if (!a._scaled) { a.h = Math.round(a.h * (this.sceneScale ?? 1)); a._scaled = true; }
+    if (a.model === undefined) a.model = modelFor(a.name);
     this.actors.push(a); return a;
   }
   actor(name) { return this.actors.find((a) => a.name === name); }
@@ -654,7 +654,7 @@ export class Game {
         const speaking = (who === 'Ashgrove' || who === 'Thomas') && !(opts && opts.style);
         if (speaking) game.player.talking = true;
         // the NPC who speaks moves their mouth and turns to whoever they are talking to
-        const npc = !speaking && who ? game.actors.find((a) => a !== game.player && (a.name === who || a.name === who.split(' ').pop()) && a.visible) : null;
+        const npc = !speaking && who ? game.actors.find((a) => a !== game.player && (a.name === who || a.speaker === who || a.name === who.split(' ').pop()) && a.visible) : null;
         const was = npc && npc.talking;
         if (npc) {
           npc.talking = true;

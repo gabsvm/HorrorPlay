@@ -1,8 +1,11 @@
-// Characters. Each one is painted procedurally at full logical resolution every frame (so the
-// animation stays fluid), lit by its nearest lamp, then reduced to the pixel grid as a sprite.
-// Silhouette first: hats, coats, shawls, aprons and posture identify people in the dark.
+// Characters. The cast is modelled in Blender (tools/blender) and drawn from rendered frames, lit per
+// pixel with the model's normals; whatever a model has no frame for, and everyone without a model, is
+// painted procedurally at full logical resolution. Either way the figure is lit by its nearest lamps,
+// then reduced to the pixel grid as a sprite. Silhouette first: hats, coats, shawls, aprons and
+// posture identify people in the dark.
 import { P, shade } from '../art/palette.js';
 import { pixelizeInto, quantizeData } from '../art/pixel.js';
+import { portraitFor } from './portraits.js';
 
 const DEF = {
   h: 200, hat: 'bowler', hatColor: '#121316', coat: P.coat, coatLen: 0.78, flare: 1.15, build: 1, skin: P.skin,
@@ -254,21 +257,33 @@ export class Actor {
     this.blit(ctx, rs, ox, oy, W, Hh);
   }
 
-  // Which frame of the model to show: the walk or run cycle at the gait's phase (so the footfalls
-  // land where the steps sound), the turn through the front, or a breath standing still. Frames face
-  // right; facing left they are mirrored.
+  // Which frame of the model to show: a hand toward a hotspot at the nearest height rendered, a pose
+  // (breathing, or talking if it has frames for that), the turn through the front, the walk or run
+  // cycle at the gait's phase (so the footfalls land where the steps sound), or standing: breathing,
+  // or the hand that makes a point while talking. Frames face right; facing left they are mirrored.
+  // Anything the model has no frames for is painted as before.
   modelFrame(t) {
     const m = this.model;
-    if (!m?.ready || this.pose || this.reachTo || !this.visible) return null;
-    const A = m.meta.anims;
-    if (this.turnT > 0) {
+    if (!m?.ready || !this.visible) return null;
+    const A = m.meta.anims, flip = this.facing < 0;
+    const cyc = (name, u) => {
+      if (!A[name]) return null;
+      const [s, n] = A[name];
+      return { i: s + (Math.floor((((u % 1) + 1) % 1) * n + 0.5) % n), flip };
+    };
+    const breath = ((t + this.seed) * 1.7) / TAU, gesture = ((t + this.seed) * 1.3) / TAU;
+    if (this.reachTo && (!this.pose || this.pose === 'inspect' || this.pose === 'reach')) {
+      const up = (this.y - this.reachTo.y) / (this.h / 200);
+      return cyc(up < 85 ? 'reach_lo' : up < 135 ? 'reach_mid' : 'reach_hi', 0);
+    }
+    if (this.pose) return (this.talking && cyc(this.pose + '_talk', gesture)) || cyc(this.pose, breath);
+    if (this.turnT > 0 && A.turn) {
       const [s, n] = A.turn, k = 1 - this.turnT / TURN;
       return { i: s + Math.min(n - 1, Math.floor(k * n)), flip: this.facing > 0 };
     }
-    const w = this.walkAmt ?? 0, flip = this.facing < 0;
-    const cyc = (name, u) => { const [s, n] = A[name]; return { i: s + (Math.floor((((u % 1) + 1) % 1) * n + 0.5) % n), flip }; };
-    if (w > 0.2) return cyc((this.run || 0) > 0.5 ? 'run' : w > 0.7 ? 'walk' : 'walkh', this.phase / TAU);
-    return cyc('idle', ((t + this.seed) * 1.7) / TAU);
+    const w = this.walkAmt ?? 0;
+    if (w > 0.2) return cyc((this.run || 0) > 0.5 && A.run ? 'run' : w > 0.7 ? 'walk' : 'walkh', this.phase / TAU);
+    return (this.talking && cyc('talk', gesture)) || cyc('idle', breath);
   }
 
   // Edge lighting from the actual lights in the scene. For each of the two strongest lights, the
@@ -381,12 +396,13 @@ export class Actor {
     const m = this.model, M = m.meta, src = m.nData, sw = m.nW, n = w * h;
     if (!this._nm || this._nm.x.length !== n) this._nm = { x: new Float32Array(n), y: new Float32Array(n), z: new Float32Array(n), glass: new Uint8Array(n) };
     const out = this._nm, sx = this._hi.width / w, sy = this._hi.height / h, dir = mf.flip ? -1 : 1;
+    const ns = M.ns || 1;    // the normal atlas may be stored smaller than the colour one
     for (let y = 0; y < h; y++) {
       const v = Math.floor(M.ay + ((y + 0.5) * sy - mf.oy) / mf.k);
       for (let x = 0; x < w; x++) {
         const i = y * w + x, u = Math.floor(M.ax + (((x + 0.5) * sx - mf.ox) / mf.k) * dir);
         let p = -1;
-        if (u >= 0 && u < M.w && v >= 0 && v < M.h) { p = ((mf.fy + v) * sw + mf.fx + u) * 4; if (src[p + 3] < 8) p = -1; }
+        if (u >= 0 && u < M.w && v >= 0 && v < M.h) { p = (Math.floor((mf.fy + v) * ns) * sw + Math.floor((mf.fx + u) * ns)) * 4; if (src[p + 3] < 8) p = -1; }
         if (p < 0) { out.x[i] = 0; out.y[i] = 0; out.z[i] = 1; out.glass[i] = 0; continue; }
         const nx = (src[p] / 127.5 - 1) * dir, ny = 1 - src[p + 1] / 127.5;
         out.x[i] = nx; out.y[i] = ny; out.z[i] = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
@@ -487,7 +503,9 @@ export class Actor {
     const c = this._port.getContext('2d', { willReadFrequently: true });
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.clearRect(0, 0, S, S);
-    const keep = ['x', 'y', 'h', 'pose', 'walkAmt', 'look', 'facing', 'shiver', 'turnT', 'talking', 'moving', 'blink', 'phase'];
+    const pic = portraitFor(this.name);
+    if (pic) { this.drawPainted(c, S, pic, t, mode, out); return; }
+    const keep =['x', 'y', 'h', 'pose', 'walkAmt', 'look', 'facing', 'shiver', 'turnT', 'talking', 'moving', 'blink', 'phase'];
     const saved = Object.fromEntries(keep.map((k) => [k, this[k]]));
     Object.assign(this, { x: 0, y: 0, h: 200, pose: null, walkAmt: 0, look: 0, facing: 1, shiver: 0, turnT: 0, moving: false, phase: 0 });
     this.talking = mode === 'talk';
@@ -514,6 +532,34 @@ export class Actor {
     c.globalCompositeOperation = 'source-over';
     if (!this._portLo) { this._portLo = document.createElement('canvas'); this._portLo.width = this._portLo.height = 72; }
     pixelizeInto(this._port, this._portLo, { dither: 8, alphaCut: 60, edge: 0.62 });
+    const o = out.getContext('2d');
+    o.imageSmoothingEnabled = false;
+    o.clearRect(0, 0, out.width, out.height);
+    if (mode === 'voice' && Math.random() < 0.12) o.drawImage(this._portLo, (Math.random() - 0.5) * 6, 0, out.width, out.height);
+    else o.drawImage(this._portLo, 0, 0, out.width, out.height);
+  }
+
+  // The painted portrait: the mouth opens and closes in an irregular rhythm while talking, the eyes
+  // blink like the sprite's, and the Host's voice gets the same mirror, colours and jitter.
+  drawPainted(c, S, pic, t, mode, out) {
+    const open = mode === 'talk' && Math.sin(t * 17 + this.seed) + Math.sin(t * 7.3) > 0.25;
+    const img = (open && pic.talk) || (mode !== 'voice' && this.blinkAt(t) && pic.blink) || pic.base;
+    c.save();
+    if (mode === 'voice') { c.translate(S, 0); c.scale(-1, 1); }
+    c.drawImage(img, 0, 0, S, S);
+    c.restore();
+    c.globalCompositeOperation = 'source-atop';
+    if (mode === 'voice') {
+      const key = c.createLinearGradient(S, 0, 0, 0);
+      key.addColorStop(0, 'rgba(90,230,170,0.45)'); key.addColorStop(1, 'rgba(120,10,10,0.55)');
+      c.fillStyle = key; c.fillRect(0, 0, S, S);
+    }
+    const fall = c.createLinearGradient(0, S * 0.65, 0, S);
+    fall.addColorStop(0, 'rgba(0,0,0,0)'); fall.addColorStop(1, 'rgba(0,0,0,0.6)');
+    c.fillStyle = fall; c.fillRect(0, 0, S, S);
+    c.globalCompositeOperation = 'source-over';
+    if (!this._portLo) { this._portLo = document.createElement('canvas'); this._portLo.width = this._portLo.height = 72; }
+    pixelizeInto(this._port, this._portLo, { dither: 8, alphaCut: 60, edge: 0 });
     const o = out.getContext('2d');
     o.imageSmoothingEnabled = false;
     o.clearRect(0, 0, out.width, out.height);

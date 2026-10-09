@@ -126,7 +126,7 @@ export default {
     return [
       new Actor('Pike', { x: 900, y: GROUND, h: 200, hat: 'bowler', coat: '#2c2a26', coatLen: 0.9, cape: true, facing: -1, build: 1.05, moustache: '#3a2a1e', buttons: 'double', notebook: true, hair: '#3a2a1e' }),
       new Actor('Greaves', { x: 1150, y: GROUND, h: 214, hat: 'top', coat: '#1d1b1c', coatLen: 0.95, cane: true, beard: '#7a7a74', hair: '#8a8a84', facing: -1, flare: 1.05, tails: true, chain: true, waistcoat: '#3a2a20', buttons: 'double' }),
-      new Actor('Amelia', { x: 470, y: GROUND, h: 176, hat: 'bonnet', hatColor: '#1e1a18', skirt: true, coat: '#3a3432', shawl: '#2e2826', facing: 1, stoop: 1, hair: '#6a6660' }),
+      new Actor('Amelia', { speaker: 'Sra. Richardson', x: 470, y: GROUND, h: 176, hat: 'bonnet', hatColor: '#1e1a18', skirt: true, coat: '#3a3432', shawl: '#2e2826', facing: 1, stoop: 1, hair: '#6a6660' }),
     ];
   },
 

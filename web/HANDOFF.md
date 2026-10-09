@@ -28,6 +28,8 @@ hosted publicly.
 | Artifact build | `npx esbuild src/main.js --bundle --format=iife --minify --outfile=<scratch>/bundle.js`, then `python tools/build-artifact.py <scratch>/el-huesped.html` (it reads `bundle.js` next to the output) |
 | Republish | Artifact publish to `https://claude.ai/artifact/AZiipwBV3rbng52121UQsX` |
 | APK | `VERSION=1.0-rcN bash tools/build-apk.sh`, then copy `dist/el-huesped.apk` to `dist/ElHuesped-1.0-rcN.apk` and send it with SendUserFile. The version code is the git commit count, so each build installs over the previous one. The debug keystore `android/debug.keystore` is local and gitignored. |
+| Character models | `blender -b --factory-startup -P tools/blender/figure.py -- <scratch>/m/<who> <who> [anims]`, then `python tools/blender/pack.py <scratch>/m/<who> <who>` (writes `assets/models/<who>/`). The cast is in `tools/blender/cast.py`; Blender 5.2 is installed with winget; pack needs Pillow and numpy. |
+| Portraits | Generate with `PORTRAITS.md`, then `python tools/portraits.py <folder>` (writes `assets/portraits/`). Missing ones fall back to the painted bust. |
 | Rebuild audio | `python tools/build-audio.py` (CC0 sources in the gitignored `assets-src/audio/`; credits in `assets/audio/CREDITS.md`) |
 
 Dev URL parameters: `?scene=<id>&x=<px>&noenter&flags=a,b` or `?chapter=<n>`.
@@ -81,6 +83,13 @@ Actors are in `src/engine/actor.js`.
 - Movement: `run`, `climb`, `reachTo` (two-bone IK), `lookAt`.
 - Still figures rebuild their sprite at 5 fps.
 - `Actor.lightsNow` is set by the renderer for live props that need the lights, such as corpses.
+
+Models (`src/engine/model.js`): the cast from `tools/blender/cast.py`, mapped by actor name in
+`modelFor`, assigned in `game.addActor`. Two atlases per character: colour (indexed PNG) and
+camera-space normals at half size (blue = lantern glass). `Actor.modelFrame` picks the frame (reach by
+height, pose, pose_talk, turn, walk/walkh/run by gait phase, talk, idle) and returns null for anything
+not rendered, which falls back to `drawFigure`. `shadeVolume` lights the frame with `normalsFor`.
+`?procedural` disables models. Portraits: `src/engine/portraits.js`, `Actor.drawPainted`.
 
 Corpses: `src/scenes/corpse.js` `drawCorpse` puts the figure on its back. Above low quality it goes
 through the same sprite pass (rim and volume, re-rendered at about 3 fps).
