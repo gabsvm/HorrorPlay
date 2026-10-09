@@ -219,18 +219,29 @@ export class Actor {
       this._loRs = rs;
     }
     const ox = W / 2, oy = Hh - this.h * 0.12;
+    // a modelled figure, when it has a frame for what the actor is doing (poses stay procedural)
+    const mf = this.modelFrame(t);
     // still characters only need a fresh sprite a few times per second
     this.blink = this.blinkAt(t);
-    const key = `${this.moving}|${this.talking}|${this.pose}|${this.facing}|${this.lanternOn}|${Math.round(this.look * 4)}|${Math.round(this.x)}|${this.turnT > 0}|${this.blink}|${Math.round((this.walkAmt ?? 0) * 8)}|${Math.round((this.shiver || 0) * 2)}`;
+    const key = `${this.moving}|${this.talking}|${this.pose}|${this.facing}|${this.lanternOn}|${Math.round(this.look * 4)}|${Math.round(this.x)}|${this.turnT > 0}|${this.blink}|${Math.round((this.walkAmt ?? 0) * 8)}|${Math.round((this.shiver || 0) * 2)}|${mf ? mf.i : -1}`;
     const stale = this.moving || this.talking || this.turnT > 0 || this.grind || Math.abs(this.coatV || 0) > 0.6 || (this.walkAmt ?? 0) > 0.01 || key !== this._key || t - (this._drawnAt ?? -1) > (this.pose || this.shiver ? 0.12 : 0.2) || t < (this._drawnAt ?? 0);
     if (!stale) { this.blit(ctx, rs, ox, oy, W, Hh); return; }
     this._key = key; this._drawnAt = t;
     const b = this._hi, bc = b.getContext('2d', { willReadFrequently: true });
     bc.setTransform(1, 0, 0, 1, 0, 0);
     bc.clearRect(0, 0, W, Hh);
-    bc.translate(ox - this.x, oy - this.y);
-    if (this.turnT > 0 && !this.pose) this.drawFront(bc, t);
-    else this.drawFigure(bc, t);
+    if (mf) {
+      const M = this.model.meta, k = this.h / M.height, fx = (mf.i % M.cols) * M.w, fy = Math.floor(mf.i / M.cols) * M.h;
+      bc.translate(ox + (this.shiver || 0), oy);
+      bc.scale(mf.flip ? -k : k, k);
+      bc.drawImage(this.model.albedo, fx, fy, M.w, M.h, -M.ax, -M.ay, M.w, M.h);
+      this._mf = { ...mf, k, fx, fy, ox: ox + (this.shiver || 0), oy };
+    } else {
+      this._mf = null;
+      bc.translate(ox - this.x, oy - this.y);
+      if (this.turnT > 0 && !this.pose) this.drawFront(bc, t);
+      else this.drawFigure(bc, t);
+    }
     bc.setTransform(1, 0, 0, 1, 0, 0);
     if (!Actor.lowFx) this.rimLights(bc, W, Hh, lights);
     bc.globalCompositeOperation = 'source-atop';
@@ -241,6 +252,23 @@ export class Actor {
     pixelizeInto(b, this._lo, { dither: 8, alphaCut: 100, edge: 0.62 });
     if (!Actor.lowFx) this.shadeVolume(this._lo, this._found || []);
     this.blit(ctx, rs, ox, oy, W, Hh);
+  }
+
+  // Which frame of the model to show: the walk or run cycle at the gait's phase (so the footfalls
+  // land where the steps sound), the turn through the front, or a breath standing still. Frames face
+  // right; facing left they are mirrored.
+  modelFrame(t) {
+    const m = this.model;
+    if (!m?.ready || this.pose || this.reachTo || !this.visible) return null;
+    const A = m.meta.anims;
+    if (this.turnT > 0) {
+      const [s, n] = A.turn, k = 1 - this.turnT / TURN;
+      return { i: s + Math.min(n - 1, Math.floor(k * n)), flip: this.facing > 0 };
+    }
+    const w = this.walkAmt ?? 0, flip = this.facing < 0;
+    const cyc = (name, u) => { const [s, n] = A[name]; return { i: s + (Math.floor((((u % 1) + 1) % 1) * n + 0.5) % n), flip }; };
+    if (w > 0.2) return cyc((this.run || 0) > 0.5 ? 'run' : w > 0.7 ? 'walk' : 'walkh', this.phase / TAU);
+    return cyc('idle', ((t + this.seed) * 1.7) / TAU);
   }
 
   // Edge lighting from the actual lights in the scene. For each of the two strongest lights, the
@@ -287,12 +315,14 @@ export class Actor {
     const img = c.getImageData(0, 0, w, h), d = img.data;
     if (!this._hb || this._hb.length !== n) { this._hb = new Float32Array(n); this._tb = new Float32Array(n); }
     const H = this._hb, T = this._tb;
-    for (let i = 0; i < n; i++) {
+    // a modelled figure brings its own normals: read them from the atlas under each sprite pixel
+    const mf = this._mf, NM = mf && this.normalsFor(mf, w, h);
+    for (let i = 0; i < n && !NM; i++) {
       const a = d[i * 4 + 3];
       H[i] = a > 0 ? 1 + ((d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 765) * 0.35 : 0;
     }
     // two box blurs, horizontal then vertical, radius 2
-    for (let pass = 0; pass < 2; pass++) {
+    for (let pass = 0; pass < (NM ? 0 : 2); pass++) {
       for (let y = 0; y < h; y++) {
         let acc = 0; const row = y * w;
         for (let x = -2; x < w + 2; x++) {
@@ -325,18 +355,45 @@ export class Actor {
       for (let x = 1; x < w - 1; x++) {
         const i = y * w + x, p = i * 4;
         if (d[p + 3] === 0) continue;
-        const nx = -(H[i + 1] - H[i - 1]) * 2.4, ny = -(H[i + w] - H[i - w]) * 2.4;
-        const im = 1 / Math.sqrt(nx * nx + ny * ny + 1);
+        let nx, ny, nz;
+        if (NM) {
+          if (NM.glass[i] && this.lanternOn) { d[p] = 255; d[p + 1] = 214; d[p + 2] = 140; continue; }
+          nx = NM.x[i]; ny = NM.y[i]; nz = NM.z[i];
+        } else {
+          nx = -(H[i + 1] - H[i - 1]) * 2.4; ny = -(H[i + w] - H[i - w]) * 2.4;
+          nz = 1 / Math.sqrt(nx * nx + ny * ny + 1); nx *= nz; ny *= nz;
+        }
         let lit = 0, q;
-        if (aw) { q = (nx * ax + ny * ay + az) * im; if (q > 0) lit += q; }
-        if (bw) { q = (nx * bx + ny * by + bz) * im; if (q > 0) lit += q; }
-        if (ew) { q = (nx * ex + ny * ey + ez) * im; if (q > 0) lit += q; }
+        if (aw) { q = nx * ax + ny * ay + nz * az; if (q > 0) lit += q; }
+        if (bw) { q = nx * bx + ny * by + nz * bz; if (q > 0) lit += q; }
+        if (ew) { q = nx * ex + ny * ey + nz * ez; if (q > 0) lit += q; }
         const f = 0.48 + lit * iw;
         d[p] = Math.min(255, d[p] * f); d[p + 1] = Math.min(255, d[p + 1] * f); d[p + 2] = Math.min(255, d[p + 2] * f * (f < 0.8 ? 1.06 : 1));
       }
     }
     quantizeData(d, w, h, { dither: 6, alphaCut: 100 });
     c.putImageData(img, 0, 0);
+  }
+
+  // The model's normals under every pixel of the reduced sprite, in screen space (y down, mirrored
+  // with the frame), plus the lantern glass. Pixels outside the frame face the viewer.
+  normalsFor(mf, w, h) {
+    const m = this.model, M = m.meta, src = m.nData, sw = m.nW, n = w * h;
+    if (!this._nm || this._nm.x.length !== n) this._nm = { x: new Float32Array(n), y: new Float32Array(n), z: new Float32Array(n), glass: new Uint8Array(n) };
+    const out = this._nm, sx = this._hi.width / w, sy = this._hi.height / h, dir = mf.flip ? -1 : 1;
+    for (let y = 0; y < h; y++) {
+      const v = Math.floor(M.ay + ((y + 0.5) * sy - mf.oy) / mf.k);
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x, u = Math.floor(M.ax + (((x + 0.5) * sx - mf.ox) / mf.k) * dir);
+        let p = -1;
+        if (u >= 0 && u < M.w && v >= 0 && v < M.h) { p = ((mf.fy + v) * sw + mf.fx + u) * 4; if (src[p + 3] < 8) p = -1; }
+        if (p < 0) { out.x[i] = 0; out.y[i] = 0; out.z[i] = 1; out.glass[i] = 0; continue; }
+        const nx = (src[p] / 127.5 - 1) * dir, ny = 1 - src[p + 1] / 127.5;
+        out.x[i] = nx; out.y[i] = ny; out.z[i] = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
+        out.glass[i] = src[p + 2] > 128 ? 1 : 0;
+      }
+    }
+    return out;
   }
 
   // Rain bouncing off the hat brim and the shoulders (drawn into the additive glow layer).

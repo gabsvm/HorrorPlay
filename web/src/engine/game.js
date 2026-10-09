@@ -1,6 +1,7 @@
 // Game controller: loop, camera, input, hotspots, state, and the script API (G) scenes are written against.
 import { Renderer, W, H } from './renderer.js';
 import { Actor } from './actor.js';
+import { loadModel } from './model.js';
 import { fgDressing } from '../art/build.js';
 import { live } from '../art/paint.js';
 import { Swing } from './life.js';
@@ -44,6 +45,8 @@ export class Game {
     this.layerCache = new Map();
     this.player = new Actor('Thomas', { h: 206, hat: 'bowler', coat: '#23262b', coatLen: 0.88, flare: 1.2, lantern: true, speed: 150, z: 10, collarUp: true, sideburns: true, hair: '#1a1410', gloves: '#2a221c', scarf: '#4a1612', stubble: 'rgba(30,22,18,0.35)' });
     this.player.isPlayer = true;
+    // the modelled Thomas (tools/blender); ?procedural shows the painted one for comparison
+    if (!(typeof location !== 'undefined' && /[?&]procedural\b/.test(location.search || ''))) this.player.model = loadModel('thomas');
     this.player.onStep = (a) => {
       audio.step(this.scene?.surface || 'stone', a.h / 200);
       if (this.scene && (this.scene.wet || this.scene.rain) && !this.scene.indoor) this.r.splash(a.x + a.facing * 14 * (a.h / 200), a.y);

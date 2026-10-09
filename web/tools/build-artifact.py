@@ -22,7 +22,13 @@ fonts = re.search(r'<link href="https://fonts.googleapis.com[^>]+>', html).group
 adir = os.path.join(web, 'assets', 'audio')
 samples = {f[:-4]: 'data:audio/mpeg;base64,' + base64.b64encode(open(os.path.join(adir, f), 'rb').read()).decode()
            for f in sorted(os.listdir(adir)) if f.endswith('.mp3')}
-sjs = '<script>window.__SAMPLES=' + json.dumps(samples) + ';</script>' + NL
+# and so do the modelled figures (assets/models, rendered by tools/blender): two atlases and their frames
+mdir = os.path.join(web, 'assets', 'models')
+models = {m: {'meta': json.load(open(os.path.join(mdir, m, 'model.json'))),
+              **{f: 'data:image/png;base64,' + base64.b64encode(open(os.path.join(mdir, m, f + '.png'), 'rb').read()).decode()
+                 for f in ('albedo', 'normal')}}
+          for m in sorted(os.listdir(mdir)) if os.path.isfile(os.path.join(mdir, m, 'model.json'))}
+sjs = '<script>window.__SAMPLES=' + json.dumps(samples) + ';window.__MODELS=' + json.dumps(models) + ';</script>' + NL
 style = '<style>' + NL + css + '</style>' + NL
 scripts = sjs + '<script type="module">' + NL + js + NL + '</script>' + NL
 if apk:
