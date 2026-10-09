@@ -9,26 +9,37 @@ const IDS = {
 let index = null;
 const loaded = {};
 
-// what exists: embedded in the single-file build, or listed by assets/portraits/index.json
+// what exists: embedded in the single-file build, or listed by assets/portraits/index.json; all of
+// it is decoded straight away, so nobody's first line shows the painted-by-code bust instead
 function known() {
   if (index) return index;
   index = {};
   const emb = typeof window !== 'undefined' && window.__PORTRAITS;
-  if (emb) return Object.assign(index, emb);
+  if (emb) { Object.assign(index, emb); preload(); return index; }
   fetch('assets/portraits/index.json')
     .then((r) => (r.ok ? r.json() : {}))
-    .then((j) => { for (const [id, vs] of Object.entries(j)) index[id] = Object.fromEntries(vs.map((v) => [v, `assets/portraits/${id}_${v}.png`])); })
+    .then((j) => {
+      for (const [id, vs] of Object.entries(j)) index[id] = Object.fromEntries(vs.map((v) => [v, `assets/portraits/${id}_${v}.png`]));
+      preload();
+    })
     .catch(() => {});
   return index;
 }
 
-export function portraitFor(name) {
-  if (typeof Image === 'undefined' || typeof fetch === 'undefined') return null;
-  const id = IDS[name], src = id && known()[id];
-  if (!src?.base) return null;
-  if (!loaded[id]) {
+function preload() {
+  for (const [id, src] of Object.entries(index)) {
+    if (loaded[id]) continue;
     const p = (loaded[id] = {});
     for (const [v, url] of Object.entries(src)) { const im = new Image(); im.onload = () => { p[v] = im; }; im.src = url; }
   }
-  return loaded[id].base ? loaded[id] : null;
+}
+
+export function loadPortraits() {
+  if (typeof Image !== 'undefined' && typeof fetch !== 'undefined') known();
+}
+
+export function portraitFor(name) {
+  if (typeof Image === 'undefined' || typeof fetch === 'undefined') return null;
+  const id = IDS[name];
+  return id && known()[id] && loaded[id]?.base ? loaded[id] : null;
 }

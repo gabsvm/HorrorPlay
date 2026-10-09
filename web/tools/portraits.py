@@ -16,7 +16,6 @@ SIZE = 144
 src = sys.argv[1]
 dst = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'assets', 'portraits')
 os.makedirs(dst, exist_ok=True)
-index = {}
 for f in sorted(os.listdir(src)):
     stem, ext = os.path.splitext(f)
     if ext.lower() not in ('.png', '.jpg', '.jpeg', '.webp'):
@@ -30,7 +29,13 @@ for f in sorted(os.listdir(src)):
     s = min(im.size)
     im = im.crop(((im.width - s) // 2, (im.height - s) // 2, (im.width + s) // 2, (im.height + s) // 2))
     im.resize((SIZE, SIZE), Image.LANCZOS).save(os.path.join(dst, f'{pid}_{var}.png'), optimize=True)
-    index.setdefault(pid, []).append(var)
+# the index lists everything in the folder, earlier batches included
+index = {}
+for f in sorted(os.listdir(dst)):
+    stem, ext = os.path.splitext(f)
+    if ext == '.png' and '_' in stem:
+        pid, var = stem.rsplit('_', 1)
+        index.setdefault(pid, []).append(var)
 for pid, vs in index.items():
     if 'base' not in vs:
         print(f'{pid}: no base image, it will not be used')

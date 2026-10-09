@@ -8,6 +8,8 @@ rendered. Keys match DEF in src/engine/actor.js; the extra keys say which animat
   base    a pose held for the whole scene (sitting at the séance, kneeling by the body): its
           breathing and talking replace standing still
   reach   reaches toward hotspots at several heights (Actor.reachTo)
+  lying   a victim as the police found her (figure.py LIE): one still frame, drawn by corpse.js
+  cover   the cape or sacking someone threw over her (draped over the body)
 """
 
 MET = dict(h=212, hat='helmet', hatColor='#0e1018', coat='#161c30', trousers='#12151f', coatLen=0.8, flare=1.02,
@@ -40,4 +42,10 @@ CAST = {
     'chico': dict(h=156, hat='cap', coat='#4a3a2a', coatLen=0.58, stoop=1, patches=True, hair='#4a3020', base='kneel'),
     'amelia': dict(h=176, hat='bonnet', hatColor='#1e1a18', skirt=True, coat='#3a3432', shawl='#2e2826', stoop=1,
                    hair='#6a6660'),
+    # the victims, as the police found them (looks from the drawCorpse calls in the scenes)
+    'polly': dict(h=150, hat='none', skirt=True, coat='#4a3a2c', hair='#4a3a2a', lying='polly', cover='#161c30'),
+    'annie': dict(h=150, hat='none', skirt=True, coat='#2a2420', hair='#3a2a20', eyesClosed=True, lying='annie',
+                  cover='#5a4a36'),
+    'kate': dict(h=150, hat='bonnet', hatColor='#1a1414', skirt=True, coat='#24262a', apron='#a8a292', hair='#2a2420',
+                 eyesClosed=True, lying='kate'),
 }

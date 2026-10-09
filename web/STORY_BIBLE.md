@@ -14,7 +14,7 @@ Un inspector de Whitechapel persigue al asesino que aterroriza el East End en el
 
 - Horror psicológico y cósmico **lento**, sin sustos baratos. La amenaza no tiene forma: es una voz, una marea, un hueco en la memoria.
 - Calles mojadas, luz de gas ámbar contra una niebla verde y fría. El color cálido es escaso y casi siempre engaña.
-- Respeto absoluto por las víctimas. **Nunca se muestra un cuerpo ni la violencia.** Las víctimas son personas con nombre, deudas, amigos y frases propias; el juego habla de ellas, no las exhibe.
+- Las escenas del crimen se muestran **como las encontró la policía**: el cuerpo, la sangre, el lugar. El asesinato en sí nunca se ve; Thomas no recuerda esas horas y el jugador tampoco. Las víctimas son personas con nombre, deudas, amigos y frases propias; el juego las investiga, no las convierte en espectáculo.
 - El jugador debe poder volver a jugar y descubrir que **todas las pistas apuntaban a él desde el primer minuto**.
 
 ## 3. La regla de lo sobrenatural (coherente y cerrada)
@@ -68,7 +68,7 @@ Nunca se explica todo esto en voz alta. El jugador lo reconstruye con el cuadern
 - En el final es quien le pregunta su nombre.
 
 ### Las víctimas (fechas reales)
-Polly Nichols (31 ago, Buck's Row), Annie Chapman (8 sep, Hanbury St.), Elizabeth Stride y Catherine Eddowes (30 sep, "doble suceso") y Mary Jane Kelly (9 nov, Miller's Court). Solo aparecen en informes, recuerdos de quienes las conocían y objetos personales. Ninguna se representa muerta.
+Polly Nichols (31 ago, Buck's Row), Annie Chapman (8 sep, Hanbury St.), Elizabeth Stride y Catherine Eddowes (30 sep, "doble suceso") y Mary Jane Kelly (9 nov, Miller's Court). Aparecen en la escena del crimen tal como las halló la policía, y en informes, recuerdos de quienes las conocían y objetos personales.
 
 ## 5. Estructura (versión jugable: 30–45 min)
 
@@ -119,6 +119,6 @@ Cada deducción correcta añade un rasgo al **Perfil del sospechoso**: *zurdo, s
 
 ## 8. Reglas de producción
 
-- Todo el arte se pinta por código y se termina como pixel-art HD (640×360, una paleta curada en `src/art/pixel.js`) con iluminación suave por encima. No se usan packs de terceros.
-- No se muestra gore. La violencia ocurre fuera de plano y se cuenta por sus consecuencias humanas.
+- Los escenarios se pintan por código; los personajes se modelan en Blender (`tools/blender`) y los retratos de diálogo son pinturas generadas con IA (`PORTRAITS.md`). Todo se termina como pixel-art HD (640×360, una paleta curada en `src/art/pixel.js`) con iluminación por encima. No se usan packs de terceros.
+- La violencia ocurre fuera de plano; lo que se ve es su resultado, con el realismo de un expediente policial de 1888, y sus consecuencias humanas.
 - Los diálogos son breves: nunca más de tres líneas seguidas sin que el jugador haga algo.

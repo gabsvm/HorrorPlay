@@ -1,6 +1,8 @@
-// A victim lying in the street, drawn from the same figure as the living (rotated onto her back)
-// so she matches everyone else in the scene. A cape or sacking over her, blood under her neck.
+// A victim lying in the street as the police found her: modelled in Blender like the living
+// (tools/blender, cast.py), or, without the model, the painted figure rotated onto her back. A cape
+// or sacking over her, blood under her neck.
 import { Actor } from '../engine/actor.js';
+import { modelFor } from '../engine/model.js';
 import { pixelizeInto } from '../art/pixel.js';
 
 const cache = {}, sprites = {};
@@ -35,9 +37,11 @@ export function drawCorpse(ctx, t, opts) {
     const bc = sp.hi.getContext('2d', { willReadFrequently: true });
     bc.setTransform(1, 0, 0, 1, 0, 0); bc.clearRect(0, 0, W, Hh);
     bc.translate(-ox, -oy);
-    paintCorpse(bc, t, opts);
+    const mf = paintCorpse(bc, t, opts);
     bc.setTransform(1, 0, 0, 1, 0, 0);
     const c = cache[key], keep = { x: c.x, y: c.y, _hi: c._hi };
+    // a modelled body is lit with its own normals, placed where paintCorpse drew it
+    c._mf = mf && { ...mf, ox: mf.ox - ox, oy: mf.oy - oy };
     // rim and volume as if she were a figure lying across the middle of the sprite
     Object.assign(c, { x, y: y - 20 * s + h * 0.6, _hi: sp.hi, lantern: false, wet: false });
     c.rimLights(bc, W, Hh, Actor.lightsNow || []);
@@ -66,13 +70,21 @@ function paintCorpse(ctx, t, { key, x, y, h = 150, look = {}, cover = '#1a1c24',
     for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(head + (10 + i * 14) * s, y + 6); ctx.lineTo(head + (4 + i * 18) * s, y + 14 + i * 2); ctx.stroke(); }
   }
   // the body, on her back, head to the left
-  ctx.save();
-  ctx.translate(foot, y - 24 * s);
-  ctx.rotate(-Math.PI / 2);
-  c.drawFigure(ctx, t);
-  ctx.restore();
-  // the cape or sacking someone threw over her, sodden at the middle
-  if (cover) {
+  const m = (c.model ??= modelFor(key));
+  let mf = null;
+  if (m?.ready) {
+    const M = m.meta, k = h / M.height;
+    ctx.drawImage(m.albedo, 0, 0, M.w, M.h, x - M.ax * k, y + 4 - M.ay * k, M.w * k, M.h * k);
+    mf = { i: 0, flip: false, k, fx: 0, fy: 0, ox: x, oy: y + 4 };
+  } else {
+    ctx.save();
+    ctx.translate(foot, y - 24 * s);
+    ctx.rotate(-Math.PI / 2);
+    c.drawFigure(ctx, t);
+    ctx.restore();
+  }
+  // the cape or sacking someone threw over her, sodden at the middle (the model has it draped)
+  if (cover && !mf) {
     ctx.fillStyle = cover;
     ctx.beginPath();
     ctx.moveTo(head + 46 * s, y + 2);
@@ -84,4 +96,5 @@ function paintCorpse(ctx, t, { key, x, y, h = 150, look = {}, cover = '#1a1c24',
     ctx.beginPath(); ctx.ellipse(head + 98 * s, y - 20 * s, 28 * s, 10 * s, 0, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(head + 70 * s, y - 38 * s, 60 * s, 2);
   }
+  return mf;
 }

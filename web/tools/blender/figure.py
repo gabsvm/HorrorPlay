@@ -32,7 +32,8 @@ DEF = dict(h=200, hat='bowler', hatColor='#121316', coat='#26282b', coatLen=0.78
            lantern=False, lanternOn=False, stoop=0, hair='#1e1712', cape=False, beard=None, moustache=None,
            sideburns=False, collarUp=False, buttons='single', belt=False, tails=False, rolled=False, patches=False,
            shawl=None, waistcoat=None, chain=False, number=False, bustle=False, lapel='#d8cfbd', notebook=False,
-           gloves=None, walk=False, run=False, reach=False, poses=[], base=None, idle=8)
+           gloves=None, walk=False, run=False, reach=False, poses=[], base=None, idle=8, lying=None, eyesClosed=False,
+           cover=None)
 C = {**DEF, **CAST[WHO]}
 
 TAU, PI = math.tau, math.pi
@@ -40,12 +41,16 @@ SC = C['h'] / 200            # the figure is laid out in actor.js units, px at h
 U = 0.01                     # one of those px in Blender units: 1 unit = 100 px
 YAW = math.radians(22)       # turned a little toward the viewer: a profile with volume
 B = C['build']
-FW, FH = round(210 * SC * (1 + (B - 1) * 0.6)), round(262 * SC)
-AX, AY = FW // 2, FH - round(20 * SC)       # where the point between the feet lands in a frame
+if C['lying']:
+    FW, FH = round(300 * SC), round(120 * SC)
+    AX, AY = FW // 2, FH - round(14 * SC)   # the middle of the body, on the ground
+else:
+    FW, FH = round(210 * SC * (1 + (B - 1) * 0.6)), round(262 * SC)
+    AX, AY = FW // 2, FH - round(20 * SC)   # where the point between the feet lands in a frame
 STRIDE = 50
 HIP_Z, SHOULDER = 0.97, 0.61                # pelvis height; shoulder line above the pelvis
 THIGH, SHIN, UPPER, FORE = 0.45, 0.46, 0.29, 0.27
-HEADK = 1.28 * (1 + max(0, 190 - C['h']) / 200)   # stylised heads, bigger still on children
+HEADK = 1.28 * (1 + max(0, 190 - C['h']) / 200) if not C['lying'] else 1.28   # stylised heads, bigger still on children
 
 # ------------------------------------------------------------------ scene
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -299,7 +304,7 @@ obj('brow', lathe(capsule(0.06, 0.016, 0.016), 8), sk, head, (0.082, -0.03, 0.03
 obj('lips', lathe(capsule(0.03, 0.008, 0.008), 6), shaded(sk, 0.78), head, (0.09, -0.015, -0.045), (PI / 2, 0, 0))
 for s in (-1, 1):
     obj(f'ear{s}', lathe(capsule(0.03, 0.022, 0.018), 8, 1.0, 0.45), sk, head, (-0.01, s * 0.085, 0.02))
-    obj(f'eye{s}', lathe(capsule(0.002, 0.012, 0.012), 8), '#2a1e18', head, (0.085, s * 0.034, 0.012))
+    obj(f'eye{s}', lathe(capsule(0.002, 0.012, 0.012), 8), shaded(sk, 0.75) if C['eyesClosed'] else '#2a1e18', head, (0.085, s * 0.034, 0.012))
     if C['sideburns']:
         obj(f'burn{s}', lathe(capsule(0.035, 0.013, 0.011), 8, 1.0, 0.5), hc, head, (0.03, s * 0.084, 0.01))
 long_hair = skirt or C['hat'] in ('bonnet', 'shawl')
@@ -389,6 +394,9 @@ else:
 # the game's figures read by their silhouette: heavier than anatomy would give
 RINGS = [(z, a * (1.12 if z > 0.3 else 1.06) * B, bf * (1.42 if z > 0 else 1.3) * B, bb * (1.38 if z > 0 else 1.3) * B, cx)
          for z, a, bf, bb, cx in rings]
+if C['lying']:
+    # lying, the skirt no longer hangs in a bell: it falls flat over the legs and spreads on the stones
+    RINGS = [(z, a * 1.15, bf * 0.42, bb * 0.3, cx) if z < 0.05 else (z, a, bf, bb, cx) for z, a, bf, bb, cx in RINGS]
 HEM = RINGS[-2][0]
 SEG = 28
 coat_me = bpy.data.meshes.new('coat')
@@ -469,7 +477,7 @@ def build_coat(st):
                         d[1] *= 0.6          # pushed out mostly forward and back, not sideways
                         p = q + d / max(1e-6, float(np.linalg.norm(d))) * rad
                 # cloth that reaches the street spreads on it instead of going through
-                if p[2] < ground + pz:
+                if not C['lying'] and p[2] < ground + pz:
                     p[0] += (ground + pz - p[2]) * 0.8 * (1 if c > 0 else -1)
                     p[2] = ground + pz
             co.append(p)
@@ -501,6 +509,15 @@ POSES = {
     'cower': dict(lower=22, lean=14, ff=(16, 6, 0), fb=(-20, 6, 0.3), tilt=0.2, near=(-2.4, 0.66), far=(-2.1, 0.56)),
     'sit': dict(lower=44, lean=0, ff=(46, 6, 0), fb=(38, 6, 0), tilt=0, near=(-0.7, -0.9), far=(-0.7, -0.9)),
 }
+# The victims, from the inquest descriptions, laid out standing and then turned onto their backs:
+# Polly with her legs straight and her arms at her sides; Annie with her knees drawn up and turned
+# out and her left arm across her chest; Kate with her left leg out straight, the right bent at the
+# knee, and her arms at her sides, palms up. The head falls back.
+LIE = {
+    'polly': dict(ff=(8, 6, 0.6), fb=(-6, 6, 0.7), tilt=-0.35, near=(0.08, -0.15), far=(-0.06, -0.15)),
+    'annie': dict(ff=(40, 44, 0.3), fb=(30, 38, 0.4), tilt=-0.45, near=(0.15, -0.2), far=(-1.2, -1.9)),
+    'kate': dict(ff=(46, 26, 0.3), fb=(-6, 6, 0.7), tilt=-0.3, near=(0.12, -0.1), far=(0.12, -0.1)),
+}
 REACH = {'reach_lo': (62, 60), 'reach_mid': (66, 110), 'reach_hi': (58, 160)}   # Actor.reachTo, px from the feet
 
 
@@ -531,7 +548,7 @@ def two_bone(hx, hz, tx, tz, l1, l2, bend):
 def pose(phase=0.0, w=0.0, run=0.0, t=0.0, yaw=YAW, P=None, talk=None, target=None):
     root.rotation_euler = (0, 0, -yaw)
     stretch = 1 / max(0.2, math.cos(yaw))      # strides read at full length after the turn toward camera
-    pp = POSES.get(P, {})
+    pp = LIE[C['lying']] if C['lying'] else POSES.get(P, {})
     lower = pp.get('lower', 0)
     qa = phase
     fa, fb = foot_at(qa, w, run), foot_at(qa + PI, w, run)
@@ -613,6 +630,75 @@ def pose(phase=0.0, w=0.0, run=0.0, t=0.0, yaw=YAW, P=None, talk=None, target=No
     push = max(0.0, fa[0]) * 0.35 * w * U * stretch
     trail = max(0.0, -fb[0]) * 0.3 * w * U * stretch
     build_coat({'pz': pz, 'lean': lean, 'sway': -sw * 5 * w * U, 'push': push, 'trail': trail, 'run': run, 'caps': caps})
+    if C['lying']:
+        lay_down()
+
+
+def lay_down():
+    """Turn the posed figure onto its back, head to the left, rolled a little toward the camera so
+    the body reads from the side, and rest it on the ground in the middle of the frame."""
+    root.rotation_mode = 'YXZ'
+    root.rotation_euler = (0.45, -PI / 2, 0)
+    root.location = (0, 0, 0)
+    bpy.context.view_layer.update()
+    pts = [o.matrix_world @ v.co for o in coll.objects if o.type == 'MESH' and not o.hide_render for v in o.data.vertices]
+    xs, zs = [p.x for p in pts], [p.z for p in pts]
+    root.location = (-(min(xs) + max(xs)) / 2, 0, -min(zs))
+    if C['cover']:
+        bpy.context.view_layer.update()
+        drape(min(xs) - (min(xs) + max(xs)) / 2, max(xs) - (min(xs) + max(xs)) / 2)
+
+
+def drape(x0, x1):
+    """The cape or sacking thrown over her, from the shoulders to the knees: a sheet dropped from above
+    onto the body (a ray down at every point), thickened and softened so it rests on the high places
+    and sags between them, its edges falling to the stones. Sodden with blood over the chest."""
+    dg = bpy.context.evaluated_depsgraph_get()
+    nx, ny = 48, 24
+    xa, xb = x0 + (x1 - x0) * 0.17, x0 + (x1 - x0) * 0.93
+    half = 0.48 * SC
+    hgt = np.zeros((nx, ny))
+    for i in range(nx):
+        for j in range(ny):
+            x, y = xa + (xb - xa) * i / (nx - 1), -half + 2 * half * j / (ny - 1)
+            hit, loc, *_ = scn.ray_cast(dg, (x, y, 5.0), (0, 0, -1))
+            hgt[i, j] = loc.z if hit else 0.0
+    # rest on the highest points nearby, then soften
+    from_max = np.copy(hgt)
+    for di in (-2, -1, 1, 2):
+        for dj in (-1, 1, 0):
+            from_max = np.maximum(from_max, np.roll(np.roll(hgt, di, 0), dj, 1) * (0.9 if abs(di) == 2 else 0.97))
+    z = from_max
+    for _ in range(3):
+        z = (z + np.roll(z, 1, 0) + np.roll(z, -1, 0) + np.roll(z, 1, 1) + np.roll(z, -1, 1)) / 5
+    z = np.maximum(z, hgt) + 0.012
+    # the edges slope down to the stones over a few cells, unevenly, as cloth does
+    ii, jj = np.meshgrid(np.arange(nx), np.arange(ny), indexing='ij')
+    edge = np.minimum(np.minimum(ii, nx - 1 - ii), np.minimum(jj, ny - 1 - jj)).astype(float)
+    edge += 0.8 * np.sin(ii * 0.9 + jj * 1.7) + 0.6 * np.sin(ii * 2.3 - jj * 0.7)
+    k = np.clip(edge / 4.0, 0, 1)
+    z = 0.004 + (z - 0.004) * k * k * (3 - 2 * k)
+    # and never sink into the body it lies on, except right at the hem
+    z = np.where(edge > 1.2, np.maximum(z, hgt + 0.01), z)
+    verts, faces, fm = [], [], []
+    for i in range(nx):
+        for j in range(ny):
+            x, y = xa + (xb - xa) * i / (nx - 1), -half + 2 * half * j / (ny - 1)
+            verts.append((x, y, float(z[i, j]) + 0.006 * math.sin(i * 1.7 + j * 0.9)))
+    for i in range(nx - 1):
+        for j in range(ny - 1):
+            a = i * ny + j
+            faces.append((a, a + ny, a + ny + 1, a + 1))
+            u, v = i / (nx - 1), (j - ny / 2) / ny
+            fm.append(1 if (u - 0.28) ** 2 / 0.02 + v * v / 0.06 < 1 else 0)
+    me = bpy.data.meshes.new('cover')
+    me.from_pydata(verts, [], faces)
+    me.polygons.foreach_set('use_smooth', [True] * len(faces))
+    me.materials.append(mat(C['cover']))
+    me.materials.append(mat('#3a0808'))
+    me.polygons.foreach_set('material_index', fm)
+    o = bpy.data.objects.new('cover', me)
+    coll.objects.link(o)
 
 
 # ------------------------------------------------------------------ animations
@@ -620,14 +706,16 @@ BREATH = TAU / 1.7               # one breath (drawFigure: sin(t * 1.7))
 GESTURE = TAU / 1.3              # one gesture while talking (drawFigure: sin(t * 1.3))
 ANIMS = []
 base = C['base']
-if base:
+if C['lying']:
+    ANIMS += [('lie', 1, lambda i, n: pose())]
+elif base:
     ANIMS += [(base, 4, lambda i, n: pose(t=i / n * BREATH, P=base)),
               (base + '_talk', 8, lambda i, n: pose(t=i / n * BREATH, P=base, talk=i / n * TAU))]
 else:
     ANIMS += [('idle', C['idle'], lambda i, n: pose(t=i / n * BREATH)),
               ('talk', 8, lambda i, n: pose(t=i / n * GESTURE, talk=i / n * TAU)),
               ('turn', 3, lambda i, n: pose(yaw=math.radians(55 + 35 * i)))]
-if C['walk']:
+if C['walk'] and not C['lying']:
     ANIMS += [('walk', 16, lambda i, n: pose(i / n * TAU, 1, 0, t=i / n)),
               ('walkh', 16, lambda i, n: pose(i / n * TAU, 0.5, 0, t=i / n))]
 if C['run']:

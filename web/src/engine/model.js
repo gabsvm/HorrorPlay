@@ -26,11 +26,13 @@ export function loadModel(name) {
 }
 
 // Who is played by which model (tools/blender/cast.py). The constables share one figure; actors
-// not listed (the neighbours, the dead) stay painted. ?procedural paints everyone, for comparison.
+// not listed (the neighbours) stay painted. The victims are looked up by their corpse key.
+// ?procedural paints everyone, for comparison.
 const CAST = {
   Thomas: 'thomas', Pike: 'pike', Greaves: 'greaves', Wexley: 'wexley', Viuda: 'viuda', Joven: 'joven',
   Brennan: 'brennan', Wren: 'wren', Neil: 'constable', Long: 'constable', Poli0: 'constable', Poli1: 'constable',
   Poli2: 'constable', Watkins: 'city', Agente: 'city', Morris: 'morris', Chico: 'chico', Amelia: 'amelia',
+  polly: 'polly', annie: 'annie', kate: 'kate',
 };
 const painted = typeof location !== 'undefined' && /[?&]procedural\b/.test(location.search || '');
 
