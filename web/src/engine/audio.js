@@ -32,6 +32,9 @@ class AudioEngine {
     const comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -16; comp.ratio.value = 3;
     this.master.connect(comp).connect(ctx.destination);
+    // the beds, the music and the city go through here, so they can step back while someone speaks
+    this.bg = ctx.createGain(); this.bg.connect(this.master);
+    this.voiceBus = ctx.createGain(); this.voiceBus.gain.value = prefs.voices ?? 1; this.voiceBus.connect(this.master);
     // everything sends to this bus; the space's convolver behind it is swapped as scenes change
     this.reverb = ctx.createGain();
     this.wet = ctx.createGain(); this.wet.gain.value = 0.45;
@@ -41,6 +44,7 @@ class AudioEngine {
     this.noise = this.noiseBuffer(4);
     this.brown = this.noiseBuffer(4, true);
     this.loadSamples();
+    this.loadVoiceIndex();
     // whatever the scene asked for before the first click can start now
     if (this.wantBeds) this.setBeds(this.wantBeds, 1.5);
     if (this.wantMusic) this.playMusic(this.wantMusic);
@@ -50,6 +54,87 @@ class AudioEngine {
 
   setVolume(v) {
     if (this.ctx) this.master.gain.setTargetAtTime(0.9 * v, this.ctx.currentTime, 0.05);
+  }
+
+  setVoiceVolume(v) {
+    if (this.ctx) this.voiceBus.gain.setTargetAtTime(v, this.ctx.currentTime, 0.05);
+  }
+
+  // ------------------------------------------------------------ voices
+  // One recorded clip per line (tools/voices), keyed as engine/voicekey.js keys it. The single-file
+  // build carries them as data URIs; each is decoded only when its line comes, and dropped after.
+  loadVoiceIndex() {
+    if (window.__VOICES) { this.voiceIds = new Set(Object.keys(window.__VOICES)); return; }
+    this.voiceIds = new Set();
+    fetch('assets/voices/index.json').then((r) => (r.ok ? r.json() : {})).then((idx) => { this.voiceIds = new Set(Object.keys(idx)); }).catch(() => {});
+  }
+
+  hasVoice(id) { return !!(this.ctx && this.voiceIds?.has(id) && (prefs.voices ?? 1) > 0); }
+
+  async voiceBuffer(id) {
+    const data = window.__VOICES?.[id];
+    const bytes = data
+      ? Uint8Array.from(atob(data.slice(data.indexOf(',') + 1)), (c) => c.charCodeAt(0)).buffer
+      : await fetch(`assets/voices/${id}.ogg`).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(r.status)));
+    return this.ctx.decodeAudioData(bytes);
+  }
+
+  // Say a line. kind: 'say' (someone in the scene, placed at x), 'thought' (inside Thomas's head,
+  // close and dry), 'voice' (the Host: doubled a hair out of tune, smeared across both ears, far
+  // back in the room), 'trance' (the Host through Madame Wexley: her voice, with it underneath).
+  // Resolves to { dur, ended, stop } once it sounds, or null when there is no recording.
+  async speak(id, { kind = 'say', x = null } = {}) {
+    if (!this.hasVoice(id)) return null;
+    let buf;
+    try { buf = await this.voiceBuffer(id); } catch { return null; }
+    const ctx = this.ctx, t = ctx.currentTime + 0.03;
+    const out = ctx.createGain(); out.gain.value = 1; out.connect(this.voiceBus);
+    const srcs = [];
+    const source = (rate = 1) => { const s = ctx.createBufferSource(); s.buffer = buf; s.playbackRate.value = rate; srcs.push(s); return s; };
+    const send = (node, v) => { const r = ctx.createGain(); r.gain.value = v; node.connect(r).connect(this.reverb); };
+    const panner = (v) => { if (!ctx.createStereoPanner) return ctx.createGain(); const p = ctx.createStereoPanner(); p.pan.value = v; return p; };
+    if (kind === 'voice' || kind === 'trance') {
+      const dry = ctx.createGain(); dry.gain.value = kind === 'trance' ? 0.9 : 0.75;
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = kind === 'trance' ? 6000 : 3600;
+      source().connect(lp).connect(dry).connect(out);
+      // the second one, a shade lower and slower: it drifts behind as the line goes on
+      const under = source(kind === 'trance' ? 0.94 : 0.985);
+      const ug = ctx.createGain(); ug.gain.value = kind === 'trance' ? 0.22 : 0.4;
+      const ul = panner(-0.6), ur = panner(0.6), d1 = ctx.createDelay(); d1.delayTime.value = 0.017;
+      under.connect(ug); ug.connect(ul).connect(out); ug.connect(d1).connect(ur).connect(out);
+      send(dry, kind === 'trance' ? 0.35 : 0.7); send(ug, 0.6);
+    } else if (kind === 'thought') {
+      const g = ctx.createGain(); g.gain.value = 0.95;
+      source().connect(g).connect(out); send(g, 0.05);
+    } else {
+      const sp = this.spatial(x, 2400), g = ctx.createGain(); g.gain.value = 0.55 + 0.45 * sp.gain;
+      source().connect(g).connect(panner(sp.pan * 0.7)).connect(out); send(g, 0.12 + 0.2 * (1 - sp.gain));
+    }
+    srcs.forEach((s) => s.start(t));
+    this.duck(+1);
+    let done = false, finish;
+    const ended = new Promise((res) => { finish = res; });
+    const end = () => { if (done) return; done = true; this.duck(-1); finish(); setTimeout(() => out.disconnect(), 400); };
+    srcs[0].onended = end;
+    return {
+      dur: buf.duration,
+      ended,
+      stop: () => {
+        if (done) return;
+        const now = ctx.currentTime;
+        out.gain.setValueAtTime(out.gain.value, now); out.gain.linearRampToValueAtTime(0, now + 0.12);
+        srcs.forEach((s) => { try { s.stop(now + 0.13); } catch { /* already stopped */ } });
+        end();
+      },
+    };
+  }
+
+  // the world steps back while someone is speaking, and comes forward again after
+  duck(d) {
+    this._speaking = Math.max(0, (this._speaking || 0) + d);
+    const now = this.ctx.currentTime, g = this.bg.gain;
+    g.cancelScheduledValues(now); g.setValueAtTime(g.value, now);
+    g.linearRampToValueAtTime(this._speaking ? 0.5 : 1, now + (this._speaking ? 0.25 : 0.9));
   }
 
   // ------------------------------------------------------------ recordings
@@ -166,7 +251,7 @@ class AudioEngine {
   makeBed(name) {
     const ctx = this.ctx;
     const gain = ctx.createGain(); gain.gain.value = 0;
-    gain.connect(this.master);
+    gain.connect(this.bg);
     const src = (buf) => { const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.start(0, Math.random() * 3); return s; };
     const lfo = (freq, amt, target) => { const o = ctx.createOscillator(); o.frequency.value = freq; const g = ctx.createGain(); g.gain.value = amt; o.connect(g).connect(target); o.start(); return o; };
     if (name === 'rain') {
@@ -263,7 +348,7 @@ class AudioEngine {
     const bus = ctx.createGain();
     bus.gain.setValueAtTime(0, ctx.currentTime);
     bus.gain.linearRampToValueAtTime(1, ctx.currentTime + 3);
-    bus.connect(this.master);
+    bus.connect(this.bg);
     const send = ctx.createGain(); send.gain.value = 0.8; bus.connect(send).connect(this.reverb);
     const stepDur = mood === 'dread' ? 8 : mood === 'memory' ? 0.42 : 60 / 140 / 2;
     let next = ctx.currentTime + 0.15, step = 0;
@@ -640,7 +725,7 @@ class AudioEngine {
     const ctx = this.ctx;
     const bus = ctx.createGain(); bus.gain.value = cfg.muffle ? 0.45 : 1;
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = cfg.muffle ? 520 : 2400;
-    lp.connect(bus); bus.connect(this.master);
+    lp.connect(bus); bus.connect(this.bg);
     const send = ctx.createGain(); send.gain.value = 0.5; bus.connect(send).connect(this.reverb);
     this.cityBus = bus; this.cityIn = lp;
     const every = (kind, lo, hi, first) => {

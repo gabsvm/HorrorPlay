@@ -1,6 +1,7 @@
 // DOM user interface: dialogue, choices, documents, notebook, inventory, cards.
 import { audio } from './audio.js';
 import { prefs } from './prefs.js';
+import { lineKey } from './voicekey.js';
 import { pixelize } from '../art/pixel.js';
 import { Actor } from './actor.js';
 
@@ -68,23 +69,39 @@ export class UI {
     let done = false;
     let skip = false;
     this._advance = () => { skip = true; };
-    const speed = (style === 'voice' ? 55 : 22) * prefs.text;
+    // the recorded line, if there is one: the text then keeps pace with the voice
+    const voiced = await audio.speak(lineKey(name, style, text), {
+      kind: style === 'thought' ? 'thought' : style === 'voice' ? (name ? 'trance' : 'voice') : 'say',
+      x: portrait && portrait.x,
+    });
+    this._voiced = voiced;
+    const beat = (ch) => (ch === '.' || ch === '?' || ch === '!' ? 7 : ch === ',' ? 3 : 1);
+    let speed = (style === 'voice' ? 55 : 22) * prefs.text;
+    if (voiced) speed = Math.min(speed || 22, (voiced.dur * 850) / [...plain].reduce((n, ch) => n + beat(ch), 0));
     if (!speed) skip = true;
     if (style !== 'thought' && style !== 'voice') this._portraitMode = 'talk';
     for (let i = 1; i <= plain.length && !skip; i++) {
       dlgText.textContent = plain.slice(0, i);
       const ch = plain[i - 1];
-      if (i % 3 === 0 && style !== 'voice') audio.tick();
-      await wait(ch === '.' || ch === '?' || ch === '!' ? speed * 7 : ch === ',' ? speed * 3 : speed);
+      if (i % 3 === 0 && style !== 'voice' && !voiced) audio.tick();
+      await wait(speed * beat(ch));
     }
     dlgText.innerHTML = html;
     if (this._portraitMode === 'talk') this._portraitMode = 'listen';
     dlgNext.style.visibility = 'visible';
+    if (voiced && this._portraitMode === 'listen' && style !== 'thought' && style !== 'voice') {
+      // still speaking after the text is out: the mouth keeps going until the voice stops
+      this._portraitMode = 'talk';
+      voiced.ended.then(() => { if (this._voiced === voiced && this._portraitMode === 'talk') this._portraitMode = 'listen'; });
+    }
     await new Promise((res) => {
       this._advance = () => { if (!done) { done = true; res(); } };
-      if (auto) setTimeout(() => this._advance && this._advance(), auto);
+      // a line that goes on by itself waits for its voice to finish too
+      if (auto) Promise.all([wait(auto), voiced ? voiced.ended : null]).then(() => this._advance && this._advance());
     });
     this._advance = null;
+    if (voiced) voiced.stop();
+    this._voiced = null;
     audio.click();
   }
 

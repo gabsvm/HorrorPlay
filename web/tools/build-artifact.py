@@ -41,7 +41,11 @@ closeups = {k: 'data:image/jpeg;base64,' + base64.b64encode(open(os.path.join(cd
 rdir = os.path.join(web, 'assets', 'props')
 ridx = json.load(open(os.path.join(rdir, 'index.json'))) if os.path.isfile(os.path.join(rdir, 'index.json')) else {}
 props = {n: {'meta': m, 'src': 'data:image/png;base64,' + base64.b64encode(open(os.path.join(rdir, n + '.png'), 'rb').read()).decode()} for n, m in ridx.items()}
-sjs = ('<script>window.__SAMPLES=' + json.dumps(samples) + ';window.__MODELS=' + json.dumps(models)
+# and the recorded voices (tools/voices): one short clip per line, decoded only when the line is said
+vdir = os.path.join(web, 'assets', 'voices')
+vidx = json.load(open(os.path.join(vdir, 'index.json'))) if os.path.isfile(os.path.join(vdir, 'index.json')) else {}
+voices = {k: 'data:audio/ogg;base64,' + base64.b64encode(open(os.path.join(vdir, k + '.ogg'), 'rb').read()).decode() for k in vidx}
+sjs = ('<script>window.__VOICES=' + json.dumps(voices) + ';window.__SAMPLES=' + json.dumps(samples) + ';window.__MODELS=' + json.dumps(models)
        + ';window.__PORTRAITS=' + json.dumps(portraits) + ';window.__CLOSEUPS=' + json.dumps(closeups) + ';window.__PROPS=' + json.dumps(props) + ';</script>' + NL)
 style = '<style>' + NL + css + '</style>' + NL
 scripts = sjs + '<script type="module">' + NL + js + NL + '</script>' + NL
