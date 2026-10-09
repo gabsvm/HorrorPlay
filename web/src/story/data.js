@@ -122,7 +122,7 @@ export const CLUES = {
   delantal: { tag: '29 Hanbury St. · 8 sep', text: 'Un delantal de cuero mojado junto al grifo del patio. Los periódicos ya hablan de "Leather Apron".' },
   ordenados: { tag: '29 Hanbury St.', text: 'Sus pocas pertenencias estaban colocadas en fila a sus pies, con cuidado, como el instrumental en una mesa de disección.' },
   greaves_sabe: { tag: 'Dr. Greaves', text: 'Greaves sabía que duermo mal y que he vuelto al láudano. Nunca se lo he contado a nadie.' },
-  anillos: { tag: '29 Hanbury St. · el cuerpo', text: 'Le arrancaron dos anillos de latón del dedo. Las marcas siguen ahí. No estaban entre sus cosas.' },
+  anillos: { tag: '29 Hanbury St. · el cuerpo', text: 'Le arrancaron dos anillos de latón del dedo y le dejaron el tercero. Las marcas siguen ahí. No estaban entre sus cosas.' },
   falta: { tag: '29 Hanbury St. · el cuerpo', text: 'Le abrieron el vientre y se llevaron algo de dentro, con cortes limpios, de quien sabe lo que busca.' },
   reflejo: { tag: '29 Hanbury St.', text: 'En el cristal de la ventana vi a alguien detrás de mí. Cuando me giré no había nadie.' },
   alguien_detras: { tag: 'Madame Wexley', text: '"Hay alguien detrás de usted, inspector. Siempre ha estado ahí."' },

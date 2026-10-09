@@ -37,9 +37,16 @@ export class Smoke {
 
 // A drop forms under an eave or gutter, falls and splashes.
 export class Drip {
-  constructor({ x, y, ground, period = 2.2 }) { Object.assign(this, { x, y, ground, period }); this.off = Math.random() * period; }
-  draw(ctx, t) {
-    const k = ((t + this.off) % this.period) / this.period;
+  constructor({ x, y, ground, period = 2.2 }) { Object.assign(this, { x, y, ground, period }); this.off = Math.random() * period; this.t = 0; }
+  // the drop is heard where it lands
+  update(dt, G) {
+    const k0 = ((this.t + this.off) % this.period) / this.period;
+    this.t += dt;
+    const k1 = ((this.t + this.off) % this.period) / this.period;
+    if (k0 < 0.8 && k1 >= 0.8) G.audio.drip(this.x);
+  }
+  draw(ctx) {
+    const k = ((this.t + this.off) % this.period) / this.period;
     if (k < 0.55) { const s = 1.5 + k * 3; ctx.fillStyle = '#9fb3b4'; ctx.fillRect(this.x - s / 2, this.y, s, s * 1.4); return; }
     const f = (k - 0.55) / 0.25;
     if (f < 1) { ctx.fillStyle = '#9fb3b4'; ctx.fillRect(this.x - 1.5, this.y + f * f * (this.ground - this.y), 3, 6); return; }

@@ -17,6 +17,7 @@ export default {
   id: 'mitre',
   width: WIDTH,
   groundY: GROUND,
+  space: 'street',
   reflectY: 640,
   get walk() { return this.G && this.G.flag('mitre_badge') ? [140, 2160] : [140, 560]; },
   spawn: 200,

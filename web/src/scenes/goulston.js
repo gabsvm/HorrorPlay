@@ -12,6 +12,7 @@ export default {
   id: 'goulston',
   width: WIDTH,
   groundY: GROUND,
+  space: 'alley',
   reflectY: 640,
   walk: [120, 1500],
   spawn: 160,

@@ -14,6 +14,7 @@ export default {
   walk: [200, 1340],
   spawn: 230,
   surface: 'wood',
+  space: 'office',
   indoor: true,
   reflectY: GROUND + 6,
   wet: 0.35,

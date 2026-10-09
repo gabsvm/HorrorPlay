@@ -17,6 +17,8 @@ export default {
   walk: [200, 1260],
   spawn: 240,
   surface: 'wood',
+  space: 'parlour',
+  // (the mantel clock stopped at a quarter past three: no ticking here)
   indoor: true,
   reflectY: GROUND + 6,
   wet: 0.35,

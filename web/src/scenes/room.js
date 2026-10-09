@@ -17,6 +17,9 @@ export default {
   walk: [210, 1380],
   spawn: 760,
   surface: 'wood',
+  space: 'room',
+  // the clock on the wall over the desk; the street comes through the window glass
+  sounds: [{ kind: 'clock', x: 1396, vol: 0.8, reach: 900 }],
   indoor: true,
   reflectY: GROUND + 6,
   wet: 0.35,

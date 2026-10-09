@@ -36,7 +36,10 @@ globalThis.fetch = () => Promise.resolve({ ok: true, arrayBuffer: () => Promise.
 const timers = [];
 globalThis.setInterval = (fn) => { timers.push(fn); return timers.length; };
 globalThis.clearInterval = () => {};
-globalThis.setTimeout = (fn) => { fn(); return 0; };
+// timeouts run at once, but not the ones they schedule in turn (the city reschedules itself)
+let depth = 0;
+globalThis.setTimeout = (fn) => { if (depth > 1) return 0; depth++; try { fn(); } finally { depth--; } return 0; };
+globalThis.clearTimeout = () => {};
 const { audio } = await import('../src/engine/audio.js');
 audio.init();
 for (const b of ['rain', 'wind', 'river', 'room', 'crowd', 'drone', 'heart']) audio.bed(b, 0.4, 1);
@@ -47,6 +50,15 @@ if (Object.keys(audio.samples).length < 20) problems.push(`solo ${Object.keys(au
 for (const f of ALL) audio[f]();
 for (const s of ['wood', 'mud', 'stone']) audio.step(s);
 for (const b of ['rain', 'river', 'room']) audio.bed(b, 0.5, 1);
+// the places, what sounds in them, and the city outside
+for (const sp of ['room', 'parlour', 'office', 'street', 'alley', 'yard', 'river', 'nowhere']) audio.setSpace(sp, 0.5);
+audio.setEmitters([{ kind: 'fire', x: 100 }, { kind: 'grind', x: 900, when: () => true }, { kind: 'clock', x: -400, vol: 0.5 }, { kind: 'gas', x: 3000 }, { kind: 'nothing', x: 0 }]);
+for (const x of [-2000, 0, 500, 5000]) { audio.listener = x; audio.updateEmitters({}); for (const t of timers.slice(-3)) t(); }
+audio.setEmitters([]);
+audio.setCity({ cab: 1, bell: 1, ship: 1 }); audio.cab(); audio.farBell(); audio.shipHorn();
+audio.setCity({ cab: 0.6, muffle: true }); audio.setCity(null);
+audio.train(); audio.drip(300);
+for (const x of [-1500, 0, 800]) audio.step('stone', 1, audio.spatial(x));
 for (const mood of ['dread', 'memory', 'chase', null]) {
   audio.playMusic(mood);
   // advance the audio clock and fire the scheduler many times

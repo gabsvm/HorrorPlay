@@ -376,7 +376,11 @@ export class Game {
     this.r.cam.x = this.camTarget();
     this.zoomTarget = null;
     this.zoom = { z: window.FAST ? 1 : 1.07, x: this.player.x, y: scene.groundY - 160 };
-    audio.setBeds(scene.beds || {}, 1.5);
+    audio.setBeds((typeof scene.beds === 'function' ? scene.beds(this.G) : scene.beds) || {}, 1.5);
+    // the acoustics of the place, what sounds in it, and the city outside
+    audio.setSpace(scene.space || (scene.indoor ? 'room' : 'street'));
+    audio.setEmitters(scene.sounds || []);
+    audio.setCity(scene.city !== undefined ? scene.city : scene.indoor ? { cab: 0.6, muffle: true } : { cab: 1, bell: 1 });
     audio.playMusic(scene.music || null);
     if (scene.date) this.ui.setDate(scene.date, null);
     if (fade) this.fadeTo(0, 900);
@@ -405,6 +409,8 @@ export class Game {
   addActor(a) {
     if (!a._scaled) { a.h = Math.round(a.h * (this.sceneScale ?? 1)); a._scaled = true; }
     if (a.model === undefined) a.model = modelFor(a.name);
+    // everyone's footfalls are heard, from where they walk
+    if (!a.onStep) a.onStep = (b) => { if (b.visible) audio.step(this.scene?.surface || 'stone', b.h / 200, audio.spatial(b.x, 1000)); };
     this.actors.push(a); return a;
   }
   actor(name) { return this.actors.find((a) => a.name === name); }
@@ -446,6 +452,8 @@ export class Game {
       for (const a of this.actors) a.update(dt);
       if (this.scene.update) this.scene.update(this.G, dt);
       if (this.scene.life) for (const l of this.scene.life) if (l.update) l.update(dt, this.G);
+      audio.listener = this.player.x;
+      audio.updateEmitters(this.G);
       if (this.menuPan) this.camFocus = 1500 + Math.sin(now / 12000) * 260;
       const target = this.camTarget();
       this.r.cam.x += (target - this.r.cam.x) * Math.min(1, dt * 3.2);

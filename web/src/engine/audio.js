@@ -1,6 +1,10 @@
 // Sound. Music, the Host, heartbeats and stings are synthesised; rain, the river, footsteps, doors,
 // cloth and paper are short CC0 recordings (assets/audio, see CREDITS.md) layered over the synthesis.
 // Every recorded sound has a procedural fallback, so the game sounds whole before (or without) them.
+// Each scene sets the acoustics of its space (setSpace), the things in it that make a sound where they
+// are (setEmitters: a fire, a grindstone, a clock), and the city beyond it (setCity: cabs going past,
+// a far bell, a steamer on the river). Sounds with a place are panned and faded against the listener,
+// who is Thomas.
 
 const STEPS = {
   stone: ['step_stone0', 'step_stone1', 'step_stone2', 'step_stone3', 'step_stone4'],
@@ -27,16 +31,20 @@ class AudioEngine {
     const comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -16; comp.ratio.value = 3;
     this.master.connect(comp).connect(ctx.destination);
-    this.reverb = ctx.createConvolver();
-    this.reverb.buffer = this.impulse(3.2, 2.6);
+    // everything sends to this bus; the space's convolver behind it is swapped as scenes change
+    this.reverb = ctx.createGain();
     this.wet = ctx.createGain(); this.wet.gain.value = 0.45;
-    this.reverb.connect(this.wet).connect(this.master);
+    this.wet.connect(this.master);
+    this.listener = 0;
+    this.setSpace(this.wantSpace || 'street', 0.01);
     this.noise = this.noiseBuffer(4);
     this.brown = this.noiseBuffer(4, true);
     this.loadSamples();
     // whatever the scene asked for before the first click can start now
     if (this.wantBeds) this.setBeds(this.wantBeds, 1.5);
     if (this.wantMusic) this.playMusic(this.wantMusic);
+    if (this.wantEmitters) this.setEmitters(this.wantEmitters);
+    if (this.wantCity) this.setCity(this.wantCity);
   }
 
   setVolume(v) {
@@ -113,12 +121,23 @@ class AudioEngine {
     return b;
   }
 
-  impulse(sec, decay) {
+  // A room's answer: noise dying away, with an early slap off the nearest wall and the high end
+  // soaked up by soft rooms (damp 0..1).
+  impulse(sec, decay, { slap = 0, damp = 0 } = {}) {
     const ctx = this.ctx, n = ctx.sampleRate * sec;
     const b = ctx.createBuffer(2, n, ctx.sampleRate);
     for (let ch = 0; ch < 2; ch++) {
       const d = b.getChannelData(ch);
-      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, decay);
+      let lp = 0;
+      for (let i = 0; i < n; i++) {
+        const v = (Math.random() * 2 - 1) * Math.pow(1 - i / n, decay);
+        lp += (v - lp) * (1 - damp * 0.85);
+        d[i] = lp;
+      }
+      if (slap) {
+        const at = Math.floor(slap * ctx.sampleRate) + ch * 37;
+        for (let k = 0; k < 90 && at + k < n; k++) d[at + k] += (Math.random() * 2 - 1) * 0.55 * (1 - k / 90);
+      }
     }
     return b;
   }
@@ -355,40 +374,51 @@ class AudioEngine {
     node.gain.exponentialRampToValueAtTime(0.0001, t + a + d);
   }
 
-  noiseHit({ freq = 800, q = 1, type = 'bandpass', vol = 0.3, a = 0.005, d = 0.12, rev = 0.2, buf } = {}) {
-    if (!this.ctx) return;
-    const ctx = this.ctx, t = ctx.currentTime;
+  noiseHit({ freq = 800, q = 1, type = 'bandpass', vol = 0.3, a = 0.005, d = 0.12, rev = 0.2, buf, pan = 0, dest = null, at = 0 } = {}) {
+    if (!this.ctx || vol <= 0.0002) return;
+    const ctx = this.ctx, t = ctx.currentTime + at;
     const s = ctx.createBufferSource(); s.buffer = buf || this.noise;
     const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
     const g = ctx.createGain(); this.env(g, t, a, vol, d);
-    s.connect(f).connect(g).connect(this.master);
-    if (rev) { const r = ctx.createGain(); r.gain.value = rev; g.connect(r).connect(this.reverb); }
+    let out = s.connect(f).connect(g);
+    if (pan && ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = pan; out = out.connect(p); }
+    out.connect(dest || this.master);
+    if (rev) { const r = ctx.createGain(); r.gain.value = rev; out.connect(r).connect(this.reverb); }
     s.start(t, Math.random() * 2); s.stop(t + a + d + 0.1);
   }
 
+  // How a sound at x reaches Thomas: fainter with distance, panned to its side. x null: here.
+  spatial(x, reach = 1100) {
+    if (x == null) return { gain: 1, pan: 0 };
+    const dx = x - this.listener, k = Math.max(0, 1 - Math.abs(dx) / reach);
+    return { gain: Math.pow(k, 1.4), pan: Math.max(-0.85, Math.min(0.85, dx / 700)) };
+  }
+
   // a footfall: never the same recording twice in a row, a little pitch and level drift, lighter for a child
-  step(surface = 'stone', weight = 1) {
+  // gain and pan place it: someone else's steps, further off (see spatial)
+  step(surface = 'stone', weight = 1, { gain = 1, pan = 0 } = {}) {
+    if (gain < 0.02) return;
     const set = STEPS[surface] || STEPS.stone;
     let pick = this.pick(set);
     if (pick === this._lastStep) pick = set[(set.indexOf(pick) + 1) % set.length];
     this._lastStep = pick;
-    const r = (0.92 + Math.random() * 0.16) * (weight < 0.8 ? 1.12 : 1), v = (0.85 + Math.random() * 0.3) * Math.min(1, weight + 0.15);
-    if (surface === 'mud' && this.play(pick, { vol: 0.6 * v, rate: r, rev: 0.05 })) {
+    const r = (0.92 + Math.random() * 0.16) * (weight < 0.8 ? 1.12 : 1), v = (0.85 + Math.random() * 0.3) * Math.min(1, weight + 0.15) * gain;
+    if (surface === 'mud' && this.play(pick, { vol: 0.6 * v, rate: r, rev: 0.05, pan })) {
       // the wet suck as the boot comes out of the mud
-      this.noiseHit({ freq: 320, q: 0.9, vol: 0.07 * v, a: 0.04, d: 0.2, type: 'lowpass', buf: this.brown, rev: 0.03 });
+      this.noiseHit({ freq: 320, q: 0.9, vol: 0.07 * v, a: 0.04, d: 0.2, type: 'lowpass', buf: this.brown, rev: 0.03, pan });
       return;
     }
-    if (surface === 'wood' && this.play(pick, { vol: 0.3 * v, rate: r, rev: 0.2 })) return;
-    if (surface !== 'wood' && surface !== 'mud' && this.play(pick, { vol: 0.42 * v, rate: r, rev: 0.25 })) {
-      if (Math.random() < 0.25) this.play('step_gravel', { vol: 0.08 * v, rate: r, rev: 0.1 });
-      this.noiseHit({ freq: 3500, q: 0.6, vol: 0.025 * v, a: 0.01, d: 0.12, type: 'highpass', rev: 0.1 }); // wet street
+    if (surface === 'wood' && this.play(pick, { vol: 0.3 * v, rate: r, rev: 0.2, pan })) return;
+    if (surface !== 'wood' && surface !== 'mud' && this.play(pick, { vol: 0.42 * v, rate: r, rev: 0.25, pan })) {
+      if (Math.random() < 0.25) this.play('step_gravel', { vol: 0.08 * v, rate: r, rev: 0.1, pan });
+      this.noiseHit({ freq: 3500, q: 0.6, vol: 0.025 * v, a: 0.01, d: 0.12, type: 'highpass', rev: 0.1, pan }); // wet street
       return;
     }
-    if (surface === 'wood') this.noiseHit({ freq: 260, q: 2, vol: 0.22, d: 0.09, rev: 0.15, buf: this.brown });
-    else if (surface === 'mud') this.noiseHit({ freq: 500, q: 0.8, vol: 0.18, d: 0.18, type: 'lowpass', rev: 0.1 });
+    if (surface === 'wood') this.noiseHit({ freq: 260, q: 2, vol: 0.22 * gain, d: 0.09, rev: 0.15, buf: this.brown, pan });
+    else if (surface === 'mud') this.noiseHit({ freq: 500, q: 0.8, vol: 0.18 * gain, d: 0.18, type: 'lowpass', rev: 0.1, pan });
     else {
-      this.noiseHit({ freq: 1400 + Math.random() * 500, q: 1.6, vol: 0.11, d: 0.06, rev: 0.25 });
-      this.noiseHit({ freq: 3500, q: 0.6, vol: 0.04, a: 0.01, d: 0.14, type: 'highpass', rev: 0.1 }); // wet splash
+      this.noiseHit({ freq: 1400 + Math.random() * 500, q: 1.6, vol: 0.11 * gain, d: 0.06, rev: 0.25, pan });
+      this.noiseHit({ freq: 3500, q: 0.6, vol: 0.04 * gain, a: 0.01, d: 0.14, type: 'highpass', rev: 0.1, pan }); // wet splash
     }
   }
 
@@ -478,7 +508,7 @@ class AudioEngine {
     o.connect(bp).connect(g).connect(this.master); o.start(t); o.stop(t + 0.8);
   }
   knock() { [0, 0.22, 0.44].forEach((d) => setTimeout(() => this.noiseHit({ freq: 140, q: 1.5, vol: 0.6, d: 0.12, buf: this.brown, rev: 0.4 }), d * 1000)); }
-  drip() { this.noiseHit({ freq: 1800 + Math.random() * 900, q: 14, vol: 0.12, d: 0.08, rev: 0.6 }); }
+  drip(x = null) { const s = this.spatial(x, 700); this.noiseHit({ freq: 1800 + Math.random() * 900, q: 14, vol: 0.12 * s.gain, d: 0.08, rev: 0.6, pan: s.pan }); }
   splash() { this.noiseHit({ freq: 700, q: 0.5, vol: 0.4, a: 0.01, d: 0.6, type: 'lowpass', rev: 0.4 }); }
   thud() { this.noiseHit({ freq: 90, type: 'lowpass', vol: 0.7, d: 0.4, buf: this.brown, rev: 0.3 }); }
   match() { this.noiseHit({ freq: 2500, q: 0.7, vol: 0.18, a: 0.01, d: 0.4, rev: 0.1 }); }
@@ -489,6 +519,196 @@ class AudioEngine {
   latch() { if (!this.play('latch', { vol: 0.5, rev: 0.3 })) this.click(); }
   knife() { if (!this.play('knife', { vol: 0.5, rev: 0.35 })) this.sting(0.2); }
   tick() { this.noiseHit({ freq: 3800, q: 8, vol: 0.06, d: 0.02, rev: 0.1 }); }
+
+  // ------------------------------------------------------------ the space
+  // How each kind of place answers: length of the tail, how fast it dies, the slap off the nearest
+  // wall, how much soft stuff soaks up the top, and how much of it we hear.
+  setSpace(name, fade = 1.2) {
+    this.wantSpace = name;
+    if (!this.ctx || this.space === name) return;
+    this.space = name;
+    const SPACES = {
+      room: [0.5, 4, 0.012, 0.6, 0.3],        // a small rented room: wood, a bed, close walls
+      parlour: [0.8, 3.6, 0.018, 0.75, 0.3],  // velvet and drapes
+      office: [0.7, 3.8, 0.015, 0.5, 0.28],
+      street: [1.9, 3.2, 0.07, 0.25, 0.4],    // terraced brick both sides
+      alley: [1.2, 3.6, 0.035, 0.2, 0.48],    // narrow, hard and wet
+      yard: [1.5, 3.0, 0.05, 0.3, 0.38],
+      river: [2.8, 2.4, 0, 0.35, 0.26],       // open water: long and faint, nothing near to answer
+    };
+    const [sec, decay, slap, damp, wet] = SPACES[name] || SPACES.street;
+    const ctx = this.ctx, now = ctx.currentTime;
+    const conv = ctx.createConvolver();
+    conv.buffer = this.impulse(sec, decay, { slap, damp });
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, now); g.gain.linearRampToValueAtTime(1, now + fade);
+    this.reverb.connect(conv); conv.connect(g).connect(this.wet);
+    this.wet.gain.setTargetAtTime(wet, now, fade / 3);
+    const old = this.conv;
+    if (old) {
+      old.g.gain.cancelScheduledValues(now); old.g.gain.setValueAtTime(old.g.gain.value, now); old.g.gain.linearRampToValueAtTime(0.0001, now + fade);
+      setTimeout(() => { try { this.reverb.disconnect(old.conv); old.g.disconnect(); } catch (e) { /* already gone */ } }, fade * 1000 + 600);
+    }
+    this.conv = { conv, g };
+  }
+
+  // ------------------------------------------------------------ things that sound where they are
+  // list: [{ kind, x, vol, reach, when(G) }]. kinds: fire, grind, clock, gas.
+  setEmitters(list) {
+    this.wantEmitters = list;
+    if (!this.ctx) return;
+    for (const e of this.emitters || []) this.dropEmitter(e);
+    this.emitters = list.map((d) => this.makeEmitter(d)).filter(Boolean);
+  }
+
+  makeEmitter(d) {
+    const ctx = this.ctx;
+    const input = ctx.createGain(), out = ctx.createGain(); out.gain.value = 0;
+    const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+    let tail = input.connect(out);
+    if (pan) tail = tail.connect(pan);
+    tail.connect(this.master);
+    const send = ctx.createGain(); send.gain.value = 0.3; tail.connect(send).connect(this.reverb);
+    const e = { ...d, input, out, pan, sources: [], timers: [] };
+    const loop = (buf) => { const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.start(0, Math.random() * 3); e.sources.push(s); return s; };
+    const filt = (type, f, q = 1) => { const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; };
+    const lfo = (freq, amt, param) => { const o = ctx.createOscillator(); o.frequency.value = freq; const g = ctx.createGain(); g.gain.value = amt; o.connect(g).connect(param); o.start(); e.sources.push(o); };
+    if (d.kind === 'fire') {
+      // the roar of the coals, and the crackle of wet wood spitting
+      const g = ctx.createGain(); g.gain.value = 0.35; lfo(0.31, 0.12, g.gain);
+      loop(this.brown).connect(filt('lowpass', 420)).connect(g).connect(input);
+      e.timers.push(setInterval(() => {
+        if (out.gain.value < 0.01) return;
+        for (let k = 0; k < 3; k++) if (Math.random() < 0.45) this.noiseHit({ freq: 1500 + Math.random() * 3000, q: 2 + Math.random() * 3, vol: 0.05 + Math.random() * 0.1, d: 0.01 + Math.random() * 0.03, rev: 0, dest: input, at: Math.random() * 0.09 });
+      }, 90));
+    } else if (d.kind === 'grind') {
+      // steel on a turning stone: a rasp that pulses with the wheel, and a thin whine over it
+      const g = ctx.createGain(); g.gain.value = 0.18; lfo(6.5, 0.12, g.gain);
+      loop(this.noise).connect(filt('bandpass', 3200, 2.5)).connect(g).connect(input);
+      const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = 1860; lfo(6.5, 40, o.frequency);
+      const og = ctx.createGain(); og.gain.value = 0.012; o.connect(og).connect(input); o.start(); e.sources.push(o);
+    } else if (d.kind === 'clock') {
+      let tock = false;
+      e.timers.push(setInterval(() => {
+        if (out.gain.value < 0.01) return;
+        tock = !tock;
+        this.noiseHit({ freq: tock ? 2400 : 3600, q: 9, vol: 0.09, d: 0.025, rev: 0, dest: input });
+      }, 520));
+    } else if (d.kind === 'gas') {
+      // a street lamp's mantle hissing
+      const g = ctx.createGain(); g.gain.value = 0.05; lfo(0.7, 0.012, g.gain);
+      loop(this.noise).connect(filt('highpass', 5200)).connect(g).connect(input);
+    } else return null;
+    return e;
+  }
+
+  dropEmitter(e) {
+    for (const t of e.timers) clearInterval(t);
+    for (const s of e.sources) { try { s.stop(); } catch (err) { /* never started */ } }
+    const now = this.ctx.currentTime;
+    e.out.gain.cancelScheduledValues(now); e.out.gain.setTargetAtTime(0, now, 0.2);
+    setTimeout(() => e.out.disconnect(), 1200);
+  }
+
+  // every frame: fade and pan each emitter for where Thomas stands (and whether it is going at all)
+  updateEmitters(G) {
+    if (!this.ctx || !this.emitters) return;
+    const now = this.ctx.currentTime;
+    for (const e of this.emitters) {
+      const s = this.spatial(e.x, e.reach || 1000);
+      const on = e.when ? !!e.when(G) : true;
+      e.out.gain.setTargetAtTime(on ? (e.vol ?? 1) * s.gain : 0, now, 0.15);
+      if (e.pan) e.pan.pan.setTargetAtTime(s.pan, now, 0.15);
+    }
+  }
+
+  // ------------------------------------------------------------ the city beyond the scene
+  // cfg: { cab, bell, ship, muffle }: how often each is heard (0 never, 1 now and then); muffle
+  // when we are indoors and it comes through the window glass.
+  setCity(cfg) {
+    this.wantCity = cfg;
+    if (!this.ctx) return;
+    for (const t of this.cityTimers || []) clearTimeout(t);
+    this.cityTimers = [];
+    if (this.cityBus) { const old = this.cityBus; old.gain.setTargetAtTime(0, this.ctx.currentTime, 0.4); setTimeout(() => old.disconnect(), 2000); }
+    this.cityBus = null;
+    if (!cfg) return;
+    const ctx = this.ctx;
+    const bus = ctx.createGain(); bus.gain.value = cfg.muffle ? 0.45 : 1;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = cfg.muffle ? 520 : 2400;
+    lp.connect(bus); bus.connect(this.master);
+    const send = ctx.createGain(); send.gain.value = 0.5; bus.connect(send).connect(this.reverb);
+    this.cityBus = bus; this.cityIn = lp;
+    const every = (kind, lo, hi, first) => {
+      const go = (delay) => this.cityTimers.push(setTimeout(() => { if (this.cityBus === bus) { this[kind](); go(lo + Math.random() * (hi - lo)); } }, delay * 1000));
+      go(first + Math.random() * first);
+    };
+    if (cfg.cab) every('cab', 40 / cfg.cab, 90 / cfg.cab, 10);
+    if (cfg.bell) every('farBell', 80 / cfg.bell, 150 / cfg.bell, 25);
+    if (cfg.ship) every('shipHorn', 50 / cfg.ship, 110 / cfg.ship, 15);
+  }
+
+  // a hansom going by in the next street: iron tyres on the setts, a horse at a trot, left to right
+  cab() {
+    if (!this.ctx || !this.cityIn) return;
+    const ctx = this.ctx, t = ctx.currentTime, dur = 8 + Math.random() * 3, dir = Math.random() < 0.5 ? 1 : -1;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.5, t + dur * 0.45); g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    let out = g;
+    if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.setValueAtTime(-0.9 * dir, t); p.pan.linearRampToValueAtTime(0.9 * dir, t + dur); g.connect(p); out = p; }
+    out.connect(this.cityIn);
+    const wheels = ctx.createBufferSource(); wheels.buffer = this.brown;
+    const wl = ctx.createBiquadFilter(); wl.type = 'lowpass'; wl.frequency.value = 160;
+    const wg = ctx.createGain(); wg.gain.value = 0.5; wheels.connect(wl).connect(wg).connect(g); wheels.start(t, Math.random() * 2); wheels.stop(t + dur);
+    const rattle = ctx.createBufferSource(); rattle.buffer = this.noise;
+    const rb = ctx.createBiquadFilter(); rb.type = 'bandpass'; rb.frequency.value = 1100; rb.Q.value = 1.5;
+    const rg = ctx.createGain(); rg.gain.value = 0.05; rattle.connect(rb).connect(rg).connect(g); rattle.start(t, Math.random() * 2); rattle.stop(t + dur);
+    // the trot: clip-clop, clip-clop
+    for (let k = 0, at = 0.2; at < dur - 0.2; k++) {
+      this.noiseHit({ freq: 700 + Math.random() * 300, q: 1.4, vol: 0.32, d: 0.05, rev: 0, buf: this.brown, dest: g, at });
+      at += k % 2 ? 0.34 : 0.17;
+    }
+  }
+
+  // Christ Church across the rooftops: one stroke, then the hum dying away
+  farBell() {
+    if (!this.ctx || !this.cityIn) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    const g = ctx.createGain(); g.connect(this.cityIn);
+    [0.5, 1, 1.19, 1.56, 2, 2.66].forEach((h, i) => {
+      const o = ctx.createOscillator(); o.frequency.value = 138.6 * h;
+      const og = ctx.createGain(); this.env(og, t, 0.006, 0.09 * [0.6, 1, 0.5, 0.3, 0.3, 0.12][i], 7 - i * 0.6);
+      o.connect(og).connect(g); o.start(t); o.stop(t + 8);
+    });
+  }
+
+  // a steamer feeling its way down the river in the fog
+  shipHorn() {
+    if (!this.ctx || !this.cityIn) return;
+    const ctx = this.ctx, t = ctx.currentTime, dur = 2.6 + Math.random();
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.09, t + 0.4); g.gain.setValueAtTime(0.09, t + dur - 0.6); g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 380;
+    lp.connect(g).connect(this.cityIn);
+    [[98, 'sawtooth'], [146.8, 'square'], [98.6, 'sawtooth']].forEach(([f, type]) => {
+      const o = ctx.createOscillator(); o.type = type; o.frequency.value = f; o.connect(lp); o.start(t); o.stop(t + dur);
+    });
+  }
+
+  // a train over the viaduct: the rumble rolls from one side to the other, the wheels beating the joints
+  train(dur = 6.5) {
+    if (!this.ctx) return;
+    const ctx = this.ctx, t = ctx.currentTime;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.7, t + dur * 0.4); g.gain.linearRampToValueAtTime(0.0001, t + dur);
+    let out = g;
+    if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.setValueAtTime(-0.9, t); p.pan.linearRampToValueAtTime(0.9, t + dur); g.connect(p); out = p; }
+    out.connect(this.master); out.connect(this.reverb);
+    const s = ctx.createBufferSource(); s.buffer = this.brown;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 140;
+    const sg = ctx.createGain(); sg.gain.value = 0.9; s.connect(lp).connect(sg).connect(g); s.start(t); s.stop(t + dur);
+    for (let at = 0.3; at < dur - 0.2; at += 0.62) {
+      this.noiseHit({ freq: 900, q: 1.2, vol: 0.22, d: 0.04, rev: 0, buf: this.brown, dest: g, at });
+      this.noiseHit({ freq: 900, q: 1.2, vol: 0.18, d: 0.04, rev: 0, buf: this.brown, dest: g, at: at + 0.12 });
+    }
+    setTimeout(() => this.whistle(0.05, true), 400);
+  }
 }
 
 export const audio = new AudioEngine();

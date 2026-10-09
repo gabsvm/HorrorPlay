@@ -14,6 +14,7 @@ export default {
   id: 'hanbury',
   width: WIDTH,
   groundY: GROUND,
+  space: 'yard',
   walk: [180, 1860],
   spawn: 260,
   lantern: false,
@@ -316,7 +317,7 @@ export default {
               G.clue('falta');
             } },
             { id: 'mano', x: 819, y: 536, r: 50, name: 'La mano', act: async (G) => {
-              await G.think('En el dedo, dos marcas claras y la piel levantada. Le arrancaron los anillos.');
+              await G.think('Le queda un anillo. Junto a él, dos marcas claras y la piel levantada: ahí había otros dos, y se los arrancaron.');
               await G.think('Anillos de latón; no valían nada. No los cogió para venderlos.');
               G.clue('anillos');
             } },

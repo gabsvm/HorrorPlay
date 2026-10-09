@@ -96,6 +96,8 @@ export default {
   walk: [380, 1760],
   spawn: 520,
   surface: 'mud',
+  space: 'river',
+  city: { ship: 1, bell: 0.6 },
   noFgDressing: true,
   variant: (G) => (is1866(G) ? '1866' : '1888'),
   get playerH() { return this.G && is1866(this.G) ? 138 : 206; },

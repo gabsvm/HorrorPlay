@@ -12,6 +12,9 @@ export default {
   id: 'bucks_row',
   width: WIDTH,
   groundY: GROUND,
+  space: 'street',
+  // the gas lamp hisses over the doorway; a cab now and then in Whitechapel Road, Christ Church striking
+  sounds: [{ kind: 'gas', x: 1640, vol: 0.7, reach: 520 }],
   reflectY: 640,
   walk: [150, 2470],
   spawn: 2420,

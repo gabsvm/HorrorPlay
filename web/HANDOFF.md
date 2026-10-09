@@ -142,7 +142,12 @@ Art:
 - `paint.js`: the brushes.
 
 Audio is in `src/engine/audio.js`: procedural WebAudio plus CC0 samples embedded as data URIs in
-the builds. Footsteps are chosen per surface by `step(surface, weight)`.
+the builds. Footsteps are chosen per surface by `step(surface, weight, {gain, pan})`; every actor's
+steps are heard, placed by `audio.spatial(x)` against `audio.listener` (Thomas's x, set each tick).
+Scenes declare `space` (room, parlour, office, street, alley, yard, river: the reverb, crossfaded on
+goto), `sounds` (emitters with a place: fire, grind, clock, gas, optional `when(G)`), `city` (cab,
+bell, ship, muffle; default by `indoor`) and `beds` (a map, or a function of G). Drips sound where
+they land; the knackers' train rolls across the stereo field.
 
 Android:
 - `web/android/` holds the manifest, `MainActivity.java` and the icons.

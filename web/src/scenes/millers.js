@@ -11,6 +11,8 @@ export default {
   id: 'millers',
   width: WIDTH,
   groundY: GROUND,
+  space: 'alley',
+  city: { bell: 1 },
   noSave: true,
   reflectY: 640,
   walk: [140, 1240],

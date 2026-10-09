@@ -15,7 +15,7 @@ class Train {
   constructor() { this.t = 6; this.x = -2000; this.active = false; }
   update(dt, G) {
     this.t -= dt;
-    if (!this.active && this.t <= 0) { this.active = true; this.x = -900; G.audio.thud(); G.game.r.cam.shake = 3; }
+    if (!this.active && this.t <= 0) { this.active = true; this.x = -900; G.audio.thud(); G.audio.train(); G.game.r.cam.shake = 3; }
     if (this.active) {
       this.x += 520 * dt;
       if (Math.random() < dt * 4) G.game.r.cam.shake = Math.max(G.game.r.cam.shake, 1.5);
@@ -54,6 +54,13 @@ export default {
   id: 'knackers',
   width: WIDTH,
   groundY: GROUND,
+  space: 'yard',
+  // the brazier, Brennan's grindstone while he works it, and the mob's torches
+  sounds: [
+    { kind: 'fire', x: 1060, vol: 0.9, reach: 1100 },
+    { kind: 'grind', x: 1240, vol: 0.8, reach: 900, when: (G) => !!G.actor('Brennan')?.grind },
+    ...[1300, 1500, 1700, 1900].map((x) => ({ kind: 'fire', x, vol: 0.45, reach: 700, when: (G) => isMob(G) })),
+  ],
   reflectY: 640,
   walk: [120, 2080],
   spawn: 1960,
@@ -62,7 +69,7 @@ export default {
   fog: { density: 0.55, amount: 0.5, color: [0.38, 0.44, 0.46], speed: 8 },
   rain: 0.2,
   wet: 1,
-  beds: { rain: 0.3, wind: 0.3, drone: 0.1 },
+  beds: (G) => (isMob(G) ? { rain: 0.2, wind: 0.2, crowd: 0.75, drone: 0.25 } : { rain: 0.3, wind: 0.3, drone: 0.1 }),
   music: 'dread',
   variant: (G) => (isMob(G) ? 'mob' : 'calm'),
   canSave: (G) => !isMob(G),

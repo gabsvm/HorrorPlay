@@ -13,6 +13,8 @@ export default {
   id: 'alleys',
   width: WIDTH,
   groundY: GROUND,
+  space: 'alley',
+  city: null,     // the chase: nothing but the whistles and the running
   noSave: true,
   walk: [100, 4100],
   spawn: 160,
