@@ -33,4 +33,4 @@ python -m uv pip install --python C:/Dev/tts/.venv/Scripts/python.exe kokoro sou
 
 ## En el juego
 
-`audio.speak()` (engine/audio.js) decodifica el clip solo cuando llega su línea. El texto avanza al ritmo de la voz y el ambiente baja mientras alguien habla. Cada personaje suena en su lado de la pantalla; los pensamientos de Thomas, cerca y secos. La voz del agua y la de Wexley en trance se desdoblan con una copia un poco más grave que se va desfasando. En Opciones, "Voces" ajusta su volumen o las apaga.
+`audio.speak()` (engine/audio.js) decodifica el clip solo cuando llega su línea. El texto avanza al ritmo de la voz y el ambiente baja mientras alguien habla. Cada personaje suena en su lado de la pantalla; los pensamientos de Thomas, cerca y secos. La voz del agua y la de Wexley en trance se desdoblan con una copia un poco más grave que se va desfasando. En Opciones, "Voces: Sí / No" las apaga del todo (también desde la pausa, a mitad de partida).

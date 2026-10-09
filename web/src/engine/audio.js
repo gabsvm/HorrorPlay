@@ -34,7 +34,7 @@ class AudioEngine {
     this.master.connect(comp).connect(ctx.destination);
     // the beds, the music and the city go through here, so they can step back while someone speaks
     this.bg = ctx.createGain(); this.bg.connect(this.master);
-    this.voiceBus = ctx.createGain(); this.voiceBus.gain.value = prefs.voices ?? 1; this.voiceBus.connect(this.master);
+    this.voiceBus = ctx.createGain(); this.voiceBus.gain.value = 1; this.voiceBus.connect(this.master);
     // everything sends to this bus; the space's convolver behind it is swapped as scenes change
     this.reverb = ctx.createGain();
     this.wet = ctx.createGain(); this.wet.gain.value = 0.45;
@@ -56,8 +56,9 @@ class AudioEngine {
     if (this.ctx) this.master.gain.setTargetAtTime(0.9 * v, this.ctx.currentTime, 0.05);
   }
 
-  setVoiceVolume(v) {
-    if (this.ctx) this.voiceBus.gain.setTargetAtTime(v, this.ctx.currentTime, 0.05);
+  // voices off: a line already being spoken stops at once, and no other starts
+  setVoices(on) {
+    if (!on && this._line) this._line.stop();
   }
 
   // ------------------------------------------------------------ voices
@@ -69,7 +70,7 @@ class AudioEngine {
     fetch('assets/voices/index.json').then((r) => (r.ok ? r.json() : {})).then((idx) => { this.voiceIds = new Set(Object.keys(idx)); }).catch(() => {});
   }
 
-  hasVoice(id) { return !!(this.ctx && this.voiceIds?.has(id) && (prefs.voices ?? 1) > 0); }
+  hasVoice(id) { return !!(this.ctx && this.voiceIds?.has(id) && prefs.voices !== false); }
 
   async voiceBuffer(id) {
     const data = window.__VOICES?.[id];
@@ -94,12 +95,12 @@ class AudioEngine {
     const send = (node, v) => { const r = ctx.createGain(); r.gain.value = v; node.connect(r).connect(this.reverb); };
     const panner = (v) => { if (!ctx.createStereoPanner) return ctx.createGain(); const p = ctx.createStereoPanner(); p.pan.value = v; return p; };
     if (kind === 'voice' || kind === 'trance') {
-      const dry = ctx.createGain(); dry.gain.value = kind === 'trance' ? 0.9 : 0.75;
-      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = kind === 'trance' ? 6000 : 3600;
+      const dry = ctx.createGain(); dry.gain.value = 0.9;
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = kind === 'trance' ? 6500 : 5200;
       source().connect(lp).connect(dry).connect(out);
       // the second one, a shade lower and slower: it drifts behind as the line goes on
-      const under = source(kind === 'trance' ? 0.94 : 0.985);
-      const ug = ctx.createGain(); ug.gain.value = kind === 'trance' ? 0.22 : 0.4;
+      const under = source(kind === 'trance' ? 0.96 : 0.993);
+      const ug = ctx.createGain(); ug.gain.value = kind === 'trance' ? 0.18 : 0.2;
       const ul = panner(-0.6), ur = panner(0.6), d1 = ctx.createDelay(); d1.delayTime.value = 0.017;
       under.connect(ug); ug.connect(ul).connect(out); ug.connect(d1).connect(ur).connect(out);
       send(dry, kind === 'trance' ? 0.35 : 0.7); send(ug, 0.6);
@@ -114,9 +115,9 @@ class AudioEngine {
     this.duck(+1);
     let done = false, finish;
     const ended = new Promise((res) => { finish = res; });
-    const end = () => { if (done) return; done = true; this.duck(-1); finish(); setTimeout(() => out.disconnect(), 400); };
+    const end = () => { if (done) return; done = true; if (this._line === line) this._line = null; this.duck(-1); finish(); setTimeout(() => out.disconnect(), 400); };
     srcs[0].onended = end;
-    return {
+    const line = this._line = {
       dur: buf.duration,
       ended,
       stop: () => {
@@ -127,6 +128,7 @@ class AudioEngine {
         end();
       },
     };
+    return line;
   }
 
   // the world steps back while someone is speaking, and comes forward again after
