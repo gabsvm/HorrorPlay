@@ -293,33 +293,34 @@ export default {
       id: 'annie', name: 'El cuerpo de Annie Chapman', verb: 'Examinar', when: (G) => !G.flag('annie_taken'), rect: [690, GROUND - 30, 170, 60], walk: 640, face: 1, gesture: false,
       act: async (G) => {
         await G.think('Aparto el saco.');
+        // the points sit on the painted close-up (assets/closeups/chapman.jpg)
         await G.inspect('annie', {
           title: 'Annie Chapman', body: 'chapman',
           points: [
-            { id: 'cara', x: 300, y: 350, r: 60, name: 'La cara', act: async (G) => {
+            { id: 'cara', x: 360, y: 283, r: 60, name: 'La cara', act: async (G) => {
               await G.think('La cara hinchada, la lengua entre los dientes. La estrangularon primero, hasta dejarla sin sentido.');
               await G.think('Por eso nadie oyó nada. Cuando empezó a cortar, ella ya no podía gritar.');
             } },
-            { id: 'cuello', x: 412, y: 350, r: 50, name: 'El cuello', act: async (G) => {
+            { id: 'cuello', x: 440, y: 302, r: 42, name: 'El cuello', act: async (G) => {
               await G.think('El corte da toda la vuelta. Casi le separa la cabeza. Hay que tener mucha fuerza en la mano, o mucha costumbre.');
             } },
-            { id: 'hombro', x: 560, y: 175, r: 70, name: 'Sobre el hombro', act: async (G) => {
+            { id: 'hombro', x: 398, y: 398, r: 60, name: 'Sobre el hombro', act: async (G) => {
               G.red(0.5); G.audio.sting(0.2); G.shake(4);
               await G.think('Sobre el hombro derecho, lo que le sacaron del vientre. No está tirado: está colocado.');
               G.sanity(-5);
               await G.think('He visto esto antes. En una mesa de mármol, en el London Hospital, con un profesor señalando con el puntero.');
             } },
-            { id: 'saco', x: 950, y: 360, r: 90, name: 'Bajo el saco', act: async (G) => {
+            { id: 'saco', x: 1034, y: 322, r: 100, name: 'Bajo el saco', act: async (G) => {
               await G.think('Phillips dejó el saco sobre el vientre. No hace falta levantarlo: me lo contó Greaves.');
               await G.think('Falta algo de dentro. Lo sacó entero, con cortes limpios. Sabía dónde estaba y cómo se suelta.');
               G.clue('falta');
             } },
-            { id: 'mano', x: 900, y: 540, r: 55, name: 'La mano', act: async (G) => {
+            { id: 'mano', x: 819, y: 536, r: 50, name: 'La mano', act: async (G) => {
               await G.think('En el dedo, dos marcas claras y la piel levantada. Le arrancaron los anillos.');
               await G.think('Anillos de latón; no valían nada. No los cogió para venderlos.');
               G.clue('anillos');
             } },
-            { id: 'cosas', x: 1140, y: 556, r: 80, name: 'Sus cosas', act: async (G) => {
+            { id: 'cosas', x: 1090, y: 588, r: 110, name: 'Sus cosas', act: async (G) => {
               await G.think('Un trozo de muselina, un sobre roto con el sello de un regimiento, dos peniques. En fila, a sus pies.');
               G.clue('ordenados');
               await G.think('Como el instrumental antes de una operación.');

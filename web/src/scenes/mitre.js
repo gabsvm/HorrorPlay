@@ -185,31 +185,32 @@ export default {
         if (!G.flag('mitre_badge')) { await G.think('Watkins no me deja acercarme sin enseñarle la placa.'); return; }
         await G.think('El rincón donde no llega la farola. Desde aquí no se ve ninguna ventana con luz.');
         await G.think('Él conocía este rincón. Sabía que estaba a oscuras.');
+        // the points sit on the painted close-up (assets/closeups/eddowes.jpg)
         await G.inspect('kate', {
           title: 'Catherine Eddowes', body: 'eddowes',
           points: [
-            { id: 'cara', x: 320, y: 360, r: 65, name: 'La cara', act: async (G) => {
+            { id: 'cara', x: 253, y: 306, r: 60, name: 'La cara', act: async (G) => {
               G.red(0.4); G.audio.sting(0.18);
               await G.think('Le ha cortado la cara. Un tajo en cada párpado. Una V en cada mejilla, con la punta hacia los ojos.');
               await G.think('Esto no la mató. Esto lo hizo después, con calma, sabiendo que Watkins pasaba cada quince minutos.');
               G.clue('marcas');
               G.sanity(-4);
             } },
-            { id: 'cuello', x: 412, y: 350, r: 50, name: 'El cuello', act: async (G) => {
+            { id: 'cuello', x: 360, y: 337, r: 45, name: 'El cuello', act: async (G) => {
               await G.think('Un solo corte, de izquierda a derecha. La misma mano que en Buck\'s Row.');
             } },
-            { id: 'vientre', x: 900, y: 345, r: 85, name: 'El vientre', act: async (G) => {
+            { id: 'vientre', x: 766, y: 398, r: 85, name: 'El vientre', act: async (G) => {
               G.red(0.5); G.shake(4);
               await G.think('Abierta de arriba abajo. Lo de dentro, sobre el hombro, como en Hanbury Street.');
               await G.think('Le falta un riñón. Lo sé antes de mirar. ¿Cómo lo sé antes de mirar?');
               G.sanity(-5);
             } },
-            { id: 'delantal', x: 1160, y: 350, r: 80, name: 'El delantal', act: async (G) => {
+            { id: 'delantal', x: 1110, y: 536, r: 70, name: 'El delantal', act: async (G) => {
               await G.think('Al delantal le falta una esquina, cortada a cuchillo, en línea recta. Con eso se limpió las manos.');
               G.clue('trozo');
           mitreObjective(G);
             } },
-            { id: 'pulso', x: 900, y: 158, r: 60, name: 'La muñeca', act: async (G) => {
+            { id: 'pulso', x: 903, y: 100, r: 55, name: 'La muñeca', act: async (G) => {
               await G.think('Le cojo la muñeca para buscarle el pulso. Es la costumbre.');
               await G.think('Al soltarla, mis guantes se quedan pegados a su piel.');
               await G.vision('hands');
