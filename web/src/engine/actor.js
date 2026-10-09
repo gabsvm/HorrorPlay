@@ -18,6 +18,7 @@ const DEF = {
 const TAU = Math.PI * 2;
 const STRIDE = 50;           // distance the body travels in half a walk cycle (logical px at h = 200)
 const TURN = 0.17;           // seconds spent facing the viewer when turning round
+const GAIT = [['walk', 1], ['walk3', 0.75], ['walkh', 0.5], ['walkq', 0.25]];   // the stride lengths a model may have
 
 // a capsule between two points
 function limb(ctx, x0, y0, x1, y1, w0, w1) {
@@ -310,7 +311,14 @@ export class Actor {
       return { i: s + Math.min(n - 1, Math.floor(k * n)), flip: this.facing > 0, name: 'turn' };
     }
     const w = this.walkAmt ?? 0;
-    if (w > 0.2) return cyc((this.run || 0) > 0.5 && A.run ? 'run' : w > 0.7 ? 'walk' : 'walkh', this.phase / TAU);
+    if ((this.run || 0) > 0.5 && A.run && w > 0.2) return cyc('run', this.phase / TAU);
+    if (w > 0.12) {
+      // the stride rendered nearest to how far into the walk the actor is: setting off and stopping
+      // lengthen and shorten it a step at a time
+      let best = null;
+      for (const [n, a] of GAIT) if (A[n] && (!best || Math.abs(a - w) < Math.abs(best[1] - w))) best = [n, a];
+      if (best) return cyc(best[0], this.phase / TAU);
+    }
     return (this.talking && cyc('talk', gesture)) || cyc('idle', breath);
   }
 

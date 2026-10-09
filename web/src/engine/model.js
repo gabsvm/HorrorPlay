@@ -39,13 +39,16 @@ export function releaseModels(inUse) {
 }
 
 // Who is played by which model (tools/blender/cast.py). The constables share one figure; actors
-// not listed (the neighbours) stay painted. The victims are looked up by their corpse key.
+// not listed stay painted. The victims are looked up by their corpse key.
 // ?procedural paints everyone, for comparison.
 const CAST = {
   Thomas: 'thomas', Pike: 'pike', Greaves: 'greaves', Wexley: 'wexley', Viuda: 'viuda', Joven: 'joven',
   Brennan: 'brennan', Wren: 'wren', Neil: 'constable', Long: 'constable', Poli0: 'constable', Poli1: 'constable',
   Poli2: 'constable', Watkins: 'city', Agente: 'city', Morris: 'morris', Chico: 'chico', Amelia: 'amelia',
   polly: 'polly', annie: 'annie', kate: 'kate',
+  // the mob at the knackers' yard: nine neighbours, six figures
+  Vecino0: 'vecino_cap', Vecino1: 'vecino_bowler', Vecino2: 'vecino_bare', Vecino3: 'vecina_shawl', Vecino4: 'vecino_cap',
+  Vecino5: 'vecino_bowler', Vecino6: 'vecino_cap', Vecino7: 'vecina_bonnet', Vecino8: 'vecino_big',
 };
 const painted = typeof location !== 'undefined' && /[?&]procedural\b/.test(location.search || '');
 

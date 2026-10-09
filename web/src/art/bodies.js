@@ -343,7 +343,9 @@ function shade_(hex) {
 // A flash of what he does not remember: gloved hands, a blade, the wet street.
 export function paintVision(ctx, W, H, kind) {
   ctx.fillStyle = '#0a0202'; ctx.fillRect(0, 0, W, H);
-  if (kind === 'hands') {
+  const pic = kind === 'hands' && closeupFor('hands');
+  if (pic) ctx.drawImage(pic, 0, 0, W, H);   // the painting (CLOSEUPS.md), under the same red vignette
+  else if (kind === 'hands') {
     pool(ctx, W / 2, H * 0.72, 380, 120, 9, false);
     for (const [x, y, rot] of [[W * 0.36, H * 0.48, 0.3], [W * 0.62, H * 0.5, Math.PI - 0.3]]) {
       ctx.save(); ctx.translate(x, y); ctx.rotate(rot);

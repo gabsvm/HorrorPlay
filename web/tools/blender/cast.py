@@ -15,10 +15,13 @@ rendered. Keys match DEF in src/engine/actor.js; the extra keys say which animat
 MET = dict(h=212, hat='helmet', hatColor='#0e1018', coat='#161c30', trousers='#12151f', coatLen=0.8, flare=1.02,
            belt=True, number=True, lantern=True, lanternOn=True, moustache='#4a3424', buttons='brass')
 
+VECINO = dict(h=200, walk=True, run=True, talk=False, idle=6, gait=(('walk', 1.0, 12),), runFrames=8)
+
 CAST = {
     'thomas': dict(h=206, hat='bowler', coat='#23262b', coatLen=0.88, flare=1.2, lantern=True, collarUp=True,
                    sideburns=True, hair='#1a1410', gloves='#2a221c', scarf='#4a1612', trousers='#1a1b1e',
                    walk=True, run=True, reach=True, idle=12,
+                   gait=(('walk', 1.0, 16), ('walk3', 0.75, 12), ('walkh', 0.5, 12), ('walkq', 0.25, 12)),
                    poses=['kneel', 'take', 'inspect', 'recoil', 'clutch', 'write', 'sit', 'reach']),
     'pike': dict(h=200, hat='bowler', coat='#2c2a26', coatLen=0.9, cape=True, build=1.05, moustache='#3a2a1e',
                  buttons='double', notebook=True, hair='#3a2a1e'),
@@ -48,4 +51,12 @@ CAST = {
                   cover='#5a4a36'),
     'kate': dict(h=150, hat='bonnet', hatColor='#1a1414', skirt=True, coat='#24262a', apron='#a8a292', hair='#2a2420',
                  eyesClosed=True, lying='kate'),
+    # the neighbours in the mob at the knackers' yard: six figures for nine people, who stand, turn,
+    # and scatter at a run (knackers.js; model.js maps each Vecino to one)
+    'vecino_cap': dict(VECINO, hat='cap', coat='#2a2620', moustache='#3a2a1e'),
+    'vecino_bowler': dict(VECINO, hat='bowler', coat='#30302c', beard='#2a2018'),
+    'vecino_bare': dict(VECINO, hat='none', coat='#1f2226', hair='#3a2a1a', rolled=True),
+    'vecina_shawl': dict(VECINO, hat='shawl', skirt=True, shawl='#2e2a30', coat='#3a3026'),
+    'vecina_bonnet': dict(VECINO, hat='bonnet', skirt=True, coat='#28241f'),
+    'vecino_big': dict(VECINO, hat='cap', coat='#33302a', beard='#3a3026', build=1.2),
 }

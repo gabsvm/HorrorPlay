@@ -43,6 +43,14 @@ Dark Victorian oil painting seen from directly above, like an 1888 police record
 Scene: the dark flagstones of a city square. A thin woman of about forty-six in a black straw bonnet pushed back on her head, a black cloth jacket and a dark green chintz skirt, a white apron over it. Her face is cut: a nick through each eyelid and an inverted V on each cheek. A single deep cut across the throat and a wide pool of blood under her. Her clothes are torn open over the belly, dark with blood. One corner of the white apron has been cut away in a clean straight line, right side of the frame. Her right arm lies along her side with the wrist upturned near the top of the frame.
 ```
 
+## hands.png
+
+La visión que asalta a Thomas (un destello de lo que no recuerda): sus propias manos.
+
+```
+Dark Victorian oil painting, a sudden nightmare flash. Wide 16:9 frame, seen from the eyes of the man himself looking down at his own two gloved hands held out in front of him over wet black cobblestones at night. Dark brown leather gloves soaked and glistening with fresh blood, the cuffs of a charcoal wool greatcoat. In the left hand a slim surgeon's scalpel, the blade catching a thin line of light. Dark blood dripping onto the stones below. Deep blacks, a deep red cast over everything, heavy vignette, visible brushwork, feverish and unsteady. No face, no other people, no text, no frame.
+```
+
 ## Si el generador se niega
 
 Algunos rechazan las heridas. Prueba a quitar las frases de las heridas y deja la sangre: el texto del

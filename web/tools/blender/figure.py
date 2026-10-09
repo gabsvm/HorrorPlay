@@ -33,7 +33,7 @@ DEF = dict(h=200, hat='bowler', hatColor='#121316', coat='#26282b', coatLen=0.78
            sideburns=False, collarUp=False, buttons='single', belt=False, tails=False, rolled=False, patches=False,
            shawl=None, waistcoat=None, chain=False, number=False, bustle=False, lapel='#d8cfbd', notebook=False,
            gloves=None, walk=False, run=False, reach=False, poses=[], base=None, idle=8, lying=None, eyesClosed=False,
-           cover=None)
+           cover=None, talk=True, gait=((('walk', 1.0, 16), ('walkh', 0.5, 16))), runFrames=12)
 C = {**DEF, **CAST[WHO]}
 
 TAU, PI = math.tau, math.pi
@@ -712,14 +712,17 @@ elif base:
     ANIMS += [(base, 4, lambda i, n: pose(t=i / n * BREATH, P=base)),
               (base + '_talk', 8, lambda i, n: pose(t=i / n * BREATH, P=base, talk=i / n * TAU))]
 else:
-    ANIMS += [('idle', C['idle'], lambda i, n: pose(t=i / n * BREATH)),
-              ('talk', 8, lambda i, n: pose(t=i / n * GESTURE, talk=i / n * TAU)),
-              ('turn', 3, lambda i, n: pose(yaw=math.radians(55 + 35 * i)))]
+    ANIMS += [('idle', C['idle'], lambda i, n: pose(t=i / n * BREATH))]
+    if C['talk']:
+        ANIMS += [('talk', 8, lambda i, n: pose(t=i / n * GESTURE, talk=i / n * TAU))]
+    ANIMS += [('turn', 3, lambda i, n: pose(yaw=math.radians(55 + 35 * i)))]
 if C['walk'] and not C['lying']:
-    ANIMS += [('walk', 16, lambda i, n: pose(i / n * TAU, 1, 0, t=i / n)),
-              ('walkh', 16, lambda i, n: pose(i / n * TAU, 0.5, 0, t=i / n))]
+    # one cycle per stride length: Actor picks the nearest to how far into the walk it is, so starting
+    # and stopping shorten the stride step by step instead of jumping to standing
+    for name, w, frames in C['gait']:
+        ANIMS += [(name, frames, lambda i, n, w=w: pose(i / n * TAU, w, 0, t=i / n))]
 if C['run']:
-    ANIMS += [('run', 12, lambda i, n: pose(i / n * TAU, 1, 1, t=i / n))]
+    ANIMS += [('run', C['runFrames'], lambda i, n: pose(i / n * TAU, 1, 1, t=i / n))]
 for p in C['poses']:
     ANIMS += [(p, 4, lambda i, n, p=p: pose(t=i / n * BREATH, P=p))]
 if C['reach']:
