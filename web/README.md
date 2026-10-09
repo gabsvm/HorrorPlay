@@ -88,6 +88,14 @@ Parámetros de desarrollo en la URL: `?scene=bucks_row&x=900&noenter=1&flags=a,b
 bash web/tools/build-apk.sh
 ```
 
-Genera `web/dist/el-huesped.apk` solo con las build-tools del SDK de Android y el JDK (sin Gradle ni descargas). El APK es un WebView a pantalla completa, en horizontal y sin que se apague la pantalla, que carga la versión de un solo archivo desde sus assets. Atrás abre la pausa, y salir de la app guarda y silencia el sonido. Las partidas se guardan en el teléfono. Se firma con una clave de depuración local (`web/android/debug.keystore`, se crea la primera vez y no se sube al repositorio). El icono sale de `python web/tools/make-icon.py`.
+Genera `web/dist/el-huesped.apk` solo con las build-tools del SDK de Android y el JDK (sin Gradle ni descargas). El APK es un WebView a pantalla completa, en horizontal y sin que se apague la pantalla, que carga la versión de un solo archivo desde sus assets. Atrás abre la pausa, y salir de la app guarda y silencia el sonido. Las partidas se guardan en el teléfono. Se firma con una clave de depuración local (`web/android/debug.keystore`, se crea la primera vez y no se sube al repositorio). El icono sale de `python web/tools/make-icon.py`, que encuadra la pintura `web/android/icon-source.png` como icono adaptativo (y el `.ico` de Windows).
 
 Instalar con el teléfono conectado por USB (depuración USB activada): `adb install -r web/dist/el-huesped.apk`. O copiar el APK al teléfono y abrirlo, permitiendo instalar apps de origen desconocido.
+
+## Windows
+
+```bash
+bash web/tools/build-win.sh
+```
+
+Genera `web/dist/ElHuesped.exe` con el compilador de C# que trae Windows (.NET Framework 4), sin SDK ni descargas. Es un solo archivo: lleva dentro la versión de un solo archivo del juego, la extrae en `%LOCALAPPDATA%\ElHuesped` y la abre en una ventana de aplicación de Edge a pantalla completa, con un perfil propio donde quedan las partidas. `ElHuesped.exe --windowed` la abre en ventana; F11 alterna.
