@@ -255,28 +255,29 @@ export default {
           neil.talking = false;
         }
         await G.think('Levanto la capa de Neil.');
+        // the points sit on the painted close-up (assets/closeups/nichols.jpg)
         await G.inspect('polly', {
           title: 'Mary Ann "Polly" Nichols', body: 'nichols',
           points: [
-            { id: 'cara', x: 300, y: 350, r: 60, name: 'La cara', act: async (G) => {
+            { id: 'cara', x: 375, y: 279, r: 60, name: 'La cara', act: async (G) => {
               await G.think('Tiene los ojos abiertos. Miran algo que ya no está ahí.');
               await G.think('Un moratón en la mandíbula, a la derecha: alguien le sujetó la cara con la mano derecha, desde atrás.');
             } },
-            { id: 'cuello', x: 412, y: 350, r: 50, name: 'El cuello', act: async (G) => {
+            { id: 'cuello', x: 474, y: 280, r: 42, name: 'El cuello', act: async (G) => {
               await G.think('Dos cortes. De un lado a otro, hasta el hueso. El primero para callarla, el segundo para asegurarse.');
               await G.think('Ni un rasguño en las manos. No se defendió.');
               G.clue('cuello');
             } },
-            { id: 'vientre', x: 925, y: 370, r: 80, name: 'La falda', act: async (G) => {
+            { id: 'vientre', x: 950, y: 290, r: 90, name: 'La falda', act: async (G) => {
               await G.think('La falda está empapada. La levanto un palmo con la punta del lápiz.');
               G.red(0.35); G.audio.sting(0.12);
               await G.think('Cortes en el vientre, largos, hechos después. Por eso apenas había sangre en el suelo: la ropa se la bebió toda.');
               G.sanity(-3);
             } },
-            { id: 'manos', x: 900, y: 540, r: 55, name: 'Las manos', act: async (G) => {
+            { id: 'manos', x: 1079, y: 612, r: 55, name: 'Las manos', act: async (G) => {
               await G.think('Las manos abiertas, las palmas hacia arriba. Ni tierra en las uñas. No arañó a nadie.');
             } },
-            { id: 'sombrero', x: 150, y: 500, r: 60, name: 'El sombrero', act: async (G) => {
+            { id: 'sombrero', x: 172, y: 490, r: 65, name: 'El sombrero', act: async (G) => {
               await G.think('El sombrero negro nuevo. Le dijo a la casera que con ese sombrero pronto tendría para la cama.');
               await G.think('Lo recojo y lo dejo junto a su cabeza. No sé por qué lo hago.');
             } },

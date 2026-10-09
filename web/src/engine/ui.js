@@ -545,7 +545,12 @@ function makeRelight(ic, lo) {
     wet[i] = r > g * 2.2 && r > b * 1.7 && r > 16 ? 1 : 0;
   }
   const out = ic.createImageData(w, h), o = out.data;
-  const AMB = 0.07, R0 = 128, Z = 34;
+  // the ambient lifts darker images more (a painted close-up is already lit dimly), so the shape of
+  // the body always shows outside the lantern
+  let luma = 0;
+  for (let i = 0; i < n; i += 7) luma += src[i * 4] * 0.3 + src[i * 4 + 1] * 0.55 + src[i * 4 + 2] * 0.15;
+  luma /= Math.ceil(n / 7);
+  const AMB = Math.min(0.22, 0.07 * Math.max(1, 60 / Math.max(1, luma))), R0 = 128, Z = 34;
   // one pixel in the dark: only the ambient reaches it
   const dark = (j) => {
     o[j] = src[j] * AMB * 1.08; o[j + 1] = src[j + 1] * AMB * 0.94; o[j + 2] = src[j + 2] * (AMB * 0.8 + 0.02); o[j + 3] = 255;
