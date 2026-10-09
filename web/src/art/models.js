@@ -22,15 +22,29 @@ export function loadProps() {
   return ready;
 }
 
+export const hasProp = (name) => !!props[name];
+
 // Draw prop `name` with its origin at (x, y); flip mirrors it round x, sx/sy stretch it (a desk of
-// another length). Returns false when there is no such sprite, so the caller paints its own.
-export function drawProp(ctx, name, x, y, { flip = false, sx = 1, sy = 1 } = {}) {
+// another length), rot turns it round its origin (a wheel). Returns false when there is no such
+// sprite, so the caller paints its own.
+export function drawProp(ctx, name, x, y, { flip = false, sx = 1, sy = 1, rot = 0 } = {}) {
   const p = props[name];
   if (!p) return false;
   ctx.save();
   ctx.translate(x, y);
+  if (rot) ctx.rotate(rot);
   ctx.scale(flip ? -sx : sx, sy);
   ctx.drawImage(p.img, -p.ax, -p.ay);
   ctx.restore();
+  return true;
+}
+
+// Draw prop `name` stretched into the box (x, y, w, h), its render margin left out: for painters
+// that take a box rather than a point (barrels of every size).
+const MARGIN = 4;
+export function drawPropIn(ctx, name, x, y, w, h) {
+  const p = props[name];
+  if (!p) return false;
+  ctx.drawImage(p.img, MARGIN, MARGIN, p.w - MARGIN * 2, p.h - MARGIN * 2, x, y, w, h);
   return true;
 }

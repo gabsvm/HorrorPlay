@@ -1,6 +1,7 @@
 // Procedural painting toolkit. Everything here draws albedo (unlit) at full logical resolution;
 // the renderer reduces it to the pixel grid, snaps it to the palette and lights it in one pass.
 // Details are sized for that reduction: nothing meaningful is thinner than two logical pixels.
+import { drawProp, drawPropIn } from './models.js';
 import { rng, noiseCanvas } from './noise.js';
 import { P, shade, mix } from './palette.js';
 
@@ -594,6 +595,7 @@ export function crate(ctx, x, y, w, h, seed = 1, { stencil = null } = {}) {
 }
 
 export function barrel(ctx, x, y, w, h) {
+  if (drawPropIn(ctx, 'barrel', x, y, w, h)) return;
   const g = ctx.createLinearGradient(x, 0, x + w, 0);
   g.addColorStop(0, shade(P.wood, 0.5)); g.addColorStop(0.4, shade(P.wood, 1.15)); g.addColorStop(1, shade(P.wood, 0.45));
   ctx.fillStyle = g;
@@ -606,6 +608,7 @@ export function barrel(ctx, x, y, w, h) {
 }
 
 export function cart(ctx, x, groundY, { flip = false } = {}) {
+  if (drawProp(ctx, 'cart', flip ? x + 220 : x, groundY, { flip })) return;
   ctx.save();
   if (flip) { ctx.translate(x * 2 + 220, 0); ctx.scale(-1, 1); }
   ctx.fillStyle = P.woodDark;
@@ -722,6 +725,7 @@ export function pump(ctx, x, groundY) {
 }
 
 export function sack(ctx, x, groundY, seed = 1) {
+  if (drawProp(ctx, 'sack', x, groundY, { flip: seed % 2 === 1, sx: 0.9 + (seed % 3) * 0.1 })) return;
   const r = rng(seed);
   ctx.fillStyle = r.pick(['#5a4c34', '#4a3e2a', '#665538']);
   ctx.beginPath(); ctx.moveTo(x - 20, groundY); ctx.quadraticCurveTo(x - 26, groundY - 30, x - 10, groundY - 44); ctx.lineTo(x + 8, groundY - 46); ctx.quadraticCurveTo(x + 26, groundY - 28, x + 20, groundY); ctx.fill();

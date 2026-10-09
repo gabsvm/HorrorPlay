@@ -3,6 +3,7 @@ import * as A from '../art/paint.js';
 import { stonePost, cattleTrough } from '../art/props.js';
 import { nightBackdrop, facade } from '../art/build.js';
 import { P } from '../art/palette.js';
+import { drawProp, hasProp } from '../art/models.js';
 import { Actor } from '../engine/actor.js';
 import { Smoke, Drip, Rat, Crow, Moths, Ripples } from '../engine/life.js';
 
@@ -99,6 +100,7 @@ export default {
       ctx.fillStyle = '#2a1712'; ctx.fillRect(820, 300, 300, GROUND - 312);
       A.brickWall(ctx, 820, 300, 300, GROUND - 312, { seed: 15, palette: ['#3a1e16', '#2e1812', '#44241a'], soot: 1, salt: 0, holes: 0 });
       A.vgrad(ctx, 820, 300, 300, GROUND - 312, [[0, 'rgba(0,0,0,0.7)'], [1, 'rgba(60,20,10,0.35)']]);
+      if (!drawProp(ctx, 'hides', 830, 318)) {
       ctx.fillStyle = P.iron; ctx.fillRect(830, 318, 280, 5);
       for (let i = 0; i < 4; i++) {
         const hx = 846 + i * 66;
@@ -107,15 +109,20 @@ export default {
         ctx.beginPath(); ctx.moveTo(hx, 346); ctx.quadraticCurveTo(hx + 20, 334, hx + 40, 346); ctx.lineTo(hx + 34, 460 + (i % 2) * 30); ctx.quadraticCurveTo(hx + 20, 480, hx + 6, 460 + (i % 2) * 30); ctx.fill();
         ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(hx + 22, 350, 6, 100);
       }
+      }
       A.sack(ctx, 880, GROUND - 14, 7); A.sack(ctx, 920, GROUND - 14, 8);
-      ctx.strokeStyle = '#20150e'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(1000, GROUND - 70, 44, 0, Math.PI * 2); ctx.stroke();
+      if (!drawProp(ctx, 'cart_wheel', 1000, GROUND - 70)) { ctx.strokeStyle = '#20150e'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(1000, GROUND - 70, 44, 0, Math.PI * 2); ctx.stroke(); }
       A.gate(ctx, 760, 300, 60, GROUND - 312);
       A.gate(ctx, 1120, 300, 60, GROUND - 312);
       // brazier
-      ctx.fillStyle = P.iron; ctx.fillRect(1040, GROUND - 70, 40, 46); ctx.fillRect(1046, GROUND - 24, 4, 24); ctx.fillRect(1070, GROUND - 24, 4, 24);
-      for (let i = 0; i < 5; i++) { ctx.fillStyle = '#0a0a0a'; ctx.fillRect(1042 + i * 8, GROUND - 68, 3, 40); }
+      if (!drawProp(ctx, 'brazier', 1040, GROUND)) {
+        ctx.fillStyle = P.iron; ctx.fillRect(1040, GROUND - 70, 40, 46); ctx.fillRect(1046, GROUND - 24, 4, 24); ctx.fillRect(1070, GROUND - 24, 4, 24);
+        for (let i = 0; i < 5; i++) { ctx.fillStyle = '#0a0a0a'; ctx.fillRect(1042 + i * 8, GROUND - 68, 3, 40); }
+      }
       ctx.fillStyle = '#ff9a4a'; ctx.fillRect(1044, GROUND - 74, 32, 8); ctx.fillStyle = '#ffd27a'; ctx.fillRect(1052, GROUND - 76, 12, 4);
       // grindstone on its wooden frame with a treadle and a drip-can
+      // (the modelled wheel is drawn live, turning, in drawNear)
+      if (!drawProp(ctx, 'grindstone', 1200, GROUND)) {
       ctx.fillStyle = P.woodDark;
       ctx.fillRect(1200, GROUND - 62, 84, 10); ctx.fillRect(1204, GROUND - 52, 8, 52); ctx.fillRect(1272, GROUND - 52, 8, 52);
       ctx.save(); ctx.translate(1212, GROUND - 6); ctx.rotate(-0.2); ctx.fillRect(0, 0, 70, 6); ctx.restore();
@@ -123,6 +130,7 @@ export default {
       ctx.strokeStyle = '#4a4640'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(1240, GROUND - 80, 26, 0, Math.PI * 2); ctx.stroke();
       ctx.fillStyle = '#2a2826'; ctx.beginPath(); ctx.arc(1240, GROUND - 80, 6, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#3a3a3c'; ctx.fillRect(1214, GROUND - 130, 16, 20); ctx.fillRect(1220, GROUND - 112, 3, 14);
+      }
       // low wall, crates, bollard where Wren perches
       A.brickWall(ctx, 1380, 430, 300, GROUND - 442, { seed: 41, palette: A.BRICK.stock });
       ctx.fillStyle = '#5c574d'; ctx.fillRect(1376, 424, 308, 10);
@@ -217,8 +225,14 @@ export default {
     }
   },
 
-  drawNear(ctx) {
+  drawNear(ctx, t) {
     const G = this.G;
+    // the grindstone turns while Brennan works it, and stays where it stopped when he doesn't
+    if (hasProp('grind_wheel') && hasProp('grindstone')) {
+      const b = G && !isMob(G) ? G.actor('Brennan') : null;
+      if (b?.grind) this._wheelA = t * 7;
+      drawProp(ctx, 'grind_wheel', 1240, GROUND - 80, { rot: this._wheelA || 0 });
+    }
     if (!G || isMob(G) || !G.flag('wren_paid') || G.flag('bisturi_taken')) return;
     // the scalpel Wren left on top of the post
     ctx.fillStyle = '#1a120c'; ctx.fillRect(1598, GROUND - 72, 16, 3);

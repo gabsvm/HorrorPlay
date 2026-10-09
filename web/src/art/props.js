@@ -1,5 +1,6 @@
 // Things the player handles or walks on, drawn with more care than the background: they carry the
 // light, show their material and sit on the ground they stand on. Coordinates are logical pixels.
+import { drawProp } from './models.js';
 import { rng } from './noise.js';
 import { shade } from './palette.js';
 
@@ -223,6 +224,7 @@ export function dissectionCase(ctx, x, y) {
 // ------------------------------------------------------------------ in the streets
 
 export function stonePost(ctx, x, groundY) {
+  if (drawProp(ctx, 'stone_post', x, groundY)) return;
   ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(x, groundY + 2, 22, 5, 0, 0, TAU); ctx.fill();
   const g = ctx.createLinearGradient(x - 16, 0, x + 16, 0);
   g.addColorStop(0, '#4a463e'); g.addColorStop(0.45, '#7a7466'); g.addColorStop(1, '#3a362f');
@@ -236,6 +238,12 @@ export function stonePost(ctx, x, groundY) {
 
 export function cattleTrough(ctx, x, groundY, w = 150, { dusk = false } = {}) {
   const top = groundY - 52;
+  if (drawProp(ctx, 'trough', x, groundY, { sx: w / 150 })) {
+    // the Association's name, cut into the modelled panel
+    ctx.font = '600 8px Georgia, serif'; ctx.fillStyle = 'rgba(20,18,14,0.85)'; ctx.textAlign = 'center';
+    ctx.fillText('METROPOLITAN DRINKING', x + w / 2, top + 27); ctx.fillText('FOUNTAIN & CATTLE TROUGH', x + w / 2, top + 37);
+    return;
+  }
   ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(x - 4, groundY - 2, w + 8, 6);
   const g = ctx.createLinearGradient(0, top, 0, groundY);
   g.addColorStop(0, '#7a766c'); g.addColorStop(1, '#4a4740');

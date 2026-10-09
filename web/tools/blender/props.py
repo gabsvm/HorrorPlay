@@ -47,6 +47,8 @@ def ripple_lathe(name, prof, color, ripple, seg=48, loc=(0, 0, 0)):
     for A, B in zip(rings, rings[1:]):
         if len(A) == 1:
             faces += [(A[0], B[j], B[(j + 1) % seg]) for j in range(seg)]
+        elif len(B) == 1:
+            faces += [(A[j], B[0], A[(j + 1) % seg]) for j in range(seg)]
         else:
             faces += [(A[j], B[j], B[(j + 1) % seg], A[(j + 1) % seg]) for j in range(seg)]
     return mesh(name, verts, faces, color, loc)
@@ -301,22 +303,176 @@ def washstand():
     mesh('sheet', verts, faces, '#9a917c')
 
 
+# ------------------------------------------------------------------ the knackers' yard and the street
+def grindstone():
+    """The grindstone's wooden frame with its treadle and the drip-can on a post (the wheel is a sprite
+    of its own, turned while Brennan grinds). Origin: the frame's left foot (knackers.js x 1200)."""
+    wd = '#2a1e14'
+    box('rail_n', (0.84, 0.06, 0.1), (0.42, -0.18, 0.57), wd, bevel=0.01)
+    box('rail_f', (0.84, 0.06, 0.1), (0.42, 0.18, 0.57), wd, bevel=0.01)
+    for x in (0.08, 0.76):
+        for y in (-0.18, 0.18):
+            box('leg', (0.08, 0.08, 0.56), (x, y, 0.28), wd, bevel=0.01, rot=(0, 0.06 if x < 0.4 else -0.06, 0))
+    box('stretcher', (0.7, 0.05, 0.05), (0.42, 0, 0.16), wd, bevel=0.008)
+    box('treadle', (0.74, 0.12, 0.04), (0.47, -0.05, 0.06), wd, bevel=0.008, rot=(0, -0.2, 0))
+    tube('crank', [(0.4, -0.12, 0.8), (0.4, -0.12, 0.66), (0.55, -0.1, 0.1)], 0.012, IRON)
+    for y in (-0.16, 0.16):
+        box('bearing', (0.1, 0.06, 0.08), (0.4, y, 0.68), IRON, bevel=0.01)
+    tube('post', [(0.16, 0.2, 0.6), (0.16, 0.2, 1.3)], 0.02, wd)
+    lathe('can', [(1.32, 0.0), (1.32, 0.07), (1.12, 0.08), (1.1, 0.0)], '#3a3a3c', loc=(0.2, 0.12, 0))
+    tube('spout', [(0.2, 0.12, 1.1), (0.3, 0.1, 1.0)], 0.006, '#3a3a3c')
+
+
+def grind_wheel():
+    """The sandstone wheel, face on, with its axle; chipped and worn so its turning shows. Origin:
+    its centre (knackers.js 1240, GROUND - 80)."""
+    lathe('stone', [(0.05, 0.0), (0.05, 0.3), (0.045, 0.32), (-0.045, 0.32), (-0.05, 0.3), (-0.05, 0.0)], '#625d55', rot=(PI / 2, 0, 0), seg=40)
+    lathe('groove', [(0.052, 0.255), (0.052, 0.27)], '#4a4640', rot=(PI / 2, 0, 0), seg=40)
+    lathe('hub', [(0.08, 0.0), (0.08, 0.06), (-0.08, 0.06), (-0.08, 0.0)], '#2a2826', rot=(PI / 2, 0, 0))
+    random.seed(3)
+    for k in range(9):
+        a, r = random.uniform(0, TAU), random.uniform(0.1, 0.29)
+        box('chip', (random.uniform(0.02, 0.05), 0.012, random.uniform(0.012, 0.03)), (math.cos(a) * r, -0.052, math.sin(a) * r), '#3e3a34', bevel=0, rot=(0, a, 0))
+    for k in range(4):
+        a = k * TAU / 4 + 0.3
+        box('wear', (0.2, 0.008, 0.01), (math.cos(a) * 0.17, -0.051, math.sin(a) * 0.17), '#76706a', bevel=0, rot=(0, -a, 0))
+
+
+def brazier():
+    """An iron fire basket on two legs, full of coals (the glow is drawn live). Origin: its left
+    foot (knackers.js x 1040)."""
+    for i in range(7):
+        x = 0.02 + i * 0.06
+        tube('bar', [(x, -0.15, 0.24), (x - 0.01, -0.17, 0.7)], 0.012, IRON)
+        tube('bar', [(x, 0.15, 0.24), (x - 0.01, 0.17, 0.7)], 0.012, IRON)
+    for z in (0.26, 0.48, 0.7):
+        tube('hoop', [(0.0, -0.16, z), (0.38, -0.16, z), (0.38, 0.16, z), (0.0, 0.16, z)], 0.014, IRON, closed=True)
+    box('floor', (0.38, 0.3, 0.03), (0.19, 0, 0.25), IRON, bevel=0)
+    for x in (0.06, 0.32):
+        tube('leg', [(x, 0, 0.25), (x + (0.06 if x > 0.2 else -0.06), 0, 0.0)], 0.018, IRON)
+    random.seed(5)
+    for k in range(18):
+        lathe('coal', [(0.03, 0.0), (0.02, 0.03), (-0.02, 0.03), (-0.03, 0.0)], '#2a1a14',
+              loc=(random.uniform(0.05, 0.33), random.uniform(-0.12, 0.12), random.uniform(0.62, 0.72)), sx=random.uniform(0.8, 1.4))
+
+
+def hides():
+    """A rail of iron hooks with four hides hung on them, heavy and creased, the legs hanging in
+    flaps. Origin: the rail's left end (knackers.js 830, 318)."""
+    tube('rail', [(0.0, 0, 0.0), (2.8, 0, 0.0)], 0.025, IRON)
+    for i in range(4):
+        hx = 0.36 + i * 0.66
+        tube('hook', [(hx, -0.02, -0.02), (hx, -0.02, -0.2), (hx + 0.04, -0.03, -0.26), (hx + 0.07, -0.04, -0.22)], 0.01, IRON)
+        long = 1.14 + (i % 2) * 0.3
+        nx, nz = 14, 22
+        verts, faces = [], []
+        for a in range(nx + 1):
+            u = a / nx
+            for b in range(nz + 1):
+                t = b / nz
+                # hung by the neck: narrow at the hook, broad across the body, the hind legs
+                # hanging lower at the corners, the edges ragged where it was cut
+                c = abs(u - 0.5) * 2
+                width = 0.36 * (0.3 + 0.7 * math.sin(min(1, t * 2.6) * PI / 2)) * (1 + 0.08 * math.sin(t * 9 + i))
+                x = hx + (u - 0.5) * width * 2 + 0.02 * math.sin(t * 11 + u * 5 + i)
+                z = -0.24 - long * t * (1 + 0.22 * c * c * t) - 0.03 * math.sin(u * 17 + i * 3) * t
+                y = -0.03 - 0.05 * math.sin(u * PI) - 0.025 * math.sin(u * 13 + i) * t - 0.02 * math.sin(t * 7 + u * 4)
+                verts.append((x, y, z))
+        for a in range(nx):
+            for b in range(nz):
+                k = a * (nz + 1) + b
+                faces.append((k, k + 1, k + nz + 2, k + nz + 1))
+        mesh(f'hide{i}', verts, faces, '#3a1c12' if i % 2 else '#2a1610')
+
+
+def sack():
+    """A lumpy sack of lime, slumped on the ground. Origin: its middle on the ground."""
+    ripple_lathe('sack', [(0.46, 0.0), (0.45, 0.07), (0.4, 0.14), (0.3, 0.2), (0.15, 0.22), (0.03, 0.2), (0.0, 0.0)], '#5a4c34',
+                 lambda a, t: 0.08 * math.sin(3 * a + 1) * t + 0.05 * math.sin(7 * a) * t, seg=24)
+    tube('tie', [(-0.05, -0.05, 0.44), (0.0, -0.08, 0.47), (0.05, -0.05, 0.44)], 0.012, '#3a2e1e')
+
+
+def cart_wheel():
+    """A spoked cart wheel with an iron tyre, leaning back against the yard wall. Origin: its hub."""
+    tube('tyre', arc(0, 0, 0.45, 0, TAU, 40), 0.03, IRON, closed=True)
+    tube('felloe', arc(0, 0, 0.41, 0, TAU, 40), 0.035, '#20150e', closed=True)
+    for k in range(12):
+        a = k * TAU / 12 + 0.2
+        tube('spoke', [(math.cos(a) * 0.07, 0, math.sin(a) * 0.07), (math.cos(a) * 0.4, 0, math.sin(a) * 0.4)], 0.015, '#20150e')
+    lathe('hub', [(0.08, 0.0), (0.08, 0.07), (-0.08, 0.07), (-0.08, 0.0)], '#1a140f', rot=(PI / 2, 0, 0))
+
+
+cart_wheel.tilt = math.radians(-14)
+
+
+def trough():
+    """The granite cattle trough of the Drinking Fountain Association, 1.5 long, with water in it
+    (its inscription is lettered live). Origin: its left end on the ground (props.js cattleTrough)."""
+    W = 1.5
+    box('body', (W, 0.5, 0.46), (W / 2, 0, 0.23), '#6a665c', bevel=0.02)
+    box('rim', (W + 0.12, 0.6, 0.08), (W / 2, 0, 0.48), '#8a857a', bevel=0.02)
+    box('water', (W - 0.08, 0.42, 0.02), (W / 2, 0, 0.49), '#0d1416', bevel=0)
+    box('panel', (W - 0.24, 0.02, 0.28), (W / 2, -0.255, 0.24), '#625e55', bevel=0.005)
+    box('plinth', (W + 0.06, 0.56, 0.05), (W / 2, 0, 0.025), '#4a4740', bevel=0.01)
+
+
+def stone_post():
+    """A granite post with an iron band, mossy at the foot. Origin: its middle on the ground."""
+    lathe('post', [(0.68, 0.0), (0.66, 0.08), (0.6, 0.13), (0.5, 0.14), (0.0, 0.16)], '#6a665a', sx=1.0, sy=0.85, seg=20)
+    lathe('band', [(0.47, 0.152), (0.42, 0.155)], '#2a2a2a', sy=0.85, seg=20)
+    lathe('moss', [(0.07, 0.162), (0.0, 0.17)], '#3a4a2a', sy=0.85, seg=20)
+
+
+def cart():
+    """A costermonger's handcart, two spoked wheels and its shafts resting on the ground to the right.
+    Origin: the left end of the bed on the ground (paint.js cart(x, groundY))."""
+    wd = '#241a12'
+    box('bed', (2.0, 0.9, 0.06), (1.0, 0, 0.66), wd, bevel=0.01)
+    for y in (-0.45, 0.45):
+        box('side', (2.0, 0.04, 0.26), (1.0, y, 0.8), wd, bevel=0.008)
+        box('rail', (2.1, 0.05, 0.04), (1.0, y, 1.16), wd, bevel=0.008)
+        for x in (0.0, 1.98):
+            box('stake', (0.06, 0.05, 0.5), (x, y, 0.92), wd, bevel=0.008)
+        tube('shaft', [(1.96, y * 0.8, 0.82), (3.2, y * 0.8, 0.05)], 0.03, wd)
+    box('back', (0.04, 0.9, 0.26), (0.0, 0, 0.8), wd, bevel=0.008)
+    for y in (-0.52, 0.52):
+        tube('tyre', [(0.7 + math.cos(a) * 0.47, y, 0.47 + math.sin(a) * 0.47) for a in [TAU * i / 40 for i in range(41)]], 0.025, IRON)
+        tube('felloe', [(0.7 + math.cos(a) * 0.43, y, 0.47 + math.sin(a) * 0.43) for a in [TAU * i / 40 for i in range(41)]], 0.03, wd)
+        for k in range(10):
+            a = k * TAU / 10 + 0.2
+            tube('spoke', [(0.7 + math.cos(a) * 0.07, y, 0.47 + math.sin(a) * 0.07), (0.7 + math.cos(a) * 0.42, y, 0.47 + math.sin(a) * 0.42)], 0.014, wd)
+        lathe('hub', [(0.06, 0.0), (0.06, 0.07), (-0.06, 0.07), (-0.06, 0.0)], '#1a140f', loc=(0.7, y, 0.47), rot=(PI / 2, 0, 0))
+    tube('axle', [(0.7, -0.55, 0.47), (0.7, 0.55, 0.47)], 0.025, IRON)
+
+
+cart.yaw = math.radians(16)
+
+
+def barrel():
+    """An oak barrel with two iron hoops. Drawn stretched into the box its caller gives."""
+    ripple_lathe('staves', [(0.5, 0.0), (0.5, 0.19), (0.42, 0.22), (0.25, 0.235), (0.08, 0.22), (0.0, 0.19), (0.0, 0.0)], '#3a2a1a',
+                 lambda a, t: 0.012 * (1 if math.sin(a * 16) > 0 else -1), seg=48)
+    for z in (0.08, 0.42):
+        lathe('hoop', [(z + 0.025, 0.232), (z - 0.025, 0.232)], IRON, seg=32)
+
+
 # chairs read by their backs: turn them toward the viewer
 balloon_chair.yaw = math.radians(-32)
 room_chair.yaw = math.radians(28)
 
-PROPS = {f.__name__: f for f in (seance_table, balloon_chair, side_table, raven_dome, fireplace, bed, desk, room_chair, bookshelf, washstand)}
+PROPS = {f.__name__: f for f in (seance_table, balloon_chair, side_table, raven_dome, fireplace, bed, desk, room_chair, bookshelf, washstand,
+                                 grindstone, grind_wheel, brazier, hides, sack, cart_wheel, trough, stone_post, cart, barrel)}
 
 
 def render(name, fn):
     scn = kit.reset()
     fn()
-    if getattr(fn, 'yaw', 0):
+    if getattr(fn, 'yaw', 0) or getattr(fn, 'tilt', 0):
         root = kit.link(bpy.data.objects.new('root', None))
         for o in list(scn.objects):
             if o is not root:
                 o.parent = root
-        root.rotation_euler = (0, 0, fn.yaw)
+        root.rotation_euler = (getattr(fn, 'tilt', 0), 0, getattr(fn, 'yaw', 0))
     cam = kit.link(bpy.data.objects.new('cam', bpy.data.cameras.new('cam')))
     cam.data.type = 'ORTHO'
     cam.rotation_euler = (PI / 2 - ELEV, 0, 0)
@@ -357,4 +513,4 @@ for name, fn in PROPS.items():
     if ONLY and name not in ONLY:
         continue
     meta[name] = render(name, fn)
-json.dump(meta, open(meta_path, 'w'), indent=1)
+    json.dump(meta, open(meta_path, 'w'), indent=1)     # after each one, so a failure keeps the rest
