@@ -70,7 +70,7 @@ function paintCorpse(ctx, t, { key, x, y, h = 150, look = {}, cover = '#1a1c24',
     for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(head + (10 + i * 14) * s, y + 6); ctx.lineTo(head + (4 + i * 18) * s, y + 14 + i * 2); ctx.stroke(); }
   }
   // the body, on her back, head to the left
-  const m = (c.model ??= modelFor(key));
+  const m = (c.model = modelFor(key));
   let mf = null;
   if (m?.ready) {
     const M = m.meta, k = h / M.height;

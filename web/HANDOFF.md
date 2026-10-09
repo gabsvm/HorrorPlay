@@ -89,7 +89,12 @@ Models (`src/engine/model.js`): the cast from `tools/blender/cast.py`, mapped by
 camera-space normals at half size (blue = lantern glass). `Actor.modelFrame` picks the frame (reach by
 height, pose, pose_talk, turn, walk/walkh/run by gait phase, talk, idle) and returns null for anything
 not rendered, which falls back to `drawFigure`. `shadeVolume` lights the frame with `normalsFor`.
-`?procedural` disables models. Portraits: `src/engine/portraits.js`, `Actor.drawPainted`.
+`?procedural` disables models. `pack.py` crops every frame to the box the figure uses and stores the
+lantern glass lit (Actor dims it when the lantern is out). `releaseModels` (called by `goto`) drops the
+decoded atlases nobody in the new scene uses; `loadModel` reloads them on demand. The victims (polly,
+annie, kate) are models too, drawn by `corpse.js`, with the cape or sacking draped in Blender.
+Portraits: `src/engine/portraits.js` (preloaded at start), `Actor.drawPainted`. Mrs Richardson has
+none yet: the image sent for her was the widow's.
 
 Corpses: `src/scenes/corpse.js` `drawCorpse` puts the figure on its back. Above low quality it goes
 through the same sprite pass (rim and volume, re-rendered at about 3 fps).

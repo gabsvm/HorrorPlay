@@ -200,6 +200,15 @@ export class Actor {
       return this.isPlayer ? { x: this.x, y: this.y - this.h * 0.55, r: this.h * 1.3, color: [0.55, 0.6, 0.7], intensity: 0.24, halo: 0, reflect: false } : null;
     }
     const s = this.h / 200;
+    // the modelled figure sets the lantern down to write or to clutch its head, and changes hands to
+    // reach for something: the light goes where the lantern is
+    const held = this._mf?.name;
+    if (held === 'write' || held === 'clutch') {
+      return { x: this.x + this.facing * 44 * s, y: this.y - 16 * s, r: 380, color: P.lantern, intensity: 0.8, flicker: 0.04, cone: { dir: this.facing, spread: 0.3 }, halo: 22, haloK: 0.7, reflect: false };
+    }
+    if (held?.startsWith('reach')) {
+      return { x: this.x - this.facing * 4 * s, y: this.y - 84 * s, r: 430, color: P.lantern, intensity: 0.85, flicker: 0.04, cone: { dir: this.facing, spread: 0.3 }, halo: 26, haloK: 0.7, reflect: false };
+    }
     const lift = this.pose === 'inspect' ? 46 : this.pose === 'take' ? -24 : this.pose === 'kneel' || this.pose === 'clutch' ? -30 : this.pose === 'recoil' ? 40 : 0;
     const reachX = this.pose === 'inspect' ? 34 : 0;
     return {
@@ -269,7 +278,7 @@ export class Actor {
     const cyc = (name, u) => {
       if (!A[name]) return null;
       const [s, n] = A[name];
-      return { i: s + (Math.floor((((u % 1) + 1) % 1) * n + 0.5) % n), flip };
+      return { i: s + (Math.floor((((u % 1) + 1) % 1) * n + 0.5) % n), flip, name };
     };
     const breath = ((t + this.seed) * 1.7) / TAU, gesture = ((t + this.seed) * 1.3) / TAU;
     if (this.reachTo && (!this.pose || this.pose === 'inspect' || this.pose === 'reach')) {
@@ -279,7 +288,7 @@ export class Actor {
     if (this.pose) return (this.talking && cyc(this.pose + '_talk', gesture)) || cyc(this.pose, breath);
     if (this.turnT > 0 && A.turn) {
       const [s, n] = A.turn, k = 1 - this.turnT / TURN;
-      return { i: s + Math.min(n - 1, Math.floor(k * n)), flip: this.facing > 0 };
+      return { i: s + Math.min(n - 1, Math.floor(k * n)), flip: this.facing > 0, name: 'turn' };
     }
     const w = this.walkAmt ?? 0;
     if (w > 0.2) return cyc((this.run || 0) > 0.5 && A.run ? 'run' : w > 0.7 ? 'walk' : 'walkh', this.phase / TAU);
@@ -372,7 +381,8 @@ export class Actor {
         if (d[p + 3] === 0) continue;
         let nx, ny, nz;
         if (NM) {
-          if (NM.glass[i] && this.lanternOn) { d[p] = 255; d[p + 1] = 214; d[p + 2] = 140; continue; }
+          // the atlas has the glass lit: keep it bright, or dull it when the lantern is out
+          if (NM.glass[i]) { if (this.lanternOn) continue; d[p] = 90; d[p + 1] = 70; d[p + 2] = 40; }
           nx = NM.x[i]; ny = NM.y[i]; nz = NM.z[i];
         } else {
           nx = -(H[i + 1] - H[i - 1]) * 2.4; ny = -(H[i + w] - H[i - w]) * 2.4;
@@ -505,7 +515,7 @@ export class Actor {
     c.clearRect(0, 0, S, S);
     const pic = portraitFor(this.name);
     if (pic) { this.drawPainted(c, S, pic, t, mode, out); return; }
-    const keep =['x', 'y', 'h', 'pose', 'walkAmt', 'look', 'facing', 'shiver', 'turnT', 'talking', 'moving', 'blink', 'phase'];
+    const keep = ['x', 'y', 'h', 'pose', 'walkAmt', 'look', 'facing', 'shiver', 'turnT', 'talking', 'moving', 'blink', 'phase'];
     const saved = Object.fromEntries(keep.map((k) => [k, this[k]]));
     Object.assign(this, { x: 0, y: 0, h: 200, pose: null, walkAmt: 0, look: 0, facing: 1, shiver: 0, turnT: 0, moving: false, phase: 0 });
     this.talking = mode === 'talk';

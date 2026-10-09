@@ -1,7 +1,7 @@
 // Game controller: loop, camera, input, hotspots, state, and the script API (G) scenes are written against.
 import { Renderer, W, H } from './renderer.js';
 import { Actor } from './actor.js';
-import { modelFor } from './model.js';
+import { modelFor, releaseModels } from './model.js';
 import { loadPortraits } from './portraits.js';
 import { fgDressing } from '../art/build.js';
 import { live } from '../art/paint.js';
@@ -362,6 +362,7 @@ export class Game {
     this.player.x = x ?? scene.spawn ?? scene.walk[0] + 40;
     this.player.facing = facing ?? 1;
     if (scene.actors) for (const a of scene.actors(this.G)) this.addActor(a);
+    releaseModels(new Set(this.actors.map((a) => a.model).filter(Boolean)));
     scene.life = scene.makeLife ? scene.makeLife(this.G) : [];
     // what swings in the street joins its life; what swings in the foreground is drawn with that layer
     for (const s of scene.built.swings || []) if (!s.fg) scene.life.push(new Swing(s));
