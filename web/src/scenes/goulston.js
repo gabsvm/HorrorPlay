@@ -123,10 +123,11 @@ export default {
         G.flag('apron_found', true);
         G.player.pose = 'reach';
         await G.wait(500);
-        await G.think('Al acercar la linterna veo la jamba de ladrillo. Alguien ha escrito algo con tiza, con letra inclinada.');
+        await G.think(G.two('Al acercar la linterna veo la jamba de ladrillo. Alguien ha escrito con tiza: HERE I AM. Aquí estoy.', 'Al acercar la linterna veo la jamba de ladrillo. Alguien ha escrito algo con tiza, con letra inclinada.'));
         G.flag('chalk_seen', true);
         G.audio.sting(0.22); G.mad(0.5);
-        await G.voice('Aquí estoy.');
+        if (G.second()) await G.voice('Aquí estoy.');
+        else await G.think(G.flag('answered1866') ? 'Lo mismo que le contesté al agua cuando tenía doce años.' : 'Lo que el agua quería que yo le contestara. Alguien se lo ha contestado por mí.');
         G.clue('aqui_estoy');
         G.sanity(-8);
         G.mad(0);

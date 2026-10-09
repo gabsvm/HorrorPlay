@@ -163,6 +163,10 @@ export default {
     }
   },
 
+  hint: (G) => (G.flag('seance_done') && !G.hasClue('hospes')
+    ? (G.flag('knock_board') ? 'Cada letra son dos grupos de golpes: el primero es la fila de la tabla, el segundo la columna. Dos golpes y tres golpes: fila 2, columna 3.' : 'En la pared, bajo la carta astral, hay una tabla de letras. Sin ella los golpes no se pueden leer.')
+    : null),
+
   async enter(G) {
     this.G = G;
     if (G.flag('se_intro')) return;
@@ -187,6 +191,7 @@ export default {
     {
       id: 'table', name: 'Mesa de la sesión', rect: [TABLE_X - 160, GROUND - 180, 320, 120], walk: TABLE_X - 230, face: 1,
       act: async (G) => {
+        if (G.flag('seance_done') && !G.hasClue('hospes')) { await G.game.chapterHooks.raps(G); return; }
         if (G.flag('seance_done')) { await G.think('La cera de las velas sigue blanda.'); return; }
         await G.think('Tres velas, un mantel de terciopelo gastado y huellas de dedos en la madera. Wexley espera a que deje algo encima.');
       },
@@ -266,12 +271,21 @@ export default {
     },
     {
       id: 'chart', name: 'Carta astral', rect: [930, 150, 96, 96], walk: 980,
-      act: async (G) => { await G.think('Una carta astral dibujada a mano. En el margen alguien ha escrito "T. A." y la fecha de mi nacimiento.'); G.sanity(-3); },
+      act: async (G) => {
+        await G.think('Una carta astral dibujada a mano. En el margen alguien ha escrito "T. A." y la fecha de mi nacimiento.');
+        if (!G.flag('knock_board')) {
+          G.flag('knock_board', true);
+          await G.think('Debajo, clavada con chinchetas, una tabla de veinticinco letras en cinco filas, sin la K, con las filas y las columnas numeradas del uno al cinco.');
+          await G.think('Los presos de las cárceles del zar hablaban así entre celdas, a golpes: primero la fila, luego la columna. Los espíritus de Madame Wexley, por lo visto, también.');
+        }
+        G.sanity(-3);
+      },
     },
     {
       id: 'door', name: 'Salir a Fournier Street', cursor: 'exit', rect: [180, GROUND - 280, 140, 280], walk: 250, face: -1,
       act: async (G) => {
         if (!G.flag('seance_done')) { await G.think('He venido a saber quién le habló de mí. No me voy sin saberlo.'); return; }
+        if (!G.hasClue('hospes')) { await G.think('Los golpes de la mesa. Los tengo apuntados y no sé qué dicen. No me voy sin saberlo.'); return; }
         await G.game.chapterHooks.leaveSeance(G);
       },
     },

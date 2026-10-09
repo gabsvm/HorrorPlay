@@ -59,7 +59,8 @@ globalThis.AudioContext = undefined;
 await import('../src/main.js');
 await new Promise((r) => setTimeout(r, 50)); // let the menu backdrop finish loading
 const t = await import(process.argv[2] === 'alt' ? '../tests/walkthrough-alt.js' : '../tests/walkthrough.js');
-const res = await t.run({ log: false });
+// `node tools/walk.mjs second` plays the whole game again as the second reading
+const res = await t.run({ log: false, second: process.argv[2] === 'second' });
 console.log(JSON.stringify({ ok: res.ok, errors: res.errors, lines: res.lines, deductions: res.deductions, scene: res.scene }, null, 1));
 if (!res.ok) {
   console.log('\nÚltimas líneas:');

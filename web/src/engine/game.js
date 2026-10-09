@@ -5,6 +5,7 @@ import { modelFor, releaseModels } from './model.js';
 import { loadPortraits } from './portraits.js';
 import { loadCloseups } from '../art/closeups.js';
 import { loadProps } from '../art/models.js';
+import { buzz } from './haptics.js';
 import { fgDressing } from '../art/build.js';
 import { live } from '../art/paint.js';
 import { Swing } from './life.js';
@@ -293,6 +294,26 @@ export class Game {
   }
 
   // ------------------------------------------------------------ deduction
+  // The notebook's "what now?". Asked once, it nudges; asked again with nothing changed since, it
+  // answers: the two clues that fit, or the scene's own hint, with everything that can be touched
+  // shown for a moment.
+  hint() {
+    const st = this.state, G = this.G;
+    const key = `${st.objective}|${st.deductions.length}|${st.clues.length}|${st.scene}`;
+    const again = this._hintKey === key;
+    this._hintKey = key;
+    const ready = this.deductions.find((d) => !st.deductions.includes(d.id) && (!d.final || st.flags.awake)
+      && st.clues.includes(d.a) && st.clues.includes(d.b));
+    const gist = (id) => { const c = this.clues[id], t = typeof c.text === 'function' ? c.text(st) : c.text; return `«${t.split(/[.:;]/)[0]}»`; };
+    if (ready && (/cuaderno/i.test(st.objective || '') || again)) {
+      return again ? `Junta ${gist(ready.a)} con ${gist(ready.b)}.` : 'Hay dos pistas en el cuaderno que encajan y que todavía no he relacionado. (Vuelve a preguntar si no las encuentras.)';
+    }
+    if (!again) return `${st.objective || 'Mirar alrededor.'} (Vuelve a preguntar si sigues atascado.)`;
+    this.ui.closeNotebook();
+    this.reveal();
+    return (this.scene?.hint && this.scene.hint(G)) || `${st.objective || ''} Todo lo que se puede tocar queda marcado un momento.`;
+  }
+
   clueExhausted(id) {
     return this.deductions.filter((d) => d.a === id || d.b === id).every((d) => this.state.deductions.includes(d.id));
   }
@@ -626,6 +647,10 @@ export class Game {
     });
   }
 
+  // finishing the game once opens the second reading
+  static read() { try { return localStorage.getItem(`${SAVE_KEY}.read`) === '1'; } catch { return false; } }
+  static markRead() { try { localStorage.setItem(`${SAVE_KEY}.read`, '1'); } catch { /* storage unavailable */ } }
+
   static unlocked() {
     try { return JSON.parse(localStorage.getItem(`${SAVE_KEY}.unlocked`) || '["prologue"]'); } catch { return ['prologue']; }
   }
@@ -663,6 +688,10 @@ export class Game {
       get scene() { return game.scene; },
       audio,
       wait,
+      // the first reading and the second: the same scene, said as Thomas believes it, or as it was
+      two: (first, second) => (game.state.flags.second ? second : first),
+      second: () => !!game.state.flags.second,
+      knocks: (o) => game.ui.knockPuzzle(o),
       flag: (k, v) => { if (v === undefined) return !!game.state.flags[k]; game.state.flags[k] = v; return v; },
       has: (id) => game.state.items.includes(id),
       hasClue: (id) => game.state.clues.includes(id),
@@ -710,7 +739,7 @@ export class Game {
       fade: (v, ms = 800) => game.fadeTo(v, ms),
       flash: (v = 1) => { game.r.fx.flash = v; game.punch = 1; },
       red: (v = 0.8) => { game.r.fx.red = v; game.punch = 1; },
-      shake: (v = 10) => { game.r.cam.shake = v; game.punch = Math.max(game.punch || 0, 0.6); },
+      shake: (v = 10) => { game.r.cam.shake = v; game.punch = Math.max(game.punch || 0, 0.6); if (v >= 6) buzz(Math.min(90, v * 5)); },
       // Kneel over a body and examine it close up. `points`: [{ id, x, y, r, name, act(G) }] in 1280x720.
       inspect: async (id, { title, body, points }) => {
         const seen = ((game.state.seen ||= {})[`insp:${id}`] ||= {});

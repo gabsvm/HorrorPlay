@@ -14,6 +14,7 @@ const STEPS = {
 const SAMPLES = ['rain', 'storm', 'river', 'step_gravel', ...STEPS.stone, ...STEPS.wood, ...STEPS.mud, 'door_open', 'door_close', 'creak1', 'creak2', 'creak3', 'cloth1', 'cloth2', 'leather',
   'book_open', 'book_close', 'book_flip1', 'book_flip2', 'latch', 'metal_click', 'knife'];
 import { prefs } from './prefs.js';
+import { buzz } from './haptics.js';
 
 class AudioEngine {
   constructor() {
@@ -434,6 +435,7 @@ class AudioEngine {
   }
 
   heartbeat(level = 1) {
+    buzz([18, 240, 12]);
     if (!this.ctx) return;
     const ctx = this.ctx;
     [0, 0.26].forEach((dt, i) => {
@@ -481,6 +483,7 @@ class AudioEngine {
   }
 
   sting(vol = 0.25) {
+    if (vol >= 0.15) buzz(vol >= 0.3 ? [40, 60, 90] : 45);
     if (!this.ctx) return;
     const ctx = this.ctx, t = ctx.currentTime;
     const g = ctx.createGain(); this.env(g, t, 0.02, vol, 3);
@@ -507,10 +510,12 @@ class AudioEngine {
     const g = ctx.createGain(); this.env(g, t, 0.08, 0.04, 0.6);
     o.connect(bp).connect(g).connect(this.master); o.start(t); o.stop(t + 0.8);
   }
+  // a knuckle on the séance table: one rap, felt in the hand
+  rap() { buzz(25); this.noiseHit({ freq: 180 + Math.random() * 40, q: 2, vol: 0.5, d: 0.08, buf: this.brown, rev: 0.35 }); this.noiseHit({ freq: 1400, q: 3, vol: 0.06, d: 0.02, rev: 0.2 }); }
   knock() { [0, 0.22, 0.44].forEach((d) => setTimeout(() => this.noiseHit({ freq: 140, q: 1.5, vol: 0.6, d: 0.12, buf: this.brown, rev: 0.4 }), d * 1000)); }
   drip(x = null) { const s = this.spatial(x, 700); this.noiseHit({ freq: 1800 + Math.random() * 900, q: 14, vol: 0.12 * s.gain, d: 0.08, rev: 0.6, pan: s.pan }); }
   splash() { this.noiseHit({ freq: 700, q: 0.5, vol: 0.4, a: 0.01, d: 0.6, type: 'lowpass', rev: 0.4 }); }
-  thud() { this.noiseHit({ freq: 90, type: 'lowpass', vol: 0.7, d: 0.4, buf: this.brown, rev: 0.3 }); }
+  thud() { buzz(55); this.noiseHit({ freq: 90, type: 'lowpass', vol: 0.7, d: 0.4, buf: this.brown, rev: 0.3 }); }
   match() { this.noiseHit({ freq: 2500, q: 0.7, vol: 0.18, a: 0.01, d: 0.4, rev: 0.1 }); }
   // picking something up: cloth and leather, then the object going into a pocket
   pickup() { if (this.play(this.pick(['cloth1', 'cloth2']), { vol: 0.45, rev: 0.05 })) { this.play('leather', { vol: 0.35, delay: 0.25, rev: 0.05 }); return; } this.paper(); }
@@ -694,6 +699,7 @@ class AudioEngine {
 
   // a train over the viaduct: the rumble rolls from one side to the other, the wheels beating the joints
   train(dur = 6.5) {
+    buzz([60, 80, 60, 80, 60, 80, 60]);
     if (!this.ctx) return;
     const ctx = this.ctx, t = ctx.currentTime;
     const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.7, t + dur * 0.4); g.gain.linearRampToValueAtTime(0.0001, t + dur);

@@ -1,4 +1,8 @@
 // Chapter flow and every scripted sequence that spans scenes.
+// The first reading is told as Thomas believes it: someone comes in by his window and uses his boots,
+// his ink, his scalpel, and he hunts that man (Pike, Greaves). The second reading (G.two, G.second)
+// tells the same nights as they were. A boy who keeps quiet at the river in 1866 keeps quiet; in the
+// second reading he never could.
 import { Actor } from '../engine/actor.js';
 import { playIntro } from './intro.js';
 
@@ -7,6 +11,9 @@ const LOOKS = {
   adult: { hat: 'bowler', coat: '#23262b', coatLen: 0.88, flare: 1.2, build: 1, speed: 150, lantern: true, collarUp: true, patches: false, sideburns: true, hair: '#1a1410', trousers: '#1a1b1e', gloves: '#2a221c', scarf: '#4a1612', stubble: 'rgba(30,22,18,0.35)' },
 };
 function look(G, k) { Object.assign(G.player, LOOKS[k]); }
+
+// the séance raps, as [row, column] knocks on the board under the star chart: H O S P E S
+const RAPS = [[2, 3], [3, 4], [4, 3], [3, 5], [1, 5], [4, 3]];
 
 const finals = (G) => G.state.deductions.filter((d) => d.startsWith('f_')).length;
 
@@ -95,7 +102,7 @@ export function makeChapters() {
       await G.card('', 'Octubre', 'No hay crímenes en todo el mes.', 3400);
       await G.card('', '', 'Duermo de día. De noche camino. Pike ya no me saluda.', 3400);
       await G.card('Capítulo IV', 'Huésped', 'London Hospital, 8 de noviembre de 1888', 4200);
-      G.objective('Encontrar lo que Greaves sabe de mí: el cajón, la vitrina.');
+      G.objective(G.two('Encontrar pruebas contra Greaves en su consulta: el cajón, la vitrina.', 'Encontrar lo que Greaves sabe de mí: el cajón, la vitrina.'));
       await G.goto('greaves', { x: 230, facing: 1, fade: false });
       await G.fade(0, 1500);
     },
@@ -126,15 +133,28 @@ export function makeChapters() {
       await G.think('...¿Nat?');
       await G.voice('Tommy. Estoy aquí abajo. Tengo frío.');
       const c = await G.choice(['Responder.', 'No responder.']);
+      let answered = c === 0;
       if (c === 1) {
         await G.think('Mamá dice que los ahogados no hablan. Que si alguna vez el agua me llama, no conteste.');
         await G.voice('Tommy, por favor. Solo dime que estás ahí.');
-        await G.choice(['No responder.', 'No responder.']);
+        answered = (await G.choice(G.two(['Responder.', 'No responder.'], ['No responder.', 'No responder.']))) === 0;
       }
-      G.mad(0.6);
-      await G.say('Thomas', 'Aquí estoy.');
-      await G.voice('Ya lo sé.');
-      G.flash(1); G.audio.sting(0.35); G.shake(12);
+      // the second reading knows there was never a choice
+      if (G.second()) answered = true;
+      G.flag('answered1866', answered);
+      if (answered) {
+        G.mad(0.6);
+        await G.say('Thomas', 'Aquí estoy.');
+        await G.voice('Ya lo sé.');
+        G.flash(1); G.audio.sting(0.35); G.shake(12);
+      } else {
+        await G.think('No contesto. Aprieto el barquito contra el pecho hasta que me duelen los dedos.');
+        G.mad(0.5);
+        await G.voice('...');
+        await G.think('La luz verde se apaga despacio, como una lámpara a la que se le acaba el aceite. El agua se queda quieta.');
+        await G.think('Mamá tenía razón.');
+        G.audio.sting(0.15);
+      }
       await G.fade(1, 400);
       G.mad(0);
       G.audio.setBeds({}, 2);
@@ -163,7 +183,7 @@ export function makeChapters() {
       w.talking = false;
       const c = await G.choice(['¿Por qué me dices eso?', 'Son cuentos de ribereños.']);
       w.talking = true;
-      if (c === 0) await G.say('Wren', 'Porque a usted ya le ha hablado. Se le nota.');
+      if (c === 0) await G.say('Wren', G.two('Porque esta noche el agua ha hablado mucho, señor. Se le oía desde el fango.', 'Porque a usted ya le ha hablado. Se le nota.'));
       else await G.say('Wren', 'Usted sabrá. Pero no conteste.');
       w.talking = false;
       G.clue('regla');
@@ -176,6 +196,30 @@ export function makeChapters() {
     c1Objective(G) {
       if (!G.hasClue('brennan_zurdo')) G.objective('Fijarse en cómo trabaja Brennan. Luego, en el cuaderno, relacionarlo con lo que dijo el forense.');
       else if (!G.deduced('d_brennan') || !G.deduced('d_bisturi')) G.objective('En el cuaderno: relacionar a Brennan y el bisturí con lo que dijo el forense.');
+    },
+
+    // Buck's Row: the night's beats, and the only ten minutes when no one could see the gateway
+    async beats(G) {
+      const sheet = () => G.doc(`<h3>DIVISIÓN H — RONDAS</h3>
+        <p class="small">Noche del 30 al 31 de agosto de 1888</p>
+        <p><b>PC 97J Neil.</b> Buck's Row, Brady Street, Baker's Row. Vuelta de media hora: pasa ante el portón del establo a las y cuarto y a menos cuarto.</p>
+        <p><b>PC 96J Thain.</b> Brady Street. A las y media se detiene en la esquina de Buck's Row y alumbra la calle con la linterna.</p>
+        <p><b>PC 55H Mizen.</b> Baker's Row y Hanbury Street. Desde su punto no se ve Buck's Row.</p>
+        <p class="hand">Declaraciones: Thain alumbró Buck's Row a las 3:30; no había nada en el suelo. Charles Cross, carretero, entró en la calle a las 3:40 y la encontró delante del portón.</p>
+        <p class="small" style="text-align:right">${G.two('Firmado: el inspector de guardia', 'Firmado: T. Ashgrove, inspector de guardia')}</p>`);
+      await sheet();
+      await G.think('¿Cuándo pudo hacerlo sin que nadie viera el portón?');
+      for (;;) {
+        const c = await G.choice(['Entre las 3:15 y las 3:45: entre dos pasadas de Neil.', 'Entre las 3:15 y las 3:30.', 'Entre las 3:30 y las 3:40.', 'Entre las 3:40 y las 3:45.', 'Mirar otra vez la hoja.']);
+        if (c === 2) break;
+        if (c === 4) { await sheet(); continue; }
+        await G.think(['No. A las 3:30 Thain alumbró la calle desde Brady Street, y no había nadie en el suelo.',
+          'Entonces Thain la habría visto al alumbrar a las 3:30. No había nada.', '',
+          'A las 3:40 ya estaba muerta: Cross la encontró.'][c]);
+      }
+      G.clue('ronda');
+      await G.think('Diez minutos entre la linterna de Thain y el carretero. No tuvo suerte: sabía las horas de los tres.');
+      if (G.second()) await G.think('Las sabía porque las puse yo.');
     },
 
     async endC1(G) {
@@ -192,13 +236,13 @@ export function makeChapters() {
       w.talking = false;
       await G.say('Ashgrove', '¿Cómo lo sabes?');
       w.talking = true;
-      await G.say('Wren', 'Porque él no huele al Ditch.');
+      await G.say('Wren', G.two('Porque el que lo hizo bajó al río después. Brennan no se ha movido de su piedra en toda la noche.', 'Porque él no huele al Ditch.'));
       w.talking = false;
       w.y = 628; w.walkTo(-100, { speed: 220 });
       G.sanity(-5);
       await G.wait(1200);
       await lostTime(G, '4:58', '9:15');
-      await G.narrate('Me despierto en mi cuarto, vestido y con la linterna todavía caliente en la mano.');
+      await G.narrate(G.two('Me despierto en mi cuarto. No recuerdo haber vuelto. La ventana está abierta otra vez.', 'Me despierto en mi cuarto, vestido y con la linterna todavía caliente en la mano.'));
       await G.chapter('c2');
     },
 
@@ -240,6 +284,7 @@ export function makeChapters() {
       await G.voice('El agua estaba fría, Tommy. Me buscaste tres semanas. Luego te llamé y contestaste.', { name: 'Madame Wexley' });
       await G.voice('Dijiste: aquí estoy. ¿Te acuerdas?', { name: 'Madame Wexley' });
       G.clue('nat_voz');
+      if (!G.flag('answered1866')) await G.think('Mentira. No contesté. No contesté nunca.');
       G.actor('Joven').talking = true;
       await G.say('Joven', '¿Quién demonios es Tommy?');
       G.actor('Joven').talking = false;
@@ -253,7 +298,15 @@ export function makeChapters() {
       s.lights.forEach((l) => { l.off = true; });
       G.audio.thud();
       await G.fade(1, 200);
-      await G.wait(2200);
+      // in the dark the table knocks: two groups, a pause, two groups... Thomas counts them blind
+      await G.narrate('En la oscuridad, la mesa empieza a golpear. Cuento los golpes y los voy apuntando a ciegas en el cuaderno.');
+      for (const [r, c] of RAPS) {
+        for (let i = 0; i < r; i++) { G.audio.rap(); await G.wait(window.FAST ? 0 : 170); }
+        await G.wait(window.FAST ? 0 : 380);
+        for (let i = 0; i < c; i++) { G.audio.rap(); await G.wait(window.FAST ? 0 : 170); }
+        await G.wait(window.FAST ? 0 : 900);
+      }
+      await G.wait(1200);
       G.removeActor('Viuda'); G.removeActor('Joven');
       G.player.pose = null;
       G.player.x = 520;
@@ -270,6 +323,18 @@ export function makeChapters() {
       G.flag('seance_done', true);
       G.cinema(false);
       await G.think('Un truco. Alguien le habló de Nat. ¿Quién sabía lo de Nat?');
+      G.objective('Descifrar los golpes de la mesa. En la pared había una tabla de letras.');
+    },
+
+    // the raps, read against the board on the wall: row, then column
+    async raps(G) {
+      const ok = await G.knocks({ raps: RAPS, answer: 'HOSPES', board: G.flag('knock_board'), rows: ['ABCDE', 'FGHIJ', 'LMNOP', 'QRSTU', 'VWXYZ'] });
+      if (!ok) { await G.think(G.flag('knock_board') ? 'Más tarde. Fila y columna; tiene que salir algo.' : 'Sin la tabla de la pared no hay manera de leerlos.'); return; }
+      G.clue('hospes');
+      G.mad(0.3); G.audio.whisper(1.6, 0.12);
+      await G.think('HOSPES. Latín. Lo leí en un libro de la facultad: el que recibe en su casa, y también el que es recibido. La misma palabra.');
+      await G.think(G.two('Wexley no lo sabe, o no me lo dirá. Alguien le habla a esta mesa de mí.', 'La casa y el que entra en ella. No hablaba de Wexley.'));
+      G.mad(0);
       G.objective('Salir a Fournier Street.');
     },
 
@@ -341,7 +406,8 @@ export function makeChapters() {
       G.audio.pen();
       await G.think('Las once y cuarenta. Las once y cuarenta y uno.');
       G.mad(0.4);
-      await G.voice('Escribe, Tommy. Con la otra tinta.');
+      if (G.second()) await G.voice('Escribe, Tommy. Con la otra tinta.');
+      else await G.think('La llama de la vela se tumba hacia la ventana, como si alguien la hubiera abierto a mi espalda.');
       G.audio.pen();
       await lostTime(G, '23:41', '3:15');
       G.flag('tinta_vacia', true);
@@ -350,9 +416,9 @@ export function makeChapters() {
       G.audio.setBeds({ rain: 0.2, room: 0.4 }, 2);
       await G.fade(0, 1500);
       await G.think('Me he quedado dormido sobre el escritorio.');
-      await G.think('Tengo los dedos de la mano izquierda manchados de rojo hasta los nudillos.');
+      await G.think(G.two('La ventana está abierta de par en par y el tintero rojo, volcado sobre los informes.', 'Tengo los dedos de la mano izquierda manchados de rojo hasta los nudillos.'));
       G.clue('dedos');
-      await G.think('El tintero rojo está casi vacío y el plumín, doblado. Faltan tres pliegos de papel de cartas.');
+      await G.think(G.two('Me mancho los dedos intentando salvar las hojas. Faltan tres pliegos de papel de cartas.', 'El tintero rojo está casi vacío y el plumín, doblado. Faltan tres pliegos de papel de cartas.'));
       G.sanity(-8);
       G.player.pose = null;
       await G.think('Tengo que acostarme.');
@@ -425,16 +491,51 @@ export function makeChapters() {
         <p class="small">Se ruega a quien reconozca la letra que se presente en Scotland Yard.</p>`);
       G.flag('paper_read', true);
       G.clue('carta');
-      G.objective(G.hasClue('estuche') ? 'Salir.' : 'Mirar debajo de la cama.');
-      await G.think('El jueves 27. Fue la noche que me dormí sobre el escritorio.');
+      hooks.c3bObjective(G);
+      await G.think(G.two('El jueves 27. La noche que la ventana amaneció abierta.', 'El jueves 27. Fue la noche que me dormí sobre el escritorio.'));
       await G.think('"Jack the Ripper". Mañana lo dirán en todas las tabernas de Londres.');
       G.audio.whisper(2, 0.14);
-      await G.voice('Jack.');
+      if (G.second()) await G.voice('Jack.');
+      await G.think('Esa letra. La he visto antes, en alguna parte. En el escritorio tengo letras de todos.');
       G.sanity(-6);
       if (G.flag('accused')) await G.think('"Lo de Leather Apron me hizo mucha gracia." Brennan sigue sin poder levantarse de la cama.');
     },
 
+    // what the room still asks before Thomas goes out on the 1st of October
+    c3bObjective(G) {
+      const left = [!G.hasClue('letra') && 'comparar la letra de la carta con las del escritorio', !G.hasClue('estuche') && 'mirar debajo de la cama'].filter(Boolean);
+      G.objective(left.length ? `${left.join('; ')}.`.replace(/^./, (m) => m.toUpperCase()) : 'Salir.');
+    },
+
+    // the letter's hand against every hand on the desk; the tell is the long s of old prescriptions
+    async compareHands(G) {
+      const hands = () => G.doc(`<h3>Una carta y cuatro letras</h3>
+        <p class="small">La carta, tal como la publica el Daily News:</p>
+        <p class="red">"Dear Boſs, I keep on hearing the police have caught me but they wont fix me juſt yet..."</p>
+        <p class="small">La nota de Madame Wexley:</p><p class="hand">"Los muertos piden hablar con usted. No suelen pedir a nadie por su nombre..."</p>
+        <p class="small">Un informe del sargento Pike, con mis correcciones en rojo:</p><p class="hand">"Ronda sin novedad. El agente Neil señala que las farolas de Buck's Row siguen sin gas desde el sábado..."</p>
+        <p class="small">La etiqueta del láudano, de puño y letra del doctor Greaves:</p><p class="hand">"Tinctura opii. Veinte gotas al acoſtarſe, nunca más de treinta. — L. G."</p>
+        <p class="small">El recibo del desolladero de Barber, de Silas Brennan:</p><p class="hand">"X — su marca"</p>
+        ${G.two('', '<p class="small">Mis apuntes de anatomía, cuarto curso, 1878:</p><p class="hand">"Carótida: corre junto a la tráquea. Se ſecciona de izquierda a derecha, de un ſolo corte..."</p>')}`);
+      await hands();
+      await G.think('¿De quién es la mano que escribió la carta?');
+      const names = ['Madame Wexley.', 'Pike.', 'Greaves.', 'Brennan.', ...(G.second() ? ['Mía.'] : []), 'Mirar otra vez las letras.'];
+      for (;;) {
+        const pick = names[await G.choice(names)];
+        if (pick === 'Mirar otra vez las letras.') { await hands(); continue; }
+        if (pick === 'Greaves.' || pick === 'Mía.') break;
+        await G.think({ 'Madame Wexley.': 'Redonda, de colegio de monjas, y la s le sale corta. No es la suya.',
+          'Pike.': 'Pike escribe la s corta, como todos los que aprendieron en la escuela de la parroquia.',
+          'Brennan.': 'Brennan no sabe escribir. Firma con una cruz.' }[pick]);
+      }
+      G.clue('letra');
+      await G.think('La ſ larga: "Boſs", "juſt". Así escriben las recetas los médicos viejos. Así escribe Greaves.');
+      if (G.second()) await G.think('Y así escribía yo en cuarto, copiando sus recetas para aprender. La mano de la carta es la de mis apuntes.');
+      hooks.c3bObjective(G);
+    },
+
     async leaveRoomC3b(G) {
+      if (!G.hasClue('letra')) { await G.think('Antes, la carta. Esa letra la he visto antes, y en el escritorio tengo letras de todos.'); return; }
       if (!G.hasClue('estuche')) { await G.think('Antes... hay algo debajo de la cama que no quiero mirar. Tengo que mirarlo.'); return; }
       await G.fade(1, 1200);
       await G.chapter('c4');
@@ -511,7 +612,7 @@ export function makeChapters() {
 
     async finaleIntro(G) {
       await G.think('Los silbatos se oyen arriba, en Narrow Street. Aquí abajo solo está el agua.');
-      await G.think('Aquí se ahogó Nat. Aquí contesté.');
+      await G.think(G.flag('answered1866') ? 'Aquí se ahogó Nat. Aquí contesté.' : 'Aquí se ahogó Nat. Aquí no contesté. Eso he creído siempre.');
       await G.think('Tengo que pensar con orden, como en cualquier caso.');
       G.flag('awake', true);
       G.shake(4);
@@ -534,9 +635,12 @@ export function makeChapters() {
       G.cinema(true);
       G.audio.setBeds({ river: 0.5, drone: 0.7, heart: 0.5 }, 4);
       G.mad(0.45);
+      if (G.flag('sospecha_pike') || G.flag('sospecha_greaves') || G.flag('accused')) await G.think('Busqué en Brennan, en Greaves, en Pike. Busqué en todos menos en el agua.');
       await G.think('Ya lo sé. Lo sé desde Buck\'s Row.');
       await G.voice('Thomas.');
       await G.choice(['Responder.', 'No responder.']);
+      // the boy who kept quiet in 1866 learns what his silence was worth
+      if (!G.flag('answered1866')) await G.voice('La primera vez callaste, Tommy. No hacía falta que contestaras. Ya estaba dentro.');
       await G.voice('Tommy. Mírame.');
       await G.choice(['No responder.', 'No responder.', 'No responder.']);
       G.mad(0.7);
@@ -589,6 +693,7 @@ export function makeChapters() {
       w.talking = true;
       await G.say('Wren', 'Le buscan todos: Pike, los de la City y los vecinos con palos.');
       await G.say('Wren', 'Ya sabía yo que vendría por aquí. Huele usted al Ditch más que nunca.');
+      if (G.flag('wren_paid')) await G.say('Wren', 'Tenga su penique. No lo quiero: está frío.');
       await G.say('Wren', '¿Cómo se llama usted, señor? Su nombre de verdad.');
       w.talking = false;
       G.game.ui.hideDialogue();
@@ -596,7 +701,8 @@ export function makeChapters() {
       await G.nameEntry('¿Cómo se llama usted?', 'Jack');
       G.audio.sting(0.3);
       w.talking = true;
-      await G.say('Wren', 'No... No, señor. Usted antes se llamaba de otra manera.');
+      // enough of him left, and she says his name for him
+      await G.say('Wren', G.state.sanity >= 40 ? 'No... Usted se llamaba Thomas, señor. Acuérdese.' : 'No... No, señor. Usted antes se llamaba de otra manera.');
       w.talking = false;
       w.walkTo(2100, { speed: 240 });
       G.zoom(1);
@@ -616,6 +722,7 @@ export function makeChapters() {
       await G.card('', 'Yours truly, Jack the Ripper', "Don't mind me giving the trade name.", 6000);
       await G.card('', '', 'El 9 de noviembre de 1888, Mary Jane Kelly fue asesinada en su habitación del número 13 de Miller\'s Court. Tenía unos veinticinco años. Esa noche la oyeron cantar.', 7000);
       await G.card('', '', 'Fue la última de las cinco víctimas canónicas. El asesino nunca fue identificado.', 5200);
+      await G.card('', '', G.flag('accused') ? 'Silas Brennan no volvió a andar sin bastón. Nadie le pidió perdón.' : 'Silas Brennan declaró en la investigación por Mary Ann Nichols. Nadie volvió a preguntarle nada.', 4600);
       await G.card('', '', 'Nadie volvió a ver al inspector Thomas Ashgrove.', 4600);
       await G.card('', '', 'El Black Ditch sigue corriendo bajo el East End.', 4600);
       await G.card('', 'El Huésped', 'Fin', 5200);

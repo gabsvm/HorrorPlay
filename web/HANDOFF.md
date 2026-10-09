@@ -127,6 +127,16 @@ Game is in `src/engine/game.js`.
   clue, tipOnce, and others.
 
 Story:
+- Two readings (see STORY_BIBLE "Dos lecturas"): `G.two(first, second)` and `G.second()` pick the
+  line; clues may have `text2` and `truth2`; `flags.second` is set by the menu's "Segunda lectura",
+  unlocked by `Game.markRead()` when the game is finished. `flags.answered1866` records the prologue.
+- Puzzles: `chapterHooks.beats` (Buck's Row, via Pike), `raps` + `ui.knockPuzzle` (séance table,
+  needs the board under the star chart), `compareHands` (room desk, ch. III). Each has a FAST path.
+- "¿Qué hago ahora?" in the notebook: `game.hint()` (objective, then the pair of clues that fit or
+  the scene's `hint(G)` with everything shown).
+- Haptics: `src/engine/haptics.js` `buzz()`, on stings, the heart, thuds, raps, shakes; Vibration
+  option; VIBRATE permission in the manifest.
+- Playthroughs: `node tools/walk.mjs` (first reading), `walk.mjs second`, `walk.mjs alt`.
 - `src/story/chapters.js` holds the chapter hooks, including the finale on the foreshore stairs.
 - `src/story/data.js` holds the clues and the deductions.
 - `src/story/intro.js` is the new-game intro.

@@ -28,6 +28,7 @@ export class UI {
     });
     $('doc-close').addEventListener('click', () => this._docClose && this._docClose());
     $('nb-close').addEventListener('click', () => this.closeNotebook());
+    $('nb-hint').addEventListener('click', () => this.hint());
     this.selectedClues = [];
     this.el.inv.addEventListener('pointerenter', () => { this.invHover = true; });
     this.el.inv.addEventListener('pointerleave', () => { this.invHover = false; });
@@ -408,10 +409,14 @@ export class UI {
     const { clueList, dedList, profList, profTitle } = this.el;
     document.getElementById('objective').textContent = st.objective || '';
     clueList.innerHTML = '';
+    const second = !!st.flags.second;
     for (const id of st.clues) {
       const c = g.clues[id];
       const li = document.createElement('li');
-      li.innerHTML = `<span class="tag">${c.tag || ''}</span>${c.text}`;
+      // a clue may read differently in the second reading (text2), and carries a note in the other
+      // hand there (truth2); text may depend on the story so far
+      const txt = second && c.text2 ? c.text2 : typeof c.text === 'function' ? c.text(st) : c.text;
+      li.innerHTML = `<span class="tag">${c.tag || ''}</span>${txt}${second && c.truth2 ? `<span class="second">${c.truth2}</span>` : ''}`;
       if (this.selectedClues.includes(id)) li.classList.add('sel');
       if (g.clueExhausted(id)) li.classList.add('used');
       li.addEventListener('click', () => this.pickClue(id));
@@ -419,7 +424,7 @@ export class UI {
     }
     if (!st.clues.length) clueList.innerHTML = '<li>Todavía nada.</li>';
     dedList.innerHTML = '';
-    const awake = !!st.flags.awake;
+    const awake = !!st.flags.awake || second;
     st.deductions.forEach((id, i) => {
       const d = g.deductions.find((x) => x.id === id);
       const li = document.createElement('li');
@@ -434,6 +439,15 @@ export class UI {
     profList.innerHTML = '';
     profTitle.style.display = st.profile.length ? '' : 'none';
     for (const p of st.profile) { const li = document.createElement('li'); li.innerHTML = awake ? `${p} <span class="truth">— T. A.</span>` : p; profList.appendChild(li); }
+  }
+
+  // "What now?": first a nudge, then (asked again with nothing changed) the answer
+  hint() {
+    const text = this.game.hint();
+    const fb = this.el.nbFeedback;
+    fb.className = 'help'; fb.style.color = '';
+    fb.textContent = text;
+    audio.paper();
   }
 
   async pickClue(id) {
@@ -464,6 +478,43 @@ export class UI {
       }
     }
     this.renderNotebook();
+  }
+
+  // ------------------------------------------------------------ the séance raps
+  // raps: [[row, col], ...] as knocked; board: whether Thomas has seen the board that reads them.
+  // Resolves true when the word is spelt, false if he leaves it for later.
+  async knockPuzzle({ raps, answer, board, rows }) {
+    if (window.FAST) { (window.LOG ||= []).push(`[golpes: ${answer}]`); return true; }
+    const box = document.createElement('div');
+    box.id = 'knocks';
+    const dots = (n) => '•'.repeat(n);
+    box.innerHTML = `<div class="doc-paper"><h3>Los golpes</h3>
+      <p class="small">Los apunté en la oscuridad, tal como sonaban: un grupo, una pausa, otro grupo.</p>
+      <div class="raps">${raps.map(([r, c]) => `<span>${dots(r)}&ensp;${dots(c)}</span>`).join('<i>|</i>')}</div>
+      ${board ? `<div class="grid"><b></b>${[1, 2, 3, 4, 5].map((c) => `<b>${c}</b>`).join('')}
+        ${rows.map((row, r) => `<b>${r + 1}</b>${[...row].map((ch) => `<button data-ch="${ch}">${ch}</button>`).join('')}`).join('')}</div>`
+    : '<p class="nogrid">No sé leerlos. En la pared había una tabla de letras: quizá sea la clave.</p>'}
+      <div class="word"></div>
+      <div class="row">${board ? '<button class="close erase">Borrar</button>' : ''}<button class="close leave">Dejarlo</button></div></div>`;
+    document.getElementById('ui').appendChild(box);
+    const word = box.querySelector('.word');
+    let typed = '';
+    const result = await new Promise((done) => {
+      box.querySelector('.leave').addEventListener('click', () => { audio.click(); done(false); });
+      box.querySelector('.erase')?.addEventListener('click', () => { typed = ''; word.textContent = ''; audio.click(); });
+      for (const b of box.querySelectorAll('.grid button')) {
+        b.addEventListener('click', async () => {
+          if (typed.length >= answer.length) return;
+          typed += b.dataset.ch; word.textContent = typed; audio.tick();
+          if (typed.length < answer.length) return;
+          if (typed === answer) { audio.sting(0.2); await wait(900); done(true); return; }
+          word.classList.remove('nope'); void word.offsetWidth; word.classList.add('nope');
+          await wait(700); typed = ''; word.textContent = '';
+        });
+      }
+    });
+    box.remove();
+    return result;
   }
 
   // ------------------------------------------------------------ name entry (the ending)

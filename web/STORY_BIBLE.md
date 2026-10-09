@@ -107,6 +107,35 @@ Cada pista es legítima y tiene una lectura inocente en el momento:
 | Madame Wexley: "Hay alguien detrás de usted" | Teatro de médium | Lo hay: dentro |
 | Durante la persecución, los silbatos se acercan *a ti* | Persigues al asesino | Te persiguen a ti |
 
+### Dos lecturas
+
+**Primera partida.** El jugador veterano espera «el detective es el asesino», así que el juego le ofrece
+otro tópico más tentador: **a Thomas le están tendiendo una trampa**. Alguien entra por su ventana
+mientras duerme, le moja las botas, le vuelca la tinta roja y le roba un bisturí del estuche. Los
+sospechosos razonables son **Pike** (reparte las rondas, lleva bombín y linterna, apunta a qué hora
+llega Thomas y guarda la otra llave de su cuarto) y **Greaves** (tiene sus bisturís, conoce su
+pasado y su letra es la de la carta). En el prólogo el niño **puede callar**, y si calla, la voz de la
+sesión miente al decir que contestó. Las frases que lo delataban (la voz que dicta, la mano
+izquierda manchada, la sangre seca de los guantes) no aparecen.
+
+**Segunda lectura** (se desbloquea al terminar). La misma historia contada como fue: el niño contesta
+aunque elijas callar, la voz dicta la carta, la hoja de rondas lleva la firma de Thomas, el cuaderno
+anota con la otra mano la verdad de cada pista y tacha desde el principio las negaciones.
+
+**El final cobra lo que hiciste.** Si callaste en 1866: «La primera vez callaste. No hacía falta: ya
+estaba dentro.» Si acusaste a Brennan, a Greaves o a Pike, Thomas lo recuerda en la orilla. Si
+conservas cordura, Wren dice su nombre por él; si le pagaste, te devuelve el penique.
+
+### Puzles
+
+1. **Las rondas** (cap. I): con la hoja de rondas, deducir los diez minutos en que nadie veía el
+   portón (Thain alumbró a las 3:30; Cross llegó a las 3:40). La respuesta ingenua, «entre dos pasadas
+   de Neil», es falsa.
+2. **Los golpes** (cap. II): en la oscuridad de la sesión, la mesa golpea en el código de los presos
+   del zar (fila y columna sobre una tabla de 5x5 sin K, clavada bajo la carta astral): HOSPES.
+3. **La letra** (cap. III): la carta «Dear Boss» contra cuatro letras; el rasgo es la ſ larga de las
+   recetas antiguas. Apunta a Greaves. La verdad: Thomas aprendió esa letra copiando sus recetas.
+
 ### El perfil del asesino (mecánica del cuaderno)
 Cada deducción correcta añade un rasgo al **Perfil del sospechoso**: *zurdo, sabe anatomía, conoce las rondas, ronda el río, sabe escribir, tiene acceso a las escenas antes que la policía*. En el capítulo 4, el cuaderno muestra el perfil completo en una página y, en la de enfrente, la ficha de **Thomas Ashgrove**. El jugador hace la deducción final él mismo.
 

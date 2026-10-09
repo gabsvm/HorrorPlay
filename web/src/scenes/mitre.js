@@ -151,7 +151,7 @@ export default {
           G.clue('testigo');
           mitreObjective(G);
           w.talking = false;
-          await G.think('Una linterna de policía. Puede ser uno de los nuestros.');
+          await G.think(G.two('Una linterna de policía. Uno de los nuestros: abrigo oscuro y bombín, como Pike. Como media División H.', 'Una linterna de policía. Como la mía.'));
         } else if (c === 'name') {
           G.flag('watkins_name', true);
           await G.say('Agente Watkins', 'La soltaron de la comisaría de Bishopsgate a la una, cuando se le pasó la borrachera. Dio un nombre: Mary Ann Kelly.');
@@ -173,7 +173,7 @@ export default {
         G.clue('rapido');
         G.objective('Averiguar qué encontró Watkins y si alguien vio algo.');
         const c = await G.choice(['Estaba cerca, en Aldgate.', 'Oí los silbatos.']);
-        if (c === 0) await G.think('Estaba en Aldgate. Eso creo. ¿Qué hacía yo en Aldgate a las dos menos cuarto?');
+        if (c === 0) await G.think(G.two('Estaba en Aldgate. Pike me pidió que revisara las rondas de la City. Eso creo.', 'Estaba en Aldgate. Eso creo. ¿Qué hacía yo en Aldgate a las dos menos cuarto?'));
         else await G.think('No ha sonado ningún silbato. Watkins no ha llegado a tocar el suyo.');
         G.sanity(-5);
         w.x = 600; w.facing = 1;
@@ -214,9 +214,14 @@ export default {
             { id: 'pulso', x: 903, y: 100, r: 55, name: 'La muñeca', act: async (G) => {
               await G.think('Le cojo la muñeca para buscarle el pulso. Es la costumbre.');
               await G.think('Al soltarla, mis guantes se quedan pegados a su piel.');
-              await G.vision('hands');
-              G.red(0.6);
-              await G.think('Me miro los guantes. Están pegajosos. Y la sangre del dorso ya está seca.');
+              if (G.second()) {
+                await G.vision('hands');
+                G.red(0.6);
+                await G.think('Me miro los guantes. Están pegajosos. Y la sangre del dorso ya está seca.');
+              } else {
+                G.red(0.4);
+                await G.think('Me limpio los guantes en el abrigo. No consigo dejar de temblar.');
+              }
               G.clue('guantes');
               G.sanity(-6);
             } },

@@ -186,6 +186,12 @@ export default {
           }
           await G.game.chapterHooks.leaveRoomC1(G);
         } else if (p === 'c3a') {
+          if (G.flag('woke_c3') && !G.hasClue('llave_pike')) {
+            await G.think(G.two('La puerta está cerrada con llave, por dentro. Solo hay otra llave de este cuarto: la que guarda Pike, por si me necesitan de noche.',
+              'Cerrada con llave, por dentro. La otra la guarda Pike. No ha hecho falta que nadie la use.'));
+            G.clue('llave_pike');
+            return;
+          }
           await G.think('Pasan de las tres. No tengo adónde ir a estas horas.');
         } else if (p === 'c3b') {
           if (!G.flag('paper_read')) { await G.think('Hay un periódico bajo la puerta. La señora Pell lo deja ahí cuando no le pago a tiempo.'); return; }
@@ -202,7 +208,7 @@ export default {
       act: async (G) => {
         G.player.pose = 'kneel';
         await G.think('Están empapadas, y tienen barro negro hasta los cordones. Huelen a río.');
-        await G.think('Me acosté a las once. No recuerdo haber salido.');
+        await G.think(G.two('Anoche las dejé secas, aquí mismo, junto a la puerta.', 'Me acosté a las once. No recuerdo haber salido.'));
         G.clue('botas');
         G.player.pose = null;
         await G.think('Me las pongo. Están frías por dentro.');
@@ -227,7 +233,7 @@ export default {
         G.flag('lantern_taken', true);
         G.audio.match();
         G.player.lanternOn = true;
-        await G.think('La linterna del servicio. La mecha está quemada, como si la hubiera tenido encendida toda la noche.');
+        await G.think(G.two('La linterna del servicio. Está tibia y la mecha, quemada. Yo no la encendí.', 'La linterna del servicio. La mecha está quemada, como si la hubiera tenido encendida toda la noche.'));
       },
     },
     {
@@ -255,10 +261,11 @@ export default {
           G.player.pose = null;
           G.clue('estuche');
           G.sanity(-4);
-          if (G.flag('paper_read')) G.objective('Salir.');
+          if (G.flag('paper_read')) G.game.chapterHooks.c3bObjective(G);
           return;
         }
-        await G.think('Las sábanas están revueltas y hay barro en el borde del colchón.');
+        await G.think(G.two('Hay barro en las tablas, en pisadas que van de la ventana a la cama y se paran ahí. Alguien ha estado de pie a mi lado mientras dormía.',
+          'Las sábanas están revueltas y hay barro en el borde del colchón.'));
       },
     },
     {
@@ -279,7 +286,14 @@ export default {
       id: 'window', name: 'Ventana', rect: [970, 170, 200, 270], walk: 1060, face: -1,
       act: async (G) => {
         const p = phase(G);
-        if (p === 'c1') await G.think('Thrawl Street bajo la lluvia. Abajo, la cerería. Más allá, el olor del Ditch.');
+        if (p === 'c1') {
+          if (!G.hasClue('ventana')) {
+            await G.think(G.two('La ventana está entornada y hay barro negro en el alféizar. Anoche la cerré. Estoy seguro de que la cerré.',
+              'Entornada, con barro en el alféizar. Por aquí salgo cuando no quiero que la señora Pell me oiga en la escalera.'));
+            G.clue('ventana'); G.sanity(-2);
+          }
+          await G.think('Thrawl Street bajo la lluvia. Abajo, la cerería. Más allá, el olor del Ditch.');
+        }
         else if (p === 'c3a') await G.think('No pasa nadie. El cristal está empañado por dentro, como si alguien hubiera estado respirando contra él.');
         else await G.think('Unos chicos vocean el periódico en la esquina. Gritan un nombre que no entiendo.');
       },
@@ -295,7 +309,10 @@ export default {
           else await G.think('Informes atrasados. Robos, borracheras, una mujer que se cayó al canal.');
         } else if (p === 'c3a') {
           if (!G.flag('woke_c3')) await G.game.chapterHooks.writeC3a(G);
-          else await G.think('El informe está terminado y la letra es mía, pero no recuerdo haber escrito las últimas páginas. Falta papel de cartas.');
+          else await G.think(G.two('El informe está terminado. Las últimas páginas tienen mi letra, o una muy parecida, y no recuerdo haberlas escrito. Falta papel de cartas.',
+            'El informe está terminado y la letra es mía, pero no recuerdo haber escrito las últimas páginas. Falta papel de cartas.'));
+        } else if (G.flag('paper_read') && !G.hasClue('letra')) {
+          await G.game.chapterHooks.compareHands(G);
         } else {
           await G.think('El tintero rojo está casi vacío y el plumín, doblado.');
         }

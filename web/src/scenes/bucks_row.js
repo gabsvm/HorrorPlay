@@ -172,6 +172,7 @@ export default {
         if (!G.flag('pike_polly')) opts.push(['¿Quién era ella?', 'polly']);
         if (!G.flag('pike_notes') && G.flag('pike_polly')) opts.push(['¿Qué apunta en esa libreta, Pike?', 'notes']);
         if (G.hasClue('zurdo') && !G.flag('knackers_lead')) opts.push(['¿Quién trabaja de noche por aquí?', 'lead']);
+        if (G.flag('neil_times') && !G.hasClue('ronda')) opts.push(['La hoja de rondas de esta noche.', 'beats']);
         opts.push(['Nada más.', 'bye']);
         const c = opts[await G.choice(opts.map((o) => o[0]))][1];
         pike.talking = true;
@@ -195,6 +196,10 @@ export default {
           await G.say('Pike', 'Usted ha llegado a las cuatro y doce. Le mandé llamar a las cuatro.');
           pike.talking = false;
           await G.think('Doce minutos desde Thrawl Street. Debí de venir corriendo.');
+        } else if (c === 'beats') {
+          await G.say('Pike', 'Aquí la tiene, señor. Las horas de todos, y lo que declaran.');
+          pike.talking = false;
+          await G.game.chapterHooks.beats(G);
         } else if (c === 'lead') {
           G.flag('knackers_lead', true);
           G.objective('Ir al desolladero de Winthrop Street, hacia el oeste.');
@@ -213,9 +218,11 @@ export default {
         if (!G.hasClue('ronda')) {
           await G.say('Neil', 'Pasé por aquí a las tres y cuarto, señor, igual que todas las noches. No había nadie, y la calle estaba vacía de punta a punta.');
           await G.say('Neil', 'A las tres cuarenta y cinco vi al carretero haciéndome señas. Media hora, nada más. En media hora.');
-          G.clue('ronda');
           neil.talking = false;
-          await G.think('Quien lo hizo sabía cuánto tarda Neil en hacer la ronda.');
+          if (!G.flag('neil_times')) {
+            G.flag('neil_times', true);
+            await G.think('Media hora entre dos pasadas. Pero Neil no es el único que mira esta calle. Pike tiene la hoja de rondas.');
+          }
         } else {
           await G.say('Neil', 'Llevo seis años en esta ronda, señor. Nunca había tenido tanto miedo de volver a pasar por la misma esquina.');
         }

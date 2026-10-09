@@ -43,7 +43,7 @@ globalThis.clearTimeout = () => {};
 const { audio } = await import('../src/engine/audio.js');
 audio.init();
 for (const b of ['rain', 'wind', 'river', 'room', 'crowd', 'drone', 'heart']) audio.bed(b, 0.4, 1);
-const ALL = ['step', 'bell', 'heartbeat', 'whisper', 'whistle', 'sting', 'click', 'paper', 'pen', 'door', 'knock', 'drip', 'splash', 'thud', 'match', 'tick', 'pickup', 'bookOpen', 'bookClose', 'latch', 'knife'];
+const ALL = ['step', 'rap', 'bell', 'heartbeat', 'whisper', 'whistle', 'sting', 'click', 'paper', 'pen', 'door', 'knock', 'drip', 'splash', 'thud', 'match', 'tick', 'pickup', 'bookOpen', 'bookClose', 'latch', 'knife'];
 for (const f of ALL) audio[f]();
 await new Promise((r) => r()); for (let i = 0; i < 30; i++) await Promise.resolve();
 if (Object.keys(audio.samples).length < 20) problems.push(`solo ${Object.keys(audio.samples).length} grabaciones cargadas`);

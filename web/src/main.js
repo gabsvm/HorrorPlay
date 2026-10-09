@@ -1,4 +1,4 @@
-import { prefs, savePrefs, cycle, labelOf, VOLUMES, SPEEDS, QUALITIES } from './engine/prefs.js';
+import { prefs, savePrefs, cycle, labelOf, VOLUMES, SPEEDS, QUALITIES, TOGGLES } from './engine/prefs.js';
 import { Game, freshState } from './engine/game.js';
 import { audio } from './engine/audio.js';
 import { ITEMS, CLUES, DEDUCTIONS } from './story/data.js';
@@ -38,6 +38,7 @@ function optionsMenu(back) {
     { label: `Volumen: ${labelOf(VOLUMES, prefs.volume)}`, action: () => { prefs.volume = cycle(VOLUMES, prefs.volume); audio.setVolume(prefs.volume); savePrefs(); render(); } },
     { label: `Texto: ${labelOf(SPEEDS, prefs.text)}`, action: () => { prefs.text = cycle(SPEEDS, prefs.text); savePrefs(); render(); } },
     { label: `Calidad: ${labelOf(QUALITIES, prefs.quality)}`, action: () => { prefs.quality = cycle(QUALITIES, prefs.quality); savePrefs(); render(); } },
+    { label: `Vibración: ${labelOf(TOGGLES, prefs.vibrate)}`, action: () => { prefs.vibrate = cycle(TOGGLES, prefs.vibrate); savePrefs(); render(); if (prefs.vibrate && navigator.vibrate) navigator.vibrate(40); } },
     { label: 'Volver', action: back },
   ]);
   render();
@@ -75,6 +76,8 @@ function mainMenu() {
   if (resumePoint && resumePoint.state && resumePoint.state.scene) items.push({ label: 'Continuar', action: () => resumeGame(resumePoint) });
   else if (saved && saved.chapter) items.push({ label: 'Continuar', action: () => begin(saved.chapter, Game.chapterSnapshot(saved.chapter) || saved) });
   items.push({ label: 'Nueva partida', action: () => { Game.clearSave(); game.introNext = true; begin('prologue'); } });
+  // once the game has been finished: the same story again, read the way it happened
+  if (Game.read()) items.push({ label: 'Segunda lectura', action: () => { Game.clearSave(); game.introNext = true; const st = freshState(); st.flags.second = true; begin('prologue', st); } });
   if (unlocked.length > 1) items.push({ label: 'Capítulos', action: () => chapterMenu() });
   items.push({ label: 'Opciones', action: () => optionsMenu(() => mainMenu()) });
   items.push({ label: 'Créditos', action: () => credits() });
@@ -132,6 +135,7 @@ window.__appResume = () => { if (audio.ctx) audio.ctx.resume(); };
 
 game.finish = () => {
   Game.clearSave();
+  Game.markRead();
   mainMenu();
 };
 

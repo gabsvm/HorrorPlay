@@ -27,6 +27,7 @@ export async function run({ log = true } = {}) {
     game.state = (await import('../src/engine/game.js')).freshState();
     await game.startChapter('prologue'); await settle();
     await act('boat'); await act('water', null, [0]); await settle();
+    need(game.state.flags.answered1866, 'El niño contestó');
     expectScene('room');
     // only what the door asks for: no desk
     await act('coat'); await act('boots'); await act('lantern');

@@ -5,8 +5,9 @@ export const VOLUMES = [[1, 'Alto'], [0.65, 'Medio'], [0.35, 'Bajo'], [0, 'Silen
 export const SPEEDS = [[1, 'Normal'], [0.5, 'Rápido'], [0, 'Instantáneo'], [1.6, 'Lento']];
 
 export const QUALITIES = [['auto', 'Auto'], ['alta', 'Alta'], ['baja', 'Baja']];
+export const TOGGLES = [[true, 'Sí'], [false, 'No']];
 
-export const prefs = { volume: 1, text: 1, quality: 'auto' };
+export const prefs = { volume: 1, text: 1, quality: 'auto', vibrate: true };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch { /* storage unavailable */ }
 
 export function savePrefs() {
