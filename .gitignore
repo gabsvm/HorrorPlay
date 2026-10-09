@@ -24,3 +24,4 @@ web/assets-src/
 web/dist/
 web/android/debug.keystore
 __pycache__/
+node_modules/
