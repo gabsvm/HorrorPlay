@@ -1,11 +1,12 @@
 """Records the voice script: every line of tools/voices/script.json in English, in its character's voice.
-usage: <tts venv>/python web/tools/voices/generate.py [--only Pike,Wren] [--force]
+usage: <tts venv>/python web/tools/voices/generate.py [--only Pike,Wren] [--ids a1b2c3d4,...] [--take N] [--best N] [--force]
 Needs the local TTS environment (see tools/voices/README.md): Kokoro reads each character's reference
 clip from the voice in cast.json (a British voice or a blend of two, pitched by resampling), and
 Chatterbox clones that reference and performs the line. Writes assets/voices/<id>.ogg (Opus) and
 assets/voices/index.json; a line already recorded with the same English and the same casting is kept.
 """
 import hashlib, json, os, re, sys
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, soundfile as sf, torch, torchaudio
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -18,6 +19,9 @@ REF_TEXT = ("It was a cold night in October, and the fog had come up from the ri
 
 args = sys.argv[1:]
 only = set(args[args.index('--only') + 1].split(',')) if '--only' in args else None
+ids = set(args[args.index('--ids') + 1].split(',')) if '--ids' in args else None
+take = int(args[args.index('--take') + 1]) if '--take' in args else 0   # another performance of the same line
+best = int(args[args.index('--best') + 1]) if '--best' in args else 1   # record N takes, keep the one heard best
 force = '--force' in args
 script = json.load(open(os.path.join(HERE, 'script.json'), encoding='utf-8'))
 cast = json.load(open(os.path.join(HERE, 'cast.json'), encoding='utf-8'))
@@ -68,15 +72,28 @@ def tidy(wav):
     a = np.abs(wav)
     win = int(SR * 0.02)
     env = np.convolve(a, np.ones(win) / win, mode='same')
-    on = np.where(env > 0.01)[0]
+    on = np.where(env > 0.06 * env.max())[0]
     if len(on): wav = wav[max(0, on[0] - int(SR * 0.06)): min(len(wav), on[-1] + int(SR * 0.18))]
     rms = np.sqrt(np.mean(wav ** 2)) or 1
     wav = wav * min(0.1 / rms, 0.95 / (np.max(np.abs(wav)) or 1))
     return wav.astype(np.float32)
 
 
+_ear = None
+def heard(wav, text):
+    """How much of the line a listener (faster-whisper) makes out of the take, 0..1."""
+    global _ear
+    import difflib
+    from scipy.signal import resample_poly
+    from faster_whisper import WhisperModel
+    if _ear is None: _ear = WhisperModel('small.en', device='cpu', compute_type='int8', cpu_threads=8)
+    words = lambda t: re.sub(r"[^a-z0-9' ]", ' ', t.lower().replace('ſ', 's')).split()
+    segs, _ = _ear.transcribe(resample_poly(wav, 2, 3).astype(np.float32), beam_size=5, language='en')
+    return difflib.SequenceMatcher(None, words(text), words(' '.join(x.text for x in segs))).ratio()
+
+
 model = None
-todo = [l for l in script if l['en'] and (not only or l['speaker'] in only)]
+todo = [l for l in script if l['en'] and (not only or l['speaker'] in only) and (not ids or l['id'] in ids)]
 done = 0
 for line in todo:
     if line['en'].strip('. ') == '':
@@ -84,16 +101,22 @@ for line in todo:
     r = role(line['speaker'])
     stamp = hashlib.sha1(json.dumps([line['en'], r], sort_keys=True).encode()).hexdigest()[:12]
     path = os.path.join(OUT, line['id'] + '.ogg')
-    if not force and index.get(line['id']) == stamp and os.path.exists(path):
+    if not force and not ids and index.get(line['id']) == stamp and os.path.exists(path):
         continue
     if model is None:
         from chatterbox.tts import ChatterboxTTS
         model = ChatterboxTTS.from_pretrained(device='cuda')
     exag, cfg = direction(line, r)
-    torch.manual_seed(int(line['id'], 16) & 0x7fffffff)
-    wav = model.generate(re.sub(r'\s+', ' ', line['en']), audio_prompt_path=reference(r), exaggeration=exag, cfg_weight=cfg)
-    wav = torchaudio.functional.resample(wav, model.sr, SR)[0].numpy()
-    sf.write(path, tidy(wav), SR, format='OGG', subtype='OPUS')
+    takes = []
+    for k in range(best):
+        torch.manual_seed((int(line['id'], 16) + 7919 * (take + k)) & 0x7fffffff)
+        wav = model.generate(re.sub(r'\s+', ' ', line.get('say', line['en'])), audio_prompt_path=reference(r), exaggeration=exag, cfg_weight=cfg)
+        wav = tidy(torchaudio.functional.resample(wav, model.sr, SR)[0].numpy())
+        takes.append((heard(wav, line['en']) if best > 1 else 1, k, wav))
+        if takes[-1][0] >= 0.97: break
+    score, k, wav = max(takes, key=lambda t: t[0])
+    if best > 1: print(f"   take {take + k} heard {score:.2f}", flush=True)
+    sf.write(path, wav, SR, format='OGG', subtype='OPUS')
     index[line['id']] = stamp
     done += 1
     if done % 10 == 0:

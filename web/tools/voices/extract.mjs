@@ -21,6 +21,8 @@ const files = [];
   }
 })(SRC);
 
+// how a line is to be pronounced, where spelling it out reads it wrong (initials, odd names)
+const say = fs.existsSync(path.join(HERE, 'say.json')) ? JSON.parse(fs.readFileSync(path.join(HERE, 'say.json'), 'utf8')) : {};
 const en = fs.existsSync(path.join(HERE, 'en.json')) ? JSON.parse(fs.readFileSync(path.join(HERE, 'en.json'), 'utf8')) : {};
 const lines = new Map();
 const skipped = [];
@@ -74,7 +76,7 @@ function add(name, style, t, at) {
   const es = plainOf(t);
   if (!es) return;
   const id = lineKey(name, style, t);
-  if (!lines.has(id)) lines.set(id, { id, speaker: speakerOf(name, style), es, en: en[id] || '', at });
+  if (!lines.has(id)) lines.set(id, { id, speaker: speakerOf(name, style), es, en: en[id] || '', ...(say[id] ? { say: say[id] } : {}), at });
 }
 const prop = (obj, k) => obj && obj.type === 'ObjectExpression' && obj.properties.find((p) => p.key && (p.key.name === k || p.key.value === k));
 
