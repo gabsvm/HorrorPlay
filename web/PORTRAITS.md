@@ -1,18 +1,13 @@
 # Retratos de diálogo: descripciones para generar con IA
 
-Cada personaje que habla necesita **tres imágenes de la misma pintura**:
+Cada personaje que habla tiene una pintura fija, `<id>.png`. Opcionalmente puede tener dos ediciones
+de la misma imagen, `<id>_talk.png` (boca entreabierta) y `<id>_blink.png` (ojos cerrados): si existen,
+el juego mueve la boca al hablar y parpadea; si no, el retrato queda quieto. Las frases para pedirlas
+están al final.
 
-| Archivo | Qué es |
-|---|---|
-| `<id>.png` | Base: boca cerrada, ojos abiertos |
-| `<id>_talk.png` | La misma imagen, con la boca entreabierta, como hablando |
-| `<id>_blink.png` | La misma imagen, con los ojos cerrados |
-
-Genera primero la base con el **estilo común** más la descripción del personaje. Después, en la
-misma conversación, pide las otras dos como edición de esa imagen (las frases están al final).
-Guárdalas en `web/assets/portraits/` con el nombre de la tabla. Cuadradas; si salen de 1024 px,
-mejor. El juego las recorta, las reduce a su cuadrícula de 72 px con su paleta, alterna la boca
-mientras el personaje habla, parpadea y hace la versión de «la voz» de Thomas.
+Guárdalas en una carpeta y ejecuta `python tools/portraits.py <carpeta>`: las recorta, las reduce a 144
+px (el juego las redibuja en su cuadrícula de 72 px con su paleta) y las añade a `assets/portraits/`.
+Quien no tenga retrato pintado sale con el busto dibujado por código.
 
 Las descripciones están en inglés porque los generadores de imágenes responden mejor así.
 
