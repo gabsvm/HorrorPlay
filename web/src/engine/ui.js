@@ -4,6 +4,7 @@ import { prefs } from './prefs.js';
 import { pixelize } from '../art/pixel.js';
 import { Actor } from './actor.js';
 import { evaluate as theories } from '../story/theories.js';
+import { morphFrames } from './signature.js';
 
 const $ = (id) => document.getElementById(id);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -623,15 +624,13 @@ export class UI {
     nameInput.blur();
     let text = nameInput.value;
     if (morph) {
-      // slowly: the hand finishes the strokes itself
-      await wait(600);
-      let cur = [...text];
-      while (cur.length > morph.length) { cur.pop(); nameInput.value = cur.join(''); audio.pen(); await wait(140); }
-      for (let k = 0; k < morph.length; k++) {
-        cur[k] = morph[k];
-        nameInput.value = cur.join('');
+      // slowly: the hand finishes the strokes itself (the phone's keyboard has time to go away first)
+      await wait(700);
+      const frames = morphFrames(text, morph), wearDown = frames.length - [...morph].length;
+      for (let i = 0; i < frames.length; i++) {
+        nameInput.value = frames[i];
         audio.pen();
-        await wait(520);
+        await wait(i < wearDown ? 140 : 520);
       }
       text = morph;
       await wait(1400);

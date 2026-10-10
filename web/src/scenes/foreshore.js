@@ -286,6 +286,19 @@ export default {
 
   async enter(G) { this.G = G; },
 
+  // the moment the evidence is enough: no speech, he looks at his left hand and the lantern gutters
+  async onDeduce(G) {
+    if (!G.flag('fs_1888') || G.flag('recognized') || !G.game.chapterHooks.finaleReady(G)) return;
+    G.flag('recognized', true);
+    G.player.pose = 'inspect';
+    G.audio.drip(); await G.wait(900);
+    G.player.lanternOn = false; await G.wait(500); G.player.lanternOn = true;
+    G.audio.whisper(1, 0.05);
+    await G.wait(700);
+    G.player.pose = null;
+    G.objective('Ir al agua.');
+  },
+
   hotspots: [
     {
       id: 'boat', name: 'Algo en el barro', verb: 'Recoger', when: (G) => is1866(G) && !G.flag('boat'), rect: [1070, GROUND - 60, 130, 110], walk: 1040, face: 1,

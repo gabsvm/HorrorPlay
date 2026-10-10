@@ -692,25 +692,36 @@ export function makeChapters() {
       await G.say('Pike', 'Traigo tus rondas. Tu firma. No sé aún cuánto hiciste, pero no puedo dejarte marchar.');
       const last = await G.choice(['«Deténgame, Pike».', '«Proteja a Wren. La niña del río».', '(Romper el folio del expediente que me señala)']);
       if (last === 0) {
+        // he lets Pike in, and the arrest begins: one cuff closes before the gap
         G.state.flags.final_intent = 'surrender';
         await G.say('Ashgrove', 'Póngame las esposas antes de que cambie de opinión.');
         await G.say('Pike', 'De acuerdo. Déjame pasar.');
+        G.audio.door();
+        const pike = G.addActor(new Actor('Pike', { x: 110, y: G.scene.groundY, h: 200, hat: 'bowler', coat: '#2c2a26', coatLen: 0.9, cape: true, facing: 1, build: 1.05, moustache: '#3a2a1e', buttons: 'double', hair: '#3a2a1e' }));
+        await pike.walkTo(G.player.x - 120);
+        pike.talking = true; await G.say('Pike', 'Las manos, Thomas.'); pike.talking = false;
+        G.player.pose = 'reach';
+        await G.wait(500);
+        G.audio.latch();   // the first cuff closes
+        G.state.flags.pike_cuff = true;
+        await G.wait(900);
       } else if (last === 1) {
+        // a concrete place, and Pike repeats it back: the warning is received
         G.state.flags.final_intent = 'warn_wren';
-        await G.say('Ashgrove', 'Hay una niña. Wren. Evite que vuelva al río.');
-        await G.say('Pike', 'Lo haré. Tienes mi palabra.');
+        await G.say('Ashgrove', 'Hay una niña. Wren. Duerme en las cajas del desolladero de Barber. Que no vuelva al Ditch.');
+        await G.say('Pike', 'Barber, Winthrop Street. Esta noche. Tienes mi palabra.');
+        G.state.flags.wren_warned = true;
       } else {
+        // the folio that names T. A. is torn in two; each half keeps part of the same signature
         G.state.flags.final_intent = 'destroy_page';
-        G.audio.paper();
-        await G.say('Pike', 'Romperlo no cambia lo que sabemos.');
+        G.audio.paper(); await G.wait(250); G.audio.paper();
+        G.state.flags.file_torn = true;
+        await G.say('Pike', 'Romperlo no cambia lo que sabemos. La enfermera Bell sigue viva, Thomas.');
       }
-      // whatever he chose, the dark comes down: dripping water, a stretch of time gone
-      await G.fade(1, 300);
-      G.audio.drip(); await G.wait(700); G.audio.drip();
-      await G.wait(1400);
+      // whatever he chose, the time goes: the clock jumps, and he comes to by the water
+      await lostTime(G, '22:51', '2:30', { date: '9 de noviembre de 1888' });
       await G.card('', '9 de noviembre', 'Limehouse, 2:30 de la madrugada', 3400);
       G.flag('fs_1888', true);
-      G.date('9 de noviembre de 1888', '2:30');
       G.cinema(false);
       // he comes down the stone stair from Narrow Street onto the foreshore
       await G.goto('foreshore', { x: 30, facing: 1, fade: false });
@@ -726,6 +737,10 @@ export function makeChapters() {
     async finaleIntro(G) {
       G.audio.whistle(0.06, true);   // whistles behind the tide; he stops where he left the boat
       await G.wait(900);
+      const tried = { surrender: 'Llevo una esposa cerrada en la muñeca derecha. La otra cuelga abierta.',
+        warn_wren: 'Se lo dije a Pike: Barber, las cajas. Eso lo recuerdo.',
+        destroy_page: 'Tengo entre los dedos un trozo de papel con la mitad de una firma.' }[G.state.flags.final_intent];
+      if (tried) await G.think(tried);
       await G.think(G.flag('answered1866') ? 'Yo abrí la puerta.' : 'Callé aquella noche. No la siguiente.');
       await G.think('Greaves, Pike, el bisturí, la carta. Un mismo hombre.');
       G.flag('awake', true);
@@ -734,6 +749,8 @@ export function makeChapters() {
       await G.think('Es mi ficha. Encaja demasiado bien.');
       G.objective('En el cuaderno: comparar mi ficha con al menos tres pruebas independientes. Una hipótesis sin prueba no cuenta.');
     },
+
+    finaleReady(G) { return canEnterFinale(G.state).ok; },
 
     async outfall1888(G) {
       G.flag('ditch_glow', true);
@@ -748,18 +765,48 @@ export function makeChapters() {
       G.cinema(true);
       G.audio.setBeds({ river: 0.5, drone: 0.7, heart: 0.5 }, 4);
       G.mad(0.45);
-      if (G.flag('sospecha_pike') || G.flag('sospecha_greaves') || G.flag('accused')) await G.think('Busqué en Brennan, en Greaves, en Pike. Busqué en todos menos en el agua.');
-      await G.think('Mi letra. Mis rondas. Mi bisturí.');
+      if (!G.flag('water_before')) {
+        G.flag('water_before', true);
+        if (G.flag('sospecha_pike') || G.flag('sospecha_greaves') || G.flag('accused')) await G.think('Brennan, Greaves, Pike. A todos los puse delante de mí.');
+        await G.think('Mi letra. Mis rondas. Mi bisturí.');
+      }
       await G.voice('Thomas.');
-      await G.choice(['Responder.', 'No responder.']);
-      if (G.flag('answered1866')) await G.think('Ya lo sabía; no quiero oírlo otra vez.');
-      // he puts a hand over his mouth before he can speak; the hand does not come down
-      G.player.pose = 'clutch';
-      await G.choice(['No decir nada.', 'Cerrar la boca con la mano.']);
-      G.audio.heartbeat(1.2);
-      await G.wait(2600);              // he really does keep quiet, for a few seconds
-      G.mad(0.7);
-      await G.say('Ashgrove', 'Aquí estoy.');   // and his mouth says it anyway: it was already inside
+      // whatever he does, it is already inside (since 1866, or since 1879): no choice here lets it
+      // in, and none keeps it out. What changes is how he meets it.
+      const att = ['answer', 'silent', 'hand', 'unsure'][await G.choice(['Responder.', 'Callar.', 'Taparme la boca.', 'Todavía no estoy seguro.'])];
+      G.state.flags.water_reply_intent = att;
+      if (att === 'unsure') {
+        // he steps back from the edge: the notebook is still open to him
+        G.player.pose = null; G.mad(0.2);
+        G.audio.setBeds({ river: 0.4, drone: 0.4 }, 2);
+        G.cinema(false);
+        await G.think('No. Otra vez el cuaderno. Quiero estar seguro.');
+        return;
+      }
+      G.state.flags.water_resistance = att !== 'answer';
+      if (att === 'answer') {
+        // tired, kneeling first: he says it himself
+        G.player.pose = 'kneel';
+        await G.wait(1200);
+        if (G.flag('answered1866')) await G.think('Ya lo dije una vez.');
+        await G.say('Ashgrove', 'Aquí estoy.');
+        G.audio.sting(0.2);
+      } else if (att === 'silent') {
+        // he really does keep quiet, for long seconds; then his mouth says it without him
+        G.player.pose = 'clutch';
+        for (let i = 0; i < 3; i++) { G.audio.heartbeat(1); await G.wait(1100); }
+        G.mad(0.75); G.flash(0.6);
+        await G.say('Ashgrove', 'Aquí estoy.');
+        await G.think('No lo he dicho yo.');
+      } else {
+        // the hand over the mouth; the words come out between the fingers
+        G.player.pose = 'clutch';
+        G.audio.heartbeat(1.2); G.shake(5);
+        await G.wait(1800);
+        G.mad(0.75);
+        await G.say('Ashgrove', '(Entre los dedos) Aquí estoy.');
+        await G.think('La mano no baja. No es mía.');
+      }
       G.player.pose = 'kneel';
       G.scene.reflection = true;       // he kneels; the man in the water stays standing
       G.audio.sting(0.3);
@@ -794,14 +841,15 @@ export function makeChapters() {
       await G.fade(0, 2500);
       await G.walk(820, { speed: 90 });
       const w = G.actor('Wren');
-      await w.walkTo(1240);
+      const intent = G.state.flags.final_intent;
+      // warned by Pike, she keeps her distance and holds his whistle
+      await w.walkTo(intent === 'warn_wren' ? 1520 : 1240);
       G.face(1);
       w.talking = true;
       await G.say('Wren', '¡Señor! Lo busca la policía. Y los hombres que no son policía.');
-      const intent = G.state.flags.final_intent;
-      if (intent === 'warn_wren') await G.say('Wren', 'Pike me encontró. Me dijo que no volviera al Ditch. Lo intenté.');
-      else if (intent === 'surrender') await G.say('Wren', 'Pike tiene su placa. La recoge y la deja, como si quemara.');
-      else if (intent === 'destroy_page') await G.say('Wren', 'Lleva un papel roto en la manga.');
+      if (intent === 'warn_wren') await G.say('Wren', 'Pike vino a las cajas a buscarme. Me dio su silbato. Dijo que lo tocara si usted se acercaba.');
+      else if (intent === 'surrender') await G.say('Wren', 'Lleva una esposa puesta. Pike va por ahí con la otra, abierta, colgando del cinturón.');
+      else if (intent === 'destroy_page') await G.say('Wren', 'Lleva un papel roto en la manga. Pike tiene la otra mitad.');
       if (G.flag('wren_paid')) await G.say('Wren', 'Su penique. Se ha puesto frío. No lo quiero.');
       await G.say('Wren', 'Dígame su nombre, señor. El que le puso su madre.');
       w.talking = false;
@@ -812,7 +860,12 @@ export function makeChapters() {
       await G.nameEntry('¿Cómo se llama usted?', 'Jack', G.state.flags.signature || 'Thomas Ashgrove');
       G.audio.sting(0.3);
       w.talking = true;
-      await G.say('Wren', G.state.sanity >= 40 ? 'Era Thomas. Puede acordarse.' : 'No era este. Antes tenía otro.');
+      // her last line answers what he did, and how much of him is left to hear it
+      const last = G.state.sanity < 40 ? 'No era este. Antes tenía otro.'
+        : { surrender: 'Era Thomas. Usted quiso que lo detuvieran. Acuérdese de eso.',
+          warn_wren: 'Era Thomas. Usted le dijo a Pike dónde dormía yo. Por eso no me acerco.',
+          destroy_page: 'Era Thomas. Romper papeles no cambia los nombres, señor.' }[intent] || 'Era Thomas. Puede acordarse.';
+      await G.say('Wren', last);
       w.talking = false;
       w.walkTo(2100, { speed: 240 });
       G.zoom(1);
@@ -838,6 +891,9 @@ export function makeChapters() {
         injured: 'Brennan sobrevivió a la turba, pero perdió su trabajo. Nadie rectificó la acusación.',
         protected: 'Brennan sobrevivió sin heridas aquella noche. No volvió a hablar con Thomas.',
       }[brennan], 4600);
+      if (intent === 'destroy_page') await G.card('', '', 'El expediente de 1879 se archivó con un folio roto. La enfermera Bell volvió a declarar.', 4600);
+      else if (intent === 'surrender') await G.card('', '', 'El sargento Pike guardó la esposa abierta en un cajón de la comisaría de Commercial Street.', 4600);
+      else if (intent === 'warn_wren') await G.card('', '', 'Wren no volvió a dormir junto al Ditch.', 4600);
       await G.card('', '', 'Nadie volvió a ver al inspector Thomas Ashgrove.', 4600);
       await G.card('', '', 'El Black Ditch sigue corriendo bajo el East End.', 4600);
       await G.card('', 'El Huésped', 'Fin', 5200);
