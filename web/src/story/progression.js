@@ -119,3 +119,18 @@ export function currentGate(s) {
   if (sc === 'foreshore' && flag(s, 'awake')) return canEnterFinale(s);
   return null;
 }
+
+// The deductions that would move the current gate, in the order the hint should offer them. Only
+// the notebook gates have any (chapter I's conclusion, the finale's sources); suspecting Brennan
+// comes last, because it is never required.
+export function gateDeductions(s) {
+  const sc = s.scene;
+  if (s.chapter === 'c1' && (sc === 'bucks_row' || sc === 'knackers') && !flag(s, 'c1_done')) {
+    return canFinishC1(s).ok || C1_CONCLUSIONS.some((d) => ded(s, d)) ? [] : C1_CONCLUSIONS;
+  }
+  if (sc === 'foreshore' && flag(s, 'awake')) {
+    const have = new Set(finalSources(s));
+    return Object.keys(FINAL_SOURCES).filter((d) => FINAL_SOURCES[d] && !have.has(FINAL_SOURCES[d]) && !ded(s, d));
+  }
+  return [];
+}

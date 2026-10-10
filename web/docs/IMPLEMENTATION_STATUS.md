@@ -303,3 +303,48 @@ C:\Dev\HorrorPlay\web\GUION.md: 1500 lines, 358 spoken or thought
 ```
 
 Comprobado en navegador real (localhost, panel del escritorio) durante el trabajo: pestañas del cuaderno y ayuda (Fase 1), tarjetas cortadas, elecciones protegidas y opciones (Fase 2), menú de cierre de Pike (Fase 3), puzle de golpes con ayuda y Wexley (Fase 5), marcas forenses y métricas (Fase 11). No comprobado en navegador: el resto de escenas nuevas de las fases 4, 6, 7, 8 y 9 (solo pruebas automáticas). Android: sin probar en el teléfono.
+
+## Pasada de calidad post-implementación (auditoría del 10/10/2026)
+
+Solo las tres correcciones priorizadas por la auditoría; sin texto nuevo, sin tocar guardados ni IDs. El sistema de teorías y el ritmo quedan para un pase guiado por playtests.
+
+| Hallazgo | Corrección | Prueba |
+|---|---|---|
+| P1 · La ayuda podía proponer una deducción opcional cuando el bloqueo era otro (p. ej. el peine en Hanbury) | `Game.hint()` atiende primero a `currentGate`: si falta algo del cuaderno, ofrece solo una deducción que lo cumpla (`gateDeductions` en `story/progression.js`: conclusiones del I con Brennan la última; en el final, fuentes nuevas y nunca el barro); si falta otra cosa, lo dice y a la segunda marca lo que se puede tocar; las deducciones opcionales solo cuando el sitio no exige nada | escenario `hint` (Hanbury con `d_delantal` disponible y el peine pendiente; C1 con el barro antes que Brennan; final con `f_barro` y una hipótesis disponibles); unit `gateDeductions`. Con el código anterior `hint` falla: «Junta «Un delantal de cuero mojado…» con «Silas Brennan afila…»» |
+| P1 · Las visiones ignoraban «Movimiento: Reducido» | `UI.vision()`: con movimiento reducido, una sola imagen fija con fundido (opacidad 0 → 0,7 en 400 ms, 1,3 s, fundido de salida) sin parpadeos ni opacidades aleatorias; `G.vision()` no da golpe de cámara (`punch` 0) | escenario `calm`; con el código anterior falla (tres opacidades aleatorias) |
+| P2 · La barra de cordura usaba 55/25 y las bandas 65/35 | El color de la barra es la banda de `perceptionBand` (verde ≥65, ocre 36–64, rojo ≤35) | escenario `calm` (65/64/60/36/35/30) |
+
+```
+$ node web/tools/test-all.mjs
+PASS  unit                         0.1s
+PASS  smoke                        2.9s
+PASS  audio                        0.1s
+PASS  scenario c1-minimal          0.5s
+PASS  scenario calm                2.8s
+PASS  scenario chapter3            3.1s
+PASS  scenario comb-pike           2.0s
+PASS  scenario compat              0.4s
+PASS  scenario feedback            0.6s
+PASS  scenario finale              17.9s
+PASS  scenario hint                0.4s
+PASS  scenario integrity           0.3s
+PASS  scenario mob                 2.4s
+PASS  scenario notebook            0.3s
+PASS  scenario resume              3.2s
+PASS  scenario sanity              26.9s
+PASS  scenario seance              2.1s
+PASS  scenario second-reading      1.4s
+PASS  walk                         4.4s
+PASS  walk second                  4.4s
+PASS  walk alt                     0.6s
+$ node web/tools/unit.mjs
+37 pruebas bien, 0 mal
+$ node web/tools/script/export.mjs
+C:\Dev\HorrorPlay\web\GUION.md: 1500 lines, 358 spoken or thought
+```
+
+(GUION.md no cambia: la pasada no toca texto.) C1, C2, final y guardados antiguos: escenarios `c1-minimal`, `comb-pike`, `seance`, `finale`, `compat`, `resume` de la lista anterior.
+
+Comprobado en navegador real (Chrome headless en escritorio, 1280×720, `localhost:5317/?chapter=c2`, clics reales por CDP): en Hanbury con el delantal visto, Greaves hablado, `d_delantal` disponible y el peine sin decidir, «¿Qué hago ahora?» dice la primera vez «…Antes de seguir me falta mirar lo que hay junto a la valla, a los pies de Annie» y la segunda «Me falta mirar lo que hay junto a la valla…», cierra el cuaderno y marca los puntos; ninguna dice «Junta». Visión con movimiento reducido: un solo tramo visible, opacidad máxima 0,70, subida y bajada graduales en ≈1,8 s, `punch` 0; sin reducir: tres destellos, `punch` 1. Barra: 65 y 100 verde, 64/60/36 ocre, 35/30/10 rojo. Sin mensajes de consola. No es un playtest: diálogos y opciones del resto del juego no se recorrieron a mano, y Android sigue sin probar en el teléfono.
+
+Observado, sin cambiar: la segunda ayuda cierra el cuaderno para mostrar los puntos, así que su frase queda en el cuaderno y se lee al volver a abrirlo (comportamiento anterior a esta pasada).

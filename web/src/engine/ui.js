@@ -5,7 +5,7 @@ import { pixelize } from '../art/pixel.js';
 import { Actor } from './actor.js';
 import { evaluate as theories } from '../story/theories.js';
 import { morphFrames } from './signature.js';
-import { perception } from '../story/perception.js';
+import { perception, perceptionBand } from '../story/perception.js';
 import { metrics } from './metrics.js';
 
 const $ = (id) => document.getElementById(id);
@@ -77,7 +77,9 @@ export class UI {
 
   setSanity(v) {
     this.el.sanity.style.width = `${Math.max(0, v)}%`;
-    this.el.sanity.style.background = v > 55 ? 'linear-gradient(90deg,#4f6b62,#9db3a6)' : v > 25 ? 'linear-gradient(90deg,#5f5a3c,#a69a64)' : 'linear-gradient(90deg,#5b1a14,#a2382b)';
+    // the colour is the perception band (story/perception.js), not a separate scale
+    const band = perceptionBand(v);
+    this.el.sanity.style.background = band === 'steady' ? 'linear-gradient(90deg,#4f6b62,#9db3a6)' : band === 'strained' ? 'linear-gradient(90deg,#5f5a3c,#a69a64)' : 'linear-gradient(90deg,#5b1a14,#a2382b)';
   }
 
   advance() { if (this._advance) this._advance(); }
@@ -343,7 +345,8 @@ export class UI {
     box.classList.add('hidden'); label.classList.add('hidden'); box.style.transform = '';
   }
 
-  // A flash of something he does not remember doing, a few frames long, twice.
+  // A flash of something he does not remember doing, a few frames long, twice. With reduced motion,
+  // one still image that fades in and out: the same picture, no flicker.
   async vision(paint) {
     if (window.FAST) return;
     const v = $('vision');
@@ -351,6 +354,19 @@ export class UI {
     paint(hi.getContext('2d'), 1280, 720);
     const c = v.getContext('2d'); c.imageSmoothingEnabled = false;
     c.clearRect(0, 0, 640, 360); c.drawImage(pixelize(hi, 0.5, { dither: 10 }), 0, 0);
+    if (prefs.reduceMotion) {
+      v.style.transition = 'opacity 400ms ease';
+      v.style.opacity = '0';
+      v.classList.remove('hidden');
+      void v.offsetWidth;
+      v.style.opacity = '0.7';
+      await wait(1300);
+      v.style.opacity = '0';
+      await wait(450);
+      v.classList.add('hidden');
+      v.style.transition = ''; v.style.opacity = '';
+      return;
+    }
     for (const ms of [90, 60, 140]) {
       v.classList.remove('hidden'); v.style.opacity = String(0.6 + Math.random() * 0.4);
       await wait(ms);

@@ -1,5 +1,5 @@
 // The story's gates, asked of plain states.
-import { normalizeState, canFinishC1, canLeaveHanbury, canStartSeance, canLeaveMitre, canLeaveRoomC3b, canEnterFinale, finalSources, currentGate } from '../../src/story/progression.js';
+import { normalizeState, canFinishC1, canLeaveHanbury, canStartSeance, canLeaveMitre, canLeaveRoomC3b, canEnterFinale, finalSources, currentGate, gateDeductions } from '../../src/story/progression.js';
 import { evaluate, statuses } from '../../src/story/theories.js';
 import { ok, eq } from './assert.mjs';
 import { readFileSync } from 'node:fs';
@@ -101,5 +101,16 @@ export const tests = [
     ok(!Object.values(v).includes('sostenida'), JSON.stringify(v));
     s.flags.awake = true;
     eq(statuses(s)['intruso.yo'], 'sostenida');
+  }],
+  // ------------------------------------------------------------ what the hint may offer
+  ['gateDeductions: en C1, las conclusiones que cierran la noche, Brennan la última', () => {
+    const s = st({ clues: ['zurdo'], flags: { wren_met: true } });
+    eq(gateDeductions(s), ['d_bisturi', 'd_zurdo', 'd_ronda', 'd_confianza', 'd_brennan']);
+    eq(gateDeductions(st({ deductions: ['d_ronda'] })), []);
+    eq(gateDeductions(st({ scene: 'hanbury', chapter: 'c2' })), []);
+  }],
+  ['gateDeductions: en el final, solo fuentes nuevas y nunca el barro', () => {
+    const s = st({ chapter: 'c4', scene: 'foreshore', flags: { awake: true }, deductions: ['f_zurdo', 'f_anat'] });
+    eq(gateDeductions(s), ['f_testigo', 'f_ronda', 'f_exp']);
   }],
 ];
