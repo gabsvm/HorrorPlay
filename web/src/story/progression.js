@@ -4,6 +4,8 @@
 // Each `can*` answers { ok, missing }, where `missing` lists what is still lacking, in the order a
 // player would naturally get it, as short phrases the hint and the objective can use.
 
+import { REVISIONS_KEEP, sanitizePositions } from './positions.js';
+
 const clue = (s, id) => s.clues.includes(id);
 const ded = (s, id) => s.deductions.includes(id);
 const flag = (s, k) => !!s.flags[k];
@@ -22,6 +24,11 @@ export function normalizeState(s) {
   s.investigation.hypotheses ??= {};
   s.investigation.routes ??= {};
   s.investigation.evaluations ??= {};
+  // the player's positions on the open questions (positions.js): an object; a known question keeps only
+  // one of its options, unknown keys are kept; the revisions are an array, capped as setPosition caps them
+  const plain = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+  s.investigation.positions = plain(s.investigation.positions) ? sanitizePositions(s.investigation.positions) : {};
+  s.investigation.revisions = Array.isArray(s.investigation.revisions) ? s.investigation.revisions.slice(-REVISIONS_KEEP) : [];
   // the year of entry follows from what the boy answered, for saves from before it was recorded
   if (s.flags.entry_year == null && s.flags.answered1866 != null) s.flags.entry_year = s.flags.answered1866 ? 1866 : 1879;
   // the comb: a save from before custody was recorded had it in his pocket, or on Wexley's table

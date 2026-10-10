@@ -4,6 +4,7 @@ import { prefs } from './prefs.js';
 import { pixelize } from '../art/pixel.js';
 import { Actor } from './actor.js';
 import { evaluate as theories } from '../story/theories.js';
+import { QUESTIONS, readPosition, BRENNAN_STANCE_LABEL } from '../story/positions.js';
 import { morphFrames } from './signature.js';
 import { perception, perceptionBand } from '../story/perception.js';
 import { metrics } from './metrics.js';
@@ -50,6 +51,8 @@ export class UI {
       menu: $('menu'), menuButtons: $('menu-buttons'),
     };
     this._advance = null;
+    // the one question whose «Mi postura» block is open (page state only: not in the save, not in storage)
+    this._openPosture = null;
     this.el.dlg.addEventListener('pointerdown', (e) => { e.stopPropagation(); this.advance(); });
     window.addEventListener('keydown', (e) => {
       if ((e.key === ' ' || e.key === 'Enter') && this._advance) { e.preventDefault(); this.advance(); }
@@ -65,7 +68,30 @@ export class UI {
     this.el.inv.addEventListener('pointerenter', () => { this.invHover = true; });
     this.el.inv.addEventListener('pointerleave', () => { this.invHover = false; });
     this.coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+    // «Mi postura» (positions.js): one listener on the list, so re-rendering never stacks them. A press on
+    // a question's line folds or unfolds it (page state only); an option writes the position. Each press
+    // renders exactly once: game.setPosition renders when it writes, otherwise the listener does. The
+    // pressed control gets its focus back after the render.
+    this.el.theoryList?.addEventListener('click', (e) => {
+      const toggle = e.target?.closest?.('button[data-toggle]');
+      if (toggle) {
+        const q = toggle.dataset.toggle;
+        this._openPosture = this._openPosture === q ? null : q;
+        this.renderNotebook();
+        this.focusPosture(`button[data-toggle="${q}"]`);
+        if (this._openPosture) this.el.theoryList?.querySelector?.(`button[data-q="${q}"]`)?.closest?.('.posture')?.scrollIntoView?.({ block: 'nearest' });
+        return;
+      }
+      const opt = e.target?.closest?.('button[data-q]');
+      if (!opt || !this.game) return;
+      const { q, v } = opt.dataset;
+      if (!this.game.setPosition(q, v)) this.renderNotebook();
+      this.focusPosture(`button[data-q="${q}"][data-v="${v}"]`);
+    });
   }
+
+  // the control with this selector, inside the theory list, takes the focus (the list was just rebuilt)
+  focusPosture(sel) { this.el.theoryList?.querySelector?.(sel)?.focus?.(); }
 
   busy(on) { this.el.ui.classList.toggle('busy', on); }
   showHud(on) { this.el.hud.classList.toggle('hidden', !on); this.el.inv.classList.toggle('hidden', !on); }
@@ -507,7 +533,7 @@ export class UI {
         const doubt = perception.doubtTheories(st.sanity);
         li.innerHTML = `<span class="q">${t.q}</span>` + t.hyps.map((h) => `<span class="h"><span class="st ${h.status.replace(' ', '-')}">${h.status}${doubt && h.status === 'plausible' ? ', lo dudo' : ''}</span>${h.text}</span>`
           + (h.for.length ? `<span class="ev">A favor: ${h.for.join('; ')}.</span>` : '')
-          + (h.against.length ? `<span class="ev">En contra: ${h.against.join('; ')}.</span>` : '')).join('');
+          + (h.against.length ? `<span class="ev">En contra: ${h.against.join('; ')}.</span>` : '')).join('') + this.postureHtml(st, t.id);
         tl.appendChild(li);
       }
       if (!ths.length) tl.innerHTML = '<li>Todavía no hay preguntas que sostener.</li>';
@@ -515,6 +541,35 @@ export class UI {
     profList.innerHTML = '';
     profTitle.style.display = st.profile.length ? '' : 'none';
     for (const p of st.profile) { const li = document.createElement('li'); li.innerHTML = awake ? `${p} <span class="truth">— T. A.</span>` : p; profList.appendChild(li); }
+  }
+
+  // «Mi postura» under a theory (positions.js). Each shown question is one folded line: its button gives
+  // the current stance and opens the block (the explanation, the chapter-one line about Brennan, the
+  // options). One block at a time (this._openPosture). While the player is awake there is no button: the
+  // line says what he thought before. In the second reading the stance is not asked: nothing is shown.
+  postureHtml(st, theoryId) {
+    if (st.flags.second) return '';
+    const awake = !!st.flags.awake;
+    const stance = st.flags.brennan_stance;
+    let html = '';
+    for (const [q, Q] of Object.entries(QUESTIONS)) {
+      if (Q.theory !== theoryId || !Q.visible(st)) continue;
+      const cur = readPosition(st, q);
+      const label = (v) => Q.options.find(([o]) => o === v)?.[1] ?? '';
+      const said = q === 'br_suspect' && BRENNAN_STANCE_LABEL[stance] ? `<span class="ev">En el cap. I dije: ${BRENNAN_STANCE_LABEL[stance]}</span>` : '';
+      if (awake) {
+        html += `<div class="posture">${said}<span class="ev">${cur ? `(antes de saberlo): ${label(cur)}` : 'Sin postura'}</span></div>`;
+        continue;
+      }
+      const open = this._openPosture === q;
+      html += `<div class="posture"><button type="button" class="ptoggle" aria-expanded="${open}" data-toggle="${q}">Mi postura: ${cur ? label(cur) : 'sin postura'} ${open ? '▾' : '▸'}</button>`;
+      if (open) {
+        const opts = Q.options.map(([v, text]) => `<button type="button" data-q="${q}" data-v="${v}" aria-pressed="${v === cur}">${text}</button>`).join('');
+        html += `<span class="ps">Estado de pruebas: lo que permiten las pruebas reunidas. Mi postura: lo que creo ahora; puedo cambiarla.</span>${said}<span class="pbtns">${opts}</span>`;
+      }
+      html += '</div>';
+    }
+    return html;
   }
 
   notebookTab(tab) {

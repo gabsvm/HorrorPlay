@@ -76,7 +76,7 @@ export const THEORIES = [
   },
 ];
 
-function holds(s, e) {
+export function holds(s, e) {
   if (e.kind === 'clue') return s.clues.includes(e.id);
   if (e.kind === 'ded') return s.deductions.includes(e.id);
   return !!s.flags[e.id];

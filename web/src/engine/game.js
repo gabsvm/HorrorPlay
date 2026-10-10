@@ -14,6 +14,7 @@ import { audio } from './audio.js';
 import { prefs } from './prefs.js';
 import { normalizeState, currentGate, gateDeductions, canEnterFinale } from '../story/progression.js';
 import { statuses } from '../story/theories.js';
+import { setPosition as writePosition } from '../story/positions.js';
 import { perception } from '../story/perception.js';
 import { metrics } from './metrics.js';
 
@@ -362,6 +363,15 @@ export class Game {
   updateInvestigation() {
     normalizeState(this.state);
     this.state.investigation.hypotheses = statuses(this.state);
+  }
+
+  // Thomas's stance on an open question, from the notebook's buttons (positions.js). Only the position
+  // and its revision change: no scene, objective or progression flag moves.
+  setPosition(q, option) {
+    if (!writePosition(this.state, q, option)) return false;
+    this.autosave();
+    this.ui.renderNotebook();
+    return true;
   }
 
   clueExhausted(id) {

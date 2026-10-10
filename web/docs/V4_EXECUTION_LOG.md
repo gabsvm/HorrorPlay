@@ -159,3 +159,187 @@ Comprobaciones previas a F01 pedidas por el observador:
 **F00: segunda revisión del observador `CHANGES_REQUESTED` (solo documentación, sin P0 ni P1); cambios aplicados en este diff.** Condiciones: (a) el diff toca solo `web/docs/V4_*.md`; (b) se cubren los puntos 2, 3 y 5 y los ids de inspección; (c) la tabla de comportamiento por hotspot queda como condición previa a editar cualquier escena. Aprobación de F00 tras comprobar este diff, según el observador. Ningún cambio de código de juego. Ninguna fase marcada `CODE_COMPLETE` ni `TESTED`.
 
 **Riesgos residuales (observador):** el proceso se desvía del plan (coordinador Opus, no Haiku; sin equipo real); todas las URLs del ledger siguen `UNVERIFIED`; H-01, H-03, H-04 y H-05 siguen en el juego hasta F05/F06; el build de Windows falla por la versión por defecto (opcional: probar `VERSION=1.0-rc1`, sin cambio de código).
+
+## V4-01 — implementación (pendiente de revisión)
+
+Estado: **F01 CODE_COMPLETE (no TESTED).** Revisión del observador (Opus): **APPROVED con condiciones**; las condiciones de esa revisión están aplicadas en esta sección (scroll al desplegar, requisito 6 registrado como desviación aceptada, pendiente F16, etiqueta de Brennan). Sin commit ni push.
+
+Etiqueta «Qué pensé de Brennan» (`QUESTIONS.br_suspect.title`): **no se muestra en ninguna parte.** Se deja para una fase posterior y no se elimina ahora.
+
+SHA base: `7bf2928` (rama `reboot/web-el-huesped`). Alcance: posturas del jugador sobre las preguntas abiertas del cuaderno (`investigation.positions`, `investigation.revisions`), según la especificación aprobada de V4-01 y las decisiones del observador de esta ronda.
+
+### Decisiones de esta ronda (observador: CHANGES_REQUESTED)
+
+1. **Postura plegada (P1, opción a).** Cada pregunta visible es una línea plegada: botón con `aria-expanded` y `data-toggle`, texto «Mi postura: <etiqueta o sin postura> ▸» (▾ cuando está abierta; el glifo es mía). Pulsarla despliega el subtítulo, la línea «En el cap. I dije: …» (solo `br_suspect`, si `brennan_stance` existe) y las opciones; pulsarla otra vez la pliega. Solo una abierta a la vez, en `UI._openPosture` (no va a `state`, `localStorage` ni al guardado). Con `flags.awake`: sin botón, solo las líneas de lectura. El subtítulo ya no se repite en cada bloque plegado.
+2. **Segunda lectura (P2, opción ii).** `setPosition` devuelve `false` si `flags.awake` o `flags.second`, sin escribir. `postureHtml` devuelve `''` con `flags.second`: ningún bloque, ningún `data-q` ni `data-toggle`.
+3. **Render doble (P3).** El listener llama a `renderNotebook()` solo si `setPosition` devuelve `false`; si escribe, `game.setPosition` ya renderiza. Un render por pulsación en ambos casos (probado en `scenarios/positions.js`). Añadido por mi cuenta: tras cada render el listener devuelve el foco al control pulsado (`focusPosture`); sin ello el foco se perdía al reconstruir la lista.
+4. **Polaridad de `basis` (P3).** Formato `for:clue|ded|flag:<id>` o `against:clue|ded|flag:<id>`, según la lista de la hipótesis; `insuficiente` → `[]`. Documentado en `V4_STATE_SCHEMA.md` §6.
+
+**Interpretación:** con `flags.awake` mantengo también la línea «En el cap. I dije» (la especificación original la pedía siempre que `brennan_stance` exista); el coordinador la dejó en «como ahora».
+
+### Archivos tocados (git status, antes de escribir esta sección)
+
+- `web/src/story/positions.js` (nuevo): `QUESTIONS`, `BRENNAN_STANCE_LABEL`, `readPosition`, `basisFor` (formato nuevo), `setPosition` (bloquea con `awake` o `second`), `sanitizePositions`, `REVISIONS_KEEP = 20`.
+- `web/src/story/progression.js`: `normalizeState` completa `positions` (con `sanitizePositions`) y `revisions` (recorte a 20).
+- `web/src/story/theories.js`: solo `export function holds`.
+- `web/src/engine/game.js`: `setPosition(q, option)`: escribe, `autosave`, `renderNotebook`.
+- `web/src/engine/ui.js`: `_openPosture`; listener único sobre `theoryList` (toggle y opciones); `focusPosture`; `postureHtml` plegable.
+- `web/styles.css`: bloque `.posture`, `.ptoggle` a anchura completa, botones de 44 px mínimo, foco visible.
+- `web/tests/unit/positions.test.mjs` (nuevo): 21 pruebas.
+- `web/tests/scenarios/positions.js` (nuevo): escenario `positions`.
+- `web/docs/V4_STATE_SCHEMA.md`: §6 V4-01 (formato de `basis`, segunda lectura, despliegue).
+- `web/docs/V4_EXECUTION_LOG.md`: esta sección.
+
+Sin tocar: fixtures, `web/tools`, `web/index.html`. `web/GUION.md`: lo regenera `export.mjs`; git lo ve sin cambios.
+
+`git status --porcelain`:
+
+```
+ M web/docs/V4_EXECUTION_LOG.md
+ M web/docs/V4_STATE_SCHEMA.md
+ M web/src/engine/game.js
+ M web/src/engine/ui.js
+ M web/src/story/progression.js
+ M web/src/story/theories.js
+ M web/styles.css
+?? web/src/story/positions.js
+?? web/tests/scenarios/positions.js
+?? web/tests/unit/positions.test.mjs
+```
+
+`git diff --stat`:
+
+```
+ web/docs/V4_EXECUTION_LOG.md | 141 +++++++++++++++++++++++++++++++++++++++++++
+ web/docs/V4_STATE_SCHEMA.md  |  21 +++++++
+ web/src/engine/game.js       |  10 +++
+ web/src/engine/ui.js         |  56 ++++++++++++++++-
+ web/src/story/progression.js |   7 +++
+ web/src/story/theories.js    |   2 +-
+ web/styles.css               |   8 +++
+ 7 files changed, 243 insertions(+), 2 deletions(-)
+```
+
+### Comandos y salidas reales
+
+`node web/tools/unit.mjs` (sin FALLO):
+
+```
+58 pruebas bien, 0 mal
+```
+
+`node web/tools/walk.mjs positions`:
+
+```
+{
+ "scenario": "positions",
+ "ok": true,
+ "errors": [],
+ "lines": 5,
+ "deductions": 0,
+ "scene": "room",
+ "revisions": 3
+}
+```
+
+`node web/tools/test-all.mjs` (última ejecución, tras los cambios de esta ronda; `exit=0`):
+
+```
+PASS  unit                         0.1s
+PASS  smoke                        3.0s
+PASS  audio                        0.1s
+PASS  scenario c1-minimal          0.6s
+PASS  scenario calm                2.8s
+PASS  scenario chapter3            3.1s
+PASS  scenario comb-pike           2.0s
+PASS  scenario compat              0.4s
+PASS  scenario feedback            0.6s
+PASS  scenario finale              17.9s
+PASS  scenario hint                0.4s
+PASS  scenario hint-ui             0.4s
+PASS  scenario integrity           0.3s
+PASS  scenario mob                 2.5s
+PASS  scenario notebook            0.3s
+PASS  scenario positions           0.3s
+PASS  scenario resume              3.2s
+PASS  scenario sanity              27.0s
+PASS  scenario seance              2.2s
+PASS  scenario second-reading      1.4s
+PASS  walk                         4.3s
+PASS  walk second                  4.4s
+PASS  walk alt                     0.7s
+exit=0
+```
+
+`node web/tools/script/export.mjs`:
+
+```
+C:\Dev\HorrorPlay\web\GUION.md: 1500 lines, 358 spoken or thought
+```
+
+`git diff --stat -- web/GUION.md`: vacío (sin salida; solo el aviso de CRLF de git).
+
+### Medida 720p (Chrome headless, CDP, 1280×720, `scratchpad/cdp/pos2.mjs`)
+
+Estado: cuaderno abierto, pestaña Teorías, pistas `brennan_zurdo`, `carta` y `delantal`, `awake` falso, sin pregunta abierta (todo plegado). Escena de la partida: `room`.
+
+```
+collapsed: listScrollH 541, listClientH 541, listH 541,
+           tabScrollH 593, tabClientH 593, tabH 593,
+           pageScrollH 768, pageClientH 596, pageOverflowY auto, bookH 620,
+           toggles: br_suspect 401x44 aria-expanded=false "Mi postura: sin postura ▸";
+                    letter_author 401x44 aria-expanded=false "Mi postura: sin postura ▸"
+noPostures (mismo estado, bloques ocultos): listH 423 (listScrollH = listClientH = 423),
+           tabH 475, pageScrollH 650, pageClientH 596
+expanded (br_suspect abierta): listH 677, tabH 729, pageScrollH 904, pageClientH 596
+```
+
+**Requisito 6 (720p): DESVIACIÓN ACEPTADA (Opus).** Las tres medidas (`.page.right`, 1280×720, `clientHeight` 596 en todas):
+
+- sin posturas (bloques de postura ocultos en el mismo estado): `scrollHeight` **650** / 596. Ese desbordamiento ya existía antes de V4-01 (el contenido sin posturas es el de HEAD; la medida se tomó con los bloques ocultos, no sobre HEAD).
+- con todo plegado (estado de la medida 720p de abajo): `scrollHeight` **768** / 596.
+- con una pregunta abierta (br_suspect): `scrollHeight` **904** / 596.
+
+**Lo que se desplaza es `.page.right`** (el panel derecho del libro, `overflow-y: auto`). `#theory-list` no se desplaza por sí mismo.
+
+**Resultado: NO CABE.** `#theory-list` no se desplaza por sí mismo (`scrollHeight` = `clientHeight`), pero el contenedor que sí desplaza es el panel derecho del libro (`.page.right`, `overflow-y: auto`): `scrollHeight` 768 frente a `clientHeight` 596 con todo plegado. Causa medida (diagnóstico `scratchpad/cdp/pos3.mjs`): dentro del panel hay 35 px de `#nb-tabs` más 10 de margen, 30 px de `#nb-feedback` más 6, la pestaña de Teorías (593 px) y 36 px de relleno arriba y abajo. La pestaña sola ya no cabe en el panel (593 frente a 524 disponibles). Las dos líneas plegadas añaden 118 px (2 × 44 px de botón, más margen y borde).
+
+**Desviación respecto de lo pedido (aceptada por Opus):** el panel no cabe a 720p con todo plegado, y tampoco sin posturas (650 frente a 596). El desbordamiento de 54 px sin posturas es anterior a esta fase. La maquetación del libro no se ha cambiado: la solución compartida se registra en «Pendiente F16».
+
+**Nota sobre las cifras anteriores:** «770 px con dos posturas abiertas» ya no es alcanzable: solo una pregunta puede estar abierta. La medida de abrir una pregunta es `listH 677`.
+
+Captura (plegado, 1280×720): `scratchpad/cdp/pos/01-collapsed-720p.png`. Captura (una abierta): `scratchpad/cdp/pos/02-expanded-720p.png`. JSON: `scratchpad/cdp/pos/report.json`.
+
+### Prueba de teclado (CDP, mismo script)
+
+- Foco programático en el primer botón de despliegue (`br_suspect`): `document.activeElement` es ese botón.
+- Enter (`keyDown` + `keyUp` por CDP): `aria-expanded="true"`, el foco sigue en `br_suspect`, `outlineStyle: solid`, `outlineWidth: 2px`, `outlineColor: rgb(142, 27, 22)`, `:focus-visible: true`, tres botones de opción presentes.
+- Tab real no se probó: el foco se puso por código (la especificación lo admite). Pendiente si se quiere probar Tab desde el inicio del cuaderno.
+- Sin excepciones de página (`consoleExceptions: []`).
+
+### Comprobación 1 (observador): la postura desplegada queda a la vista
+
+Cambio en `ui.js` (una línea, en la rama de la pulsación que abre una pregunta): tras el render, `scrollIntoView({ block: 'nearest' })` sobre el bloque `.posture` abierto. Comprobación con CDP (`scratchpad/cdp/pos4.mjs`), 1280×720, todo plegado (ninguna pregunta abierta antes), foco en el botón de «Mi postura» de la carta (fuera de la vista) y Enter por teclado:
+
+```
+openQ (antes)                 null
+expanded (después)            "true"
+botón «Salió de mi cuarto»    getBoundingClientRect().bottom = 608
+.page.right bottom            658   (top 62)
+scrollTop / scrollHeight / clientHeight   244 / 904 / 596
+botón dentro del área visible: true
+foco en el botón de despliegue: true
+consoleExceptions             []
+```
+
+El botón queda con `bottom` 608 ≤ 658 (`.page.right`). Captura: `scratchpad/cdp/pos/03-letter-open-720p.png`. JSON: `scratchpad/cdp/pos/report-letter.json`.
+
+### Preguntas abiertas para el observador
+
+1. **720p: resuelta.** DESVIACIÓN ACEPTADA (Opus), ver arriba. La maquetación compartida queda en «Pendiente F16».
+2. **Segunda lectura:** resuelta en esta ronda por la opción (ii) del observador (bloqueo en la capa pura y en la UI). Queda registrada aquí como decisión.
+
+## Pendiente F16
+
+- Maquetación compartida del libro a 720p (todas las pestañas; la línea plegada de cada postura, unos 59 px, debe caber en la línea de su pregunta o ser más compacta).
+- Etiqueta «Qué pensé de Brennan» (`QUESTIONS.br_suspect.title`): no se muestra en ninguna parte; se decide en una fase posterior.

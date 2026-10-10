@@ -78,3 +78,24 @@ Todas las lecturas están envueltas en `try/catch`. Ninguna clave nueva de F01�
 - Fixtures de compatibilidad, sin modificar: `web/tests/fixtures/saves-v1-baseline/` (c1–c4 y second), `saves-v1-baseline-second/`, `legacy-c3-pre-v3.json`.
 - `git diff -- web/tests/fixtures` vacío en F00 (verificado).
 - Idempotencia de `normalizeState`: probada en `unit/progression.test.mjs` para el fixture pre-V3. **Pendiente:** extender la comprobación a todos los fixtures antes de F01 (ver checks del observador).
+
+## 6. V4-01 — posturas del jugador (`investigation.positions`, `investigation.revisions`)
+
+Fuente: `src/story/positions.js` (puro, sin DOM). Campos añadidos en `investigation`; ninguna otra clave de `state` cambia.
+
+| Campo | Default (`normalizeState`) | Forma | Tope | Quién escribe |
+|---|---|---|---|---|
+| `investigation.positions` | `{}` (plain object) | `{ [questionId]: optionId }` | — | `setPosition` (solo por el botón del cuaderno, vía `game.setPosition`) |
+| `investigation.revisions` | `[]` (array) | `{ question, from, to, chapter, basis }` | últimas **20** (`REVISIONS_KEEP`) | `setPosition` |
+
+- `positions`: si el guardado trae algo que no es un objeto plano (array, `null`, escalar), se sustituye por `{}`. Las claves desconocidas **se conservan** (una pregunta de una fase posterior sobrevive a un guardado de esta). Para una pregunta conocida (de `QUESTIONS`), el valor se **elimina** si no es una de sus opciones (`sanitizePositions` en `positions.js`, que devuelve un objeto nuevo y es idempotente).
+- `revisions`: si no es un array, `[]`; si lo es, se recorta a las últimas 20. Idempotente.
+- Entrada de `revisions`: `from` es la postura anterior o `null` la primera vez; `to` la nueva; `chapter` el capítulo en curso o `null`; `basis` las pruebas que sostenían la opción **en ese momento**, con su lado: `'for:clue:<id>'`, `'for:ded:<id>'`, `'for:flag:<id>'` (la prueba está en la lista `for` de su hipótesis) o `'against:clue:<id>'`, `'against:ded:<id>'`, `'against:flag:<id>'` (está en `against`).
+- **Regla de `basis`:** `insuficiente` → `[]` siempre. Cualquier otra opción → las pruebas de su hipótesis en `theories.js` que se cumplen, primero las de `for` y luego las de `against`, con el prefijo de su lista. Si la hipótesis no existe, `[]`. Nunca `undefined`.
+- **Reglas de `setPosition(state, q, option)`:** devuelve `false` y no escribe si `flags.awake` o `flags.second` (la segunda lectura no pregunta la postura), si la pregunta no existe o no es visible, si la opción no es de la pregunta, o si ya es la postura actual (así una pulsación repetida no añade revisión). Solo escribe `investigation.positions` e `investigation.revisions`.
+- **Regla de `br_suspect`:** su pregunta depende de la teoría `brennan` (visible con `brennan_zurdo` o `delantal`). **No escribe `flags.brennan_stance`.** La parada del capítulo I se lee de `flags.brennan_stance` y se muestra como línea de solo lectura («En el cap. I dije: …») bajo la pregunta; la escribe `chapters.js` (`closeC1`), no esta fase.
+- **Brennan se muestra desde `c1_done`:** la pregunta aparece cuando hay pruebas (`brennan_zurdo` o `delantal`), y la parada del cap. I aparece en cuanto `brennan_stance` existe (la fija `closeC1`, que también marca `c1_done`).
+- `buck_window` está definida (`visible: () => false`) y no se muestra en F01; la activa F02.
+- Ni `evaluate`/`statuses` ni `routes` ni `hypotheses` leen ni escriben `positions`: las teorías no cambian con o sin posturas (probado en `unit/positions.test.mjs`).
+- Idempotencia de `normalizeState` sobre todos los fixtures de `tests/fixtures` (`saves-v1-baseline/*`, `saves-v1-baseline-second/*`, `legacy-c3-pre-v3.json`), comprobada en `unit/positions.test.mjs`.
+- **Despliegue (solo UI, no es estado):** cada pregunta visible es una línea plegada («Mi postura: <etiqueta o sin postura> ▸»; botón con `aria-expanded` y `data-toggle`). Pulsarla la despliega (subtítulo, la parada del cap. I si existe, y las opciones) o la pliega. Solo una a la vez, guardada en `UI._openPosture`: no va a `state`, ni a `localStorage`, ni al guardado. Con `flags.awake`, sin botón: solo «(antes de saberlo): …» o «Sin postura». Con `flags.second`, no se pinta ningún bloque de postura.
