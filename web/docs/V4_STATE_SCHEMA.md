@@ -120,3 +120,21 @@ Fuente: `src/story/positions.js` (puro, sin DOM). Campos añadidos en `investiga
 - **Migración solo activa, idempotente.** Nunca borra la clave y dos pasadas de `normalizeState` dan el mismo resultado (probado en `tests/unit/brennan.test.mjs` para los fixtures de `tests/fixtures`).
 - **Guardados anteriores a V3 sin `routes.c1`:** no reciben la prueba, aunque la noche se cerrara con Brennan. Degradación aceptada y documentada: esos guardados pierden la cita de Wren en el cuaderno. Ningún fixture tiene `routes.c1`; los que tienen `c1_done` (siete) pierden la prueba (ver `V4_EXECUTION_LOG.md`, V4-04).
 - **Lo que no cambia:** `routes.c1`, `brennan_stance`, `brennan_outcome` y `c1_done` (que ya no alimenta la prueba de Wren). Ninguna otra clave de `state` cambia.
+
+## 9. V4-05 — Goulston Street: la pista `goulston_historic` y la tiza de la jamba
+
+| Campo | Valor |
+|---|---|
+| Clave nueva | `goulston_historic`, un ID en `state.clues` (pista pura, sin flag) |
+| Flag nuevo | **Ninguno.** La lista de la §2 no cambia |
+| Quién la da | `doorway` (`src/scenes/goulston.js`), en el primer hallazgo, antes de `aqui_estoy` y antes de `caught` |
+| Texto | Función de `flags.paper_read`, que se evalúa al abrir el cuaderno. Sin él: la inscripción en la jamba, contra los judíos, sin autor conocido. Con él, además: el borrado al amanecer por orden de la jefatura |
+| Nota de la segunda lectura | `truth2`: «Nadie me pidió que la leyera.». Sin `text2` |
+| Migración | **Ninguna.** Un guardado con `chalk_seen` anterior a V4-05 no recibe la pista (ver abajo) |
+| Quién la lee | Solo `src/story/data.js` (texto) y el cuaderno. No aparece en `theories.js`, `FINAL_SOURCES`, `progression.js` ni en ninguna deducción |
+| Efecto | Ninguno en el progreso: `canLeaveMitre` da el mismo resultado con o sin la pista (probado en `tests/unit/goulston.test.mjs`) |
+
+- **`aqui_estoy`:** mismo ID, mismo efecto (pista, sin flag), mismo `truth2`. Cambian `text` y `text2`, y la nota de la teoría `horas` («lo que creí leer en Goulston Street»). Sin migración.
+- **`chalk_seen`:** sigue siendo la marca del hallazgo (se escribe en `doorway`, después de la visión). **Ya no pinta la frase:** `drawNear` no la lee para dibujar; la jamba siempre tiene trazos ilegibles, con o sin la marca. `drawGlow` no existe en la escena.
+- **`apron_found`:** sin cambios de nombre ni de efecto. Su guarda de primera visita se conserva.
+- **Guardados antiguos con `chalk_seen = true`:** la escena dibuja los trazos (siempre), `aqui_estoy` se conserva, y `goulston_historic` **no se añade retroactivamente**: se da solo en el primer hallazgo. Un jugador que ya había visto la tiza antes de V4-05 no recibe la pista de la inscripción; queda documentado y probado en `tests/scenarios/goulston.js`.

@@ -147,8 +147,11 @@ export const CLUES = {
   marcas: { tag: 'Mitre Square · el cuerpo', text: 'Cortes en los párpados y una V en cada mejilla. No sirven para matar. Son una firma.', truth2: 'Las hice despacio.' },
   guantes: { tag: 'Mitre Square', text: 'Le busqué el pulso. Al levantarme, mis guantes estaban pegajosos de su sangre.',
     text2: 'Al levantarme del cuerpo, mis guantes estaban pegajosos. Y la sangre del dorso ya estaba seca.', truth2: 'Cuando Watkins la encontró, la sangre de mis guantes ya se había secado.' },
-  aqui_estoy: { tag: 'Goulston St.', text: (st) => (st.flags.answered1866 ? 'Junto al trozo de delantal, alguien escribió con tiza: HERE I AM. Aquí estoy. Es lo que contesté al agua.' : 'Junto al trozo de delantal, alguien escribió con tiza: HERE I AM. Aquí estoy. Lo que el agua quería oírme decir.'),
-    text2: 'Junto al trozo de delantal, alguien escribió con tiza: HERE I AM. Es lo que yo contesté al agua.', truth2: 'Con mi letra inclinada.' },
+  // the inscription on the jamb as a fact of the wall: no author, no recognition, and no deduction uses it.
+  // The erasure at dawn is said only once the paper is read (flag paper_read; text is read at display time).
+  goulston_historic: { tag: 'Goulston St. · informe', text: (st) => 'En la jamba hay otra inscripción en tiza, contra los judíos. No se sabe quién la escribió.' + (st.flags.paper_read ? ' Al amanecer la borraron por orden de la jefatura, por miedo a disturbios contra los judíos.' : '') },
+  aqui_estoy: { tag: 'Goulston St.', text: (st) => (st.flags.answered1866 ? 'En la pared mojada de Goulston Street creí leer HERE I AM. Aquí estoy. Es lo que contesté al agua.' : 'En la pared mojada de Goulston Street creí leer HERE I AM. Aquí estoy. Lo que el agua quería oírme decir.'),
+    text2: 'En la pared mojada creí leer HERE I AM. Es lo que yo contesté al agua.', truth2: 'Con mi letra inclinada.' },
   testigo: { tag: 'Mitre Square', text: 'Un testigo vio a un hombre con abrigo oscuro y bombín que llevaba una linterna "como las de la policía".', truth2: 'Como yo.' },
   carta: { tag: 'Prensa · 1 oct', text: 'Una carta fechada el 25 y recibida por la Central News el 27 circula bajo la firma «Jack the Ripper». Está escrita con tinta roja.', truth2: 'La escribí durante las horas perdidas de la noche del 24 al 25.' },
   letra: { tag: 'La carta', text: 'El remate de la J y la unión de las t recuerdan a la receta de Greaves. La semejanza no prueba autoría.',
@@ -179,7 +182,7 @@ export const DEDUCTIONS = [
   { id: 'd_rapido', a: 'rapido', b: 'ronda', profile: 'Llega a las escenas antes que la policía', text: 'Siempre está cerca. Llega antes que nadie.' },
   { id: 'd_testigo', a: 'testigo', b: 'trozo', profile: 'Abrigo oscuro, bombín, linterna de policía', text: 'El testigo describe un abrigo oscuro, un bombín y una linterna similar a la policial. El trozo del delantal fue hallado después; no sabemos quién lo dejó.' },
   { id: 'd_estuche', kind: 'hipotesis', a: 'estuche', b: 'bisturi', denial: true, text: 'Un bisturí idéntico al del estuche faltante apareció junto a Buck\'s Row. No sé quién lo sacó de mi cuarto.', truth: 'No me lo robaron. Wren lo sacó de la alcantarilla de Buck\'s Row.' },
-  { id: 'd_aqui', a: 'aqui_estoy', b: 'nat_voz', profile: 'Le respondió al agua', text: '«Here I am». La inscripción repite la frase de la voz. Es un vínculo sugestivo, no una identificación de la persona que escribió la tiza.' },
+  { id: 'd_aqui', a: 'aqui_estoy', b: 'nat_voz', profile: 'Le respondió al agua', text: 'Lo que creí leer en Goulston Street repite la frase de la voz. Es un vínculo sugestivo, no una prueba de quién escribió nada.' },
   { id: 'd_confianza', a: 'cuello', b: 'silencio', profile: 'Ella no le tuvo miedo', text: 'No hubo gritos ni arañazos defensivos según los testigos y el examen. Puede que el atacante se acercara sin despertar alarma; un uniforme explicaría esa confianza, pero no la prueba.', truth: 'No me tuvo miedo. Le enseñé la placa.', denialLate: true },
   { id: 'd_trofeo', a: 'anillos', b: 'falta', profile: 'Se lleva recuerdos', text: 'Los anillos, y lo que le sacó del vientre. Se lleva algo de cada una.' },
   { id: 'd_firma', a: 'marcas', b: 'ordenados', profile: 'Firma su trabajo', text: 'Las cosas en fila, las marcas en la cara: quiere que se sepa que es el mismo, y que lo hace con calma.' },

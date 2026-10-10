@@ -904,13 +904,13 @@ _Archivo: src/scenes/goulston.js_
 
 #### Portal de la escalera `doorway`
 **Al interactuar:**
-- *Thomas (piensa):* Tiza en la jamba: HERE I AM. _(1ª lectura)_
-- *Thomas (piensa):* Tiza, letra inclinada. Reconozco la A antes de leer la frase. _(2ª lectura)_
-- _Si second():_
-  - **La voz (la voz):** _Aquí estoy._
-- _Si no:_
+- [+ Pista al cuaderno: goulston_historic]
+- *Thomas (piensa):* En el ladrillo mojado, junto a la jamba, creo leer HERE I AM. Parpadeo y es solo agua. _(1ª lectura)_
+- *Thomas (piensa):* En el ladrillo mojado, letra inclinada. Reconozco la A antes de leer la frase. _(2ª lectura)_
+- [Visión: chalk]
+- _Si !second():_
   - *Thomas (piensa):* Lo dije yo. Hace veintidós años. _(si flag('answered1866'))_
-  - *Thomas (piensa):* Yo no respondí entonces. ¿Quién escribió esto? _(si no)_
+  - *Thomas (piensa):* ¿Lo he leído o lo he oído? _(si no)_
 - [+ Pista al cuaderno: aqui_estoy]
 
 ## La persecución por los callejones
@@ -1520,9 +1520,12 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 - Texto (2ª lectura): Al levantarme del cuerpo, mis guantes estaban pegajosos. Y la sangre del dorso ya estaba seca.
 - Verdad (2ª lectura): Cuando Watkins la encontró, la sangre de mis guantes ya se había secado.
 
+**`goulston_historic`**
+- Dónde: Goulston St. · informe
+
 **`aqui_estoy`**
 - Dónde: Goulston St.
-- Texto (2ª lectura): Junto al trozo de delantal, alguien escribió con tiza: HERE I AM. Es lo que yo contesté al agua.
+- Texto (2ª lectura): En la pared mojada creí leer HERE I AM. Es lo que yo contesté al agua.
 - Verdad (2ª lectura): Con mi letra inclinada.
 
 **`testigo`**
@@ -1642,7 +1645,7 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 **`d_aqui`**
 - Une las pistas: `aqui_estoy` + `nat_voz`
 - Rasgo del perfil: Le respondió al agua
-- Texto: «Here I am». La inscripción repite la frase de la voz. Es un vínculo sugestivo, no una identificación de la persona que escribió la tiza.
+- Texto: Lo que creí leer en Goulston Street repite la frase de la voz. Es un vínculo sugestivo, no una prueba de quién escribió nada.
 
 **`d_confianza`**
 - Une las pistas: `cuello` + `silencio`

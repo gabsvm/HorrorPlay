@@ -340,8 +340,38 @@ function shade_(hex) {
   return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`;
 }
 
+// kind 'chalk': the wet brick beside the jamb in Goulston Street, and the two words on it, faint and
+// leaning. The jamb itself is not drawn: the flash is the wall he thinks he read.
+function paintChalk(ctx, W, H) {
+  ctx.fillStyle = '#0c0706'; ctx.fillRect(0, 0, W, H);
+  const r = rng(1866);
+  const bw = 96, bh = 36;
+  for (let row = 0; row * bh < H; row++) {
+    for (let col = -1; col * bw < W; col++) {
+      const x = col * bw + (row % 2 ? bw / 2 : 0), y = row * bh, v = 0.8 + r() * 0.4;
+      ctx.fillStyle = `rgb(${Math.round(44 * v)},${Math.round(31 * v)},${Math.round(25 * v)})`;
+      ctx.fillRect(x + 3, y + 3, bw - 6, bh - 6);
+    }
+  }
+  // the wet: a sheen over the lower bricks and a few runs down the mortar
+  const g = ctx.createRadialGradient(W * 0.5, H * 0.62, 20, W * 0.5, H * 0.62, W * 0.45);
+  g.addColorStop(0, 'rgba(255,190,170,0.22)'); g.addColorStop(1, 'rgba(255,190,170,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  for (let i = 0; i < 9; i++) { ctx.fillStyle = WET; ctx.fillRect(W * (0.2 + r() * 0.6), H * (0.3 + r() * 0.4), 3, 30 + r() * 60); }
+  // the chalk: faint, a little leaning
+  ctx.save(); ctx.translate(W * 0.5, H * 0.42); ctx.rotate(0.07);
+  ctx.font = 'italic 64px "IM Fell English", Georgia, serif';
+  ctx.fillStyle = 'rgba(225,225,215,0.5)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('HERE I AM', 0, 0);
+  ctx.restore();
+  const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.15, W / 2, H / 2, W * 0.6);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(10,0,0,0.85)');
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+}
+
 // A flash of what he does not remember: gloved hands, a blade, the wet street.
 export function paintVision(ctx, W, H, kind) {
+  if (kind === 'chalk') return paintChalk(ctx, W, H);
   ctx.fillStyle = '#0a0202'; ctx.fillRect(0, 0, W, H);
   const pic = kind === 'hands' && closeupFor('hands');
   if (pic) ctx.drawImage(pic, 0, 0, W, H);   // the painting (CLOSEUPS.md), under the same red vignette

@@ -69,7 +69,7 @@ export const THEORIES = [
         against: [C('expediente', 'en 1879 no tomaba láudano'), C('respuesta1879', 'una enfermera me oyó contestar')],
         rule: (n) => (n.against ? 'no demostrada' : n.for ? 'plausible' : 'sin evaluar') },
       { id: 'agua', text: 'Algo que vino del agua y me contesta por dentro.',
-        for: [C('regla', 'lo que dicen en el río'), C('nat_voz', 'la voz de Nat en la sesión'), C('hospes', 'HOSPES'), C('aqui_estoy', 'la tiza de Goulston Street'), C('respuesta1879', '«Aquí estoy», en 1879')],
+        for: [C('regla', 'lo que dicen en el río'), C('nat_voz', 'la voz de Nat en la sesión'), C('hospes', 'HOSPES'), C('aqui_estoy', 'lo que creí leer en Goulston Street'), C('respuesta1879', '«Aquí estoy», en 1879')],
         against: [],
         rule: (n, s) => (s.flags.awake ? 'sostenida' : n.for >= 3 ? 'plausible' : 'sin evaluar') },
     ],

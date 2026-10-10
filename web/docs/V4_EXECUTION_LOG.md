@@ -605,3 +605,139 @@ EXIT=0
 ```
 
 **Revisión de cierre (Opus, V4-04): APPROVED con dos decisiones aplicadas.** D1: H-27 pasa a [U] (no [D]). D2: la tarjeta de Pizer en chapters.js:521 pierde «al día siguiente» y queda sin fecha («Esos días detuvieron a John Pizer…»); H-30 queda [D] FUENTE PENDIENTE, sin fecha en el juego. Desviación aceptada: en guardados anteriores a V3 sin routes.c1, la prueba de Wren desaparece y Brennan puede pasar de «no demostrada» a «plausible» (degradación documentada).
+
+## V4-05 — implementación (pendiente de revisión)
+
+Implementado por el agente implementador (Haiku), sin commit. Base `5c2a040`. Revisión del observador pendiente.
+
+### Decisiones y textos
+
+- **Jamba (`scenes/goulston.js`, `chalkScrawl`).** La jamba siempre lleva trazos de tiza sin letras (líneas diagonales, ganchos cortos y verticales, semilla fija 4217). Se dibujan con o sin `chalk_seen`, antes y después del hallazgo. `drawNear` ya no escribe `HERE I AM`, y `drawGlow` se elimina de la escena (el renderer lo llama solo si existe).
+- **Forma de los trazos, ajustada tras la primera captura.** Los arcos eran casi círculos completos y dos bucles podían leerse como una «o». Se cambiaron a ganchos cortos (0,6–1,4 rad). Ver la captura de abajo.
+- **Orden del primer hallazgo (`doorway`).** 1) `G.clue('goulston_historic')`. 2) `G.think(G.two(lectura 1, lectura 2))`, después `G.vision('chalk')`; solo en la primera lectura, la línea «Lo dije yo. Hace veintidós años.» (si `answered1866`) o «¿Lo he leído o lo he oído?». 3) `G.clue('aqui_estoy')`. 4) `chalk_seen`, `G.audio.sting(0.22)`, `G.sanity(-8)`, `G.mad(0)`, pose `null`. 5) `caught` una sola vez. La segunda lectura no tiene voz nueva: el pensamiento sustituye al `G.voice('Aquí estoy.')`.
+- **Textos de la pista nueva `goulston_historic`** (`story/data.js`, tag «Goulston St. · informe»). Texto en función de `flags.paper_read`: sin él, «En la jamba hay otra inscripción en tiza, contra los judíos. No se sabe quién la escribió.»; con él, además «Al amanecer la borraron por orden de la jefatura, por miedo a disturbios contra los judíos.». `truth2`: «Nadie me pidió que la leyera.». Sin flag, sin migración, sin `text2`, y fuera de `theories.js`, `FINAL_SOURCES`, `progression.js` y las deducciones.
+- **`aqui_estoy`** (mismo ID y efecto): `text` y `text2` según la especificación. `d_aqui` y la nota de «horas» pasan a los textos aprobados.
+- **Visión `chalk`** (`art/bodies.js`, `paintChalk`): ladrillo oscuro, brillo húmedo y «HERE I AM» tenue e inclinado. No dibuja la jamba. `game.js` y `ui.js` no cambian: la reducción de movimiento ya la cubre `ui.vision`.
+- **Texto prohibido.** El insulto y la frase de la carta no aparecen en `src`, `tests`, `tools`, `docs` ni `GUION.md`. La prueba es un hash de las palabras (`tests/unit/goulston.test.mjs`) y un escaneo de 104 archivos sin imprimir palabras (0 aciertos).
+
+### Desviaciones y observaciones
+
+1. **`G.mad(0.5)` se movió al inicio de la lectura** (antes de `G.think`); `G.mad(0)` queda al final. La especificación lo listaba en el paso 4; en ese orden, `mad(0.5)` y `mad(0)` se ejecutan en el mismo tic y la tensión no se nota. `G.audio.sting(0.22)` sí queda en el paso 4.
+2. **La línea «Lo dije yo» / «¿Lo he leído o lo he oído?» va después de la visión**, no antes, como reacción a la imagen. La especificación no fijaba su posición; solo pedía el cambio del texto de «¿Quién escribió esto?».
+3. **El GUION no muestra el primer texto de `goulston_historic`**: el exportador no lee textos en función, igual que con `aqui_estoy` (solo sale `text2`). Es una limitación del generador, no del juego; el texto se verifica en `tests/unit/goulston.test.mjs`.
+4. **Etiqueta de fuente H-02 / H-31.** «VERIFICADA-CITA» se escribe tal como pide la especificación. **La URL de Warren no se abrió en esta ronda**, y la fila lo dice. F17 debe abrir la fuente primaria.
+5. **Finales de línea.** `art/bodies.js`, `scenes/goulston.js` y `GUION.md` estaban en CRLF en el árbol de trabajo (índice LF). Se pasaron a LF. `git ls-files --eol` da `lf/lf` para todos los archivos tocados.
+6. **`GUION.md`** se regeneró con `tools/script/export.mjs` y se pasó a LF. Diff: 12 líneas añadidas y 8 quitadas, solo en Goulston, `aqui_estoy`, `d_aqui` y la pista nueva.
+
+### Archivos tocados (git status, antes de escribir esta sección)
+
+```
+ M web/GUION.md
+ M web/docs/V4_F00_INVENTORY.md
+ M web/docs/V4_HISTORICAL_LEDGER.md
+ M web/docs/V4_STATE_SCHEMA.md
+ M web/src/art/bodies.js
+ M web/src/scenes/goulston.js
+ M web/src/story/data.js
+ M web/src/story/theories.js
+?? web/tests/scenarios/goulston.js
+?? web/tests/unit/goulston.test.mjs
+```
+
+No se tocó `game.js`, `ui.js`, `chapters.js`, `progression.js`, `canLeaveMitre`, `FINAL_SOURCES`, `caught()` ni las transiciones.
+
+### Tabla de comportamiento (PASO 0)
+
+`web/docs/V4_F00_INVENTORY.md`, sección 7, escrita antes de tocar `goulston.js` (leída del código en `5c2a040`).
+
+### Snapshot de `evaluate()` (11 fixtures, `normalizeState` antes de `evaluate`, 5 teorías)
+
+Scripts y salidas en `scratchpad/v4-05/` (fuera del repositorio): `snap.mjs`, `snapshot-before.json`, `snapshot-after.json`.
+
+```
+$ node snap.mjs snapshot-before.json
+fixtures: 11, theories: 5
+$ node snap.mjs snapshot-after.json
+fixtures: 11, theories: 5
+$ diff snapshot-before.json snapshot-after.json
+501c501
+<        "la tiza de Goulston Street"
+---
+>        "lo que creí leer en Goulston Street"
+892c892
+<        "la tiza de Goulston Street"
+---
+>        "lo que creí leer en Goulston Street"
+```
+
+Solo cambia la nota de la teoría «horas» (`aqui_estoy`), en dos fixtures: `saves-v1-baseline/c4.json` y `saves-v1-baseline-second/c4.json`. Ninguna otra teoría, hipótesis ni estado cambia.
+
+### Comandos y salidas reales
+
+```
+$ node web/tools/unit.mjs            (última línea)
+98 pruebas bien, 0 mal
+
+$ node web/tools/walk.mjs goulston
+{ "scenario": "goulston", "ok": true, "errors": [], "lines": 86, "deductions": 12, "scene": "room" }
+
+$ node web/tools/walk.mjs
+{ "scenario": "walkthrough", "ok": true, "errors": [], "lines": 427, "deductions": 25, "scene": "bucks_row" }
+
+$ node web/tools/walk.mjs second
+{ "scenario": "second", "ok": true, "errors": [], "lines": 431, "deductions": 25, "scene": "bucks_row" }
+
+$ node web/tools/walk.mjs alt
+{ "scenario": "alt", "ok": true, "errors": [], "lines": 125, "deductions": 1, "scene": "seance" }
+
+$ node web/tools/test-all.mjs
+PASS  unit                         0.3s
+PASS  smoke                        3.2s
+PASS  audio                        0.1s
+PASS  scenario beats               0.8s
+PASS  scenario brennan             5.0s
+PASS  scenario c1-minimal          0.5s
+PASS  scenario calm                2.8s
+PASS  scenario chapter3            3.1s
+PASS  scenario comb-pike           2.0s
+PASS  scenario compat              0.4s
+PASS  scenario feedback            0.6s
+PASS  scenario finale             17.9s
+PASS  scenario forense             0.6s
+PASS  scenario goulston            5.0s
+PASS  scenario hint                0.4s
+PASS  scenario hint-ui             0.4s
+PASS  scenario integrity           0.3s
+PASS  scenario mob                 2.4s
+PASS  scenario notebook            0.4s
+PASS  scenario positions           0.4s
+PASS  scenario resume              3.2s
+PASS  scenario sanity             26.9s
+PASS  scenario seance              2.1s
+PASS  scenario second-reading      1.4s
+PASS  walk                         4.3s
+PASS  walk second                  4.4s
+PASS  walk alt                     0.6s
+EXIT=0
+
+$ node web/tools/script/export.mjs
+C:\Dev\HorrorPlay\web\GUION.md: 1507 lines, 357 spoken or thought
+$ git diff --stat -- web/GUION.md
+ web/GUION.md | 20 +++++++------
+```
+
+### Captura 720p (Chrome headless, CDP, 1280×720, servidor 5317)
+
+- Script: `scratchpad/v4-05/720p/capture.mjs`. El servidor 5317 no respondía, así que se arrancó con `preview_start` (name `el-huesped`) y se detiene al terminar.
+- Estado: partida de `saves-v1-baseline/c3.json` con `apron_found`, `chalk_seen`, `goulston_historic` y `aqui_estoy`, en `goulston`, con Thomas en x=760 mirando a la izquierda. Sin visión en pantalla.
+- Archivos: `scratchpad/v4-05/720p/goulston-jamb-720p.png` (1280×720) y `goulston-jamb-crop-x4.png` (recorte 860–1000 × 350–500, ×4).
+- Lo que se ve: la puerta de la escalera, con «108 – 119» encima, y a la derecha del marco de la puerta, la jamba, con trazos de tiza grises y apagados: líneas diagonales, ganchos cortos y algunas verticales. No se distingue ninguna letra. La primera captura tenía dos bucles casi circulares que se parecían a una «o»; se corrigieron (ver Decisiones). No hay visión encima ni brillo sobre la jamba.
+- Consola: sin excepciones ni errores.
+
+### Preguntas abiertas para el observador
+
+1. ¿Se acepta el movimiento de `mad(0.5)` a la lectura (desviación 1)?
+2. ¿Hace falta que el GUION muestre el texto en función de `goulston_historic` (desviación 3)?
+3. H-02 y H-31 llevan «VERIFICADA-CITA» según la especificación, sin haber abierto la URL. ¿Lo dejamos así hasta F17?
+
+**Revisión de cierre (Opus, V4-05): APPROVED con un cambio aplicado.** P2-1: `goulston_historic` pierde `truth2` (una frase en primera persona no puede ligar a Thomas con la inscripción real); test añadido. H-02, H-07 y H-31 quedan como «CITA SECUNDARIA (resumen automático de WebFetch; no literal)» hasta F17. Desviación aceptada: `mad(0.5)` al inicio de la lectura.

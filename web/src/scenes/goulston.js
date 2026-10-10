@@ -8,6 +8,36 @@ import { Smoke, Drip, Rat, Cat, Moths, Ripples } from '../engine/life.js';
 
 const WIDTH = 1900, GROUND = 628;
 
+// The old writing on the jamb is a scrawl: strokes that no one can read as letters. It was on the
+// wall before Thomas saw it, so it is always drawn. Fixed seed: the same strokes every time.
+const SCRAWL = (() => {
+  let s = 4217;
+  const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const out = [];
+  for (let i = 0; i < 16; i++) out.push({ kind: 'line', x: rnd() * 40, y: rnd() * 110, a: rnd() * Math.PI * 2, len: 8 + rnd() * 22 });
+  // short hooks, never whole loops: a full ring reads as an o
+  for (let i = 0; i < 4; i++) { const a0 = rnd() * 6; out.push({ kind: 'arc', x: rnd() * 40, y: rnd() * 110, r: 3 + rnd() * 5, a0, a1: a0 + 0.6 + rnd() * 0.8 }); }
+  return out;
+})();
+
+function chalkScrawl(ctx, x, y) {
+  ctx.save();
+  ctx.strokeStyle = 'rgba(222,216,200,0.5)';
+  ctx.lineCap = 'round';
+  for (const k of SCRAWL) {
+    ctx.lineWidth = k.kind === 'line' ? 1.6 : 2.2;
+    ctx.beginPath();
+    if (k.kind === 'line') {
+      ctx.moveTo(x + k.x, y + k.y);
+      ctx.lineTo(x + k.x + Math.cos(k.a) * k.len, y + k.y + Math.sin(k.a) * k.len);
+    } else {
+      ctx.arc(x + k.x, y + k.y, k.r, k.a0, k.a1);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 export default {
   id: 'goulston',
   width: WIDTH,
@@ -88,20 +118,12 @@ export default {
     ];
   },
 
+  // the apron until it is found; the jamb's scrawl is always there, before and after Thomas reads it
   drawNear(ctx) {
     if (!this.G?.flag('apron_found')) {
       apronPiece(ctx, 920, GROUND - 20);
     }
-    if (this.G?.flag('chalk_seen')) A.chalk(ctx, 1040, GROUND - 210, 'HERE I AM', { size: 30, rot: 0.05 });
-  },
-
-  drawGlow(ctx, t) {
-    // the chalk catches the lantern light and seems to hold it
-    if (!this.G?.flag('chalk_seen')) return;
-    ctx.save();
-    ctx.globalAlpha = 0.22 + Math.sin(t * 1.4) * 0.06;
-    A.chalk(ctx, 1040, GROUND - 210, 'HERE I AM', { size: 30, rot: 0.05 });
-    ctx.restore();
+    chalkScrawl(ctx, 1026, GROUND - 236);
   },
 
   async enter(G) {
@@ -116,20 +138,27 @@ export default {
     {
       id: 'doorway', name: 'Portal de la escalera', rect: [870, GROUND - 270, 160, 300], walk: 860, face: 1,
       act: async (G) => {
-        if (G.flag('apron_found')) {  return; }
+        if (G.flag('apron_found')) return;
         G.player.pose = 'kneel';
         G.flag('apron_found', true);
         G.player.pose = 'reach';
         await G.wait(500);
-        await G.think(G.two('Tiza en la jamba: HERE I AM.', 'Tiza, letra inclinada. Reconozco la A antes de leer la frase.'));
-        G.flag('chalk_seen', true);
-        G.audio.sting(0.22); G.mad(0.5);
-        if (G.second()) await G.voice('Aquí estoy.');
-        else await G.think(G.flag('answered1866') ? 'Lo dije yo. Hace veintidós años.' : 'Yo no respondí entonces. ¿Quién escribió esto?');
+        // 1. what the jamb says, as a fact of the wall: no recognition in it
+        G.clue('goulston_historic');
+        // 2. what Thomas thinks he reads, then the flash of it. The tension holds through the reading.
+        G.mad(0.5);
+        await G.think(G.two('En el ladrillo mojado, junto a la jamba, creo leer HERE I AM. Parpadeo y es solo agua.', 'En el ladrillo mojado, letra inclinada. Reconozco la A antes de leer la frase.'));
+        await G.vision('chalk');
+        if (!G.second()) await G.think(G.flag('answered1866') ? 'Lo dije yo. Hace veintidós años.' : '¿Lo he leído o lo he oído?');
+        // 3. the clue that names what he read
         G.clue('aqui_estoy');
+        // 4. the cost
+        G.flag('chalk_seen', true);
+        G.audio.sting(0.22);
         G.sanity(-8);
         G.mad(0);
         G.player.pose = null;
+        // 5. the chase, once
         await G.game.chapterHooks.caught(G);
       },
     },
