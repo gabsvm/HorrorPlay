@@ -1,7 +1,10 @@
 # El Huésped: handoff
 
-State on 2026-10-08, branch `reboot/web-el-huesped`, last commit `619c269`. Working tree clean.
-The user played the 1.0-rc6 APK on their phone (Moto g86 Power) and reports it runs very well.
+State on 2026-10-10, branch `reboot/web-el-huesped`, after the master plan (phases 0–11,
+`docs/IMPLEMENTATION_STATUS.md`, which has the commit of every phase). Working tree clean.
+The user plays on a Moto g86 Power. Since rc22 there are no portraits and no voices (subtitles only),
+and the train is gone. The overhaul is code-complete and tested headless; the human playtests listed
+in `docs/IMPLEMENTATION_STATUS.md` are still pending.
 
 ## What it is
 
@@ -20,9 +23,11 @@ hosted publicly.
 | What | Command |
 |---|---|
 | Dev server | `python tools/serve.py 5317`, or `preview_start` with the name `el-huesped` (`.claude/launch.json` at the repo root) |
+| Everything | `node tools/test-all.mjs` (`--quick` skips the three long playthroughs) |
+| Pure logic | `node tools/unit.mjs` (`tests/unit/*.test.mjs`: gates, saves, theories, perception, signature, hygiene) |
 | Smoke test (every scene, mocked canvas/WebGL) | `node tools/smoke.mjs` |
-| Full playthrough (expects 22 deductions, no errors) | `node tools/walk.mjs` |
-| Bad-player playthrough | `node tools/walk.mjs alt` (expects `"ok": true`) |
+| Full playthrough (expects 25 deductions, no errors) | `node tools/walk.mjs`; `second` as the second reading; `alt` the bad player |
+| One scenario | `node tools/walk.mjs <name>` for `tests/scenarios/<name>.js`; `--snapshots DIR` dumps each chapter's checkpoint; `WALK_LOG=file` dumps the run's lines (count them with `node tools/read-count.mjs file`) |
 | Audio | `node tools/audio-smoke.mjs` |
 | Sprite lab | `tests/sprites.html?who=&s=&cols=&only=` |
 | Artifact build | `npx esbuild src/main.js --bundle --format=iife --minify --outfile=<scratch>/bundle.js`, then `python tools/build-artifact.py <scratch>/el-huesped.html` (it reads `bundle.js` next to the output) |
@@ -34,7 +39,8 @@ hosted publicly.
 | Script | `node tools/script/export.mjs` writes `GUION.md`: every line, choice and document, by scene, with the story bible as context (run `npm i` in `tools/script` once). |
 | Rebuild audio | `python tools/build-audio.py` (CC0 sources in the gitignored `assets-src/audio/`; credits in `assets/audio/CREDITS.md`) |
 
-Dev URL parameters: `?scene=<id>&x=<px>&noenter&flags=a,b` or `?chapter=<n>`.
+Dev URL parameters: `?scene=<id>&x=<px>&noenter&flags=a,b` or `?chapter=<n>`; `?metrics` logs the dev
+metrics to the console (`window.__metrics()`); on localhost or with `?dev`, script errors show as a toast.
 
 ## Browser verification tips (built-in pane)
 
@@ -162,13 +168,59 @@ Android:
 - The WebView runs immersive and landscape. Back calls `__appBack`; pause and resume call
   `__appPause` / `__appResume` (in `main.js`).
 
+## Story systems (master plan)
+
+- `src/story/progression.js`: pure gates (`canFinishC1`, `canLeaveHanbury`, `canStartSeance`,
+  `canLeaveSeance`, `canLeaveMitre`, `canLeaveRoomC3b`, `canEnterFinale` with `FINAL_SOURCES`,
+  `currentGate`) and `normalizeState` (fills new fields in old saves; idempotent; never renames).
+  Scenes and the hint call these instead of writing their own conditions.
+- `src/story/theories.js`: the case's open questions; statuses derived from clues, deductions and
+  flags; shown in the notebook's Teorías tab and stored in `state.investigation.hypotheses`.
+- `src/story/perception.js`: sanity bands (steady ≥65, strained 36–64, frayed ≤35) and every effect
+  they have, in one place.
+- `src/engine/signature.js`: the name-to-Jack morph as pure frames. `src/engine/metrics.js`: opt-in
+  dev metrics.
+- Hotspots may have `again` (the short second look) and close-up points `key: true`.
+- Tests choose by text: `PICKS` entries may be strings matched against the options.
+
+### Flags: old and new
+
+Old flags and ids are never renamed or dropped. New, all optional with defaults:
+
+| Flag / field | Values | Set in |
+|---|---|---|
+| `investigation.{hypotheses,routes,evaluations}` | theory statuses; `routes.c1`; `evaluations.beats/raps` | progression / theories / chapters |
+| `brennan_stance` | `suspect` / `clear` / `unsure` | `closeC1` |
+| `comb_custody` | `thomas` / `pike` (old saves with the comb → `thomas`) | Hanbury `comb` |
+| `raps_heard`, `hospes_decoded`, `seance_prepared` | bool | séance |
+| `wren_mob_reply` | `duty` / `excuse` / `silent` | `mobScene` |
+| `handwriting_assessment`, `hand_inconclusive` | `greaves_like` / `inconclusive` / `self_recognition` | `compareHands` |
+| `chase_mistakes`, `chase_outcome` | 0–3; `clean` / `spotted` / `injured` | `alleys` |
+| `pike_cuff`, `wren_warned`, `file_torn` | bool, one per last act | `readFile` |
+| `water_reply_intent`, `water_resistance` | `answer` / `silent` / `hand` / `unsure`; bool | `finaleWater` |
+| `recognized`, `water_before` | bool | foreshore |
+| `pike_book_read`, `s2_prologue`, `s2_draft`, `s2_1879` | bool, second reading | scenes |
+| `entry_year` | 1866 / 1879, derived from `answered1866` for old saves | prologue / `normalizeState` |
+
+Prefs (`elhuesped.prefs`): `seenFast`, `reduceMotion`. Lines already read: `elhuesped.seenLines` (not in the save).
+
 ## Recent work (this session)
+
+- The master plan, phases 0–11 (see `docs/IMPLEMENTATION_STATUS.md`): regression baseline and
+  fixtures, evidence-driven progression and theories, no mute hotspots, chapter I closed by the
+  player, comb custody, séance puzzle before the scare, handwriting prudence and chase outcomes,
+  consequential last acts and water attitudes, sanity as perception, a richer second reading,
+  pacing and victims, QA and docs.
+- Before that: the V3 script pass (ChatGPT), subtitles instead of a dialogue box, no portraits, no voices, no train.
 
 - Lit scenery, wet reflections, bloom and rays, corpses with volume, a relit close-up, atmosphere,
   swinging signs.
 - Performance: Buck's Row went from about 15 ms to about 3.8 ms of CPU per frame on desktop.
 
 ## Open items and ideas
+
+- Pending human playtests (desktop and the Moto g86 Power): the checklist is in
+  `docs/IMPLEMENTATION_STATUS.md`. Tune the sanity thresholds and the chase timer from real play.
 
 - The user has not yet commented on: the new footsteps, the chase and stairs animations, and the
   look of the new lighting on the phone.

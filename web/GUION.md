@@ -183,6 +183,22 @@ Cada deducción **de tipo inferencia sustentada** añade un rasgo al **Perfil de
 - **Recorrido del jugador:** las entradas informativas, pistas y documentos permanecen accesibles. Las observaciones eliminadas NO son requisitos ocultos de progresión. Un silencio debe tener feedback interactivo real y no obligar al jugador a clickear sin saber si funcionó.
 - **Ritmo:** cada escena combina un beat de observación, una acción del jugador y una consecuencia; evitar cadenas de 4–5 cuadros que repiten la misma evidencia. No multiplicar símbolos sobrenaturales si ya hay una pista clara.
 
+### 9. Mecánicas implementadas (no cambian el canon)
+
+El canon sigue igual: la entrada exige una respuesta voluntaria (en 1866 o, si el niño calla, en 1879), el Huésped ya está dentro cuando suena «Aquí estoy» en el agua, la carta se escribe en la noche del 24 al 25 de septiembre, se fecha el 25 y llega el 27, Thomas es el culpable físico y el final es trágico. Lo que sigue son reglas de juego.
+
+- **Pruebas, hipótesis y teorías.** Relacionar dos pruebas da una conclusión; las que son suposiciones quedan marcadas como *hipótesis* o *inferencia*. Las preguntas del caso (¿alguien entra o salgo yo?, ¿Brennan o el barrio?, ¿quién escribió la carta?, ¿qué explica las horas perdidas?) se muestran con lo que sostiene y lo que contradice cada explicación; ninguna hay que elegirla para avanzar, y nada señala a Thomas antes del capítulo IV.
+- **Avanzar con pruebas, no con acusaciones.** El capítulo I se cierra cuando Thomas lo decide (con Pike o con Brennan) si tiene el caso de Pike, el bisturí de Wren y al menos una conclusión con pruebas. Su postura sobre Brennan (vigilarlo, nada contra él, no lo sé) queda escrita y la turba la recuerda.
+- **El peine.** Se respeta lo elegido: si Pike se lo queda, la sesión empieza sin el objeto y Wexley lo sabe igual.
+- **La sesión.** La mesa golpea antes de empezar; leer HOSPES es la entrada a la sesión, con ayuda que crece en cada fallo; el susto es la recompensa.
+- **La letra.** «La muestra no basta» es una respuesta válida; Greaves recuerda cómo la valoró Thomas.
+- **La persecución.** Los errores cuentan: limpia, vista o herida; el periódico, Pike y Greaves lo reflejan.
+- **Ante Pike.** Entregarse cierra la primera esposa antes de la laguna; avisar por Wren hace que Pike la proteja (ella guarda la distancia y su silbato); romper el folio no borra lo que se sabe (Bell vuelve a declarar).
+- **El agua.** Responder, callar o taparse la boca tienen cada una su escena; en las tres la boca dice «Aquí estoy» porque ya estaba dentro. «Todavía no» devuelve al cuaderno. El final exige tres pruebas de fuentes independientes.
+- **Cordura como percepción.** Firme (≥65): las pruebas se leen mejor. Tensa (36–64): la habitación contesta a veces. Desgastada (≤35): lo del otro lado se ve más claro (el método de los golpes, la luz del Ditch) y los hechos se dudan más; la gente lo nota. Ninguna banda bloquea nada ni muestra pistas falsas.
+- **Segunda lectura.** Un momento nuevo por capítulo (el hombre del agua, la libreta de Pike, Wexley sabe a quién hablan los golpes, el borrador de la carta, la noche de 1879) y atajos por los puzles ya resueltos para quien terminó el juego.
+- **Víctimas.** Cada una tiene al menos un detalle humano documentado: Polly y su sombrero nuevo; Annie, el ganchillo y las flores; Elizabeth Stride, sueca, «Long Liz»; Catherine Eddowes, de vuelta del lúpulo de Kent con John Kelly; Mary Jane Kelly, unos veinticinco años, a la que una vecina oyó cantar.
+
 
 ## Introducción (antes del prólogo)
 _Archivo: src/story/intro.js. Ficha policial del cuaderno, tres líneas sobre Whitechapel y la primera página._
@@ -192,8 +208,6 @@ _Archivo: src/story/intro.js. Ficha policial del cuaderno, tres líneas sobre Wh
 - Propiedad del inspector T. Ashgrove, de esta División, en paradero desconocido.
 - Las anotaciones están escritas con dos caligrafías distintas.
 - Otoño de 1888. Alguien está matando mujeres en Whitechapel.
-- La policía todavía no tiene un nombre para él.
-- Él tampoco.
 - Para entender lo que pasó este otoño tengo que empezar por el río. Por Nat.
 
 ## El cuarto de Thomas (Thrawl Street)
@@ -215,6 +229,11 @@ _(sin texto)_
       - *Thomas (piensa):* Cerrada por dentro. Pike tiene la única copia. _(1ª lectura)_
       - *Thomas (piensa):* Cerrada por dentro. Nadie necesitaba la llave de Pike. _(2ª lectura)_
       - [+ Pista al cuaderno: llave_pike]
+    - [Aviso] Cerrada por dentro. Es de madrugada. | Primero, los informes.
+  - _Si no:_
+    - _Si p === 'c3b':_
+      - _Si !flag('paper_read'):_
+        - *Thomas (piensa):* Hay un periódico bajo la puerta.
 
 #### Periódico `paper`
 _Aparece si: phase(G) === 'c3b' && !flag('paper_read')_
@@ -274,15 +293,19 @@ _Aparece si: !flag('lantern_taken')_
 #### Escritorio `desk`
 **Al interactuar:**
 - _Si p === 'c1':_
-  - _Si !has('penique') && !flag('penique_given'):_
+  - _Si !had:_
     - [+ Objeto: penique]
   - _Si !has('placa'):_
     - [+ Objeto: placa]
 - _Si no:_
   - _Si p === 'c3a':_
     - _Si no:_
-      - *Thomas (piensa):* Es mi letra. Las últimas dos páginas no son mías... ¿o sí? _(1ª lectura)_
-      - *Thomas (piensa):* Lo escribí yo. ¿Cuándo? _(2ª lectura)_
+      - _Si second() && !flag('s2_draft'):_
+        - [Documento] Bajo el secante Dear Boss, I keep on hearing the police have caught me but they wont fix me just yet... Tachado y vuelto a escribir dos veces. La J con la cola larga. Las t, cortas.
+        - *Thomas (piensa):* Mi mano. Mi tinta. Lo practiqué antes de escribirlo.
+      - _Si no:_
+        - *Thomas (piensa):* Es mi letra. Las últimas dos páginas no son mías... ¿o sí? _(1ª lectura)_
+        - *Thomas (piensa):* Lo escribí yo. ¿Cuándo? _(2ª lectura)_
 
 #### Frasco de láudano `laudano`
 **Al interactuar:**
@@ -292,6 +315,10 @@ _Aparece si: !flag('lantern_taken')_
 - _Si no:_
   - _Si !flag('drank'):_
     - > **Elección:** 1) Un trago. Solo uno.  ·  2) Dejarlo.
+    - _Si c === 0:_
+      - *Thomas (piensa):* Las manos dejan de temblar. Esta noche dormiré más hondo. Demasiado.
+  - _Si no:_
+    - *Thomas (piensa):* Ya no queda.
 
 #### Reloj `clock`
 **Al interactuar:**
@@ -312,11 +339,6 @@ _Archivo: src/scenes/bucks_row.js_
 - **Pike:** Dos carreteros, sobre las tres cuarenta. Neil llegó detrás. Aún discuten cuál la encontró.
 - [Objetivo] Examinar el cuerpo. Hablar con Pike, con Neil y con el chico.
 
-### `onDeduce`
-- _Si deduced('d_brennan') && deduced('d_bisturi') && !flag('c1_done'):_
-  - [Objetivo] Volver al desolladero de Winthrop Street.
-  - *Thomas (piensa):* Brennan tiene que explicar ese cuchillo. Y el hospital, ese bisturí.
-
 ### Cosas con las que se interactúa
 
 #### Sargento Pike `pike`
@@ -327,7 +349,11 @@ _Archivo: src/scenes/bucks_row.js_
   - ¿Qué apunta en esa libreta, Pike? _(si !flag('pike_notes') && flag('pike_polly'))_
   - ¿Quién trabaja de noche por aquí? _(si hasClue('zurdo') && !flag('knackers_lead'))_
   - La hoja de rondas de esta noche. _(si flag('neil_times') && !hasClue('ronda'))_
+  - Déjeme ver su libreta, Pike. _(si second() && flag('pike_notes') && !flag('pike_book_read'))_
+  - Cerramos por esta noche, Pike. _(si canFinishC1(state).ok && !flag('c1_done'))_
   - Nada más.
+- _Si c === 'book':_
+  - **Pike:** ...Tome. No tengo nada que esconderle.
 - _Si c === 'doc':_
   - **Pike:** Llewellyn cree que los cortes los hizo un zurdo.
   - [+ Pista al cuaderno: zurdo]
@@ -408,10 +434,6 @@ _Aparece si: !flag('polly_taken')_
   - *Thomas (piensa):* Necesito la opinión de Llewellyn antes de irme.
 - [→ Escena: knackers]
 
-#### Hacia Baker's Row `east`
-**Al interactuar:**
-- _(sin texto)_
-
 ## El desolladero de Barber (Winthrop Street)
 _Archivo: src/scenes/knackers.js_
 
@@ -427,6 +449,7 @@ _Aparece si: !isMob(G)_
   - ¿Dónde estaba a las tres y media? _(si !flag('br_alibi'))_
   - ¿No oyeron nada? _(si !flag('br_heard') && flag('br_alibi'))_
   - (Mirar cómo trabaja) _(si !hasClue('brennan_zurdo'))_
+  - Esto es todo por esta noche. _(si canFinishC1(state).ok && !flag('c1_done'))_
   - Nada más.
 - _Si c === 'look':_
   - [+ Pista al cuaderno: brennan_zurdo]
@@ -486,6 +509,9 @@ _Archivo: src/scenes/foreshore.js_
 ### Al entrar en la escena
 _(sin texto)_
 
+### `onDeduce`
+- [Objetivo] Ir al agua.
+
 ### Cosas con las que se interactúa
 
 #### Algo en el barro `boat`
@@ -517,6 +543,7 @@ _Archivo: src/scenes/hanbury.js_
 
 ### Al entrar en la escena
 - **Pike:** Annie Chapman. Los de la casa la llamaban Dark Annie.
+- **Pike:** Hacía labores de ganchillo y vendía flores, cuando la salud la dejaba.
 - **Pike:** La encontró Davis, antes de las seis. Phillips espera que la vea antes de moverla.
 - [Objetivo] Examinar el cuerpo y el patio. Hablar con Pike, con el médico y con la casera.
 
@@ -554,8 +581,6 @@ _Archivo: src/scenes/hanbury.js_
     - **Greaves:** Habría preferido verte descansado.
   - **Greaves:** ¿Sigues tomando láudano? Si es así, no lo mezcles con ginebra.
   - [+ Pista al cuaderno: greaves_sabe]
-  - _Si hasClue('delantal'):_
-    - [Objetivo] Salir por el pasillo a Hanbury Street. | Mirar lo que hay junto a la valla, a los pies de Annie. Luego salir por el pasillo.
   - *Thomas (piensa):* Nunca le he contado a nadie lo del láudano. ¿Cómo lo sabe?
 - _Si no:_
   - **Greaves:** Sabes dónde encontrarme. Y aún conservo tu vieja ficha.
@@ -565,15 +590,13 @@ _Archivo: src/scenes/hanbury.js_
 - _Si !flag('amelia1'):_
   - **Sra. Richardson:** Diecisiete personas bajo este techo. Dígame cómo nadie oyó nada.
   - **Sra. Richardson:** Ese delantal lo lavé yo. Es de mi hijo John. ¿Va a escribirlo o va a preguntar otra vez?
-  - *Thomas (piensa):* Es del hijo de Richardson. También estaba junto al cuerpo; necesito conservar ambos datos.
+  - *Thomas (piensa):* Del hijo de la casera. Pero estaba a dos pasos del cuerpo.
 - _Si no:_
   - **Sra. Richardson:** Los de la ventana cobran por mirar. Yo vivo aquí y nadie me deja cerrar la puerta.
 
 #### Delantal de cuero `apron`
 **Al interactuar:**
 - [+ Pista al cuaderno: delantal]
-- _Si flag('greaves_met'):_
-  - [Objetivo] Salir por el pasillo a Hanbury Street. | Mirar lo que hay junto a la valla, a los pies de Annie. Luego salir por el pasillo.
 
 #### Algo junto a la valla `comb`
 _Aparece si: !flag('peine_taken')_
@@ -581,12 +604,10 @@ _Aparece si: !flag('peine_taken')_
 - *Thomas (piensa):* Dos púas rotas. Alguien dejó el peine fuera del montón.
 - > **Elección:** 1) Dárselo a Pike.  ·  2) Guardármelo.
 - _Si c === 0:_
-  - *Thomas (piensa):* ¿Cuándo lo guardé?
+  - **Pike:** Lo apunto: un peine de bolsillo, dos púas rotas, junto a la valla. Se queda con las pruebas.
 - _Si no:_
+  - [+ Objeto: peine]
   - *Thomas (piensa):* Me lo guardo. Más tarde se lo daré a Pike.
-- [+ Objeto: peine]
-- _Si hasClue('delantal') && flag('greaves_met'):_
-  - [Objetivo] Salir por el pasillo a Hanbury Street.
 
 #### Ventana trasera `window`
 **Al interactuar:**
@@ -595,7 +616,7 @@ _Aparece si: !flag('peine_taken')_
 
 #### Escalones `steps`
 **Al interactuar:**
-- *Thomas (piensa):* En esta casa duermen diecisiete personas, y hubo luz de sobra para verlo todo. Nadie vio nada.
+- *Thomas (piensa):* La tierra removida, y serrín encima. Alguien ya ha empezado a limpiar.
 
 #### El cuerpo de Annie Chapman `annie`
 _Aparece si: !flag('annie_taken')_
@@ -632,11 +653,12 @@ _Aparece si: !flag('annie_taken')_
 
 #### Pasillo a Hanbury Street `passage`
 **Al interactuar:**
-- _Si !hasClue('delantal') || !flag('greaves_met'):_
-  - *Thomas (piensa):* No me deja irme sin que mire el peine.
-- _Si !flag('peine_taken'):_
-  - *Thomas (piensa):* A los pies de Annie, junto a la valla, hay algo que los de Phillips no han recogido. Antes de irme quiero verlo.
-  - [Objetivo] Mirar lo que hay junto a la valla, a los pies de Annie.
+- _Si !gate.ok:_
+  - *Thomas (piensa):* Antes de irme: {gate.missing[0]}.
+  - [Objetivo] {gate.missing.join('; ').replace(/^./, (m) => m.toUpperCase())}. Luego salir por el pasillo.
+
+### Secuencia `hanburyObjective`
+- [Objetivo] Salir por el pasillo a Hanbury Street. | {gate.missing.join('; ').replace(/^./, (m) => m.toUpperCase())}. Luego salir por el pasillo.
 
 ## La consulta del Dr. Greaves (London Hospital)
 _Archivo: src/scenes/greaves.js_
@@ -672,6 +694,9 @@ _Archivo: src/scenes/greaves.js_
 
 #### Esqueleto `skeleton`
 **Al interactuar:**
+- _Si second() && !flag('s2_1879'):_
+  - [Visión: hands]
+  - *Thomas (piensa):* La mesa 3. Marzo de 1879. La enfermera junto al lavadero. Ahora lo veo entero.
 - *Thomas (piensa):* El sueño terminó aquí, en otra mesa. El resto está borrado.
 
 #### Puerta `door`
@@ -683,8 +708,7 @@ _Archivo: src/scenes/greaves.js_
 _Archivo: src/scenes/seance.js_
 
 ### Pista (botón de ayuda)
-- Cada letra son dos grupos de golpes: el primero es la fila de la tabla, el segundo la columna. Dos golpes y tres golpes: fila 2, columna 3. _(si flag('seance_done') && !hasClue('hospes'); si flag('knock_board'))_
-- En la pared, bajo la carta astral, hay una tabla de letras. Sin ella los golpes no se pueden leer. _(si flag('seance_done') && !hasClue('hospes'); si no)_
+- {{ if (hasClue('hospes')) return null; if (!flag('raps_heard')) return 'La mesa: antes de que Wexley empiece, conviene acercarse a ella y escuchar.'; return flag('knock_board') ? 'Cada letra son dos grupos de golpes: el primero es la fila de la tabla, el segundo la columna. Dos golpes y tres golpes: fila 2, columna 3.' : 'En la pared, bajo la carta astral, hay una tabla de letras. Sin ella los golpes no se pueden leer.'; }}
 
 ### Al entrar en la escena
 - **Madame Wexley:** Inspector Ashgrove. Ha llegado antes de lo previsto.
@@ -693,9 +717,14 @@ _Archivo: src/scenes/seance.js_
   - **Madame Wexley:** Una voz preguntó por usted. No le dije que viniera, pero está aquí.
 - _Si no:_
   - **Madame Wexley:** Si me la dictaran, cobraría más.
-- **Madame Wexley:** Siéntese. Lo que guarda en el bolsillo: póngalo sobre la mesa.
-- *Thomas (piensa):* El peine. No se lo he mostrado.
-- [Objetivo] Poner el peine de Annie sobre la mesa.
+- _Si state.flags.comb_custody === 'pike':_
+  - **Madame Wexley:** Siéntese. Esta mañana ha tenido algo de ella en las manos. Todavía lo lleva encima, aunque ya no lo tenga.
+  - *Thomas (piensa):* El peine. Se lo di a Pike. No se lo he contado a nadie.
+  - [Objetivo] Sentarse a la mesa de la sesión.
+- _Si no:_
+  - **Madame Wexley:** Siéntese. Lo que guarda en el bolsillo: póngalo sobre la mesa.
+  - *Thomas (piensa):* El peine. No se lo he mostrado.
+  - [Objetivo] Poner el peine de Annie sobre la mesa.
 
 ### Cosas con las que se interactúa
 
@@ -703,7 +732,8 @@ _Archivo: src/scenes/seance.js_
 **Al interactuar:**
 - _(sin texto)_
 **Al usar un objeto sobre ello:**
-- _(sin texto)_
+- _Si !hasClue('hospes'):_
+  - **Madame Wexley:** Todavía no. La mesa ya está diciendo algo; escúchela primero.
 
 #### Madame Orla Wexley `wexley`
 **Al interactuar:**
@@ -716,7 +746,8 @@ _Archivo: src/scenes/seance.js_
   - **Madame Wexley:** A un policía le cobraría el doble. A usted no le cobraré nada.
   - **Madame Wexley:** Aquí tapamos los espejos cuando alguien muere. Yo no lo hice. Creí que era más valiente.
 - _Si no:_
-  - **Madame Wexley:** El peine. No estoy fingiendo que no lo veo.
+  - **Madame Wexley:** Siéntese cuando quiera. Ella ya está aquí. _(si state.flags.comb_custody === 'pike')_
+  - **Madame Wexley:** El peine. No estoy fingiendo que no lo veo. _(si no)_
 
 #### Espejo `mirror`
 **Al interactuar:**
@@ -744,14 +775,14 @@ _Archivo: src/scenes/seance.js_
 **Al interactuar:**
 - *Thomas (piensa):* «T. A.» y mi fecha. ¿Quién le contó eso?
 - _Si !flag('knock_board'):_
+  - _Si flag('raps_heard') && !hasClue('hospes'):_
+    - [Objetivo] Leer los golpes con la tabla de letras de la pared (en la mesa).
   - *Thomas (piensa):* Dos grupos de golpes. Fila y columna. Como en las cárceles del zar.
 
 #### Salir a Fournier Street `door`
 **Al interactuar:**
 - _Si !flag('seance_done'):_
   - *Thomas (piensa):* Todavía no sé quién conoce a Nat.
-- _Si !hasClue('hospes'):_
-  - *Thomas (piensa):* Sin la tabla no puedo descifrar los golpes.
 
 ## Mitre Square (Catherine Eddowes)
 _Archivo: src/scenes/mitre.js_
@@ -775,7 +806,7 @@ _Archivo: src/scenes/mitre.js_
   - **Agente Watkins:** Paso aquí cada cuarto de hora. A la una y media, nada. A la una y cuarenta y cuatro, la vi.
   - **Agente Watkins:** Falta una pieza del delantal. Se la llevó quien lo hizo.
   - [+ Pista al cuaderno: trozo]
-  - **Agente Watkins:** Han encontrado a otra mujer en Berner Street. Stride. Dos casas van a esperar noticias.
+  - **Agente Watkins:** Han encontrado a otra mujer en Berner Street. Elizabeth Stride. Sueca, de cerca de Gotemburgo; en las pensiones la llamaban Long Liz.
 - _Si no:_
   - _Si c === 'witness':_
     - **Agente Watkins:** Tres hombres salían de un club de Duke's Place a la una y media. Uno vio a una mujer hablando con un hombre a la entrada de Church Passage.
@@ -786,9 +817,13 @@ _Archivo: src/scenes/mitre.js_
   - _Si no:_
     - _Si c === 'name':_
       - **Agente Watkins:** Cuando salió de Bishopsgate dio un nombre que quizá no fuera suyo: Mary Ann Kelly.
-      - **Agente Watkins:** En la pensión la llamaban Kate Eddowes.
+      - **Agente Watkins:** En la pensión la llamaban Kate Eddowes. Volvía de Kent, de la recogida del lúpulo, con su compañero, John Kelly.
 **Al usar un objeto sobre ello:**
+- _Si flag('mitre_badge'):_
+  - *Thomas (piensa):* Ya la ha visto.
 - **Agente Watkins:** División H. Adelante. Y tenga las manos donde pueda verlas.
+- _Si perception.othersNotice(state.sanity):_
+  - **Agente Watkins:** ¿Se encuentra bien, inspector? Le tiemblan.
 - **Agente Watkins:** ¿Cómo llegó antes que mi aviso?
 - [+ Pista al cuaderno: rapido]
 - [Objetivo] Averiguar qué encontró Watkins y si alguien vio algo.
@@ -801,6 +836,8 @@ _Archivo: src/scenes/mitre.js_
 
 #### El cuerpo, en la esquina más oscura `corner`
 **Al interactuar:**
+- _Si !flag('mitre_badge'):_
+  - [Aviso] Watkins no me deja acercarme sin ver la placa.
 - *Thomas (piensa):* Aquí nadie podía verlo trabajar.
 
 #### La cara `cara`
@@ -836,11 +873,15 @@ _Archivo: src/scenes/mitre.js_
 
 #### Morris, el vigilante `morris`
 **Al interactuar:**
+- _Si !flag('mitre_badge'):_
+  - [Aviso] Watkins no me deja acercarme sin ver la placa.
 - **Morris:** Tenía la puerta entornada. No oí ni una palabra.
 - **Morris:** Fui agente veinte años. No me acostumbro a esto.
 
 #### Hacia Goulston Street `east`
 **Al interactuar:**
+- _Si !gate.ok:_
+  - *Thomas (piensa):* Todavía no. Me falta {gate.missing[0]}.
 - *Thomas (piensa):* Hacia el este. El trozo de delantal no habrá llegado muy lejos.
 
 ### Secuencia `mitreObjective`
@@ -911,6 +952,8 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 
 ### `prologueBoat`
 - [Objetivo] Acercarse al río.
+- _Si second() && !flag('s2_prologue'):_
+  - *Thomas (piensa):* En el agua hay un hombre con bombín. No se agacha conmigo.
 
 ### `prologueWater`
 - _Si !flag('boat'):_
@@ -942,35 +985,55 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - _Si no:_
   - **Wren:** Si prefiere no creerme, tampoco voy a cobrarle por eso.
 - [+ Pista al cuaderno: regla]
-- *Thomas (piensa):* El bisturí y el informe de Llewellyn. Ahí está el nexo.
+- *Thomas (piensa):* Un bisturí del London Hospital, a dos pasos de ella.
 
 ### `c1Objective`
-- _Si !hasClue('brennan_zurdo'):_
-  - [Objetivo] Fijarse en cómo trabaja Brennan. Luego, en el cuaderno, relacionarlo con lo que dijo el forense.
-- _Si no:_
-  - _Si !deduced('d_brennan') || !deduced('d_bisturi'):_
-    - [Objetivo] En el cuaderno: relacionar a Brennan y el bisturí con lo que dijo el forense.
+- _Si !gate.ok:_
+  - [Objetivo] {gate.missing[0].replace(/^./, (m) => m.toUpperCase())}.
+- [Objetivo] Cuando quiera: cerrar la noche con Pike en Buck's Row, o con Brennan en el desolladero.
+
+### `closeC1`
+- > **Menú de conversación** (las opciones que aparecen según lo ya hecho):
+  - Brennan: hay que vigilarlo. _(si hasClue('brennan_zurdo'))_
+  - Brennan: no hay nada contra él.
+- _Si who === 'pike':_
+  - **Pike:** Lo vigilaremos. Con cuidado: aquí se cuelga a la gente por menos. _(para "suspect")_
+  - **Pike:** Lo apunto así. Será el único que lo escriba esta semana. _(para "clear")_
+  - **Pike:** Prudente. El barrio no lo será. _(para "unsure")_
 
 ### `beats`
 - [Documento] DIVISIÓN H — RONDAS Noche del 30 al 31 de agosto de 1888 PC 97J Neil. Buck's Row, Brady Street, Baker's Row. Vuelta de media hora: pasa ante el portón del establo a las y cuarto y a menos cuarto. PC 96J Thain. Brady Street. A las y media se detiene en la esquina de Buck's Row y alumbra la calle con la linterna. PC 55H Mizen. Baker's Row y Hanbury Street. Desde su punto no se ve Buck's Row. Declaraciones: Thain alumbró Buck's Row a las 3:30; no había nada en el suelo. Charles Cross, carretero, entró en la calle a las 3:40 y la encontró delante del portón. {two('Firmado: el inspector de guardia', 'Firmado: T. Ashgrove, inspector de guardia')}
+- _Si knowsPuzzles(G):_
+  - > **Elección:** 1) Ya lo sé: de 3:30 a 3:40.  ·  2) Leer la hoja otra vez.
+  - _Si k === 0:_
+    - [+ Pista al cuaderno: ronda]
+    - *Thomas (piensa):* Yo firmé estas rondas.
 - *Thomas (piensa):* ¿En qué intervalo quedó el portón fuera de vista?
 - > **Elección:** 1) Entre las 3:15 y las 3:45: entre dos pasadas de Neil.  ·  2) Entre las 3:15 y las 3:30.  ·  3) Entre las 3:30 y las 3:40.  ·  4) Entre las 3:40 y las 3:45.  ·  5) Mirar otra vez la hoja.
 - *Thomas (piensa):* No. A las 3:30 Thain alumbró la calle desde Brady Street, y no había nadie en el suelo. _(vez 1)_
 - *Thomas (piensa):* Entonces Thain la habría visto al alumbrar a las 3:30. No había nada. _(vez 2)_
 - *Thomas (piensa):*  _(vez 3)_
 - *Thomas (piensa):* A las 3:40 ya estaba muerta: Cross la encontró. _(vez 4)_
+- _Si misses === perception.beatsHelpAfter(state.sanity):_
+  - *Thomas (piensa):* Lo que importa son dos horas: cuándo alumbró Thain la calle vacía, y cuándo llegó Cross y la encontró.
 - [+ Pista al cuaderno: ronda]
 - *Thomas (piensa):* De 3:30 a 3:40. Conocía esa ventana o tuvo mucha suerte.
 - _Si second():_
   - *Thomas (piensa):* Yo firmé estas rondas.
 
 ### `endC1`
-- **Brennan:** Si va a decir algo, inspector, dígalo mirándome.
-- *Thomas (piensa):* Un matarife a cien yardas. Un bisturí de mi viejo hospital. Faltan hechos.
-- **Wren:** No fue él.
-- **Thomas:** ¿Cómo lo sabes?
-- **Wren:** Anoche seguía aquí. Yo estaba junto al río. _(1ª lectura)_
-- **Wren:** Él no huele al Ditch. _(2ª lectura)_
+- _Si who === 'brennan' && actor('Brennan'):_
+  - **Brennan:** Si va a decir algo, inspector, dígalo mirándome. _(si state.flags.brennan_stance === 'suspect')_
+  - **Brennan:** Váyase a dormir, inspector. Tiene cara de no haberlo hecho. _(si no)_
+  - *Thomas (piensa):* Un matarife a cien yardas. Un bisturí de mi viejo hospital. Faltan hechos.
+  - **Wren:** No fue él.
+  - **Thomas:** ¿Cómo lo sabes?
+  - **Wren:** Anoche seguía aquí. Yo estaba junto al río. _(1ª lectura)_
+  - **Wren:** Él no huele al Ditch. _(2ª lectura)_
+- _Si no:_
+  - _Si pike:_
+    - **Pike:** Las cuatro y cincuenta y ocho. Ya está, señor.
+  - *Thomas (piensa):* Un bisturí de mi viejo hospital. Faltan hechos.
 
 ### `leaveHanbury`
 - [Documento] 27 Fournier Street Inspector Ashgrove: Los muertos piden hablar con usted. No suelen pedir a nadie por su nombre. Esta noche, a las once. Traiga lo que lleva en el bolsillo. — O. Wexley
@@ -979,6 +1042,9 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - [→ Escena: seance]
 
 ### `seance`
+- _Si !onTable:_
+  - **Madame Wexley:** No hace falta tocarlo. Descríbamelo.
+  - **Thomas:** Un peine de bolsillo. Dos púas rotas. Estaba apartado de sus otras cosas.
 - **Madame Wexley:** Pongan las manos en la mesa. No suelten a nadie.
 - **Madame Wexley:** Hay una mujer... No. Alguien se ha puesto delante.
 - **Madame Wexley (la voz):** _Tommy._
@@ -992,20 +1058,44 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - **Madame Wexley (la voz):** _No hace falta que me busques. Ya te encontré._
 - **Madame Wexley:** ¡No! ¡No me mire a mí! ¡Mire detrás de usted!
 - [Visión: nichols]
+- _Si hasClue('hospes'):_
+  - *Thomas (piensa):* HOSPES. El que entra en una casa. Y el que lo recibe.
 - **Madame Wexley:** No voy a volver a abrir la boca con usted aquí.
 - [+ Pista al cuaderno: alguien_detras]
 - *Thomas (piensa):* Había alguien detrás de mí. O lo vio Wexley. O quiso que yo lo creyera.
-- [Objetivo] Descifrar los golpes de la mesa. En la pared había una tabla de letras.
+- [Objetivo] Salir a Fournier Street. | Leer los golpes de la mesa. En la pared había una tabla de letras.
+
+### `tableKnocks`
+- _Si w:_
+  - **Madame Wexley:** Yo no he empezado. ¿Lo ha oído usted también?
+- *Thomas (piensa):* Seis grupos de golpes, dos a dos. Los apunto.
+- [Objetivo] Leer los golpes con la tabla de letras de la pared (en la mesa). | Leer los golpes. En la pared, bajo la carta astral, hay algo con letras.
 
 ### `raps`
-- _Si !ok:_
+- _Si w:_
+  - **Madame Wexley:** Fila y columna. Me lo enseñó un preso de Odesa. Hache. O. Ese. Lo demás, léalo usted.
+- _Si knowsPuzzles(G) && flag('knock_board'):_
+  - > **Elección:** 1) Ya sé lo que dicen: HOSPES.  ·  2) Leerlos otra vez.
+  - _Si k === 0:_
+    - [+ Pista al cuaderno: hospes]
+- _Si !res.ok:_
   - *Thomas (piensa):* Más tarde. Fila y columna; tiene que salir algo. _(si flag('knock_board'))_
   - *Thomas (piensa):* Sin la tabla de la pared no hay manera de leerlos. _(si no)_
 - [+ Pista al cuaderno: hospes]
-- *Thomas (piensa):* HOSPES. El que entra en una casa. Y el que lo recibe.
-- *Thomas (piensa):* No pienso creer a una médium por un puñado de golpes. _(1ª lectura)_
-- *Thomas (piensa):* No estaba dando el nombre de un muerto. _(2ª lectura)_
-- [Objetivo] Salir a Fournier Street.
+- *Thomas (piensa):* HOSPES. Latín. El huésped.
+
+### `afterRaps`
+- _Si second():_
+  - _Si w:_
+    - **Madame Wexley:** No le hablan a un muerto, inspector. Le hablan a usted.
+- _Si !flag('seance_done'):_
+  - [Objetivo] Sentarse a la mesa de la sesión. | Poner el peine de Annie sobre la mesa.
+- _Si no:_
+  - [Objetivo] Salir a Fournier Street.
+
+### `pikeBook`
+- [Documento] Libreta del sargento A. Pike 7 ago. — Tabram, George Yard. Avisado el inspector a las 3:10. Llega a las 3:20. Botas mojadas. 31 ago. — Nichols, Buck's Row. Avisado a las 4:00. Llega a las 4:12. Botas mojadas. Barro negro. Llega siempre antes de lo que tarda en venir desde Thrawl Street.
+- *Thomas (piensa):* Doce minutos. Diez. No venía de mi cuarto.
 
 ### `leaveSeance`
 - [Rótulo] 10 de septiembre — Winthrop Street, de noche
@@ -1020,14 +1110,24 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
   - Ordenar que lo escolten a salvo.
 - _Si outcome === 'severe':_
   - **Thomas:** Queda detenido, Brennan. ¡Retírense!
+  - _Si flag('amelia1'):_
+    - *Thomas (piensa):* El delantal lo lavó la señora Richardson. Era de su hijo. Lo sabía.
 - _Si no:_
   - _Si outcome === 'injured':_
     - **Thomas:** ¡Basta! ¡Nadie aquí puede demostrar nada!
   - _Si no:_
     - **Thomas:** ¡Pike! Sáquelo por detrás. Yo los entretengo.
     - **Pike:** Vamos, Silas. No se detenga.
-- **Wren:** Usted sabía que no tenía nada contra él.
-- > **Elección:** 1) Lo sospechaba.  ·  2) (No decir nada)
+- _Si outcome === 'protected':_
+  - **Wren:** Lo ha sacado de ahí. No pensé que un policía lo haría.
+  - > **Elección:** 1) Era lo que había que hacer.  ·  2) (No decir nada)
+- _Si no:_
+  - **Wren:** Usted sabía que no tenía nada contra él. _(si outcome === 'severe')_
+  - **Wren:** Lo dijo tarde. Ya le habían dado. _(si no)_
+  - > **Elección:** 1) Lo sospechaba. | No me dejaron.  ·  2) (No decir nada)
+  - _Si r === 0:_
+    - **Wren:** Sospechar no es saber, señor. _(si outcome === 'severe')_
+    - **Wren:** Ya. _(si no)_
 - [Rótulo] Al día siguiente detuvieron a John Pizer, a quien el barrio llamaba «Leather Apron». Tenía coartada y lo soltaron.
 - [Rótulo] Brennan regresó a su trabajo. Nunca volvió a hablar con la policía. | Brennan no volvió al desolladero.
 
@@ -1059,19 +1159,27 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 
 ### `endChase`
 - **La voz (la voz):** _Bien, Tommy._
+- _Si outcome === 'injured':_
+  - *Thomas (piensa):* Me he abierto la mano en la tapia de Wentworth Street. No sé cuándo.
+- _Si no:_
+  - _Si outcome === 'spotted':_
+    - *Thomas (piensa):* El agente de la linterna me vio la cara. Un momento. Bastó.
 - [→ Escena: room]
 - [Objetivo] Leer el periódico. Mirar debajo de la cama.
 
 ### `readPaper`
-- [Documento] THE DAILY NEWS — 1 de octubre de 1888 LOS CRÍMENES DEL EAST END. LA CARTA FIRMADA «JACK THE RIPPER». Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con tinta roja, menciona al «Leather Apron» y reivindica los crímenes: "I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..." Yours truly / Jack the Ripper Se ruega a quien reconozca la letra que se presente en Scotland Yard.
+- [Documento] THE DAILY NEWS — 1 de octubre de 1888 LOS CRÍMENES DEL EAST END. LA CARTA FIRMADA «JACK THE RIPPER». Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con tinta roja, menciona al «Leather Apron» y reivindica los crímenes: "I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..." Yours truly / Jack the Ripper Se ruega a quien reconozca la letra que se presente en Scotland Yard. {{ spotted: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. Asegura que podría reconocerlo.', injured: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.' }[state.flags.chase_outcome] || ''}
 - [+ Pista al cuaderno: carta]
 - *Thomas (piensa):* Fechada el 25. La noche que perdí. _(1ª lectura)_
 - *Thomas (piensa):* Fechada el 25. Faltaban tres pliegos en mi mesa. _(2ª lectura)_
 - _Si second():_
   - **La voz (la voz):** _Jack._
-- *Thomas (piensa):* Greaves usaba ese trazo. Tendré que compararlo.
-- _Si flag('accused'):_
+- *Thomas (piensa):* Esa letra la he visto antes. En el escritorio tengo letras de todos.
+- _Si bo === 'severe':_
   - *Thomas (piensa):* Brennan sigue sin poder trabajar. No he rectificado la acusación.
+- _Si no:_
+  - _Si bo === 'injured':_
+    - *Thomas (piensa):* Brennan perdió su trabajo. Nadie lo ha rectificado. Yo tampoco.
 
 ### `c3bObjective`
 - [Objetivo] {`${left.join('; ')}.`.replace(/^./, (m) => m.toUpperCase())} | Salir.
@@ -1079,11 +1187,13 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 ### `compareHands`
 - [Documento] Una carta y cuatro escrituras La carta, tal como la reproduce el Daily News: "Dear Boss... Yours truly, Jack the Ripper" La nota de Madame Wexley:Mano redondeada y espaciada. "Los muertos piden hablar con usted..." Un informe del sargento Pike, con mis correcciones en rojo:Letra cerrada y recta. "Ronda sin novedad. Las farolas de Buck's Row siguen sin gas..." La receta del láudano, del doctor Greaves:Letras unidas, la J con una cola larga, el remate de las t muy corto. "Tinctura opii. Veinte gotas al acostarse. — L. G." El recibo del desolladero de Barber, de Silas Brennan:"X — su marca" {two('', 'Mis apuntes de anatomía, cuarto curso, 1878:La misma J, las mismas t. "Carótida: corre junto a la tráquea..."')}
 - *Thomas (piensa):* Esa J. Esas t. Las conozco.
-- > **Elección:** 1) Madame Wexley.  ·  2) Pike.  ·  3) Greaves.  ·  4) Brennan.  ·  5) {...(second() ? ['La mía.'] : [])}  ·  6) Revisar las muestras.
-- _Si pick === 'Greaves.':_
+- > **Elección:** 1) Madame Wexley.  ·  2) Pike.  ·  3) Greaves: se parece a la suya.  ·  4) Brennan.  ·  5) {...(second() ? ['La mía.'] : [])}  ·  6) La muestra no basta. Necesito más pruebas.  ·  7) Revisar las muestras.
+- _Si pick.startsWith('Greaves'):_
   - *Thomas (piensa):* Es una escritura parecida. No es una identificación.
 - _Si pick === 'La mía.':_
   - *Thomas (piensa):* Es mi propia letra. Copié a Greaves años atrás.
+- _Si pick.startsWith('La muestra'):_
+  - *Thomas (piensa):* Una carta impresa en un periódico y cuatro letras de mi mesa. Con esto no se acusa a nadie.
 - *Thomas (piensa):* No coincide con Wexley. _(para "Madame Wexley.")_
 - *Thomas (piensa):* No coincide con Pike. Sus notas sí llevan mis correcciones. _(para "Pike.")_
 - *Thomas (piensa):* Brennan firmó con una cruz. No hay muestra suficiente. _(para "Brennan.")_
@@ -1103,6 +1213,18 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - *Thomas (piensa):* En 1866 ya me oyó el agua. Esto volvió a ocurrir. _(si flag('answered1866'))_
 - *Thomas (piensa):* En 1866 callé. En el hospital no. _(si no)_
 - **Greaves:** La encontraste.
+- _Si hand === 'greaves_like':_
+  - **Greaves:** Pensaste que la carta era mía. Te enseñé a escribir así; no a firmar eso.
+- _Si no:_
+  - _Si hand === 'inconclusive':_
+    - **Greaves:** No acusaste a nadie por una letra. Siempre fuiste prudente con las pruebas. Con las tuyas también.
+  - _Si no:_
+    - _Si hand === 'self_recognition':_
+      - **Greaves:** Reconociste tu letra. Yo la reconocí en marzo de 1879.
+- _Si state.flags.chase_outcome === 'injured':_
+  - **Greaves:** Y esa mano. ¿Quién te la ha cosido?
+- _Si perception.othersNotice(state.sanity):_
+  - **Greaves:** No duermes. Se te ve en los ojos, Thomas.
 - **Greaves:** Aquel día te hallé en la sala. No sé lo que ocurrió antes.
 - **Greaves:** Pike vino a preguntarme si alguien puede actuar sin recordarlo. Le respondí que sí.
 - > **Elección:** 1) Me está acusando a mí.  ·  2) ¿Y si tiene razón?  ·  3) ¿Le habló usted de Nat a Wexley?
@@ -1117,21 +1239,29 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - [Visión: hands]
 - **Greaves:** Thomas... mírame. Por favor.
 - **Pike:** Thomas. Soy Pike. No voy a entrar sin avisarte.
+- **Pike:** Nadie te vio en Wentworth Street. Eso es lo que más me asusta. _(para "clean")_
+- **Pike:** El agente Long dice que te vio la cara en Wentworth Street. No le he contestado. _(para "spotted")_
+- **Pike:** Long encontró sangre en la tapia de Wentworth Street. Y tú llevas la mano cosida. _(para "injured")_
 - **Pike:** Traigo tus rondas. Tu firma. No sé aún cuánto hiciste, pero no puedo dejarte marchar.
 - > **Elección:** 1) «Deténgame, Pike».  ·  2) «Proteja a Wren. La niña del río».  ·  3) (Romper el folio del expediente que me señala)
 - _Si last === 0:_
   - **Thomas:** Póngame las esposas antes de que cambie de opinión.
   - **Pike:** De acuerdo. Déjame pasar.
+  - **Pike:** Las manos, Thomas.
 - _Si no:_
   - _Si last === 1:_
-    - **Thomas:** Hay una niña. Wren. Evite que vuelva al río.
-    - **Pike:** Lo haré. Tienes mi palabra.
+    - **Thomas:** Hay una niña. Wren. Duerme en las cajas del desolladero de Barber. Que no vuelva al Ditch.
+    - **Pike:** Barber, Winthrop Street. Esta noche. Tienes mi palabra.
   - _Si no:_
-    - **Pike:** Romperlo no cambia lo que sabemos.
+    - **Pike:** Romperlo no cambia lo que sabemos. La enfermera Bell sigue viva, Thomas.
 - [Rótulo] 9 de noviembre — Limehouse, 2:30 de la madrugada
 - [→ Escena: foreshore]
 
 ### `finaleIntro`
+- _Si tried:_
+  - *Thomas (piensa):* Llevo una esposa cerrada en la muñeca derecha. La otra cuelga abierta. _(para "surrender")_
+  - *Thomas (piensa):* Se lo dije a Pike: Barber, las cajas. Eso lo recuerdo. _(para "warn_wren")_
+  - *Thomas (piensa):* Tengo entre los dedos un trozo de papel con la mitad de una firma. _(para "destroy_page")_
 - *Thomas (piensa):* Yo abrí la puerta. _(si flag('answered1866'))_
 - *Thomas (piensa):* Callé aquella noche. No la siguiente. _(si no)_
 - *Thomas (piensa):* Greaves, Pike, el bisturí, la carta. Un mismo hombre.
@@ -1140,22 +1270,32 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - [Objetivo] En el cuaderno: comparar mi ficha con al menos tres pruebas independientes. Una hipótesis sin prueba no cuenta.
 
 ### `outfall1888`
-- _Si finals(G) < 3:_
+- _Si !canEnterFinale(state).ok:_
   - *Thomas (piensa):* Todavía no. Antes tengo que estar seguro. El cuaderno.
 - **La voz (la voz):** _Ven al agua, Tommy._
 
 ### `finaleWater`
-- _Si finals(G) < 3:_
+- _Si !canEnterFinale(state).ok:_
   - *Thomas (piensa):* Primero comprobaré lo que sé. No voy a contestar a ciegas.
-- _Si flag('sospecha_pike') || flag('sospecha_greaves') || flag('accused'):_
-  - *Thomas (piensa):* Busqué en Brennan, en Greaves, en Pike. Busqué en todos menos en el agua.
-- *Thomas (piensa):* Mi letra. Mis rondas. Mi bisturí.
+- _Si !flag('water_before'):_
+  - _Si flag('sospecha_pike') || flag('sospecha_greaves') || flag('accused'):_
+    - *Thomas (piensa):* Brennan, Greaves, Pike. A todos los puse delante de mí.
+  - *Thomas (piensa):* Mi letra. Mis rondas. Mi bisturí.
 - **La voz (la voz):** _Thomas._
-- > **Elección:** 1) Responder.  ·  2) No responder.
-- _Si flag('answered1866'):_
-  - *Thomas (piensa):* Ya lo sabía; no quiero oírlo otra vez.
-- > **Elección:** 1) No decir nada.  ·  2) Cerrar la boca con la mano.
-- **Thomas:** Aquí estoy.
+- > **Elección:** 1) Responder.  ·  2) Callar.  ·  3) Taparme la boca.  ·  4) Todavía no estoy seguro.
+- _Si att === 'unsure':_
+  - *Thomas (piensa):* No. Otra vez el cuaderno. Quiero estar seguro.
+- _Si att === 'answer':_
+  - _Si flag('answered1866'):_
+    - *Thomas (piensa):* Ya lo dije una vez.
+  - **Thomas:** Aquí estoy.
+- _Si no:_
+  - _Si att === 'silent':_
+    - **Thomas:** Aquí estoy.
+    - *Thomas (piensa):* No lo he dicho yo.
+  - _Si no:_
+    - **Thomas:** (Entre los dedos) Aquí estoy.
+    - *Thomas (piensa):* La mano no baja. No es mía.
 - **La voz (la voz):** _Escucha._
 - *Thomas (piensa):* El mío ya no viene cuando lo llamo.
 - [Visión: hands]
@@ -1166,23 +1306,29 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 ### `epilogue`
 - **Wren:** ¡Señor! Lo busca la policía. Y los hombres que no son policía.
 - _Si intent === 'warn_wren':_
-  - **Wren:** Pike me encontró. Me dijo que no volviera al Ditch. Lo intenté.
+  - **Wren:** Pike vino a las cajas a buscarme. Me dio su silbato. Dijo que lo tocara si usted se acercaba.
 - _Si no:_
   - _Si intent === 'surrender':_
-    - **Wren:** Pike tiene su placa. La recoge y la deja, como si quemara.
+    - **Wren:** Lleva una esposa puesta. Pike va por ahí con la otra, abierta, colgando del cinturón.
   - _Si no:_
     - _Si intent === 'destroy_page':_
-      - **Wren:** Lleva un papel roto en la manga.
+      - **Wren:** Lleva un papel roto en la manga. Pike tiene la otra mitad.
 - _Si flag('wren_paid'):_
   - **Wren:** Su penique. Se ha puesto frío. No lo quiero.
 - **Wren:** Dígame su nombre, señor. El que le puso su madre.
-- **Wren:** Era Thomas. Puede acordarse. _(si state.sanity >= 40)_
-- **Wren:** No era este. Antes tenía otro. _(si no)_
+- **Wren:** {lead} {what}
 - [Rótulo] Yours truly, Jack the Ripper — Don't mind me giving the trade name.
-- [Rótulo] El 9 de noviembre de 1888, Mary Jane Kelly fue asesinada en Miller's Court. Fue la última de las cinco víctimas canónicas; la identidad del asesino no quedó establecida.
+- [Rótulo] El 9 de noviembre de 1888, Mary Jane Kelly fue asesinada en Miller's Court. Tenía unos veinticinco años. Esa noche, una vecina la oyó cantar. Fue la última de las cinco víctimas canónicas; la identidad del asesino no quedó establecida.
 - [Rótulo] Silas Brennan no volvió a andar sin bastón. Nadie le pidió perdón. | Brennan sobrevivió a la turba, pero perdió su trabajo. Nadie rectificó la acusación. | Brennan sobrevivió sin heridas aquella noche. No volvió a hablar con Thomas.
-- [Rótulo] Nadie volvió a ver al inspector Thomas Ashgrove.
-- [Rótulo] El Black Ditch sigue corriendo bajo el East End.
+- _Si intent === 'destroy_page':_
+  - [Rótulo] El expediente de 1879 se archivó con un folio roto. La enfermera Bell volvió a declarar.
+- _Si no:_
+  - _Si intent === 'surrender':_
+    - [Rótulo] El sargento Pike guardó la esposa abierta en un cajón de la comisaría de Commercial Street.
+  - _Si no:_
+    - _Si intent === 'warn_wren':_
+      - [Rótulo] Wren no volvió a dormir junto al Ditch.
+- [Rótulo] Nadie volvió a ver al inspector Thomas Ashgrove. El Black Ditch sigue corriendo bajo el East End.
 - [Rótulo] El Huésped — Fin
 
 ## El cuaderno: objetos, pistas y deducciones

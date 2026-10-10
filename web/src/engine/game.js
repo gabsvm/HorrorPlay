@@ -15,6 +15,7 @@ import { prefs } from './prefs.js';
 import { normalizeState, currentGate, canEnterFinale } from '../story/progression.js';
 import { statuses } from '../story/theories.js';
 import { perception } from '../story/perception.js';
+import { metrics } from './metrics.js';
 
 const wait = (ms) => new Promise((r) => setTimeout(r, window.FAST ? 0 : ms));
 const SAVE_KEY = 'elhuesped.save.v1';
@@ -127,6 +128,7 @@ export class Game {
     v.addEventListener('pointerleave', () => { this.pointer.inside = false; });
     v.addEventListener('pointerdown', (e) => {
       audio.init();
+      metrics.input();
       const p = this.toLogical(e);
       Object.assign(this.pointer, p, { touch: e.pointerType === 'touch' });
       if (this.ui._advance) { this.ui.advance(); return; }
@@ -211,7 +213,7 @@ export class Game {
     if (this.player.fidget) { if (this.player.pose === 'inspect') this.player.pose = null; this.player.fidget = null; this.player.shiver = 0; this.player.stillT = 0; }
     const h = this.hotspotAt(p);
     if (!h) {
-      if (this.selectedItem) { this.selectItem(null); return; }
+      if (this.selectedItem) { this.selectItem(null); metrics.invalidClick(); return; }
       const wx = p.x + this.r.cam.x;
       const [a, b] = this.scene.walk;
       this.player.walkTo(Math.max(a, Math.min(b, wx)));
@@ -249,6 +251,7 @@ export class Game {
           const handled = await h.use(G, item);
           if (handled !== false) { settle(); return; }
         }
+        metrics.wrongItem();
         await G.think(this.itemDefs[item].wrong || this.wrongUse(h));
         settle();
         return;
@@ -325,6 +328,7 @@ export class Game {
   // answers: the two clues that fit, or the scene's own hint, with everything that can be touched
   // shown for a moment.
   hint() {
+    metrics.hint();
     const st = this.state, G = this.G;
     const key = `${st.objective}|${st.deductions.length}|${st.clues.length}|${st.scene}`;
     const again = this._hintKey === key;
@@ -703,6 +707,7 @@ export class Game {
   async startChapter(id, snapshot) {
     this.state = normalizeState(snapshot ? JSON.parse(JSON.stringify(snapshot)) : this.state);
     this.state.chapter = id;
+    metrics.chapter(id, this.state);
     this.selectedItem = null;
     this.madTarget = 0;
     this.r.fx.desat = 0;

@@ -166,3 +166,19 @@ Cada deducción **de tipo inferencia sustentada** añade un rasgo al **Perfil de
 - **Prueba vs. hipótesis:** si una frase expresa una conclusión de Thomas sin evidencia suficiente, debe quedar como sospecha subjetiva; las deducciones guardadas no la convierten en verdad confirmada.
 - **Recorrido del jugador:** las entradas informativas, pistas y documentos permanecen accesibles. Las observaciones eliminadas NO son requisitos ocultos de progresión. Un silencio debe tener feedback interactivo real y no obligar al jugador a clickear sin saber si funcionó.
 - **Ritmo:** cada escena combina un beat de observación, una acción del jugador y una consecuencia; evitar cadenas de 4–5 cuadros que repiten la misma evidencia. No multiplicar símbolos sobrenaturales si ya hay una pista clara.
+
+## 9. Mecánicas implementadas (no cambian el canon)
+
+El canon sigue igual: la entrada exige una respuesta voluntaria (en 1866 o, si el niño calla, en 1879), el Huésped ya está dentro cuando suena «Aquí estoy» en el agua, la carta se escribe en la noche del 24 al 25 de septiembre, se fecha el 25 y llega el 27, Thomas es el culpable físico y el final es trágico. Lo que sigue son reglas de juego.
+
+- **Pruebas, hipótesis y teorías.** Relacionar dos pruebas da una conclusión; las que son suposiciones quedan marcadas como *hipótesis* o *inferencia*. Las preguntas del caso (¿alguien entra o salgo yo?, ¿Brennan o el barrio?, ¿quién escribió la carta?, ¿qué explica las horas perdidas?) se muestran con lo que sostiene y lo que contradice cada explicación; ninguna hay que elegirla para avanzar, y nada señala a Thomas antes del capítulo IV.
+- **Avanzar con pruebas, no con acusaciones.** El capítulo I se cierra cuando Thomas lo decide (con Pike o con Brennan) si tiene el caso de Pike, el bisturí de Wren y al menos una conclusión con pruebas. Su postura sobre Brennan (vigilarlo, nada contra él, no lo sé) queda escrita y la turba la recuerda.
+- **El peine.** Se respeta lo elegido: si Pike se lo queda, la sesión empieza sin el objeto y Wexley lo sabe igual.
+- **La sesión.** La mesa golpea antes de empezar; leer HOSPES es la entrada a la sesión, con ayuda que crece en cada fallo; el susto es la recompensa.
+- **La letra.** «La muestra no basta» es una respuesta válida; Greaves recuerda cómo la valoró Thomas.
+- **La persecución.** Los errores cuentan: limpia, vista o herida; el periódico, Pike y Greaves lo reflejan.
+- **Ante Pike.** Entregarse cierra la primera esposa antes de la laguna; avisar por Wren hace que Pike la proteja (ella guarda la distancia y su silbato); romper el folio no borra lo que se sabe (Bell vuelve a declarar).
+- **El agua.** Responder, callar o taparse la boca tienen cada una su escena; en las tres la boca dice «Aquí estoy» porque ya estaba dentro. «Todavía no» devuelve al cuaderno. El final exige tres pruebas de fuentes independientes.
+- **Cordura como percepción.** Firme (≥65): las pruebas se leen mejor. Tensa (36–64): la habitación contesta a veces. Desgastada (≤35): lo del otro lado se ve más claro (el método de los golpes, la luz del Ditch) y los hechos se dudan más; la gente lo nota. Ninguna banda bloquea nada ni muestra pistas falsas.
+- **Segunda lectura.** Un momento nuevo por capítulo (el hombre del agua, la libreta de Pike, Wexley sabe a quién hablan los golpes, el borrador de la carta, la noche de 1879) y atajos por los puzles ya resueltos para quien terminó el juego.
+- **Víctimas.** Cada una tiene al menos un detalle humano documentado: Polly y su sombrero nuevo; Annie, el ganchillo y las flores; Elizabeth Stride, sueca, «Long Liz»; Catherine Eddowes, de vuelta del lúpulo de Kent con John Kelly; Mary Jane Kelly, unos veinticinco años, a la que una vecina oyó cantar.

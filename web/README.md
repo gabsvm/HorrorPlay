@@ -23,8 +23,12 @@ Abre `http://localhost:5317`. No necesita instalar nada ni compilar: son módulo
 | Cuaderno (pistas y deducciones) | N o botón **Cuaderno** | Botón |
 | Avanzar diálogo | Clic, Espacio o Intro | Toque |
 | Menú / cancelar | Esc | Botón **Menú** |
+| Acortar un rótulo o una tarjeta | Clic, Espacio o Intro | Toque |
+| Elegir una opción | Clic o tecla 1–9 | Toque |
 
-En el cuaderno se seleccionan dos pistas para relacionarlas. Las deducciones hacen avanzar la historia y van completando el perfil del asesino.
+El cuaderno tiene las **pruebas** a la izquierda y, a la derecha, tres pestañas: **Conclusiones** (lo que sale de relacionar dos pruebas; las suposiciones van marcadas como *hipótesis* o *inferencia*), **Teorías** (las preguntas abiertas del caso, con lo que sostiene y lo que contradice cada explicación) y **Perfil**. «¿Qué hago ahora?» da primero el objetivo y lo que falta para seguir; preguntado otra vez, la pareja de pruebas que encaja o la pista de la escena. Nunca hace falta acusar a nadie para avanzar.
+
+Opciones: volumen, velocidad del texto, calidad, **Lo ya leído** (al instante o tecleado de nuevo), **Movimiento** (reducido: sacudidas y destellos suaves; empieza como pida el sistema) y vibración.
 
 ## Estructura
 
@@ -52,25 +56,22 @@ El audio también es procedural, con música compuesta para cada estado: cuerdas
 
 ## Pruebas
 
-Sin navegador, desde la raíz del repositorio:
+Sin navegador, desde la raíz del repositorio, todo de una vez:
 
 ```bash
-node web/tools/smoke.mjs
+node web/tools/test-all.mjs
 ```
 
-```bash
-node web/tools/walk.mjs
-node web/tools/walk.mjs alt
-```
+Con `--quick` se saltan las tres partidas completas. Por separado:
 
-```bash
-node web/tools/audio-smoke.mjs
-```
+- `node web/tools/unit.mjs`: la lógica pura de `tests/unit/` (condiciones para avanzar, guardados viejos, teorías, cordura, firma, higiene).
+- `node web/tools/smoke.mjs`: pinta todas las escenas y sus variantes contra un canvas/WebGL simulado y estricto.
+- `node web/tools/audio-smoke.mjs`: todos los sonidos y la música contra un Web Audio simulado.
+- `node web/tools/walk.mjs`: el juego real con un DOM simulado, del prólogo a los créditos; `second` lo juega como segunda lectura; `alt` juega mal a propósito.
+- `node web/tools/walk.mjs <escenario>`: uno de `tests/scenarios/` — `compat` (guardados de antes), `integrity` (datos y referencias), `notebook`, `feedback`, `c1-minimal`, `comb-pike`, `mob`, `seance`, `chapter3`, `finale`, `sanity`, `second-reading`, `resume`. Las elecciones se toman por su texto.
+- `WALK_LOG=run.log node web/tools/walk.mjs` y `node web/tools/read-count.mjs run.log`: cuánto se lee en una partida.
 
-- `smoke.mjs` pinta todas las escenas y sus variantes y renderiza fotogramas contra un canvas/WebGL simulado y estricto (detecta radios negativos, coordenadas no finitas, errores de código).
-- `walk.mjs` arranca el juego real con un DOM simulado y juega la partida entera, del prólogo a los créditos.
-- `walk.mjs alt` juega mal a propósito (sale del cuarto sin mirar el escritorio, deduce donde no toca, intenta irse sin el peine) para comprobar que el juego no se queda bloqueado.
-- `audio-smoke.mjs` ejecuta todos los sonidos y la música contra un grafo de Web Audio simulado.
+Métricas de desarrollo: `?metrics` en la dirección registra en la consola (nunca envía nada) el tiempo hasta el primer control, la espera en rótulos, clics sin efecto, objetos mal usados, intentos de puzle, ayudas pedidas y tiempo por capítulo; `window.__metrics()` las devuelve. En `localhost` o con `?dev`, un error de guion se avisa en pantalla.
 
 Con el juego abierto en el navegador, en la consola:
 

@@ -6,6 +6,7 @@ import { Actor } from './actor.js';
 import { evaluate as theories } from '../story/theories.js';
 import { morphFrames } from './signature.js';
 import { perception } from '../story/perception.js';
+import { metrics } from './metrics.js';
 
 const $ = (id) => document.getElementById(id);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -237,7 +238,9 @@ export class UI {
     c.classList.remove('hidden');
     await wait(50);
     c.classList.add('show');
+    const t0 = performance.now();
     await skippableWait(ms);
+    metrics.cinematic(performance.now() - t0);
     c.classList.remove('show');
     await wait(prefs.reduceMotion ? 300 : 900);
     c.classList.add('hidden');
