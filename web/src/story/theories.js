@@ -34,7 +34,7 @@ export const THEORIES = [
     hyps: [
       { id: 'brennan', text: 'Brennan lo hizo.',
         for: [C('brennan_zurdo', 'zurdo y con cuchillo'), D('d_brennan', 'coincide con el forense'), C('delantal', 'un delantal de cuero en Hanbury Street')],
-        against: [F('br_alibi', 'trabajaba con tres hombres'), F('amelia1', 'el delantal era de John Richardson'), F('c1_done', 'Wren: «No fue él»')],
+        against: [F('br_alibi', 'trabajaba con tres hombres'), F('amelia1', 'el delantal era de John Richardson'), F('v4_wren_not_him', 'Wren: «No fue él»')],
         rule: (n) => (n.against >= 2 ? 'no demostrada' : n.for >= 2 ? 'plausible' : n.for ? 'sin evaluar' : 'sin evaluar') },
       { id: 'prensa', text: 'La prensa y el barrio ya habían elegido culpable.',
         for: [C('delantal', '«Leather Apron» en los diarios'), F('amelia1', 'la casera lavó ese delantal'), F('br_alibi', 'Brennan tiene testigos')],

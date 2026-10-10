@@ -33,6 +33,9 @@ export function normalizeState(s) {
   if (s.flags.entry_year == null && s.flags.answered1866 != null) s.flags.entry_year = s.flags.answered1866 ? 1866 : 1879;
   // the comb: a save from before custody was recorded had it in his pocket, or on Wexley's table
   if (s.flags.peine_taken && !s.flags.comb_custody) s.flags.comb_custody = 'thomas';
+  // Wren's «No fue él» is said only when the night closes with Brennan (chapters.js, endC1): a save closed
+  // that way has it too. Only ever sets the flag, never clears it; a save from before V3 has no route, so no flag.
+  if (s.investigation.routes.c1?.closedAt === 'knackers') s.flags.v4_wren_not_him = true;
   return s;
 }
 

@@ -280,6 +280,7 @@ export function makeChapters() {
         await G.think('Un matarife a cien yardas. Un bisturí de mi viejo hospital. Faltan hechos.');
         const w = G.actor('Wren');
         w.talking = true;
+        G.flag('v4_wren_not_him', true);
         await G.say('Wren', 'No fue él.');
         w.talking = false;
         await G.say('Ashgrove', '¿Cómo lo sabes?');
@@ -464,7 +465,7 @@ export function makeChapters() {
       await G.say('Vecinos', '¡Leather Apron! ¡Que salga el matarife!');
       const b = G.actor('Brennan');
       b.talking = true;
-      await G.say('Brennan', '¡Pregúntenle a Tomkins! ¡He trabajado toda la noche!');
+      await G.say('Brennan', '¡Pregúntenle a los del turno! ¡He trabajado toda la noche!');
       b.talking = false;
       await G.say('Un hombre', '¡Usted lo ha investigado! ¿Es él o no?');
       // what Thomas does here decides what becomes of Brennan (brennan_outcome), and nothing else:
@@ -517,7 +518,7 @@ export function makeChapters() {
       w.walkTo(2300, { speed: 200 });
       await G.wait(1000);
       await G.fade(1, 1200);
-      await G.card('', '', 'Al día siguiente detuvieron a John Pizer, a quien el barrio llamaba «Leather Apron». Tenía coartada y lo soltaron.', 4600);
+      await G.card('', '', 'Esos días detuvieron a John Pizer, a quien el barrio llamaba «Leather Apron». Tenía coartada y lo soltaron.', 4600);
       await G.card('', '', outcome === 'protected' ? 'Brennan regresó a su trabajo. Nunca volvió a hablar con la policía.' : 'Brennan no volvió al desolladero.', 3200);
       G.cinema(false);
       await G.chapter('c3');

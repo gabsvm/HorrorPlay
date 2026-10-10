@@ -495,3 +495,113 @@ La maquetación del libro no se ha cambiado en esta fase; la solución compartid
 1. **Vitrina de Greaves repetible (posible P1 de juego).** `readFile` no tiene guarda: abrir la vitrina con la llave otra vez vuelve a ejecutar la conversación con Greaves y baja la cordura (−10 y −15). Ya existía antes de F03. Comprobar en partida normal y corregir en F10 (pacing), con la tabla de `greaves.js` de `V4_F00_INVENTORY.md` §6.
 2. **Perfil antiguo en guardados.** `d_zurdo` cambia el rasgo del perfil a «Quizá zurdo, quizá con nociones de anatomía», pero los guardados antiguos conservan «Zurdo, con nociones de anatomía» en `state.profile` (7 fixtures). Opciones: sustitución exacta e idempotente en `normalizeState`, o aceptarlo. Decidir en F16 o F17.
 3. **Atribución y texto literal de la nota de Swanson.** Verificación con fuente primaria en F17 (H-07).
+
+## V4-04 — implementación (pendiente de revisión)
+
+### Decisiones y textos
+
+- **Flag `v4_wren_not_him`** (default ausente). Se activa en `endC1` (`src/story/chapters.js`), rama de Brennan, justo antes de «No fue él.». La hipótesis `brennan.brennan` la cita en `against` en lugar de `c1_done`. `normalizeState` (`src/story/progression.js`) la activa si `investigation.routes.c1.closedAt === 'knackers'`: solo activa, nunca borra, idempotente.
+- **Verificado antes de codificar:** `closeC1` solo se llama desde `src/scenes/bucks_row.js:177` (Pike) y `src/scenes/knackers.js:284` (Brennan).
+- **Turba:** la línea de Brennan (`chapters.js`, `mobScene`) pasa a «¡Pregúntenle a los del turno! ¡He trabajado toda la noche!». `web/src` ya no contiene «Tomkins».
+- **`d_delantal.text`** pasa al texto acordado. Mismo id, mismo `flag` (`acusar_brennan`), mismo `denialLate`. `truth` **no se tocó**: sigue diciendo «El delantal era del hijo de la casera…». Solo se lee con `flags.awake` (`src/engine/ui.js:519`), como segunda lectura.
+- **No tocado:** `severe` / `injured` / `protected`, la lógica de la turba y la opción «Acusar a Brennan», `brennan_stance`, `routes.c1`, `c1_done`, la línea de Wren que no culpa a Thomas. No hay escenas, pistas ni flags nuevos aparte de `v4_wren_not_him`.
+
+### Desviaciones y observaciones
+
+1. El encargo nombra el flag como `v4_wren_not_man` en un punto de la sección 6 de la documentación. El nombre usado en todo el código, los tests y el esquema es `v4_wren_not_him`, como en la especificación del flag.
+2. **Matriz de la turba: 20 combinaciones.** Posturas × desenlaces disponibles: `suspect` con y sin delantal (4 + 4), `clear` y `unsure` con delantal (4 cada una) y sin delantal (2 cada una). `severe` se recorre con y sin `amelia1`. Cada una llega a `room` (sin softlock).
+3. **Que «Acusar» no aparezca cuando no corresponde** se comprueba solo leyendo el código (`opts.unshift` solo con `d_delantal` o `suspect`). No se prueba con `PICKS`: una opción ausente lanza dentro del bucle del juego y el harness lo cuenta como error de script.
+4. **H-27 a H-30 llevan `[D]` con `FUENTE PENDIENTE`.** La definición del registro reserva `[D]` para hechos acreditados; se dejan como pide el encargo y se anota en el riesgo de cada fila.
+5. **H-30 (John Pizer): discrepancia de fecha.** La tarjeta del juego dice «Al día siguiente» de la turba del 10 de septiembre (es decir, 11). El encargo dice «detenido el 10-09-1888». No se ha cambiado el texto del juego.
+6. **Guardados anteriores a V3 sin `routes.c1`** no pueden recuperar la prueba: no hay información en el guardado para reconstruirla. Degradación aceptada, documentada en `V4_STATE_SCHEMA.md` §8.
+7. El guion exportado (`GUION.md`) no muestra el flag nuevo: `G.flag('v4_wren_not_him', true)` es una asignación, no una condición, y el exportador no las lista.
+
+### Snapshot de `evaluate()` (11 fixtures, `normalizeState` antes de `evaluate`)
+
+Scripts fuera del repo: `scratchpad/v4-04/snapshot.mjs`, `compare.mjs`, `precise.mjs`. Salidas: `snapshot-before.json`, `snapshot-after.json`.
+
+- Las cuatro teorías distintas de `brennan` (`intruso`, `carta`, `horas`, `rondas`) y el resto de `brennan` (`prensa`, `for`, las demás listas) son **idénticos en los 11 fixtures**.
+- `brennan.brennan` solo cambia por la prueba de Wren (`precise.mjs`: `sameExceptWrenAndStatus=true` en los 11).
+- **Fixtures que ganan la prueba de Wren: ninguno.** Ningún fixture tiene `routes.c1`, así que la migración no se activa sobre ellos (se prueba con estados construidos en `brennan.test.mjs`).
+- **Fixtures que pierden la prueba (7):** `legacy-c3-pre-v3.json`, `saves-v1-baseline/c2.json`, `c3.json`, `c4.json`, `saves-v1-baseline-second/c2.json`, `c3.json`, `c4.json`. Son exactamente los que tienen `c1_done` sin `routes.c1`.
+- Cambio de estado `brennan.brennan` por perder la prueba: `no demostrada → plausible` en `legacy-c3-pre-v3.json`, `saves-v1-baseline/c3.json`, `c4.json`, `saves-v1-baseline-second/c3.json`, `c4.json`. En `saves-v1-baseline/c2.json` y `saves-v1-baseline-second/c2.json` el estado sigue `plausible`; solo deja de citarse a Wren.
+- Sin cambio: `saves-v1-baseline/c1.json`, `saves-v1-baseline/prologue.json`, `saves-v1-baseline-second/c1.json`, `saves-v1-baseline-second/prologue.json` (no tienen Brennan).
+
+### Revisión de las líneas del desenlace `severe` (escenario `brennan`)
+
+Con `amelia1` (líneas de la acusación, sin el pensamiento de la reunión de fondo):
+
+```
+Ashgrove: Queda detenido, Brennan. ¡Retírense!
+Ashgrove: El delantal lo lavó la señora Richardson. Era de su hijo. Lo sabía.
+Wren: Usted sabía que no tenía nada contra él.
+  > Lo sospechaba.
+Wren: Sospechar no es saber, señor.
+```
+
+Sin `amelia1`: las mismas líneas sin la del delantal. Ninguna afirma la culpa de Brennan como demostrada. La más dura es «Queda detenido», que describe una detención, no una prueba. El escenario lo verifica con una expresión regular (`culpable`, `es el asesino`, `lo hizo`, `demostrad`, `confes`, `prueba de que`) sobre todas las líneas del desenlace, además de esta lectura.
+
+### Archivos tocados (git status antes de escribir esta sección)
+
+```
+ M web/GUION.md
+ M web/docs/V4_HISTORICAL_LEDGER.md
+ M web/docs/V4_STATE_SCHEMA.md
+ M web/src/story/chapters.js
+ M web/src/story/data.js
+ M web/src/story/progression.js
+ M web/src/story/theories.js
+?? web/tests/scenarios/brennan.js
+?? web/tests/unit/brennan.test.mjs
+```
+
+### Comandos y salidas reales
+
+```
+$ node web/tools/unit.mjs
+88 pruebas bien, 0 mal            (78 anteriores + 10 de brennan.test.mjs)
+
+$ node web/tools/walk.mjs brennan
+{ "scenario": "brennan", "ok": true, "errors": [], "deductions": 6, "scene": "room", ... "matrix": [20 combinaciones] }
+
+$ node web/tools/script/export.mjs
+C:\Dev\HorrorPlay\web\GUION.md: 1503 lines, 358 spoken or thought
+$ git diff -- web/GUION.md   (+2 −2)
+  - **Brennan:** ¡Pregúntenle a Tomkins! ¡He trabajado toda la noche!
+  + **Brennan:** ¡Pregúntenle a los del turno! ¡He trabajado toda la noche!
+  - Texto: El delantal del patio se parece al de Brennan, pero la casera declaró que pertenece a su hijo. Aún no hay vínculo con Brennan.
+  + Texto: El delantal del patio se parece al de Brennan. No sé de quién es; un parecido no es un vínculo.
+```
+
+```
+$ node web/tools/test-all.mjs
+PASS  unit                         0.2s
+PASS  smoke                        4.6s
+PASS  audio                        0.2s
+PASS  scenario beats               1.0s
+PASS  scenario brennan             5.1s
+PASS  scenario c1-minimal          0.8s
+PASS  scenario calm                3.0s
+PASS  scenario chapter3            3.3s
+PASS  scenario comb-pike           2.1s
+PASS  scenario compat              0.7s
+PASS  scenario feedback            0.8s
+PASS  scenario finale              18.8s
+PASS  scenario forense             0.7s
+PASS  scenario hint                0.5s
+PASS  scenario hint-ui             0.6s
+PASS  scenario integrity           0.4s
+PASS  scenario mob                 2.6s
+PASS  scenario notebook            0.6s
+PASS  scenario positions           1.0s
+PASS  scenario resume              3.6s
+PASS  scenario sanity              28.1s
+PASS  scenario seance              2.3s
+PASS  scenario second-reading      1.5s
+PASS  walk                         4.8s
+PASS  walk second                  4.6s
+PASS  walk alt                     0.8s
+EXIT=0
+```
+
+**Revisión de cierre (Opus, V4-04): APPROVED con dos decisiones aplicadas.** D1: H-27 pasa a [U] (no [D]). D2: la tarjeta de Pizer en chapters.js:521 pierde «al día siguiente» y queda sin fecha («Esos días detuvieron a John Pizer…»); H-30 queda [D] FUENTE PENDIENTE, sin fecha en el juego. Desviación aceptada: en guardados anteriores a V3 sin routes.c1, la prueba de Wren desaparece y Brennan puede pasar de «no demostrada» a «plausible» (degradación documentada).

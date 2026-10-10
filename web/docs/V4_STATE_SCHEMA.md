@@ -105,3 +105,18 @@ Fuente: `src/story/positions.js` (puro, sin DOM). Campos añadidos en `investiga
 - **La teoría `rondas` no añade campos de estado.** Sus hipótesis (`firme`, `compatible`) leen solo `clues` y `deductions` (`ronda`, `d_ronda`) a través de `evaluate()`. No hay campo `misses` ni otro nuevo en `investigation`, `flags` ni `clues`. Los errores de la hoja siguen en `investigation.evaluations.beats` (ya existían). La regla de la teoría no los lee (probado en `unit/rondas.test.mjs`).
 - **`buck_window`** ya no está oculta: aparece con la pista `ronda` (§6 lo señalaba como `visible: () => false`; eso queda corregido). Su `basis` usa el formato de §6: `firme` → `for:ded:d_ronda` si está la deducción; `compatible` → `for:clue:ronda`; `insuficiente` → `[]`.
 - **Sin cambios en `normalizeState`, IDs, flags ni en `canFinishC1` / `currentGate`.** Los guardados con la pista `ronda` (anteriores a V4-02) muestran la teoría y la pregunta sin postura y no escriben nada al reanudar (probado en `scenarios/beats.js`).
+
+## 8. V4-04 — la prueba de Wren contra Brennan (`flags.v4_wren_not_him`)
+
+| Campo | Valor |
+|---|---|
+| Clave | `flags.v4_wren_not_him` (booleano) |
+| Default | **ausente** (falsy). No se escribe en `freshState` |
+| Quién la activa | `endC1` (`src/story/chapters.js`), rama de Brennan, justo antes de la línea de Wren «No fue él.». Solo ahí |
+| Migración | `normalizeState` (`src/story/progression.js`): si `investigation.routes.c1.closedAt === 'knackers'`, pone `flags.v4_wren_not_him = true` |
+| Quién la lee | `src/story/theories.js`, hipótesis `brennan.brennan`, lista `against` («Wren: «No fue él»») |
+| Efecto | Es una prueba en contra de Brennan. Con su coartada son dos, y la hipótesis pasa a «no demostrada». Con Pike no se cita |
+
+- **Migración solo activa, idempotente.** Nunca borra la clave y dos pasadas de `normalizeState` dan el mismo resultado (probado en `tests/unit/brennan.test.mjs` para los fixtures de `tests/fixtures`).
+- **Guardados anteriores a V3 sin `routes.c1`:** no reciben la prueba, aunque la noche se cerrara con Brennan. Degradación aceptada y documentada: esos guardados pierden la cita de Wren en el cuaderno. Ningún fixture tiene `routes.c1`; los que tienen `c1_done` (siete) pierden la prueba (ver `V4_EXECUTION_LOG.md`, V4-04).
+- **Lo que no cambia:** `routes.c1`, `brennan_stance`, `brennan_outcome` y `c1_done` (que ya no alimenta la prueba de Wren). Ninguna otra clave de `state` cambia.

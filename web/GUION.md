@@ -1109,7 +1109,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 
 ### `mobScene`
 - **Vecinos:** ¡Leather Apron! ¡Que salga el matarife!
-- **Brennan:** ¡Pregúntenle a Tomkins! ¡He trabajado toda la noche!
+- **Brennan:** ¡Pregúntenle a los del turno! ¡He trabajado toda la noche!
 - **Un hombre:** ¡Usted lo ha investigado! ¿Es él o no?
 - > **Menú de conversación** (las opciones que aparecen según lo ya hecho):
   - Pedir que se disperse la multitud.
@@ -1134,7 +1134,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
   - _Si r === 0:_
     - **Wren:** Sospechar no es saber, señor. _(si outcome === 'severe')_
     - **Wren:** Ya. _(si no)_
-- [Rótulo] Al día siguiente detuvieron a John Pizer, a quien el barrio llamaba «Leather Apron». Tenía coartada y lo soltaron.
+- [Rótulo] Esos días detuvieron a John Pizer, a quien el barrio llamaba «Leather Apron». Tenía coartada y lo soltaron.
 - [Rótulo] Brennan regresó a su trabajo. Nunca volvió a hablar con la policía. | Brennan no volvió al desolladero.
 
 ### `writeC3a`
@@ -1587,7 +1587,7 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 
 **`d_delantal`**
 - Une las pistas: `delantal` + `brennan_zurdo`
-- Texto: El delantal del patio se parece al de Brennan, pero la casera declaró que pertenece a su hijo. Aún no hay vínculo con Brennan.
+- Texto: El delantal del patio se parece al de Brennan. No sé de quién es; un parecido no es un vínculo.
 - Verdad (2ª lectura): El delantal era del hijo de la casera; ella misma lo había lavado. Brennan no tenía nada que ver, y yo lo sabía.
 
 **`d_ordenados`**

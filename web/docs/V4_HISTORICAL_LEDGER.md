@@ -36,6 +36,10 @@ Creado en F00 a partir de una lectura del código y de `web/STORY_BIBLE.md`. **C
 | H-24 | Horas de Pike («sobre las tres cuarenta»), Neil («a las tres cuarenta y cinco la encontré yo») y Cross («hacia las 3:40») en Buck's Row | `scenes/bucks_row.js` (Pike, Neil); `story/chapters.js` (hoja, línea de Cross) | 31 ago 1888, 3:40–3:45 | `[U]` horas de testimonio, presentadas como aproximadas; no contrastadas con fuente primaria | SECONDARY (citada por resultado de búsqueda; no abierta) — https://www.jack-the-ripper-tour.com/generalnews/the-mary-nichols-inquest/ ; https://whitechapeljack.com/the-whitechapel-murders/mary-ann-nichols/ | SECONDARY | Textos marcados como aproximados («hacia», «sobre»); verificación con fuente primaria en F17 | F02 (verificación primaria: F17) |
 | H-25 | Remisión a Whitechapel por George Yard: la H pide las rondas de la noche (cabecera «DIVISIÓN J (BETHNAL GREEN) — RONDAS · copia a la H» y párrafo de remisión) | `story/chapters.js` (`beats`, hoja) | 31 ago 1888 (la remisión es de la ficción) | `[F]` | FUENTE PENDIENTE | FUENTE PENDIENTE | Sin fuente: la remisión no se afirma como hecho documentado | F02 (verificación primaria: F17) |
 | H-26 | Greaves, a Thomas, sobre el corte de Annie Chapman: «Parece trabajo de alguien acostumbrado a la disección» | `scenes/hanbury.js:220` (línea de Greaves) | 8 sep 1888 | `[U]` la lectura del oficio del asesino por el cirujano es una opinión discutida; `[F]` que Greaves la diga en esa escena | FUENTE PENDIENTE (la opinión del forense está en H-06 y H-08) | UNVERIFIED | P2: el texto ya no afirma («Parece…»); la atribución a Greaves es ficción | F03 |
+| H-27 | «El desolladero de Barber y su turno de noche»: Pike dice que el desolladero no cierra de noche; Brennan dice «He trabajado toda la noche» | `scenes/bucks_row.js` (pista `lead`: «No cierra de noche»); `story/chapters.js` (`mobScene`, línea de Brennan) | 31 ago – 10 sep 1888 | `[U]`: sin fuente todavía; el turno de noche en el desolladero no está acreditado (confirmar en F17) | — | FUENTE PENDIENTE | Sin fuente: no presentar el turno como hecho documentado. La línea de la turba ya dice «los del turno», sin nombre | F04 |
+| H-28 | «Brennan dentro de ese turno»: estaba en el desolladero toda la noche con tres hombres | `scenes/knackers.js` (coartada: «Aquí. Con tres hombres.»); `story/chapters.js` (`mobScene`) | 31 ago 1888 (coartada de la noche de Nichols) y 10 sep 1888 (turba) | `[F]` ficticio | — | n/a | Dramatización: la coartada es ficción de Brennan, no un hecho histórico | F04 |
+| H-29 | «ya lo hicieron sus agentes»: la policía ya comprobó la coartada de Brennan | `scenes/knackers.js` (línea de Brennan tras la coartada) | 31 ago 1888 | `[F]` ficticio | — | n/a | Dramatización: no afirmar que la policía verificó la coartada | F04 |
+| H-30 | John Pizer («Leather Apron»), detenido y liberado por coartadas. Texto del juego (sin fecha): «Esos días detuvieron a John Pizer, a quien el barrio llamaba «Leather Apron». Tenía coartada y lo soltaron.» | `story/chapters.js:521` (tarjeta tras la turba) | Sin fecha en el juego. Registro: detención el 10-09-1888 (no verificado) | `[D]` (FUENTE PENDIENTE); el juego no da fecha | — | FUENTE PENDIENTE | Resuelto en F04 (decisión D2): se quitó «al día siguiente» para no fijar una fecha no verificada. Confirmar la fecha en F17 | F04 |
 
 ## Fuentes secundarias (V4-02)
 
@@ -50,6 +54,11 @@ Abiertas el 2026-10-10 con WebFetch (que devuelve un resumen del modelo sobre la
 
 - https://www.casebook.org/dissertations/dst-recanon/?printer=true (H-06, H-07): cita la frase de Swanson sobre Llewellyn y el informe del 19-10-1888. Asocia el informe a Nichols.
 - https://www.casebook.org/police_officials/donald_swanson/ (H-07): confirma el informe del 19-10 y ff. 137-145. Lo lista bajo «Annie Chapman». No da contenido.
+
+## Notas (V4-04)
+
+- **El juego ya no nombra a Tomkins.** La línea de Brennan en la turba (`story/chapters.js`, `mobScene`) dice «¡Pregúntenle a los del turno! ¡He trabajado toda la noche!». `web/src` no contiene el nombre, y `web/GUION.md` se regenera sin él. Las compilaciones de `web/dist/` conservan el texto anterior hasta reconstruirse.
+- Las filas H-27 a H-30 son de V4-04 y quedan **pendientes de fuente**. Ninguna se ha abierto. H-27 es [U] (no [D]); H-30 no lleva fecha en el juego (decisión D2).
 
 ## Cómo se usa este registro
 
