@@ -175,7 +175,17 @@ export default {
     },
     {
       id: 'skeleton', name: 'Esqueleto', rect: [1100, GROUND - 330, 80, 330], walk: 1060,
-      act: async (G) => { await G.think('El sueño terminó aquí, en otra mesa. El resto está borrado.');  },
+      act: async (G) => {
+        if (G.second() && !G.flag('s2_1879')) {
+          // the second reading: the dissecting room, March 1879, for a few frames
+          G.flag('s2_1879', true);
+          await G.vision('hands');
+          G.red(0.4);
+          await G.think('La mesa 3. Marzo de 1879. La enfermera junto al lavadero. Ahora lo veo entero.');
+          return;
+        }
+        await G.think('El sueño terminó aquí, en otra mesa. El resto está borrado.');
+      },
     },
     {
       id: 'door', name: 'Puerta', cursor: 'exit', rect: [70, GROUND - 290, 150, 290], walk: 230, face: -1,

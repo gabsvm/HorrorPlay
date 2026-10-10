@@ -31,6 +31,10 @@ async function lostTime(G, from, to, { date = null } = {}) {
   G.date(date, to);
 }
 
+// Only a player who has finished the game once, reading it the second time, gets the shortcuts
+// through puzzles they have already solved (never a new player, never by accident).
+const knowsPuzzles = (G) => G.second() && !!(G.game.constructor.read && G.game.constructor.read());
+
 export function makeChapters() {
   const chapters = {
     async prologue(G) {
@@ -123,6 +127,14 @@ export function makeChapters() {
       G.flag('water_light', true);
       G.objective('Acercarse al río.');
       G.audio.sting(0.1);
+      if (G.second() && !G.flag('s2_prologue')) {
+        // the second reading: for a moment the water holds a grown man in a bowler, who does not kneel
+        G.flag('s2_prologue', true);
+        G.scene.reflection = true;
+        await G.wait(1400);
+        await G.think('En el agua hay un hombre con bombín. No se agacha conmigo.');
+        G.scene.reflection = false;
+      }
     },
 
     async prologueWater(G) {
@@ -231,6 +243,10 @@ export function makeChapters() {
         <p><b>PC 55H Mizen.</b> Baker's Row y Hanbury Street. Desde su punto no se ve Buck's Row.</p>
         <p class="hand">Declaraciones: Thain alumbró Buck's Row a las 3:30; no había nada en el suelo. Charles Cross, carretero, entró en la calle a las 3:40 y la encontró delante del portón.</p>
         <p class="small" style="text-align:right">${G.two('Firmado: el inspector de guardia', 'Firmado: T. Ashgrove, inspector de guardia')}</p>`);
+      if (knowsPuzzles(G)) {
+        const k = await G.choice(['Ya lo sé: de 3:30 a 3:40.', 'Leer la hoja otra vez.']);
+        if (k === 0) { G.clue('ronda'); await G.think('Yo firmé estas rondas.'); return; }
+      }
       await sheet();
       await G.think('¿En qué intervalo quedó el portón fuera de vista?');
       let misses = 0;
@@ -396,6 +412,10 @@ export function makeChapters() {
         ev.raps = { ...(ev.raps || {}), helped: true };
         return 'HOS';
       };
+      if (knowsPuzzles(G) && G.flag('knock_board')) {
+        const k = await G.choice(['Ya sé lo que dicen: HOSPES.', 'Leerlos otra vez.']);
+        if (k === 0) { G.clue('hospes'); G.flag('hospes_decoded', true); G.flag('seance_prepared', true); await hooks.afterRaps(G); return; }
+      }
       const res = await G.knocks({ raps: RAPS, answer: 'HOSPES', board: G.flag('knock_board'), rows: ['ABCDE', 'FGHIJ', 'LMNOP', 'QRSTU', 'VWXYZ'], help, helper });
       ev.raps = { ...(ev.raps || {}), misses: help + (res.misses || 0) };
       if (!res.ok) { await G.think(G.flag('knock_board') ? 'Más tarde. Fila y columna; tiene que salir algo.' : 'Sin la tabla de la pared no hay manera de leerlos.'); return; }
@@ -405,8 +425,27 @@ export function makeChapters() {
       G.mad(0.2); G.audio.whisper(1.2, 0.08);
       await G.think('HOSPES. Latín. El huésped.');
       G.mad(0);
+      await hooks.afterRaps(G);
+    },
+
+    async afterRaps(G) {
+      if (G.second()) {
+        // the second reading: Wexley understands who the knocks are addressed to
+        const w = G.actor('Wexley');
+        if (w) { w.talking = true; await G.say('Madame Wexley', 'No le hablan a un muerto, inspector. Le hablan a usted.'); w.talking = false; }
+      }
       if (!G.flag('seance_done')) G.objective(G.state.flags.comb_custody === 'pike' ? 'Sentarse a la mesa de la sesión.' : 'Poner el peine de Annie sobre la mesa.');
       else G.objective('Salir a Fournier Street.');
+    },
+
+    // chapter one, second reading: Pike's notebook, the nights Thomas arrived and how
+    async pikeBook(G) {
+      G.flag('pike_book_read', true);
+      await G.doc(`<h3>Libreta del sargento A. Pike</h3>
+        <p class="hand">7 ago. — Tabram, George Yard. Avisado el inspector a las 3:10. Llega a las 3:20. Botas mojadas.</p>
+        <p class="hand">31 ago. — Nichols, Buck's Row. Avisado a las 4:00. Llega a las 4:12. Botas mojadas. Barro negro.</p>
+        <p class="hand">Llega siempre antes de lo que tarda en venir desde Thrawl Street.</p>`);
+      await G.think('Doce minutos. Diez. No venía de mi cuarto.');
     },
 
     async leaveSeance(G) {

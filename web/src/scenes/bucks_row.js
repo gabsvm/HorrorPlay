@@ -170,10 +170,12 @@ export default {
         if (!G.flag('pike_notes') && G.flag('pike_polly')) opts.push(['¿Qué apunta en esa libreta, Pike?', 'notes']);
         if (G.hasClue('zurdo') && !G.flag('knackers_lead')) opts.push(['¿Quién trabaja de noche por aquí?', 'lead']);
         if (G.flag('neil_times') && !G.hasClue('ronda')) opts.push(['La hoja de rondas de esta noche.', 'beats']);
+        if (G.second() && G.flag('pike_notes') && !G.flag('pike_book_read')) opts.push(['Déjeme ver su libreta, Pike.', 'book']);
         if (canFinishC1(G.state).ok && !G.flag('c1_done')) opts.push(['Cerramos por esta noche, Pike.', 'close']);
         opts.push(['Nada más.', 'bye']);
         const c = opts[await G.choice(opts.map((o) => o[0]))][1];
         if (c === 'close') { await G.game.chapterHooks.closeC1(G, 'pike'); return; }
+        if (c === 'book') { pike.talking = true; await G.say('Pike', '...Tome. No tengo nada que esconderle.'); pike.talking = false; await G.game.chapterHooks.pikeBook(G); return; }
         pike.talking = true;
         if (c === 'doc') {
           await G.say('Pike', 'Llewellyn cree que los cortes los hizo un zurdo.');

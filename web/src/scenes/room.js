@@ -303,7 +303,14 @@ export default {
           if (had) G.audio.paper();   // the reports, the two inkwells: nothing new on the desk
         } else if (p === 'c3a') {
           if (!G.flag('woke_c3')) await G.game.chapterHooks.writeC3a(G);
-          else await G.think(G.two('Es mi letra. Las últimas dos páginas no son mías... ¿o sí?',
+          else if (G.second() && !G.flag('s2_draft')) {
+            // the second reading: under the blotter, the draft of the letter, in his own hand
+            G.flag('s2_draft', true);
+            await G.doc(`<h3>Bajo el secante</h3>
+              <p class="red">Dear Boss, I keep on hearing the police have caught me but they wont fix me just yet...</p>
+              <p class="small">Tachado y vuelto a escribir dos veces. La J con la cola larga. Las t, cortas.</p>`);
+            await G.think('Mi mano. Mi tinta. Lo practiqué antes de escribirlo.');
+          } else await G.think(G.two('Es mi letra. Las últimas dos páginas no son mías... ¿o sí?',
             'Lo escribí yo. ¿Cuándo?'));
         } else if (G.flag('paper_read') && !G.hasClue('letra')) {
           await G.game.chapterHooks.compareHands(G);
