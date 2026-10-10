@@ -92,6 +92,8 @@ button { font-family: var(--sc); color: var(--ink); background: none; border: 0;
 
 #toast { position: absolute; left: 50%; top: calc(110 * var(--u)); transform: translateX(-50%); font-family: var(--sc); font-size: calc(19 * var(--u)); letter-spacing: 0.08em; color: #f0dfb5; text-shadow: 0 0 calc(10*var(--u)) #000; opacity: 0; transition: opacity .6s; white-space: nowrap; }
 #toast.show { opacity: 1; }
+/* a longer answer (the hint) sits low, in lines, clear of the objective at the top */
+#toast.notice { top: auto; bottom: calc(64 * var(--u)); white-space: normal; width: min(62%, 60em); line-height: 1.35; text-align: center; font-size: calc(17 * var(--u)); }
 
 /* Title card */
 #card { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: transparent; }

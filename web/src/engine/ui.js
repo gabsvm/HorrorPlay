@@ -172,10 +172,11 @@ export class UI {
     });
   }
 
-  toast(text, ms = 2600) {
+  toast(text, ms = 2600, notice = false) {
     if (window.FAST) (window.LOG ||= []).push(`[aviso] ${text}`);
     const t = this.el.toast;
     t.textContent = text;
+    t.classList.toggle('notice', notice);
     t.classList.add('show');
     clearTimeout(this._toastT);
     this._toastT = setTimeout(() => t.classList.remove('show'), ms);
@@ -525,10 +526,12 @@ export class UI {
   // "What now?": first a nudge, then (asked again with nothing changed) the answer
   hint() {
     const text = this.game.hint();
+    audio.paper();
+    // the answer may have closed the notebook to mark what can be touched: then it is shown as a notice
+    if (!this.notebookOpen) { this.toast(text, 6000, true); return; }
     const fb = this.el.nbFeedback;
     fb.className = 'help'; fb.style.color = '';
     fb.textContent = text;
-    audio.paper();
   }
 
   async pickClue(id) {

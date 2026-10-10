@@ -348,3 +348,28 @@ C:\Dev\HorrorPlay\web\GUION.md: 1500 lines, 358 spoken or thought
 Comprobado en navegador real (Chrome headless en escritorio, 1280×720, `localhost:5317/?chapter=c2`, clics reales por CDP): en Hanbury con el delantal visto, Greaves hablado, `d_delantal` disponible y el peine sin decidir, «¿Qué hago ahora?» dice la primera vez «…Antes de seguir me falta mirar lo que hay junto a la valla, a los pies de Annie» y la segunda «Me falta mirar lo que hay junto a la valla…», cierra el cuaderno y marca los puntos; ninguna dice «Junta». Visión con movimiento reducido: un solo tramo visible, opacidad máxima 0,70, subida y bajada graduales en ≈1,8 s, `punch` 0; sin reducir: tres destellos, `punch` 1. Barra: 65 y 100 verde, 64/60/36 ocre, 35/30/10 rojo. Sin mensajes de consola. No es un playtest: diálogos y opciones del resto del juego no se recorrieron a mano, y Android sigue sin probar en el teléfono.
 
 Observado, sin cambiar: la segunda ayuda cierra el cuaderno para mostrar los puntos, así que su frase queda en el cuaderno y se lee al volver a abrirlo (comportamiento anterior a esta pasada).
+
+## Reauditoría (2026-10-10, sobre `a8843fa`)
+
+| Hallazgo | Corrección | Prueba |
+|---|---|---|
+| UX-01 · La segunda ayuda cerraba el cuaderno y su frase quedaba oculta | `UI.hint()` muestra el texto como aviso (6 s, en la parte baja) cuando la respuesta ha cerrado el cuaderno; nunca escribe en el cuaderno oculto | escenario `hint-ui` (DOM: aviso visible tras cerrar, `nb-feedback` sin cambios); con el código anterior falla |
+| UX-02 · Una pareja opcional se antepone a una salida ya lista | Si `currentGate` está cumplido (C1 cerrable, Hanbury listo, final con sus tres fuentes), no se propone ninguna deducción opcional | escenario `hint-ui` (C1 con Brennan y el barro disponibles; Hanbury listo; final listo) |
+| DOC-01 · `STORY_BIBLE.md` describía los golpes en la oscuridad, la tinta como puzle del cap. I y la ayuda sin explicar | Golpes: se leen con la tabla antes de la sesión y en la oscuridad vuelven más fuertes; tinta: se corrige la fila de la tabla; se describe la ayuda y la barra de cordura. Canon sin cambios. `GUION.md` regenerado a partir del documento | export del guion |
+
+Lo que sigue pendiente: playtest en Android, pacing y teorías (no son regresiones de esta pasada).
+
+La nota de la pasada anterior sobre el cierre del cuaderno queda superada por UX-01.
+
+```
+$ node web/tools/test-all.mjs
+PASS  unit ... PASS  smoke ... PASS  audio ... PASS  scenario c1-minimal ... PASS  scenario calm
+PASS  scenario chapter3 ... PASS  scenario comb-pike ... PASS  scenario compat ... PASS  scenario feedback
+PASS  scenario finale ... PASS  scenario hint ... PASS  scenario hint-ui ... PASS  scenario integrity
+PASS  scenario mob ... PASS  scenario notebook ... PASS  scenario resume ... PASS  scenario sanity
+PASS  scenario seance ... PASS  scenario second-reading ... PASS  walk ... PASS  walk second ... PASS  walk alt
+$ node web/tools/script/export.mjs
+C:\Dev\HorrorPlay\web\GUION.md: 1500 lines, 358 spoken or thought
+```
+
+Comprobado en Chrome headless (escritorio, 1280×720, clics reales): en Hanbury, la segunda ayuda cierra el cuaderno y muestra «Me falta mirar lo que hay junto a la valla, a los pies de Annie. Todo lo que se puede tocar queda marcado un momento.» como aviso visible (opacidad ≈0,98), sin mensajes de consola. Ajuste visual: el aviso de ayuda se coloca en la parte baja, para no tapar el objetivo.

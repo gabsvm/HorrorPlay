@@ -106,7 +106,7 @@ Cada pista es legítima y tiene una lectura inocente en el momento:
 | El asesino conoce las rondas de los policías | Apunta a un policía, a Pike | Eres policía |
 | Wren: "Usted huele al Ditch" | Los niños dicen cosas raras | Literal |
 | El reloj salta de 11:40 a 3:15 | Fallo de cansancio | Horas alquiladas |
-| Tinta roja en tu escritorio (la usas en un puzle del cap. 1) | Herramienta | La carta "Dear Boss" está en tinta roja |
+| Tinta roja en tu escritorio, volcada a las 3:15 del 25 | Un tintero que alguien tiró | La carta "Dear Boss" está en tinta roja, y la escribiste tú |
 | Pike apunta en su libreta cada vez que tú hablas | Pike es raro | Te investiga |
 | Madame Wexley: "Hay alguien detrás de usted" | Teatro de médium | Lo hay: dentro |
 | Durante la persecución, los silbatos se acercan *a ti* | Persigues al asesino | Te persiguen a ti |
@@ -130,8 +130,10 @@ izquierda manchada, la sangre seca de los guantes) no aparecen.
 1. **Las rondas** (cap. I): con la hoja de rondas, deducir los diez minutos en que nadie veía el
    portón (Thain alumbró a las 3:30; Cross llegó a las 3:40). La respuesta ingenua, «entre dos pasadas
    de Neil», es falsa.
-2. **Los golpes** (cap. II): en la oscuridad de la sesión, la mesa golpea en el código de los presos
-   del zar (fila y columna sobre una tabla de 5x5 sin K, clavada bajo la carta astral): HOSPES.
+2. **Los golpes** (cap. II): antes de empezar la sesión, la mesa golpea sola en el código de los presos
+   del zar (fila y columna sobre una tabla de 5x5 sin K, clavada en la pared bajo la carta astral).
+   Thomas los lee con la tabla: HOSPES, y con eso se abre la sesión. En la oscuridad, los mismos seis
+   grupos vuelven más fuertes: esta vez sabe la palabra.
 3. **La letra** (cap. III): la carta «Dear Boss» frente a cuatro muestras manuscritas; comparar el remate de la **J**, el enlace de las **t** y la inclinación de los trazos. La similitud sugiere a Greaves, pero **no lo demuestra**. La segunda lectura permite comparar también los apuntes de Thomas. **No alterar la transcripción histórica añadiendo letras «ſ» que el original no usa.**
 
 ### El perfil del asesino (mecánica del cuaderno)
@@ -174,11 +176,12 @@ El canon sigue igual: la entrada exige una respuesta voluntaria (en 1866 o, si e
 - **Pruebas, hipótesis y teorías.** Relacionar dos pruebas da una conclusión; las que son suposiciones quedan marcadas como *hipótesis* o *inferencia*. Las preguntas del caso (¿alguien entra o salgo yo?, ¿Brennan o el barrio?, ¿quién escribió la carta?, ¿qué explica las horas perdidas?) se muestran con lo que sostiene y lo que contradice cada explicación; ninguna hay que elegirla para avanzar, y nada señala a Thomas antes del capítulo IV.
 - **Avanzar con pruebas, no con acusaciones.** El capítulo I se cierra cuando Thomas lo decide (con Pike o con Brennan) si tiene el caso de Pike, el bisturí de Wren y al menos una conclusión con pruebas. Su postura sobre Brennan (vigilarlo, nada contra él, no lo sé) queda escrita y la turba la recuerda.
 - **El peine.** Se respeta lo elegido: si Pike se lo queda, la sesión empieza sin el objeto y Wexley lo sabe igual.
-- **La sesión.** La mesa golpea antes de empezar; leer HOSPES es la entrada a la sesión, con ayuda que crece en cada fallo; el susto es la recompensa.
+- **La sesión.** La mesa golpea antes de empezar; leer HOSPES es la entrada a la sesión, con ayuda que crece en cada fallo; en la oscuridad los golpes vuelven y el susto es la recompensa.
+- **La ayuda del cuaderno («¿Qué hago ahora?»).** Dice primero lo que la escena todavía pide (un objeto, una conversación o una decisión); una pareja de pruebas solo se propone si cumple esa exigencia. Si ya se puede avanzar, nunca antepone una deducción opcional a la salida. A la segunda pregunta, el cuaderno se cierra para marcar lo que se puede tocar y el texto queda en un aviso en pantalla.
 - **La letra.** «La muestra no basta» es una respuesta válida; Greaves recuerda cómo la valoró Thomas.
 - **La persecución.** Los errores cuentan: limpia, vista o herida; el periódico, Pike y Greaves lo reflejan.
 - **Ante Pike.** Entregarse cierra la primera esposa antes de la laguna; avisar por Wren hace que Pike la proteja (ella guarda la distancia y su silbato); romper el folio no borra lo que se sabe (Bell vuelve a declarar).
 - **El agua.** Responder, callar o taparse la boca tienen cada una su escena; en las tres la boca dice «Aquí estoy» porque ya estaba dentro. «Todavía no» devuelve al cuaderno. El final exige tres pruebas de fuentes independientes.
-- **Cordura como percepción.** Firme (≥65): las pruebas se leen mejor. Tensa (36–64): la habitación contesta a veces. Desgastada (≤35): lo del otro lado se ve más claro (el método de los golpes, la luz del Ditch) y los hechos se dudan más; la gente lo nota. Ninguna banda bloquea nada ni muestra pistas falsas.
+- **Cordura como percepción.** Firme (≥65): las pruebas se leen mejor. Tensa (36–64): la habitación contesta a veces. Desgastada (≤35): lo del otro lado se ve más claro (el método de los golpes, la luz del Ditch) y los hechos se dudan más; la gente lo nota. Ninguna banda bloquea nada ni muestra pistas falsas. La barra de cordura usa los mismos tres tramos, así que su color coincide con la banda.
 - **Segunda lectura.** Un momento nuevo por capítulo (el hombre del agua, la libreta de Pike, Wexley sabe a quién hablan los golpes, el borrador de la carta, la noche de 1879) y atajos por los puzles ya resueltos para quien terminó el juego.
 - **Víctimas.** Cada una tiene al menos un detalle humano documentado: Polly y su sombrero nuevo; Annie, el ganchillo y las flores; Elizabeth Stride, sueca, «Long Liz»; Catherine Eddowes, de vuelta del lúpulo de Kent con John Kelly; Mary Jane Kelly, unos veinticinco años, a la que una vecina oyó cantar.

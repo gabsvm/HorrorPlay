@@ -337,26 +337,25 @@ export class Game {
     const fits = (d) => !st.deductions.includes(d.id) && (!d.final || st.flags.awake) && st.clues.includes(d.a) && st.clues.includes(d.b);
     const gist = (id) => { const c = this.clues[id], t = typeof c.text === 'function' ? c.text(st) : c.text; return `«${t.split(/[.:;]/)[0]}»`; };
     const pair = (d) => (again ? `Junta ${gist(d.a)} con ${gist(d.b)}.` : 'Hay dos pruebas en el cuaderno que encajan y que todavía no he relacionado. (Vuelve a preguntar si no las encuentras.)');
+    const base = st.objective || 'Mirar alrededor.';
     const gate = currentGate(st);
     const lack = gate && !gate.ok ? gate.missing[0] : null;
     if (lack) {
-      // 1–2: the open requirement, and a deduction that meets it if the notebook already holds one
+      // the open requirement comes first; a deduction is offered only if it meets that requirement
       const needed = /cuaderno|relacionar/.test(lack)
         && gateDeductions(st).map((id) => this.deductions.find((d) => d.id === id)).find((d) => d && fits(d));
       if (needed) return pair(needed);
-      if (!again) return `${st.objective || 'Mirar alrededor.'} Antes de seguir me falta ${lack}. (Vuelve a preguntar si sigues atascado.)`;
-      // 3: what can be touched here
-      this.ui.closeNotebook();
-      this.reveal();
-      return (this.scene?.hint && this.scene.hint(G)) || `Me falta ${lack}. Todo lo que se puede tocar queda marcado un momento.`;
+    } else if (!gate?.ok) {
+      // nothing is required here, so an optional deduction may be the answer
+      const ready = this.deductions.find(fits);
+      if (ready && (/cuaderno/i.test(st.objective || '') || again)) return pair(ready);
     }
-    // 4: nothing is required here, so an optional deduction may be the answer
-    const ready = this.deductions.find(fits);
-    if (ready && (/cuaderno/i.test(st.objective || '') || again)) return pair(ready);
-    if (!again) return `${st.objective || 'Mirar alrededor.'} (Vuelve a preguntar si sigues atascado.)`;
+    // a place that is ready to move on (gate ok) never gets an optional pair in front of its exit
+    if (!again) return lack ? `${base} Antes de seguir me falta ${lack}. (Vuelve a preguntar si sigues atascado.)` : `${base} (Vuelve a preguntar si sigues atascado.)`;
+    // asked again: what can be touched here is marked; the notebook closes, so the answer is shown as a notice (ui.hint)
     this.ui.closeNotebook();
     this.reveal();
-    return (this.scene?.hint && this.scene.hint(G)) || `${st.objective || ''} Todo lo que se puede tocar queda marcado un momento.`;
+    return (this.scene?.hint && this.scene.hint(G)) || (lack ? `Me falta ${lack}. Todo lo que se puede tocar queda marcado un momento.` : `${base} Todo lo que se puede tocar queda marcado un momento.`);
   }
 
   // keep the theories' statuses in the save, so later scenes (and old saves) can read them
