@@ -138,3 +138,19 @@ Fuente: `src/story/positions.js` (puro, sin DOM). Campos añadidos en `investiga
 - **`chalk_seen`:** sigue siendo la marca del hallazgo (se escribe en `doorway`, después de la visión). **Ya no pinta la frase:** `drawNear` no la lee para dibujar; la jamba siempre tiene trazos ilegibles, con o sin la marca. `drawGlow` no existe en la escena.
 - **`apron_found`:** sin cambios de nombre ni de efecto. Su guarda de primera visita se conserva.
 - **Guardados antiguos con `chalk_seen = true`:** la escena dibuja los trazos (siempre), `aqui_estoy` se conserva, y `goulston_historic` **no se añade retroactivamente**: se da solo en el primer hallazgo. Un jugador que ya había visto la tiza antes de V4-05 no recibe la pista de la inscripción; queda documentado y probado en `tests/scenarios/goulston.js`.
+
+## 10. V4-06 — el aviso de Berner Street, la línea de la City y la pregunta «doble»
+
+| Campo | Valor |
+|---|---|
+| Pista nueva `berner_aviso` (ID en `state.clues`) | **Sin migración.** Default ausente. La da la opción «¿Hay novedades de otras calles?» de `watkins` (`src/scenes/mitre.js`), solo con `trozo` y sin ella. Texto fijo en `src/story/data.js` (sin función, sin `truth2`) |
+| Flag nuevo `mitre_city` | Default **ausente**. Lo escribe la opción «¿Quién lleva el caso?» de `watkins`, una vez. No lo lee ninguna puerta de progreso |
+| `investigation.positions.double_event` | `vinculados` / `insuficiente` / `no_relacionados`. Visible con `berner_aviso` y `trozo` (`positions.js`). Lo escribe `setPosition` por el botón del cuaderno; `basis` con `for:clue:berner_aviso` y `for:clue:testigo` según lo que haya |
+| Teoría `doble` | No es campo de estado. Sus estados entran en `investigation.hypotheses` a través de `statuses()` (`game.js:365`), como las otras cinco |
+
+- **Desviación (`double_event`).** La especificación nombraba `double_event_assessment` como posible registro. **No se crea.** El registro es `investigation.positions.double_event` (una sola entrada, sin campo paralelo).
+- **Visibilidad de `doble`.** `theories.js` admite ahora una regla `show` opcional en la teoría. `evaluate()` salta la teoría si `show(s)` es falso. Solo `doble` la tiene: sin ella, la teoría aparecería con `testigo` y `trozo` sin el aviso, lo que contradice el criterio de guardados. Las cinco teorías anteriores no tienen `show` y no cambian (instantánea en `V4_EXECUTION_LOG.md`, V4-06).
+- **Reglas de `doble`.** Nunca `sostenida`. `plausible` como máximo. Las reglas leen solo `clues` y `deductions`/`flags` por medio de `holds()`: no leen `flags.awake`, distancias ni velocidades. No escriben flags, no están en `FINAL_SOURCES` y no producen culpabilidad conjunta.
+- **Lo que no cambia:** `canLeaveMitre` (el aviso no es puerta), `normalizeState` (ningún campo nuevo que sanear), `FINAL_SOURCES`, la placa (`use`), la cordura (solo el −2 de `watkins_name`, como antes) y el objeto `kate`.
+- **Guardados.** Un guardado con `trozo` y `testigo` sin `berner_aviso` no muestra `doble` ni la pregunta `double_event`. Un guardado con `trozo` muestra la opción del aviso sin pista previa; no hay pistas retroactivas.
+- **Lista de `flags` (§2).** No se ha regenerado. Con `mitre_city`, la unión sube de 97 a 98 nombres. Los demás nombres de V4-06 son pistas (`berner_aviso`), no flags.

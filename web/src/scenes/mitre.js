@@ -37,7 +37,7 @@ export default {
     const lights = [];
     const chimneys = [];
     const near = R.paintLayer(WIDTH, (ctx) => {
-      // Church Passage, narrow and pitch black, on the left, toward Duke's Place
+      // Church Passage, narrow and pitch black, on the left, toward the club side
       A.brickWall(ctx, 0, 100, 230, GROUND - 112, { seed: 2, soot: 1, palette: A.BRICK.stock });
       ctx.fillStyle = '#020202'; ctx.fillRect(70, GROUND - 260, 110, 248);
       ctx.fillStyle = '#5c574d'; ctx.fillRect(62, GROUND - 270, 126, 12);
@@ -133,10 +133,13 @@ export default {
         const w = G.actor('Watkins'); w.facing = -1; w.talking = true;
         if (!G.flag('mitre_badge')) { await G.say('Agente Watkins', 'Sin placa, ni un paso más. Esto no es Whitechapel.'); w.talking = false; return; }
         w.talking = false;
+        // the order matters: tests/walkthrough.js picks by index (found, witness, name); the new ones come after
         const opts = [];
         if (!G.hasClue('trozo')) opts.push(['¿Qué ha encontrado?', 'found']);
         if (!G.hasClue('testigo')) opts.push(['¿Alguien vio algo?', 'witness']);
         if (!G.flag('watkins_name')) opts.push(['¿Sabemos quién era?', 'name']);
+        if (G.hasClue('trozo') && !G.hasClue('berner_aviso')) opts.push(['¿Hay novedades de otras calles?', 'berner']);
+        if (!G.flag('mitre_city')) opts.push(['¿Quién lleva el caso?', 'city']);
         opts.push(['Nada más.', 'bye']);
         const c = opts[await G.choice(opts.map((o) => o[0]))][1];
         w.talking = true;
@@ -145,20 +148,24 @@ export default {
           await G.say('Agente Watkins', 'Falta una pieza del delantal. Se la llevó quien lo hizo.');
           G.clue('trozo');
           mitreObjective(G);
-          await G.say('Agente Watkins', 'Han encontrado a otra mujer en Berner Street. Elizabeth Stride. Sueca, de cerca de Gotemburgo; en las pensiones la llamaban Long Liz.');
         } else if (c === 'witness') {
-          await G.say('Agente Watkins', 'Tres hombres salían de un club de Duke\'s Place a la una y media. Uno vio a una mujer hablando con un hombre a la entrada de Church Passage.');
-          await G.say('Agente Watkins', 'Uno vio a un hombre en Church Passage. Abrigo oscuro. Bombín. Linterna policial.');
+          await G.say('Agente Watkins', 'Un vecino de Church Passage dice que, hacia la una y media, vio a una pareja a la entrada del pasaje. Él, abrigo oscuro y bombín. Y una linterna, dice. No está seguro.');
           G.clue('testigo');
           mitreObjective(G);
           w.talking = false;
           await G.think(G.two('Así viste Pike. Así vestimos todos.', 'Así visto yo.'));
         } else if (c === 'name') {
           G.flag('watkins_name', true);
-          await G.say('Agente Watkins', 'Cuando salió de Bishopsgate dio un nombre que quizá no fuera suyo: Mary Ann Kelly.');
-          await G.say('Agente Watkins', 'En la pensión la llamaban Kate Eddowes. Volvía de Kent, de la recogida del lúpulo, con su compañero, John Kelly.');
+          await G.say('Agente Watkins', 'No. Aquí nadie la conoce.');
           w.talking = false;
           G.sanity(-2);
+        } else if (c === 'berner') {
+          await G.say('Agente Watkins', 'Aviso de la Metropolitana: Berner Street, hacia la una. Una mujer en el patio de un club, con la garganta cortada. Sin nombre todavía.');
+          G.clue('berner_aviso');
+          mitreObjective(G);
+        } else if (c === 'city') {
+          G.flag('mitre_city', true);
+          await G.say('Agente Watkins', 'Aquí manda la City, inspector. Lo de Berner Street es de ustedes. Usted está aquí de favor.');
         }
         w.talking = false;
       },
@@ -188,7 +195,7 @@ export default {
         await G.think('Aquí nadie podía verlo trabajar.');
         // the points sit on the painted close-up (assets/closeups/eddowes.jpg)
         await G.inspect('kate', {
-          title: 'Catherine Eddowes', body: 'eddowes',
+          title: 'La mujer de Mitre Square', body: 'eddowes',
           points: [
             { id: 'cara', key: true, x: 253, y: 306, r: 60, name: 'La cara', act: async (G) => {
               G.red(0.4); G.audio.sting(0.18);

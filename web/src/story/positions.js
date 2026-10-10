@@ -26,6 +26,10 @@ export const QUESTIONS = {
     visible: (s) => hasClue(s, 'carta') },
   buck_window: { theory: 'rondas', title: 'Ventana de las rondas', options: [['firme', 'Firme'], ['compatible', 'Compatible, con margen'], ['insuficiente', 'Insuficiente']],
     visible: (s) => hasClue(s, 'ronda') },   // visible con la pista ronda (F02)
+  // V4-06: the stance on one man for both events. It registers Thomas's view only: no flag, no ending, no FINAL_SOURCES.
+  double_event: { theory: 'doble', title: '¿Son el mismo hombre?',
+    options: [['vinculados', 'Probablemente, sí'], ['insuficiente', 'No hay bastante para decirlo'], ['no_relacionados', 'Por ahora, no']],
+    visible: (s) => hasClue(s, 'berner_aviso') && hasClue(s, 'trozo') },
 };
 
 // What the closing of chapter one said about Brennan (flags.brennan_stance). The notebook shows it as

@@ -102,7 +102,7 @@ export function canLeaveRoomC3b(s) {
 export const FINAL_SOURCES = {
   f_zurdo: 'forense',        // the surgeon's reading of the cuts
   f_anat: 'objeto',          // the scalpel in the drain
-  f_testigo: 'testigo',      // the club men in Duke's Place
+  f_testigo: 'testigo',      // a neighbour in Church Passage
   f_ronda: 'registro',       // the signed beat sheet
   f_exp: 'expediente',       // the hospital file
   f_barro: null,             // compatible, not demonstrative

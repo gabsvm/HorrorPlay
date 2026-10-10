@@ -108,6 +108,9 @@ export function makeChapters() {
       G.game.r.fx.fade = 1;
       await G.card('', 'Octubre', 'Ningún nuevo crimen con la misma firma. Los rumores, en cambio, no descansan.', 3400);
       await G.card('', '', 'Duermo de día. De noche camino. Pike ya no me saluda.', 3400);
+      await G.doc(`<h3>RECORTE DE PRENSA — OCTUBRE DE 1888</h3>
+        <p>En la investigación de Berner Street, una compañera de pensión reconoció a la víctima: Elizabeth Stride, a quien llamaban «Long Liz», nacida cerca de Gotemburgo. Antes, otra mujer había jurado que era su hermana; se demostró que se equivocaba.</p>
+        <p>En el caso de Mitre Square, John Kelly reconoció a su compañera, Catherine Eddowes. Esa noche, al salir de la comisaría de Bishopsgate, ella había dado el nombre de Mary Ann Kelly.</p>`);
       await G.card('Capítulo IV', 'Huésped', 'London Hospital, 8 de noviembre de 1888', 4200);
       G.objective(G.two('Encontrar pruebas contra Greaves en su consulta: el cajón, la vitrina.', 'Encontrar lo que Greaves sabe de mí: el cajón, la vitrina.'));
       await G.goto('greaves', { x: 230, facing: 1, fade: false });

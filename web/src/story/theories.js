@@ -88,6 +88,23 @@ export const THEORIES = [
         rule: (n) => (n.for ? 'plausible' : 'sin evaluar') },
     ],
   },
+  {
+    // V4-06. Shown only with the notice from Berner Street (`berner_aviso`) and the apron (`trozo`): the
+    // testimony alone (`testigo`) does not open it. Never 'sostenida' and never a progress flag.
+    id: 'doble',
+    q: '¿Son el mismo hombre el de Berner Street y el de Mitre Square?',
+    show: (s) => s.clues.includes('trozo') && s.clues.includes('berner_aviso'),
+    hyps: [
+      { id: 'vinculados', text: 'Probablemente el mismo hombre: la misma noche, a menos de una hora.',
+        for: [C('berner_aviso', 'la misma noche, a menos de una hora'), C('testigo', 'una pareja en Church Passage hacia la una y media')],
+        against: [],
+        rule: (n) => (n.for >= 2 ? 'plausible' : 'sin evaluar') },
+      { id: 'no_relacionados', text: 'Sin vínculo por ahora: otra calle y otra jurisdicción.',
+        for: [C('berner_aviso', 'otra calle y otra jurisdicción')],
+        against: [],
+        rule: (n) => (n.for ? 'plausible' : 'sin evaluar') },
+    ],
+  },
 ];
 
 export function holds(s, e) {
@@ -100,6 +117,7 @@ export function holds(s, e) {
 export function evaluate(s) {
   const out = [];
   for (const t of THEORIES) {
+    if (t.show && !t.show(s)) continue;   // a question with its own gate (V4-06: doble)
     const hyps = t.hyps.map((h) => {
       const pro = h.for.filter((e) => holds(s, e)), con = h.against.filter((e) => holds(s, e));
       return { id: h.id, text: h.text, status: h.rule({ for: pro.length, against: con.length }, s), for: pro.map((e) => e.note), against: con.map((e) => e.note) };

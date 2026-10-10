@@ -807,23 +807,29 @@ _Archivo: src/scenes/mitre.js_
   - ¿Qué ha encontrado? _(si !hasClue('trozo'))_
   - ¿Alguien vio algo? _(si !hasClue('testigo'))_
   - ¿Sabemos quién era? _(si !flag('watkins_name'))_
+  - ¿Hay novedades de otras calles? _(si hasClue('trozo') && !hasClue('berner_aviso'))_
+  - ¿Quién lleva el caso? _(si !flag('mitre_city'))_
   - Nada más.
 - _Si c === 'found':_
   - **Agente Watkins:** Paso aquí cada cuarto de hora. A la una y media, nada. A la una y cuarenta y cuatro, la vi.
   - **Agente Watkins:** Falta una pieza del delantal. Se la llevó quien lo hizo.
   - [+ Pista al cuaderno: trozo]
-  - **Agente Watkins:** Han encontrado a otra mujer en Berner Street. Elizabeth Stride. Sueca, de cerca de Gotemburgo; en las pensiones la llamaban Long Liz.
 - _Si no:_
   - _Si c === 'witness':_
-    - **Agente Watkins:** Tres hombres salían de un club de Duke's Place a la una y media. Uno vio a una mujer hablando con un hombre a la entrada de Church Passage.
-    - **Agente Watkins:** Uno vio a un hombre en Church Passage. Abrigo oscuro. Bombín. Linterna policial.
+    - **Agente Watkins:** Un vecino de Church Passage dice que, hacia la una y media, vio a una pareja a la entrada del pasaje. Él, abrigo oscuro y bombín. Y una linterna, dice. No está seguro.
     - [+ Pista al cuaderno: testigo]
     - *Thomas (piensa):* Así viste Pike. Así vestimos todos. _(1ª lectura)_
     - *Thomas (piensa):* Así visto yo. _(2ª lectura)_
   - _Si no:_
     - _Si c === 'name':_
-      - **Agente Watkins:** Cuando salió de Bishopsgate dio un nombre que quizá no fuera suyo: Mary Ann Kelly.
-      - **Agente Watkins:** En la pensión la llamaban Kate Eddowes. Volvía de Kent, de la recogida del lúpulo, con su compañero, John Kelly.
+      - **Agente Watkins:** No. Aquí nadie la conoce.
+    - _Si no:_
+      - _Si c === 'berner':_
+        - **Agente Watkins:** Aviso de la Metropolitana: Berner Street, hacia la una. Una mujer en el patio de un club, con la garganta cortada. Sin nombre todavía.
+        - [+ Pista al cuaderno: berner_aviso]
+      - _Si no:_
+        - _Si c === 'city':_
+          - **Agente Watkins:** Aquí manda la City, inspector. Lo de Berner Street es de ustedes. Usted está aquí de favor.
 **Al usar un objeto sobre ello:**
 - _Si flag('mitre_badge'):_
   - *Thomas (piensa):* Ya la ha visto.
@@ -952,6 +958,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 ### `c4`
 - [Rótulo] Octubre — Ningún nuevo crimen con la misma firma. Los rumores, en cambio, no descansan.
 - [Rótulo] Duermo de día. De noche camino. Pike ya no me saluda.
+- [Documento] RECORTE DE PRENSA — OCTUBRE DE 1888 En la investigación de Berner Street, una compañera de pensión reconoció a la víctima: Elizabeth Stride, a quien llamaban «Long Liz», nacida cerca de Gotemburgo. Antes, otra mujer había jurado que era su hermana; se demostró que se equivocaba. En el caso de Mitre Square, John Kelly reconoció a su compañera, Catherine Eddowes. Esa noche, al salir de la comisaría de Bishopsgate, ella había dado el nombre de Mary Ann Kelly.
 - [Rótulo] Huésped — London Hospital, 8 de noviembre de 1888
 - [Objetivo] Encontrar pruebas contra Greaves en su consulta: el cajón, la vitrina. | Encontrar lo que Greaves sabe de mí: el cajón, la vitrina.
 - [→ Escena: greaves]
@@ -1506,7 +1513,7 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 
 **`trozo`**
 - Dónde: Mitre Square
-- Texto: Falta un trozo del delantal de Catherine Eddowes, cortado a cuchillo.
+- Texto: Falta un trozo del delantal de la víctima, cortado a cuchillo.
 - Verdad (2ª lectura): Lo corté para limpiarme las manos.
 
 **`marcas`**
@@ -1532,6 +1539,10 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 - Dónde: Mitre Square
 - Texto: Un testigo vio a un hombre con abrigo oscuro y bombín que llevaba una linterna "como las de la policía".
 - Verdad (2ª lectura): Como yo.
+
+**`berner_aviso`**
+- Dónde: Mitre Square · aviso
+- Texto: Berner Street, hacia la una: una mujer en el patio de un club, garganta cortada. Sin nombre todavía.
 
 **`carta`**
 - Dónde: Prensa · 1 oct

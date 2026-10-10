@@ -741,3 +741,162 @@ $ git diff --stat -- web/GUION.md
 3. H-02 y H-31 llevan «VERIFICADA-CITA» según la especificación, sin haber abierto la URL. ¿Lo dejamos así hasta F17?
 
 **Revisión de cierre (Opus, V4-05): APPROVED con un cambio aplicado.** P2-1: `goulston_historic` pierde `truth2` (una frase en primera persona no puede ligar a Thomas con la inscripción real); test añadido. H-02, H-07 y H-31 quedan como «CITA SECUNDARIA (resumen automático de WebFetch; no literal)» hasta F17. Desviación aceptada: `mad(0.5)` al inicio de la lectura.
+
+## V4-06 — implementación (pendiente de revisión)
+
+Implementado por el agente implementador (Haiku), sin commit. Base `b923ce0`. Revisión del observador pendiente.
+
+### Decisiones y textos
+
+- **Watkins (`scenes/mitre.js`).** «¿Qué ha encontrado?» (`found`) da dos líneas sin nombre y la pista `trozo`. «¿Alguien vio algo?» (`witness`) da la línea del vecino de Church Passage y la pista `testigo`; el pensamiento de Thomas no cambia. «¿Sabemos quién era?» (`name`) da «No. Aquí nadie la conoce.» y −2 de cordura, como antes.
+- **Opción nueva «¿Hay novedades de otras calles?» (`berner`).** Visible con `trozo` y sin `berner_aviso`. Da el aviso de la Metropolitana (texto aprobado), la pista `berner_aviso` y el objetivo si hay `trozo` y `testigo`. No es puerta de salida.
+- **Opción nueva «¿Quién lleva el caso?» (`city`).** Visible tras la placa, una sola vez (`flags.mitre_city`). Un intercambio, sin cordura. **La etiqueta no venía en la especificación:** es decisión de implementación.
+- **Orden del menú: found, witness, name, berner, city, bye.** `tests/walkthrough.js:123` elige por índice `[0]` tres veces tras la placa; con las nuevas antes, la ruta principal rompería. Ese archivo no está en la lista y no se toca.
+- **Pista `berner_aviso`** (`story/data.js`, tag «Mitre Square · aviso», texto fijo, sin `truth2`).
+- **Teoría `doble`** (`story/theories.js`, al final de `THEORIES`). Hipótesis `vinculados` (`berner_aviso` + `testigo`) y `no_relacionados` (`berner_aviso`), con las pruebas de la especificación. **Los textos de las hipótesis no venían en la especificación:** «El mismo hombre: la misma noche y a menos de una hora de distancia.» y «Dos hombres distintos: otra calle y otra jurisdicción.». Reglas: `vinculados` plausible con dos pruebas; `no_relacionados` plausible con una. Nunca `sostenida`.
+- **Pregunta `double_event`** (`story/positions.js`): título «¿Son el mismo hombre?»; opciones «Probablemente, sí», «No hay bastante para decirlo», «Por ahora, no». Visible con `berner_aviso` y `trozo`.
+- **Recorte de prensa** (`story/chapters.js`, `c4`): tras las dos tarjetas «Octubre» y antes de la tarjeta «Capítulo IV», con `G.doc`. Cabecera y párrafos exactos. Sin flag, sin pista, sin pensamiento.
+- **Comentarios.** `scenes/mitre.js:40` decía «toward Duke's Place» y pasa a «toward the club side»; `story/progression.js` (`f_testigo`) pasa a «a neighbour in Church Passage». Son comentarios, no texto de pantalla, pero la prueba de Duke's Place mira todo `src`.
+
+### Desviaciones y observaciones
+
+1. **Visibilidad de `doble` con una regla `show`.** `evaluate()` mostraba una teoría si cualquier hipótesis tenía evidencia. Con `testigo` y `trozo` sin aviso, `vinculados` tendría evidencia y la teoría saldría, contra el criterio de guardados (P). Se añade un campo opcional `show` a la teoría; `evaluate()` lo respeta. Solo `doble` lo tiene. Las cinco anteriores no cambian (ver el snapshot).
+2. **Registro de `double_event`.** La especificación nombraba `double_event_assessment` como posible campo; no se crea (ver `V4_STATE_SCHEMA.md` §10).
+3. **Palabras que ya existían fuera de la escena.** Las pruebas no son literales: `story/data.js:146` (la pista `trozo` dice «Catherine Eddowes»), `art/props.js:276` (comentario), `story/chapters.js:933` (tarjeta de Miller's Court, «Mary Jane Kelly»), `scenes/mitre.js:103` (comentario) y `main.js:57` (créditos). `tests/unit/mitre.test.mjs` las compara con una lista blanca por línea. No se han cambiado: no estaban en la especificación.
+4. **Clasificación de H-04.** El alias «Mary Ann Kelly» queda `[A]` corregido en la escena, y el dato de Bishopsgate queda «FUENTE PENDIENTE». La especificación no fijaba la clase de esa parte.
+5. **H-34 (George Morris).** La especificación da «[D] FUENTE PENDIENTE (P3-2)» sin describir su papel histórico. La fila no lo describe.
+6. **Finales de línea.** `scenes/mitre.js` y `GUION.md` estaban en CRLF en el árbol de trabajo (índice LF); se pasaron a LF. `main.js` sigue en CRLF en el árbol de trabajo y no se toca.
+7. **`investigation.hypotheses`.** `game.js:365` guarda `statuses()`, que ahora incluye `doble.vinculados` y `doble.no_relacionados` cuando la teoría está visible. Es estado de cuaderno, no de progreso; ni `canLeaveMitre`, ni `FINAL_SOURCES`, ni `flags` cambian.
+8. **Líneas de los recorridos.** Antes de V4-06 eran 427 (walkthrough) y 431 (second); ahora 425 y 429, por las líneas quitadas de Watkins. `alt` sigue en 125.
+9. **Etiqueta de la opción de Watkins.** La tabla §8 de `V4_F00_INVENTORY.md` usa la etiqueta exacta de la especificación (C), «¿Hay novedades de otras calles?», y no la forma corta «¿Hay novedades?» de la fila de la tabla.
+
+### Archivos tocados (git status antes de escribir esta sección)
+
+```
+ M web/GUION.md
+ M web/docs/V4_F00_INVENTORY.md
+ M web/docs/V4_HISTORICAL_LEDGER.md
+ M web/docs/V4_STATE_SCHEMA.md
+ M web/src/scenes/mitre.js
+ M web/src/story/chapters.js
+ M web/src/story/data.js
+ M web/src/story/positions.js
+ M web/src/story/progression.js
+ M web/src/story/theories.js
+?? web/tests/scenarios/mitre6.js
+?? web/tests/unit/mitre.test.mjs
+```
+
+`web/docs/V4_EXECUTION_LOG.md` se modifica con esta misma sección. Sin commit ni push. Todos los archivos tocados están en `i/lf w/lf` (`git ls-files --eol`).
+
+### Tabla de comportamiento (PASO 0)
+
+`web/docs/V4_F00_INVENTORY.md`, sección 8, escrita antes de tocar `scenes/mitre.js` (leída del código en `b923ce0`). Incluye las filas de `watkins` (found, witness, name, berner, city, bye, sin placa, `use` de la placa), `corner` (cuerpo e inspección `kate`) y `east`.
+
+### Snapshot de `evaluate()` (11 fixtures, `normalizeState` antes de `evaluate`, 5 teorías)
+
+Scripts y salidas en `scratchpad/v4-06/` (fuera del repositorio): `snap.mjs`, `snapshot-before.json`, `snapshot-after.json`.
+
+```
+$ node snap.mjs snapshot-before.json        (antes de tocar src)
+fixtures: 11, theories: 5
+$ node snap.mjs snapshot-after.json         (después)
+fixtures: 11, theories: 6
+$ diff snapshot-before.json snapshot-after.json
+2c2
+<  "theories": 5,
+---
+>  "theories": 6,
+```
+
+Los 11 fixtures dan lo mismo para las cinco teorías anteriores. `doble` no aparece en ningún fixture (ninguno tiene `berner_aviso`). La única diferencia es el contador de teorías, que cuenta `THEORIES.length`. La prueba unitaria «las cinco teorías anteriores siguen en su orden, y doble no aparece en ningún guardado» lo cubre en el repositorio.
+
+### Comandos y salidas reales
+
+```
+$ node web/tools/unit.mjs            (última línea)
+120 pruebas bien, 0 mal
+
+$ node web/tools/walk.mjs
+{ "scenario": "walkthrough", "ok": true, "errors": [], "lines": 425, "deductions": 25, "scene": "bucks_row" }
+
+$ node web/tools/walk.mjs second
+{ "scenario": "second", "ok": true, "errors": [], "lines": 429, "deductions": 25, "scene": "bucks_row" }
+
+$ node web/tools/walk.mjs alt
+{ "scenario": "alt", "ok": true, "errors": [], "lines": 125, "deductions": 1, "scene": "seance" }
+
+$ node web/tools/walk.mjs mitre6
+{ "scenario": "mitre6", "ok": true, "errors": [], "lines": 152, "deductions": 21, "scene": "greaves",
+  "seen": { "route": "con aviso y ciudad: llega a Goulston", "oldRoute": "llega a Goulston sin aviso ni City",
+            "saveWithApron": "ofrece el aviso sin pista previa", "noNotice": "doble oculta", "clipping": "solo en c4, una vez" } }
+
+$ node web/tools/test-all.mjs
+PASS  unit                         0.3s
+PASS  smoke                        2.9s
+PASS  audio                        0.1s
+PASS  scenario beats               0.7s
+PASS  scenario brennan             4.9s
+PASS  scenario c1-minimal          0.5s
+PASS  scenario calm                2.9s
+PASS  scenario chapter3            2.9s
+PASS  scenario comb-pike           2.0s
+PASS  scenario compat              0.4s
+PASS  scenario feedback            0.6s
+PASS  scenario finale             17.9s
+PASS  scenario forense             0.6s
+PASS  scenario goulston            5.0s
+PASS  scenario hint                0.4s
+PASS  scenario hint-ui             0.4s
+PASS  scenario integrity           0.3s
+PASS  scenario mitre6              0.8s
+PASS  scenario mob                 2.3s
+PASS  scenario notebook            0.3s
+PASS  scenario positions           0.3s
+PASS  scenario resume              3.2s
+PASS  scenario sanity              27.2s
+PASS  scenario seance              2.2s
+PASS  scenario second-reading      1.4s
+PASS  walk                         4.3s
+PASS  walk second                  4.5s
+PASS  walk alt                     0.6s
+EXIT=0
+
+$ node web/tools/script/export.mjs && git diff --stat -- web/GUION.md
+ web/GUION.md | 21 ++++++++++++++++-----
+ 1 file changed, 16 insertions(+), 5 deletions(-)
+```
+
+Lo que cambia en el guion (`git diff -- web/GUION.md`; sin `doble` ni `FINAL_SOURCES`):
+
+- Watkins: el menú (dos opciones nuevas), «found» sin la línea de Stride, «witness» con el vecino, «name» con una línea, y los bloques `berner` y `city`.
+- `c4`: el documento «RECORTE DE PRENSA — OCTUBRE DE 1888».
+- Pistas: `berner_aviso` (tag y texto).
+
+Estado del repositorio (`git status --porcelain`):
+
+```
+ M web/GUION.md
+ M web/docs/V4_EXECUTION_LOG.md
+ M web/docs/V4_F00_INVENTORY.md
+ M web/docs/V4_HISTORICAL_LEDGER.md
+ M web/docs/V4_STATE_SCHEMA.md
+ M web/src/scenes/mitre.js
+ M web/src/story/chapters.js
+ M web/src/story/data.js
+ M web/src/story/positions.js
+ M web/src/story/progression.js
+ M web/src/story/theories.js
+?? web/tests/scenarios/mitre6.js
+?? web/tests/unit/mitre.test.mjs
+```
+
+### Preguntas abiertas para el observador
+
+- ¿Es aceptable la regla `show` en `theories.js` (desviación 1), o prefieres que `doble` se oculte de otra forma?
+- Etiqueta de `city` («¿Quién lleva el caso?») y textos de las hipótesis de `doble`: son decisiones de implementación.
+- `no_relacionados` es plausible con solo el aviso. ¿Es lo que quieres, o debe requerir algo más?
+- El recorte va antes de la tarjeta «Capítulo IV», después de «Octubre». Si prefieres después de la tarjeta de capítulo, es un cambio de una línea.
+- Clasificación de H-04 y del dato de Bishopsgate (desviación 4).
+
+**Revisión de cierre (Opus, V4-06): APPROVED con tres cambios de texto aplicados.** (1) `trozo` dice «la víctima», no el nombre (data.js:146). (2) El título del inspect de Mitre Square es «La mujer de Mitre Square» (mitre.js). (3) Las hipótesis de `doble` quedan: «Probablemente el mismo hombre: la misma noche, a menos de una hora.» y «Sin vínculo por ahora: otra calle y otra jurisdicción.» Deudas: `walkthrough.js` elige opciones por posición (frágil; elegir por texto en F16 o F17). Hallazgos fuera de F06 para F09: Pike nombra a Nichols a las 4:12 del 31 de agosto (bucks_row.js:151,255,266, [A]); Chapman y la hora de su identificación por la pensión (hanbury.js:171,304,308, [U]).
