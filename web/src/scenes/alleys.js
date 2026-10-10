@@ -130,17 +130,23 @@ export default {
       { x: 3300, q: 'Thrawl Street. Mi casa está ahí.', opts: ['Ir a casa.', 'Seguir hacia el río.'], good: 1 },
     ];
     G.objective('Alcanzar al abrigo oscuro.');
+    // every wrong turn is kept: 0 clean, 1-2 spotted (a constable saw his face), 3 injured (a wall)
+    let mistakes = 0;
+    const touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
     for (const j of junctions) {
       await G.walk(j.x - 80, { speed: 300 });
       G.audio.whistle(0.12);
-      const c = await G.choice(j.opts, { timeout: 4200, def: 1 - j.good });
+      const c = await G.choice(j.opts, { timeout: touch ? 5600 : 4600, def: 1 - j.good });
       if (c !== j.good) {
+        mistakes++;
         this.gap -= 140;
         G.shake(8); G.sanity(-3);
         G.audio.whistle(0.16);   // a dead end, a lantern, a constable at the door: the whistles close in
         G.player.x -= 60;
       }
     }
+    G.state.flags.chase_mistakes = mistakes;
+    G.state.flags.chase_outcome = mistakes === 0 ? 'clean' : mistakes < 3 ? 'spotted' : 'injured';
     await G.walk(4030, { speed: 300 });
     this.chasing = false;
     // down the steps into the culvert, into the dark

@@ -136,7 +136,7 @@ export async function run({ log = true, second = false } = {}) {
     await act('paper');
     await act('door');
     expectScene('room');                      // the letter first
-    await act('desk', null, [1, second ? 5 : 4, 2]);   // Pike (no), look again, Greaves
+    await act('desk', null, ['Pike', 'Revisar', 'Greaves']);   // Pike (no), look again, Greaves (a likeness)
     need(game.G.hasClue('letra'), 'Falta la comparación de la letra');
     await act('bed'); await act('photo');
     await deduce('letra', 'greaves_sabe');

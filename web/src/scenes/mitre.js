@@ -144,7 +144,7 @@ export default {
           await G.say('Agente Watkins', 'Falta una pieza del delantal. Se la llevó quien lo hizo.');
           G.clue('trozo');
           mitreObjective(G);
-          await G.say('Agente Watkins', 'Han encontrado a otra mujer en Berner Street. Stride. Dos casas van a esperar noticias.');
+          await G.say('Agente Watkins', 'Han encontrado a otra mujer en Berner Street. Elizabeth Stride. Sueca, de cerca de Gotemburgo; en las pensiones la llamaban Long Liz.');
         } else if (c === 'witness') {
           await G.say('Agente Watkins', 'Tres hombres salían de un club de Duke\'s Place a la una y media. Uno vio a una mujer hablando con un hombre a la entrada de Church Passage.');
           await G.say('Agente Watkins', 'Uno vio a un hombre en Church Passage. Abrigo oscuro. Bombín. Linterna policial.');
@@ -155,7 +155,7 @@ export default {
         } else if (c === 'name') {
           G.flag('watkins_name', true);
           await G.say('Agente Watkins', 'Cuando salió de Bishopsgate dio un nombre que quizá no fuera suyo: Mary Ann Kelly.');
-          await G.say('Agente Watkins', 'En la pensión la llamaban Kate Eddowes.');
+          await G.say('Agente Watkins', 'En la pensión la llamaban Kate Eddowes. Volvía de Kent, de la recogida del lúpulo, con su compañero, John Kelly.');
           w.talking = false;
           G.sanity(-2);
         }

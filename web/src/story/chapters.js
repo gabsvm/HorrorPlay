@@ -547,6 +547,10 @@ export function makeChapters() {
 
     async endChase(G) {
       await G.voice('Bien, Tommy.');
+      // what the run cost: nothing, a face seen, or a hand opened on a wall (chase_outcome)
+      const outcome = G.state.flags.chase_outcome || 'clean';
+      if (outcome === 'injured') { G.red(0.7); G.audio.thud(); await G.think('Me he abierto la mano en la tapia de Wentworth Street. No sé cuándo.'); }
+      else if (outcome === 'spotted') { G.audio.whistle(0.12, true); await G.think('El agente de la linterna me vio la cara. Un momento. Bastó.'); }
       G.player.speed = 150;
       await lostTime(G, '3:20', '8:05', { date: '1 de octubre de 1888' });
       G.flag('room_phase', 'c3b');
@@ -564,7 +568,9 @@ export function makeChapters() {
         <p>Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con <b>tinta roja</b>, menciona al «Leather Apron» y reivindica los crímenes:</p>
         <p class="red">"I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..."</p>
         <p class="red" style="text-align:right">Yours truly<br>Jack the Ripper</p>
-        <p class="small">Se ruega a quien reconozca la letra que se presente en Scotland Yard.</p>`);
+        <p class="small">Se ruega a quien reconozca la letra que se presente en Scotland Yard.</p>
+        ${{ spotted: '<p class="small">Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. Asegura que podría reconocerlo.</p>',
+          injured: '<p class="small">Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.</p>' }[G.state.flags.chase_outcome] || ''}`);
       G.flag('paper_read', true);
       G.clue('carta');
       hooks.c3bObjective(G);
@@ -595,16 +601,21 @@ export function makeChapters() {
         ${G.two('', '<p class="small">Mis apuntes de anatomía, cuarto curso, 1878:</p><p class="hand">La misma J, las mismas t. "Carótida: corre junto a la tráquea..."</p>')}`);
       await hands();
       await G.think('Esa J. Esas t. Las conozco.');
-      const names = ['Madame Wexley.', 'Pike.', 'Greaves.', 'Brennan.', ...(G.second() ? ['La mía.'] : []), 'Revisar las muestras.'];
+      // a likeness is not an identification: saying so is an answer too, and it is enough to go on
+      const names = ['Madame Wexley.', 'Pike.', 'Greaves: se parece a la suya.', 'Brennan.', ...(G.second() ? ['La mía.'] : []), 'La muestra no basta. Necesito más pruebas.', 'Revisar las muestras.'];
+      let assessment;
       for (;;) {
         const pick = names[await G.choice(names)];
         if (pick === 'Revisar las muestras.') { await hands(); continue; }
-        if (pick === 'Greaves.') { await G.think('Es una escritura parecida. No es una identificación.'); break; }
-        if (pick === 'La mía.') { await G.think('Es mi propia letra. Copié a Greaves años atrás.'); break; }
+        if (pick.startsWith('Greaves')) { await G.think('Es una escritura parecida. No es una identificación.'); assessment = 'greaves_like'; break; }
+        if (pick === 'La mía.') { await G.think('Es mi propia letra. Copié a Greaves años atrás.'); assessment = 'self_recognition'; break; }
+        if (pick.startsWith('La muestra')) { await G.think('Una carta impresa en un periódico y cuatro letras de mi mesa. Con esto no se acusa a nadie.'); assessment = 'inconclusive'; break; }
         await G.think({ 'Madame Wexley.': 'No coincide con Wexley.',
           'Pike.': 'No coincide con Pike. Sus notas sí llevan mis correcciones.',
           'Brennan.': 'Brennan firmó con una cruz. No hay muestra suficiente.' }[pick]);
       }
+      G.state.flags.handwriting_assessment = assessment;
+      if (assessment === 'inconclusive') G.flag('hand_inconclusive', true);
       G.clue('letra');
       hooks.c3bObjective(G);
     },
@@ -637,6 +648,11 @@ export function makeChapters() {
       await gr.walkTo(G.player.x - 260);
       gr.talking = true;
       await G.say('Greaves', 'La encontraste.');
+      const hand = G.state.flags.handwriting_assessment;
+      if (hand === 'greaves_like') await G.say('Greaves', 'Pensaste que la carta era mía. Te enseñé a escribir así; no a firmar eso.');
+      else if (hand === 'inconclusive') await G.say('Greaves', 'No acusaste a nadie por una letra. Siempre fuiste prudente con las pruebas. Con las tuyas también.');
+      else if (hand === 'self_recognition') await G.say('Greaves', 'Reconociste tu letra. Yo la reconocí en marzo de 1879.');
+      if (G.state.flags.chase_outcome === 'injured') await G.say('Greaves', 'Y esa mano. ¿Quién te la ha cosido?');
       await G.say('Greaves', 'Aquel día te hallé en la sala. No sé lo que ocurrió antes.');
       await G.say('Greaves', 'Pike vino a preguntarme si alguien puede actuar sin recordarlo. Le respondí que sí.');
       gr.talking = false;
@@ -670,6 +686,9 @@ export function makeChapters() {
       await G.wait(900);
       await G.say('Pike', 'Thomas. Soy Pike. No voy a entrar sin avisarte.');
       await G.wait(700);
+      await G.say('Pike', { clean: 'Nadie te vio en Wentworth Street. Eso es lo que más me asusta.',
+        spotted: 'El agente Long dice que te vio la cara en Wentworth Street. No le he contestado.',
+        injured: 'Long encontró sangre en la tapia de Wentworth Street. Y tú llevas la mano cosida.' }[G.state.flags.chase_outcome || 'clean']);
       await G.say('Pike', 'Traigo tus rondas. Tu firma. No sé aún cuánto hiciste, pero no puedo dejarte marchar.');
       const last = await G.choice(['«Deténgame, Pike».', '«Proteja a Wren. La niña del río».', '(Romper el folio del expediente que me señala)']);
       if (last === 0) {
