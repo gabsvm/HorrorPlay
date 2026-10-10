@@ -6,6 +6,8 @@ let last = 0;
 
 export function buzz(pattern) {
   if (!prefs.vibrate || typeof navigator === 'undefined' || !navigator.vibrate) return;
+  // browsers refuse (and complain) before the first touch: wait for it
+  if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
   const now = Date.now();
   if (now - last < 120) return;   // a burst of hits is felt as one
   last = now;
