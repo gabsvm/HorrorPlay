@@ -12,10 +12,9 @@ const RECORD = [
   ['p', 'Las anotaciones están escritas con dos caligrafías distintas.'],
 ];
 
+// one line over the street; the name (his, and the other) is for the game to find, not to announce
 const LINES = [
   'Otoño de 1888. Alguien está matando mujeres en Whitechapel.',
-  'La policía todavía no tiene un nombre para él.',
-  'Él tampoco.',
 ];
 
 const PAGE = 'Para entender lo que pasó este otoño tengo que empezar por el río. Por Nat.';
@@ -62,9 +61,9 @@ export async function playIntro(G) {
       await type(rows[i], RECORD[i][1], RECORD[i][0] === 'p' ? 26 : 34, () => audio.tick());
       await w(RECORD[i][0] === 'p' ? 500 : 250);
     }
-    await w(3200);
+    await w(2200);
     show(doc, false);
-    await w(1200);
+    await w(900);
 
     // 2. Whitechapel in the rain, three lines
     if (!skipped) {
@@ -106,9 +105,9 @@ export async function playIntro(G) {
       await type(page.querySelector('.text'), PAGE, 55, () => audio.pen());
       await w(500);
       page.querySelector('.sig').classList.add('on');
-      await w(2600);
+      await w(1800);
       show(page, false);
-      await w(1300);
+      await w(900);
     }
   } finally {
     window.removeEventListener('pointerdown', skip, true);

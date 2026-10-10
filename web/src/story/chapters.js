@@ -49,9 +49,9 @@ export function makeChapters() {
       G.flag('fs_1888', false);
       look(G, 'child');
       G.game.r.fx.fade = 1;
-      await G.card('', 'Limehouse', 'Octubre de 1866', 3600);
+      await G.card('', 'Limehouse', 'Octubre de 1866', 3000);
       await G.goto('foreshore', { x: 480, facing: 1, fade: false });
-      await G.fade(0, 2500);
+      await G.fade(0, 1800);
       await G.narrate('Nat no llegó a cumplir diez años.');
       await G.think('Si el río puede devolver un barco, puede devolver algo más.');
       G.objective('Buscar el barquito de Nat en el barro, junto al embarcadero.');
@@ -202,7 +202,7 @@ export function makeChapters() {
       G.clue('regla');
       G.sanity(-5);
       hooks.c1Objective(G);
-      await G.think('El bisturí y el informe de Llewellyn. Ahí está el nexo.');
+      await G.think('Un bisturí del London Hospital, a dos pasos de ella.');
     },
 
     // what the player still needs to close chapter one
@@ -617,9 +617,11 @@ export function makeChapters() {
       await G.think(G.two('Fechada el 25. La noche que perdí.', 'Fechada el 25. Faltaban tres pliegos en mi mesa.'));
       G.audio.whisper(2, 0.14);
       if (G.second()) await G.voice('Jack.');
-      await G.think('Greaves usaba ese trazo. Tendré que compararlo.');
+      await G.think('Esa letra la he visto antes. En el escritorio tengo letras de todos.');
       G.sanity(-6);
-      if (G.flag('accused')) await G.think('Brennan sigue sin poder trabajar. No he rectificado la acusación.');
+      const bo = G.state.flags.brennan_outcome;
+      if (bo === 'severe') await G.think('Brennan sigue sin poder trabajar. No he rectificado la acusación.');
+      else if (bo === 'injured') await G.think('Brennan perdió su trabajo. Nadie lo ha rectificado. Yo tampoco.');
     },
 
     // what the room still asks before Thomas goes out on the 1st of October
@@ -926,7 +928,7 @@ export function makeChapters() {
       await G.wait(1200);
       G.desat(0); G.mad(0);
       await G.card('', 'Yours truly, Jack the Ripper', "Don't mind me giving the trade name.", 6000);
-      await G.card('', '', 'El 9 de noviembre de 1888, Mary Jane Kelly fue asesinada en Miller\'s Court. Fue la última de las cinco víctimas canónicas; la identidad del asesino no quedó establecida.', 7000);
+      await G.card('', '', 'El 9 de noviembre de 1888, Mary Jane Kelly fue asesinada en Miller\'s Court. Tenía unos veinticinco años. Esa noche, una vecina la oyó cantar. Fue la última de las cinco víctimas canónicas; la identidad del asesino no quedó establecida.', 7000);
       const brennan = G.state.flags.brennan_outcome || (G.flag('accused') ? 'severe' : 'injured');
       await G.card('', '', {
         severe: 'Silas Brennan no volvió a andar sin bastón. Nadie le pidió perdón.',
@@ -936,8 +938,7 @@ export function makeChapters() {
       if (intent === 'destroy_page') await G.card('', '', 'El expediente de 1879 se archivó con un folio roto. La enfermera Bell volvió a declarar.', 4600);
       else if (intent === 'surrender') await G.card('', '', 'El sargento Pike guardó la esposa abierta en un cajón de la comisaría de Commercial Street.', 4600);
       else if (intent === 'warn_wren') await G.card('', '', 'Wren no volvió a dormir junto al Ditch.', 4600);
-      await G.card('', '', 'Nadie volvió a ver al inspector Thomas Ashgrove.', 4600);
-      await G.card('', '', 'El Black Ditch sigue corriendo bajo el East End.', 4600);
+      await G.card('', '', 'Nadie volvió a ver al inspector Thomas Ashgrove. El Black Ditch sigue corriendo bajo el East End.', 5200);
       await G.card('', 'El Huésped', 'Fin', 5200);
       G.cinema(false);
       G.game.finish();

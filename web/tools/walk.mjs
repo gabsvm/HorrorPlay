@@ -71,6 +71,8 @@ const file = name === 'second' || name === 'walkthrough' ? '../tests/walkthrough
 const t = await import(file);
 const res = await t.run({ log: false, second: name === 'second', store });
 console.log(JSON.stringify({ scenario: name, ok: res.ok, errors: res.errors, lines: res.lines, deductions: res.deductions, scene: res.scene, ...(res.extra || {}) }, null, 1));
+// WALK_LOG=file writes every line of the run (to count what a player reads, compare readings...)
+if (process.env.WALK_LOG) (await import('node:fs')).writeFileSync(process.env.WALK_LOG, window.LOG.join('\n'));
 if (snapDir) {
   const { mkdirSync, writeFileSync } = await import('node:fs');
   mkdirSync(snapDir, { recursive: true });

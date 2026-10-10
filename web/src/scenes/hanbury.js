@@ -243,7 +243,7 @@ export default {
           await G.say('Sra. Richardson', 'Diecisiete personas bajo este techo. Dígame cómo nadie oyó nada.');
           await G.say('Sra. Richardson', 'Ese delantal lo lavé yo. Es de mi hijo John. ¿Va a escribirlo o va a preguntar otra vez?');
           a.talking = false;
-          await G.think('Es del hijo de Richardson. También estaba junto al cuerpo; necesito conservar ambos datos.');
+          await G.think('Del hijo de la casera. Pero estaba a dos pasos del cuerpo.');
         } else {
           await G.say('Sra. Richardson', 'Los de la ventana cobran por mirar. Yo vivo aquí y nadie me deja cerrar la puerta.');
         }
@@ -297,7 +297,7 @@ export default {
     {
       id: 'steps', name: 'Escalones', rect: [540, GROUND - 48, 140, 50], walk: 700, face: -1,
       act: async (G) => {
-        await G.think('En esta casa duermen diecisiete personas, y hubo luz de sobra para verlo todo. Nadie vio nada.');
+        await G.think('La tierra removida, y serrín encima. Alguien ya ha empezado a limpiar.');
       },
     },
     {
