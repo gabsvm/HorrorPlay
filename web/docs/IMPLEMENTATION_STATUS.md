@@ -20,7 +20,7 @@ node web/tools/unit.mjs                # solo la lógica pura (web/tests/unit/)
 | 0 · Baseline | CODE_COMPLETE | Línea base registrada; harness de escenarios con elecciones por texto; instantáneas de guardado por capítulo (ambas lecturas) y un guardado anterior a la V3; pruebas de compatibilidad, integridad y unitarias; `test-all.mjs` | ver historial | ver abajo | — | Sin comprobación visual (la fase no cambia nada visible) |
 | 1 · Progresión y teorías | CODE_COMPLETE | `story/progression.js` (condiciones puras `canFinishC1`, `canLeaveHanbury`, `canStartSeance`, `canLeaveMitre`, `canLeaveRoomC3b`, `canEnterFinale` con fuentes independientes, `currentGate`, `normalizeState`); `story/theories.js` (4 preguntas del caso con hipótesis y estado derivado de las pruebas); cuaderno con pestañas Conclusiones / Teorías / Perfil; ayuda en dos niveles que dice qué falta; estados guardados en `state.investigation`; errores de guion visibles solo en desarrollo | ver historial | unit 21/21, notebook, compat, walks | El cierre explícito del capítulo I llega en la Fase 3 (por ahora sigue siendo automático, pero ya no exige `d_brennan`) | Navegador: pestañas y ayuda comprobadas en Hanbury con un estado preparado |
 | 2 · Feedback y ritmo | CODE_COMPLETE | Ninguna interacción muda (inventario abajo); `again` para la segunda mirada corta; «Volver a mirar» en lo ya examinado; respuestas variadas por familia al usar mal un objeto; salidas bloqueadas que dicen lo que falta (Hanbury, Mitre, cuarto en c3); aviso al cerrar un primer plano con detalles clave sin ver; tarjetas que se cortan con clic/toque/tecla; opción «Lo ya leído: Al instante»; protección de 280 ms contra elegir con el clic que terminó la línea; opción «Movimiento: Reducido» (respeta `prefers-reduced-motion`) | ver historial | feedback + suite | Duraciones de tarjetas y esperas se revisan en la Fase 10 | Navegador: tarjeta cortada con clic (1,8 s en vez de 7), elección protegida, menú de opciones |
-| 3 · Capítulo I | TODO | | | | | |
+| 3 · Capítulo I | CODE_COMPLETE | La noche se cierra cuando el jugador lo decide, con Pike en Buck's Row («Cerramos por esta noche, Pike.») o con Brennan en el desolladero («Esto es todo por esta noche.»), si `canFinishC1` se cumple; ninguna deducción ni entrada en una calle cambia de capítulo sola; al cerrar se registra la postura sobre Brennan (`brennan_stance`: vigilarlo / nada contra él / no lo sé) y la ruta en `investigation.routes.c1`; Pike responde a cada postura; `endC1` se pone en escena donde se cierra; la hoja de rondas, tras dos fallos, vuelve a señalar las dos horas que importan | ver historial | c1-minimal, walk (Brennan, sospecha), walk alt (Pike, sin sospecha) | La turba usa la postura en la Fase 4 | Navegador: el menú de Pike ofrece «Cerramos por esta noche, Pike.» con el mínimo reunido (el resto del flujo, en las partidas automáticas: el panel oculto pausa las animaciones) |
 | 4 · Hanbury y peine | TODO | | | | | |
 | 5 · Sesión | TODO | | | | | |
 | 6 · Capítulo III | TODO | | | | | |
@@ -133,4 +133,31 @@ PASS  scenario notebook            0.3s
 PASS  walk                         3.5s
 PASS  walk second                  3.4s
 PASS  walk alt                     0.6s
+```
+
+### Fase 3
+
+Casos del plan y dónde se prueban:
+
+| Caso | Prueba |
+|---|---|
+| `d_bisturi` sin `d_brennan` avanza | `walk alt` (cierra con Pike), `c1-minimal` (cierra con Brennan, «no lo sé») |
+| `d_brennan` y `d_bisturi` avanza sin forzar acusación | `walk` |
+| Ignorar huellas, cuerpo, rondas, Neil y el chico | `c1-minimal` |
+| Bisturí y deducción antes de volver al desolladero | `walk alt` (deduce en Buck's Row y cierra allí) |
+| Ir y volver entre las dos calles sin transición | `c1-minimal` |
+| El capítulo II empieza una sola vez | `c1-minimal` |
+
+```
+PASS  unit                         0.1s
+PASS  smoke                        3.0s
+PASS  audio                        0.1s
+PASS  scenario c1-minimal          0.6s
+PASS  scenario compat              0.4s
+PASS  scenario feedback            0.6s
+PASS  scenario integrity           0.3s
+PASS  scenario notebook            0.3s
+PASS  walk                         3.4s
+PASS  walk second                  3.4s
+PASS  walk alt                     0.7s
 ```

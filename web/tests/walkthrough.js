@@ -79,6 +79,9 @@ export async function run({ log = true, second = false } = {}) {
     await act('trough');
     await deduce('brennan_zurdo', 'zurdo');
     await deduce('bisturi', 'anatomia');
+    need(game.state.scene === 'knackers', 'Una deducción no debe cerrar la noche sola');
+    await act('brennan', null, ['Esto es todo', 'vigilarlo']);   // closed with Brennan, suspecting him
+    need(game.state.flags.brennan_stance === 'suspect', 'Debería constar la sospecha sobre Brennan');
     await settle();
 
     // Chapter 2

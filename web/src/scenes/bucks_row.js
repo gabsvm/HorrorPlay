@@ -154,11 +154,9 @@ export default {
     G.objective('Examinar el cuerpo. Hablar con Pike, con Neil y con el chico.');
   },
 
+  // a deduction never ends the night by itself; once the night can be closed, the objective says so
   async onDeduce(G) {
-    if (canFinishC1(G.state).ok && !G.flag('c1_done')) {
-      G.objective('Volver al desolladero de Winthrop Street.');
-      await G.think(G.deduced('d_brennan') ? 'Brennan tiene que explicar ese cuchillo. Y el hospital, ese bisturí.' : 'Ese bisturí salió de un hospital. Alguien tiene que explicarlo.');
-    }
+    if (!G.flag('c1_done')) G.game.chapterHooks.c1Objective(G);
   },
 
   hotspots: [
@@ -172,8 +170,10 @@ export default {
         if (!G.flag('pike_notes') && G.flag('pike_polly')) opts.push(['¿Qué apunta en esa libreta, Pike?', 'notes']);
         if (G.hasClue('zurdo') && !G.flag('knackers_lead')) opts.push(['¿Quién trabaja de noche por aquí?', 'lead']);
         if (G.flag('neil_times') && !G.hasClue('ronda')) opts.push(['La hoja de rondas de esta noche.', 'beats']);
+        if (canFinishC1(G.state).ok && !G.flag('c1_done')) opts.push(['Cerramos por esta noche, Pike.', 'close']);
         opts.push(['Nada más.', 'bye']);
         const c = opts[await G.choice(opts.map((o) => o[0]))][1];
+        if (c === 'close') { await G.game.chapterHooks.closeC1(G, 'pike'); return; }
         pike.talking = true;
         if (c === 'doc') {
           await G.say('Pike', 'Llewellyn cree que los cortes los hizo un zurdo.');

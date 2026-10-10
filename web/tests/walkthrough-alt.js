@@ -41,9 +41,12 @@ export async function run({ log = true } = {}) {
     need(game.G.has('bisturi'), 'Falta el bisturí');
     // back to Buck's Row, and the deductions are made there
     await act('east'); expectScene('bucks_row');
-    await deduce('brennan_zurdo', 'zurdo'); await deduce('bisturi', 'anatomia');
-    need(/desolladero/.test(game.state.objective || ''), 'Tras deducir en Buck\'s Row el objetivo debería mandar al desolladero');
-    await act('west'); await settle();
+    await deduce('bisturi', 'anatomia');                         // no suspicion of Brennan at all
+    need(game.state.scene === 'bucks_row', 'Una deducción no debe cerrar la noche sola');
+    need(/cerrar la noche/.test(game.state.objective || ''), 'El objetivo debería decir que la noche se puede cerrar');
+    await act('pike', null, ['Cerramos', 'nada contra él']);     // closed with Pike, Brennan cleared
+    need(game.state.flags.brennan_stance === 'clear', 'Debería constar que no hay nada contra Brennan');
+    await settle();
     for (let i = 0; i < 200 && game.state.scene !== 'hanbury'; i++) await new Promise((r) => setTimeout(r, 20));
     expectScene('hanbury');
     // try to leave without the comb

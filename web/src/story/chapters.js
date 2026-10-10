@@ -194,8 +194,31 @@ export function makeChapters() {
 
     // what the player still needs to close chapter one
     c1Objective(G) {
+      if (G.flag('c1_done')) return;
       const gate = canFinishC1(G.state);
-      if (!gate.ok) G.objective(`${gate.missing[0].replace(/^./, (m) => m.toUpperCase())}.`);
+      if (!gate.ok) { G.objective(`${gate.missing[0].replace(/^./, (m) => m.toUpperCase())}.`); return; }
+      G.objective('Cuando quiera: cerrar la noche con Pike en Buck\'s Row, o con Brennan en el desolladero.');
+    },
+
+    // Enough for tonight: said to whoever is at hand. First, what Thomas makes of Brennan; it is
+    // written down and the mob remembers it. Suspecting him is one answer among three.
+    async closeC1(G, who) {
+      const opts = [];
+      if (G.hasClue('brennan_zurdo')) opts.push(['Brennan: hay que vigilarlo.', 'suspect']);
+      opts.push(['Brennan: no hay nada contra él.', 'clear'], ['Brennan: todavía no lo sé.', 'unsure']);
+      const stance = opts[await G.choice(opts.map((o) => o[0]))][1];
+      G.state.flags.brennan_stance = stance;
+      (G.state.investigation ??= {}).routes ??= {};
+      G.state.investigation.routes.c1 = { closedAt: G.scene.id, stance, conclusions: G.state.deductions.filter((d) => /^d_(bisturi|zurdo|ronda|confianza|brennan)$/.test(d)) };
+      if (who === 'pike') {
+        const pike = G.actor('Pike'); pike.talking = true;
+        await G.say('Pike', { suspect: 'Lo vigilaremos. Con cuidado: aquí se cuelga a la gente por menos.',
+          clear: 'Lo apunto así. Será el único que lo escriba esta semana.',
+          unsure: 'Prudente. El barrio no lo será.' }[stance]);
+        pike.talking = false;
+      }
+      G.flag('c1_done', true);
+      await hooks.endC1(G, who);
     },
 
     // Buck's Row: the night's beats, and the only ten minutes when no one could see the gateway
@@ -209,36 +232,50 @@ export function makeChapters() {
         <p class="small" style="text-align:right">${G.two('Firmado: el inspector de guardia', 'Firmado: T. Ashgrove, inspector de guardia')}</p>`);
       await sheet();
       await G.think('¿En qué intervalo quedó el portón fuera de vista?');
+      let misses = 0;
       for (;;) {
         const c = await G.choice(['Entre las 3:15 y las 3:45: entre dos pasadas de Neil.', 'Entre las 3:15 y las 3:30.', 'Entre las 3:30 y las 3:40.', 'Entre las 3:40 y las 3:45.', 'Mirar otra vez la hoja.']);
         if (c === 2) break;
         if (c === 4) { await sheet(); continue; }
+        misses++;
         await G.think(['No. A las 3:30 Thain alumbró la calle desde Brady Street, y no había nadie en el suelo.',
           'Entonces Thain la habría visto al alumbrar a las 3:30. No había nada.', '',
           'A las 3:40 ya estaba muerta: Cross la encontró.'][c]);
+        // two misses: no more guessing, the two statements that close the window, side by side
+        if (misses === 2) await G.think('Lo que importa son dos horas: cuándo alumbró Thain la calle vacía, y cuándo llegó Cross y la encontró.');
       }
+      (G.state.investigation ??= {}).evaluations ??= {};
+      G.state.investigation.evaluations.beats = { misses };
       G.clue('ronda');
       await G.think('De 3:30 a 3:40. Conocía esa ventana o tuvo mucha suerte.');
       if (G.second()) await G.think('Yo firmé estas rondas.');
     },
 
-    async endC1(G) {
-      const b = G.actor('Brennan');
-      b.pose = null; b.facing = 1;
-      await G.walk(1360);
-      b.talking = true;
-      await G.say('Brennan', 'Si va a decir algo, inspector, dígalo mirándome.');
-      b.talking = false;
-      await G.think('Un matarife a cien yardas. Un bisturí de mi viejo hospital. Faltan hechos.');
-      const w = G.actor('Wren');
-      w.talking = true;
-      await G.say('Wren', 'No fue él.');
-      w.talking = false;
-      await G.say('Ashgrove', '¿Cómo lo sabes?');
-      w.talking = true;
-      await G.say('Wren', G.two('Anoche seguía aquí. Yo estaba junto al río.', 'Él no huele al Ditch.'));
-      w.talking = false;
-      w.y = 628; w.walkTo(-100, { speed: 220 });
+    async endC1(G, who = 'brennan') {
+      if (who === 'brennan' && G.actor('Brennan')) {
+        const b = G.actor('Brennan');
+        b.pose = null; b.facing = 1;
+        await G.walk(1360);
+        b.talking = true;
+        await G.say('Brennan', G.state.flags.brennan_stance === 'suspect' ? 'Si va a decir algo, inspector, dígalo mirándome.' : 'Váyase a dormir, inspector. Tiene cara de no haberlo hecho.');
+        b.talking = false;
+        await G.think('Un matarife a cien yardas. Un bisturí de mi viejo hospital. Faltan hechos.');
+        const w = G.actor('Wren');
+        w.talking = true;
+        await G.say('Wren', 'No fue él.');
+        w.talking = false;
+        await G.say('Ashgrove', '¿Cómo lo sabes?');
+        w.talking = true;
+        await G.say('Wren', G.two('Anoche seguía aquí. Yo estaba junto al río.', 'Él no huele al Ditch.'));
+        w.talking = false;
+        w.y = 628; w.walkTo(-100, { speed: 220 });
+      } else {
+        // closed in Buck's Row: the barrow comes for her, and Pike writes the hour
+        G.flag('polly_taken', true);
+        const pike = G.actor('Pike');
+        if (pike) { pike.facing = -1; pike.talking = true; await G.say('Pike', 'Las cuatro y cincuenta y ocho. Ya está, señor.'); pike.talking = false; }
+        await G.think('Un bisturí de mi viejo hospital. Faltan hechos.');
+      }
       G.sanity(-5);
       await G.wait(1200);
       await lostTime(G, '4:58', '9:15');

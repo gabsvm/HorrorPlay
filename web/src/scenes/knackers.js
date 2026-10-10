@@ -261,10 +261,7 @@ export default {
   async enter(G) {
     this.G = G;
     if (isMob(G)) { await G.game.chapterHooks.mobScene(G); return; }
-    if (G.flag('kn_intro')) {
-      if (canFinishC1(G.state).ok && !G.flag('c1_done')) { G.flag('c1_done', true); await G.game.chapterHooks.endC1(G); }
-      return;
-    }
+    if (G.flag('kn_intro')) { G.game.chapterHooks.c1Objective(G); return; }
     G.flag('kn_intro', true);
     G.date(null, '4:31');
     await G.walk(1620);
@@ -280,12 +277,14 @@ export default {
         if (!G.flag('br_alibi')) opts.push(['¿Dónde estaba a las tres y media?', 'alibi']);
         if (!G.flag('br_heard') && G.flag('br_alibi')) opts.push(['¿No oyeron nada?', 'heard']);
         if (!G.hasClue('brennan_zurdo')) opts.push(['(Mirar cómo trabaja)', 'look']);
+        if (canFinishC1(G.state).ok && !G.flag('c1_done')) opts.push(['Esto es todo por esta noche.', 'close']);
         opts.push(['Nada más.', 'bye']);
         const c = opts[await G.choice(opts.map((o) => o[0]))][1];
         if (c === 'bye') return;
+        if (c === 'close') { await G.game.chapterHooks.closeC1(G, 'brennan'); return; }
         if (c === 'look') {
           G.clue('brennan_zurdo');
-          if (G.flag('bisturi_taken')) G.game.chapterHooks.c1Objective(G);
+          G.game.chapterHooks.c1Objective(G);
           return;
         }
         b.talking = true; b.pose = null; b.facing = 1;
@@ -374,10 +373,8 @@ export default {
     },
   ],
 
+  // a deduction never ends the night by itself: the objective says the night can be closed
   async onDeduce(G) {
-    if (!isMob(G) && canFinishC1(G.state).ok && !G.flag('c1_done')) {
-      G.flag('c1_done', true);
-      await G.game.chapterHooks.endC1(G);
-    }
+    if (!isMob(G)) G.game.chapterHooks.c1Objective(G);
   },
 };
