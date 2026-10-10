@@ -19,15 +19,16 @@ Un inspector de Whitechapel persigue al asesino que aterroriza el East End en el
 
 ## 3. La regla de lo sobrenatural (coherente y cerrada)
 
-1. Bajo el East End corre un río enterrado, el **Black Ditch** (real: desembocaba en el Támesis por Limehouse). En su lecho hay algo más antiguo que Londres. Los romanos lo dejaron escrito en una tablilla de plomo hallada en el fango: **HOSPES**.
-2. El Huésped **no tiene cuerpo ni nombre**. Solo puede habitar a quien le responde.
-3. **El agua dice tu nombre.** Si contestas, le abres la puerta. Los ribereños lo saben desde siempre: *"No respondas si el agua dice tu nombre."*
-4. Una vez dentro, el Huésped **alquila horas**: el anfitrión pierde tiempo y despierta con las botas mojadas. Cada noche alquila más.
-5. **El nombre es una dirección.** Un ser sin nombre no puede llegar a ningún sitio. Para quedarse en el mundo necesita un nombre que mucha gente pronuncie a la vez.
-6. Por eso los crímenes no son el fin, son **el anuncio**. Lo que el Huésped busca es que Londres entera repita un nombre nuevo. La carta *"Dear Boss"*, firmada **Jack the Ripper**, la escribe la mano del protagonista con tinta roja durante una de sus horas perdidas. Cuando la prensa la publica, millones de bocas pronuncian el nombre, y el Huésped ya tiene dirección.
-7. El final no es una muerte, es una **sustitución**. El protagonista no muere: olvida su nombre, y lo único que le queda es el que le dio la ciudad.
+1. Bajo el East End corre el **Black Ditch**. En el barro hay una tablilla con una palabra latina: **HOSPES**. La atribución arqueológica romana es ficción interna del juego, no una afirmación histórica.
+2. El Huésped carece de cuerpo y nombre propio. **Para entrar en una persona debe oír una respuesta voluntaria al nombre pronunciado por el agua.** Escuchar no basta. Entrar no significa control absoluto inmediato.
+3. La advertencia de los ribereños es precisa: «Si el agua dice tu nombre, no contestes». La voz puede imitar a alguien querido, pero no puede anular esa condición de entrada.
+4. En octubre de **1866**, Thomas puede contestar o guardar silencio, según decida el jugador. Si contesta, el Huésped entra entonces. **Si calla, permanece fuera durante trece años; el primer ingreso ocurre en marzo de 1879**, cuando Thomas decide responder *de viva voz* durante otro encuentro junto al lavadero del hospital; después olvida haberlo hecho. Esa respuesta se documenta, pero Thomas la olvida.
+5. Una vez dentro, el Huésped «alquila horas»: desaparecen lapsos de memoria, se mueven objetos, cambian sus guantes y sus botas. Cada noche controla más tiempo. El acto de 1879 refuerza el vínculo si ya había entrado en 1866.
+6. **El nombre es una dirección.** Para permanecer sin depender de una sola respuesta privada, el Huésped necesita que muchas personas repitan un nombre nuevo; una ciudad lo hace poderoso y visible socialmente, no omnipotente.
+7. Los crímenes son un medio para propagar ese nombre. La mano de Thomas escribe la carta *Dear Boss* con tinta roja en la noche del **24 al 25 de septiembre de 1888**. La carta lleva fecha del **25**, llega a la Central News Agency el **27** y se conoce masivamente después del doble crimen del **30 de septiembre**. Su nombre firmado es «Jack the Ripper».
+8. La sustitución es lenta y trágica: Thomas puede elegir sus últimas acciones, pero ya no puede detener la difusión del nombre. Al terminar, recuerda cada vez menos cómo se llama. No hay un nuevo sacrificio necesario para «completar» el ritual.
 
-Nunca se explica todo esto en voz alta. El jugador lo reconstruye con el cuaderno.
+**Regla de redacción:** ningún personaje explica estos ocho puntos seguidos. La respuesta se deduce del cuaderno, la cronología, la voz y el efecto de la prensa. El Huésped jamás debe contradecir su regla de entrada para lograr un efecto sorpresivo.
 
 ## 4. Personajes
 
@@ -37,7 +38,7 @@ Nunca se explica todo esto en voz alta. El jugador lo reconstruye con el cuadern
 - **Zurdo**: escribe con la izquierda (se ve en sus notas, en cómo empuña la lámpara).
 - Vive de alquiler en un cuarto de Thrawl Street, encima de una cerería. El espejo del lavabo está tapado con una sábana: *"Me corté afeitándome. Mala luz."*
 - Pierde horas. Lo atribuye al cansancio y al láudano para dormir.
-- Su herida: en 1866, en la epidemia de cólera, su hermano pequeño **Nat** se ahogó en el foreshore de Limehouse, donde desagua el Black Ditch. Semanas después, el agua dijo *"Thomas"*. Él respondió: *"Aquí estoy."*
+- Su herida: en 1866, su hermano pequeño **Nat** se ahogó en Limehouse. Semanas después, el agua dijo *"Thomas"*. **Que Thomas contestara entonces depende de la elección del jugador.** Si calló, la primera respuesta ocurrió en 1879, ante el lavadero del hospital. En ambas rutas su memoria es incompleta.
 
 ### Nat Ashgrove (el hermano)
 - Solo aparece en el prólogo y en la voz del agua. La voz que imita a Nat es la del Huésped; usa la voz que mejor abre la puerta.
@@ -45,12 +46,12 @@ Nunca se explica todo esto en voz alta. El jugador lo reconstruye con el cuadern
 ### Sargento Aldous Pike
 - Compañero de Thomas. Seco, metódico, de pocas palabras. Toma notas sobre **Thomas**, no sobre el caso.
 - Primera lectura: oculta algo, quizá protege al asesino o lo es él.
-- Verdad: desde la primera noche sospecha de Thomas y no se atreve a decirlo porque nadie le creería.
+- Verdad: desde la primera noche sospecha de Thomas y anota horarios para contrastar una hipótesis. Le aterra que sea cierta; **en el capítulo final debe confrontarlo de forma audible y humana** antes de la huida.
 
 ### Dr. Lionel Greaves
 - Cirujano del London Hospital y antiguo mentor de Thomas. Tiene bisturís, conocimientos y coartadas débiles: **sospechoso perfecto**.
 - Estudia la "fuga disociativa" (el término es real y de 1887). Lleva un expediente clínico de un paciente al que llama **T. A.**
-- Verdad: intentó tratar a Thomas en 1879, cuando dejó la carrera tras despertar en la sala de disección sin saber cómo había llegado allí.
+- Verdad: intentó tratar a Thomas en 1879, cuando lo halló en la sala de disección tras una ausencia de memoria. Una nota de una testigo sitúa la respuesta «Aquí estoy» junto al lavadero; Thomas no recuerda el incidente.
 
 ### Madame Orla Wexley
 - Médium de Spitalfields. Hace sesiones de espiritismo por un chelín.
@@ -65,7 +66,7 @@ Nunca se explica todo esto en voz alta. El jugador lo reconstruye con el cuadern
 ### Wren
 - Niña mudlark de 11 años que rebusca en el fango del Támesis. Encuentra cosas que el río devuelve.
 - Le enseña a Thomas la regla del agua. Es la única que lo mira con miedo **desde el principio**: "Usted huele al Ditch, señor".
-- En el final es quien le pregunta su nombre.
+- En el final es quien le pregunta su nombre. Vuelve a tener presencia breve durante la segunda mitad de la historia, sin funcionar como narradora omnisciente.
 
 ### Las víctimas (fechas reales)
 Polly Nichols (31 ago, Buck's Row), Annie Chapman (8 sep, Hanbury St.), Elizabeth Stride y Catherine Eddowes (30 sep, "doble suceso") y Mary Jane Kelly (9 nov, Miller's Court). Aparecen en la escena del crimen tal como las halló la policía, y en informes, recuerdos de quienes las conocían y objetos personales.
@@ -74,20 +75,23 @@ Polly Nichols (31 ago, Buck's Row), Annie Chapman (8 sep, Hanbury St.), Elizabet
 
 | # | Capítulo | Fecha | Lugar | Función |
 |---|----------|-------|-------|---------|
-| 0 | **Prólogo: La marea baja** | Oct. 1866 | Foreshore de Limehouse | El agua dice "Thomas". Elegir responder o callar: las dos opciones terminan en *"Aquí estoy."* |
+| 0 | **Prólogo: La marea baja** | Oct. 1866 | Foreshore de Limehouse | El agua dice «Thomas». Responder permite la entrada en 1866; callar la aplaza hasta 1879. **Las dos decisiones se respetan.** |
 | 1 | **Buck's Row** | 31 ago 1888, 3:40 AM | Cuarto de Thomas → Buck's Row → desolladero | Despertar con las botas mojadas. Escena del crimen. Pistas: corte de zurdo, conocimiento anatómico, barro de río. Wren y la regla del agua. Sospecha de Brennan. |
 | 2 | **El delantal de cuero** | 8–10 sep | Hanbury St. → sesión de Madame Wexley | Sesión: la voz de Nat. Acusar a Brennan → la turba. |
-| 3 | **Tinta roja** | 27–30 sep | Cuarto de Thomas → Mitre Square → Goulston St. | Horas perdidas. Thomas despierta con los dedos manchados de rojo. La prensa publica "Jack the Ripper". Doble suceso. Persecución: Thomas huye "tras el asesino" con silbatos de la policía a su espalda. |
+| 3 | **Tinta roja** | 24–30 sep | Cuarto de Thomas → Mitre Square → Goulston St. | Horas perdidas. Thomas despierta con los dedos manchados de rojo. La prensa publica "Jack the Ripper". Doble suceso. Persecución: Thomas huye "tras el asesino" con silbatos de la policía a su espalda. |
 | 4 | **Huésped** | 8–9 nov | Consulta de Greaves → Támesis → Miller's Court | El expediente "T. A.". Pike viene a detenerlo. Huida al foreshore donde murió Nat. El agua dice su nombre. Revelación en el reflejo. Final. |
 
-### El final (sin elección real)
-En el foreshore, la marea dice *"Thomas"*. El jugador puede pulsar **[Callar]** cuantas veces quiera: el texto que aparece es *"Aquí estoy."* Thomas se mira por fin en el agua y no reconoce la cara.
+### El final (destino invariable; última acción significativa)
 
-Epílogo, Miller's Court, 9 de noviembre, de madrugada. Niebla. Wren, desde el otro lado de la calle: *"¿Cómo se llama usted, señor?"*
+Tras el expediente de Greaves, Pike confronta personalmente a Thomas. El jugador elige **una última acción**, con consecuencias observables pero sin cambiar el destino: intentar entregarse (`surrender`), pedir a Pike que proteja a Wren (`warn_wren`), o intentar romper un folio del expediente que lo señala (`destroy_page`). Una laguna temporal lo conduce al foreshore en todos los casos.
 
-El juego muestra el campo de nombre del principio (donde el jugador firmó su cuaderno como *Thomas Ashgrove*). Escriba lo que escriba, las letras salen así: **J-A-C-K**.
+En el agua, la voz dice «Thomas». Si el jugador insiste en callar, **Thomas calla de verdad durante unos segundos**; luego su boca, ya dominada, dice «Aquí estoy». El juego muestra que no se produjo una nueva invitación: la entidad ya estaba alojada en él por una respuesta pasada.
 
-Fundido a negro. Sobre él, la carta: *"Yours truly, Jack the Ripper. Don't mind me giving the trade name."*
+El cuaderno obliga a hacer **tres relaciones finales razonadas** con la ficha de Thomas y presenta una cuarta evidencia —la respuesta de 1879—, distinta si el niño respondió o no en 1866. La voz no explica qué significa ser un nombre: se oyen conversaciones, titulares e informes que pronuncian «Jack» y el jugador concluye el resto.
+
+Epílogo, Miller's Court, 9 de noviembre: Wren le pregunta «¿Cómo se llama usted?». Se recupera la **interfaz de firma** del inicio (`final_name_entry`): el jugador escribe «Thomas» u otro texto, pero el resultado visible termina siempre en **J-A-C-K**. Debe ser una transformación lenta, no un salto instantáneo. La opción de última acción se refleja en una línea del epílogo; los destinos canónicos siguen siendo trágicos.
+
+Fundido a negro con un fragmento de la firma histórica. Evitar narrar que Thomas «es Jack» antes de que el jugador contraste las pruebas.
 
 ## 6. Cómo se planta el giro (pistas justas)
 
@@ -114,17 +118,12 @@ otro tópico más tentador: **a Thomas le están tendiendo una trampa**. Alguien
 mientras duerme, le moja las botas, le vuelca la tinta roja y le roba un bisturí del estuche. Los
 sospechosos razonables son **Pike** (reparte las rondas, lleva bombín y linterna, apunta a qué hora
 llega Thomas y guarda la otra llave de su cuarto) y **Greaves** (tiene sus bisturís, conoce su
-pasado y su letra es la de la carta). En el prólogo el niño **puede callar**, y si calla, la voz de la
-sesión miente al decir que contestó. Las frases que lo delataban (la voz que dicta, la mano
+pasado y su letra es la de la carta). En el prólogo el niño **puede callar**; en la sesión, la voz alude a una respuesta sin decir cuándo ocurrió. Thomas cree que se refiere a 1866. Las frases que lo delataban (la voz que dicta, la mano
 izquierda manchada, la sangre seca de los guantes) no aparecen.
 
-**Segunda lectura** (se desbloquea al terminar). La misma historia contada como fue: el niño contesta
-aunque elijas callar, la voz dicta la carta, la hoja de rondas lleva la firma de Thomas, el cuaderno
-anota con la otra mano la verdad de cada pista y tacha desde el principio las negaciones.
+**Segunda lectura** (se desbloquea al terminar). La misma historia, sin cambiar retroactivamente decisiones: si el niño calló, se ve por primera vez cómo respondió en 1879; si respondió en 1866, se muestra cómo la entidad amplió entonces su control. La voz dicta la carta, la hoja de rondas lleva la firma de Thomas, y el cuaderno contrasta sus hipótesis con las pruebas reales.
 
-**El final cobra lo que hiciste.** Si callaste en 1866: «La primera vez callaste. No hacía falta: ya
-estaba dentro.» Si acusaste a Brennan, a Greaves o a Pike, Thomas lo recuerda en la orilla. Si
-conservas cordura, Wren dice su nombre por él; si le pagaste, te devuelve el penique.
+**El final cobra lo que hiciste.** Si callaste en 1866, descubrirás que respondiste en 1879: **la regla se cumplió**. Acusar, callar o proteger a Brennan deja secuelas distintas. La última acción ante Pike modifica el diálogo del epílogo; no hay rutas de victoria. Si conserva cordura, Wren insiste en recordarle su nombre; si le pagaste, te devuelve el penique.
 
 ### Puzles
 
@@ -133,21 +132,37 @@ conservas cordura, Wren dice su nombre por él; si le pagaste, te devuelve el pe
    de Neil», es falsa.
 2. **Los golpes** (cap. II): en la oscuridad de la sesión, la mesa golpea en el código de los presos
    del zar (fila y columna sobre una tabla de 5x5 sin K, clavada bajo la carta astral): HOSPES.
-3. **La letra** (cap. III): la carta «Dear Boss» contra cuatro letras; el rasgo es la ſ larga de las
-   recetas antiguas. Apunta a Greaves. La verdad: Thomas aprendió esa letra copiando sus recetas.
+3. **La letra** (cap. III): la carta «Dear Boss» frente a cuatro muestras manuscritas; comparar el remate de la **J**, el enlace de las **t** y la inclinación de los trazos. La similitud sugiere a Greaves, pero **no lo demuestra**. La segunda lectura permite comparar también los apuntes de Thomas. **No alterar la transcripción histórica añadiendo letras «ſ» que el original no usa.**
 
 ### El perfil del asesino (mecánica del cuaderno)
-Cada deducción correcta añade un rasgo al **Perfil del sospechoso**: *zurdo, sabe anatomía, conoce las rondas, ronda el río, sabe escribir, tiene acceso a las escenas antes que la policía*. En el capítulo 4, el cuaderno muestra el perfil completo en una página y, en la de enfrente, la ficha de **Thomas Ashgrove**. El jugador hace la deducción final él mismo.
+Cada deducción **de tipo inferencia sustentada** añade un rasgo al **Perfil del sospechoso** (las hipótesis de culpabilidad no son rasgos probados): *zurdo, sabe anatomía, conoce las rondas, ronda el río, sabe escribir, tiene acceso a las escenas antes que la policía*. En el capítulo 4, el cuaderno muestra el perfil completo en una página y, en la de enfrente, la ficha de **Thomas Ashgrove**. El jugador hace la deducción final él mismo.
 
 ## 7. Sistemas
 
 - **Cordura**: baja con lo que se ve, con lo que se oye y con las horas perdidas. A menos cordura, aparecen grano, aberración cromática y susurros; algunas descripciones mienten y la voz del agua se oye más alta.
 - **Horas perdidas**: transiciones donde el reloj salta. Al volver, el inventario o el estado del mundo ha cambiado sin explicación.
-- **Cuaderno**: registra las pistas automáticamente. Se combinan dos pistas para deducir. Las deducciones hacen avanzar la historia y construyen el perfil.
+- **Cuaderno**: registra pruebas automáticamente y presenta tres tipos: `hecho`, `hipotesis` e `inferencia`. Combinar dos pistas puede formar una hipótesis revisable o una inferencia sustentada. Las deducciones mantienen sus IDs históricos para compatibilidad.
 - **Inventario**: objetos que se usan sobre el escenario.
+- **Consecuencias**: `brennan_outcome` y `final_intent` persisten en guardado y solo alteran consecuencias humanas y el epílogo.
+- **Interfaz de nombre**: la firma del cuaderno al inicio vuelve al final con letras progresivamente sustituidas por «JACK»; requiere soporte de entrada de texto táctil y teclado.
 
 ## 8. Reglas de producción
 
 - Los escenarios se pintan por código; los personajes se modelan en Blender (`tools/blender`). Todo se termina como pixel-art HD (640×360, una paleta curada en `src/art/pixel.js`) con iluminación por encima. No se usan packs de terceros.
 - La violencia ocurre fuera de plano; lo que se ve es su resultado, con el realismo de un expediente policial de 1888, y sus consecuencias humanas.
-- Los diálogos son breves: nunca más de tres líneas seguidas sin que el jugador haga algo.
+- Los diálogos son breves: nunca más de tres intervenciones seguidas sin respuesta, acción, cambio de mirada o una razón dramática clara. Un clic sin información nueva no debe abrir diálogo.
+
+
+## Política editorial V3 (vinculante para implementación)
+
+- **Ningún personaje narra lo que ya se ve:** lluvia, trenes, arquitectura, posiciones, objetos y ropa se comunican mediante arte, animación, sonido y hotspot. Un pensamiento solo se justifica si agrega **contradicción, decisión, inferencia útil, recuerdo personal o temor no visible**.
+- **Thomas:** investigador preciso, poco sentimental; empieza con preguntas profesionales, después duda de su memoria en frases cada vez más breves. No hace bromas recurrentes ni ofrece tutoriales en voz interior.
+- **Pike:** frases cortas, datos exactos, silencios deliberados; pregunta por Thomas cuando debería preguntar por el crimen. Cuida a las víctimas sin decirlo.
+- **Greaves:** cortesía clínica, memoria compartida y culpa; jamás se presenta como villano ni diagnostica al protagonista con un discurso.
+- **Brennan:** orgulloso de su oficio, poco tolerante con la autoridad y con la sospecha fácil; agresivo, no caricaturesco.
+- **Wren:** concreta, sagaz y seca; su conocimiento del Ditch no la convierte en una niña-oráculo que explica la mitología. No le atribuir emociones sobrenaturales a cada línea.
+- **Wexley:** comienza controlando su puesta en escena profesional; cuando la voz se manifiesta, pierde el control del lenguaje y de la habitación.
+- **Agente Watkins y Richardson:** hablan desde un interés humano propio: jurisdicción, trabajo, intimidad y cansancio; no son dispensadores de información.
+- **Prueba vs. hipótesis:** si una frase expresa una conclusión de Thomas sin evidencia suficiente, debe quedar como sospecha subjetiva; las deducciones guardadas no la convierten en verdad confirmada.
+- **Recorrido del jugador:** las entradas informativas, pistas y documentos permanecen accesibles. Las observaciones eliminadas NO son requisitos ocultos de progresión. Un silencio debe tener feedback interactivo real y no obligar al jugador a clickear sin saber si funcionó.
+- **Ritmo:** cada escena combina un beat de observación, una acción del jugador y una consecuencia; evitar cadenas de 4–5 cuadros que repiten la misma evidencia. No multiplicar símbolos sobrenaturales si ya hay una pista clara.

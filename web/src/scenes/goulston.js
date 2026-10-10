@@ -109,7 +109,6 @@ export default {
     if (G.flag('go_intro')) return;
     G.flag('go_intro', true);
     G.date(null, '2:55');
-    await G.think('Goulston Street. Hay luz en algunas ventanas de los Wentworth Buildings, y el portal de la escalera está abierto.');
     G.objective('Examinar el portal de los Wentworth Buildings.');
   },
 
@@ -117,35 +116,22 @@ export default {
     {
       id: 'doorway', name: 'Portal de la escalera', rect: [870, GROUND - 270, 160, 300], walk: 860, face: 1,
       act: async (G) => {
-        if (G.flag('apron_found')) { await G.think('Ya no queda nada que ver aquí.'); return; }
+        if (G.flag('apron_found')) {  return; }
         G.player.pose = 'kneel';
-        await G.think('En el suelo del portal hay un trozo de tela blanca, empapado y oscuro. Es el delantal.');
         G.flag('apron_found', true);
         G.player.pose = 'reach';
         await G.wait(500);
-        await G.think(G.two('Al acercar la linterna veo la jamba de ladrillo. Alguien ha escrito con tiza: HERE I AM. Aquí estoy.', 'Al acercar la linterna veo la jamba de ladrillo. Alguien ha escrito algo con tiza, con letra inclinada.'));
+        await G.think(G.two('Tiza en la jamba: HERE I AM.', 'Tiza, letra inclinada. Reconozco la A antes de leer la frase.'));
         G.flag('chalk_seen', true);
         G.audio.sting(0.22); G.mad(0.5);
         if (G.second()) await G.voice('Aquí estoy.');
-        else await G.think(G.flag('answered1866') ? 'Lo mismo que le contesté al agua cuando tenía doce años.' : 'Lo que el agua quería que yo le contestara. Alguien se lo ha contestado por mí.');
+        else await G.think(G.flag('answered1866') ? 'Lo dije yo. Hace veintidós años.' : 'Yo no respondí entonces. ¿Quién escribió esto?');
         G.clue('aqui_estoy');
         G.sanity(-8);
         G.mad(0);
         G.player.pose = null;
         await G.game.chapterHooks.caught(G);
       },
-    },
-    {
-      id: 'poster', name: 'Cartel', rect: [1200, 466, 72, 92], walk: 1236,
-      act: async (G) => { await G.think('"Se ha perdido un terrier. Se gratificará." Media ciudad busca a un asesino y la otra media, a su perro.'); },
-    },
-    {
-      id: 'lamp', name: 'Farola', rect: [350, GROUND - 340, 60, 340], walk: 430,
-      act: async (G) => { await G.think('La única farola de la calle. El portal de los Wentworth queda fuera de su luz. Él lo sabía.'); },
-    },
-    {
-      id: 'butcher', name: 'Carnicería', rect: [40, GROUND - 210, 440, 200], walk: 300,
-      act: async (G) => { await G.think('Cerrada a cal y canto. En el escaparate cuelgan ganchos vacíos.'); },
     },
   ],
 };

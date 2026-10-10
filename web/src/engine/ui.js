@@ -416,9 +416,11 @@ export class UI {
       const d = g.deductions.find((x) => x.id === id);
       const li = document.createElement('li');
       if (this._inkFrom != null && i >= this._inkFrom) li.classList.add('fresh');
-      if (awake && d.truth && (d.denial || d.denialLate)) li.innerHTML = `<s>${d.text}</s><br><span class="truth">${d.truth}</span>`;
+      // hypotheses and inferences are marked as such: joining two clues does not make a guess a fact
+      const kind = d.kind ? `<span class="ded-kind">${d.kind === 'hipotesis' ? 'Hipótesis' : 'Inferencia'}</span> ` : '';
+      if (awake && d.truth && (d.denial || d.denialLate)) li.innerHTML = `${kind}<s>${d.text}</s><br><span class="truth">${d.truth}</span>`;
       else if (d.final) li.innerHTML = `<span class="truth">${d.text}</span>`;
-      else li.textContent = d.text;
+      else li.innerHTML = kind + d.text;
       dedList.appendChild(li);
     });
     this._inkFrom = null;
@@ -505,35 +507,46 @@ export class UI {
   }
 
   // ------------------------------------------------------------ name entry (the ending)
-  async nameEntry(prompt, forced) {
-    if (window.FAST) { (window.LOG ||= []).push(`[nombre: ${forced}]`); return forced; }
+  // The signature page of the notebook. The player writes what they like and confirms; with `morph`,
+  // what they wrote then turns, one stroke at a time, into that word (an empty line too).
+  async nameEntry(prompt, morph = null, initial = '') {
+    if (window.FAST) { (window.LOG ||= []).push(`[firma: ${morph || initial}]`); return morph || initial; }
     const { nameEntry, namePrompt, nameInput, nameOk } = this.el;
     namePrompt.textContent = prompt;
-    nameInput.value = '';
+    nameInput.value = initial;
+    nameInput.readOnly = false;
     nameEntry.classList.remove('hidden');
-    let i = 0;
-    const type = () => {
-      if (i < forced.length) { i++; nameInput.value = forced.slice(0, i); audio.pen(); }
-    };
-    const onKey = (e) => {
-      e.preventDefault();
-      if (e.key === 'Enter' && i >= forced.length) { finish(); return; }
-      if (e.key.length === 1 || e.key === 'Backspace') type();
-    };
     let finish;
     const p = new Promise((r) => { finish = r; });
+    const onKey = (e) => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); finish(); } };
+    const onInput = () => audio.pen();
     nameInput.addEventListener('keydown', onKey);
-    const onBefore = (e) => { e.preventDefault(); const n = Math.max(1, (e.data || '').length); for (let k = 0; k < n; k++) type(); };
-    nameInput.addEventListener('beforeinput', onBefore);
-    const okHandler = () => { if (i < forced.length) { type(); return; } finish(); };
-    nameOk.addEventListener('click', okHandler);
-    setTimeout(() => nameInput.focus(), 100);
+    nameInput.addEventListener('input', onInput);
+    nameOk.addEventListener('click', finish);
+    setTimeout(() => { nameInput.focus(); nameInput.setSelectionRange(nameInput.value.length, nameInput.value.length); }, 100);
     await p;
     nameInput.removeEventListener('keydown', onKey);
-    nameInput.removeEventListener('beforeinput', onBefore);
-    nameOk.removeEventListener('click', okHandler);
+    nameInput.removeEventListener('input', onInput);
+    nameOk.removeEventListener('click', finish);
+    nameInput.readOnly = true;
+    nameInput.blur();
+    let text = nameInput.value;
+    if (morph) {
+      // slowly: the hand finishes the strokes itself
+      await wait(600);
+      let cur = [...text];
+      while (cur.length > morph.length) { cur.pop(); nameInput.value = cur.join(''); audio.pen(); await wait(140); }
+      for (let k = 0; k < morph.length; k++) {
+        cur[k] = morph[k];
+        nameInput.value = cur.join('');
+        audio.pen();
+        await wait(520);
+      }
+      text = morph;
+      await wait(1400);
+    } else await wait(300);
     nameEntry.classList.add('hidden');
-    return forced;
+    return text;
   }
 
   menu(items) {

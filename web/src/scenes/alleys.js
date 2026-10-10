@@ -125,11 +125,11 @@ export default {
     this.gap = 520;
     G.player.speed = 260;
     const junctions = [
-      { x: 1100, q: '¿Por dónde?', opts: ['Seguir recto, hacia la luz.', 'Meterse por Wentworth Street.'], good: 0, bad: 'Un patio cerrado, con una pared de diez pies. Vuelvo atrás.' },
-      { x: 2200, q: 'Un silbato delante. Me están cortando el paso.', opts: ['Agacharse detrás de los barriles.', 'Seguir corriendo.'], good: 1, bad: 'Me agacho y un farol pasa a dos pasos de mí. Cuando se aleja, se han acercado los otros.' },
-      { x: 3300, q: 'Thrawl Street. Mi casa está ahí.', opts: ['Ir a casa.', 'Seguir hacia el río.'], good: 1, bad: 'En mi puerta hay un agente. Doy media vuelta antes de que me vea.' },
+      { x: 1100, q: '¿Por dónde?', opts: ['Seguir recto, hacia la luz.', 'Meterse por Wentworth Street.'], good: 0 },
+      { x: 2200, q: 'Un silbato delante. Me están cortando el paso.', opts: ['Agacharse detrás de los barriles.', 'Seguir corriendo.'], good: 1 },
+      { x: 3300, q: 'Thrawl Street. Mi casa está ahí.', opts: ['Ir a casa.', 'Seguir hacia el río.'], good: 1 },
     ];
-    await G.think('Lo veo al final de la calle: un abrigo oscuro corriendo, igual que yo. Tengo que alcanzarlo.');
+    G.objective('Alcanzar al abrigo oscuro.');
     for (const j of junctions) {
       await G.walk(j.x - 80, { speed: 300 });
       G.audio.whistle(0.12);
@@ -137,7 +137,7 @@ export default {
       if (c !== j.good) {
         this.gap -= 140;
         G.shake(8); G.sanity(-3);
-        await G.say('Ashgrove', j.bad, { style: 'thought', auto: 1600 });
+        G.audio.whistle(0.16);   // a dead end, a lantern, a constable at the door: the whistles close in
         G.player.x -= 60;
       }
     }

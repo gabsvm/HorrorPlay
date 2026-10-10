@@ -181,20 +181,19 @@ export default {
           const missing = [!G.flag('coat_on') && 'el abrigo', !G.flag('boots_on') && 'las botas', !G.flag('lantern_taken') && 'la linterna'].filter(Boolean);
           if (missing.length) {
             const list = missing.length === 1 ? missing[0] : `${missing.slice(0, -1).join(', ')} y ${missing[missing.length - 1]}`;
-            await G.think(`No puedo salir así. Me falta ${list}. Está todo junto a la puerta.`);
+            G.toast(`Falta ${list}.`);
             return;
           }
           await G.game.chapterHooks.leaveRoomC1(G);
         } else if (p === 'c3a') {
           if (G.flag('woke_c3') && !G.hasClue('llave_pike')) {
-            await G.think(G.two('La puerta está cerrada con llave, por dentro. Solo hay otra llave de este cuarto: la que guarda Pike, por si me necesitan de noche.',
-              'Cerrada con llave, por dentro. La otra la guarda Pike. No ha hecho falta que nadie la use.'));
+            await G.think(G.two('Cerrada por dentro. Pike tiene la única copia.',
+              'Cerrada por dentro. Nadie necesitaba la llave de Pike.'));
             G.clue('llave_pike');
             return;
           }
-          await G.think('Pasan de las tres. No tengo adónde ir a estas horas.');
         } else if (p === 'c3b') {
-          if (!G.flag('paper_read')) { await G.think('Hay un periódico bajo la puerta. La señora Pell lo deja ahí cuando no le pago a tiempo.'); return; }
+          if (!G.flag('paper_read')) {  return; }
           await G.game.chapterHooks.leaveRoomC3b(G);
         }
       },
@@ -207,11 +206,10 @@ export default {
       id: 'boots', name: 'Botas', when: (G) => phase(G) === 'c1' && !G.flag('boots_on'), rect: [200, GROUND - 40, 90, 50], walk: 300, face: -1,
       act: async (G) => {
         G.player.pose = 'kneel';
-        await G.think('Están empapadas, y tienen barro negro hasta los cordones. Huelen a río.');
-        await G.think(G.two('Anoche las dejé secas, aquí mismo, junto a la puerta.', 'Me acosté a las once. No recuerdo haber salido.'));
+        await G.think('Barro de río. Hasta dentro de las botas.');
+        await G.think(G.two('Antes de acostarme estaban secas.', 'Otra noche que no recuerdo.'));
         G.clue('botas');
         G.player.pose = null;
-        await G.think('Me las pongo. Están frías por dentro.');
         G.flag('boots_on', true);
         G.sanity(-3);
       },
@@ -221,10 +219,8 @@ export default {
       act: async (G) => {
         G.flag('coat_on', true);
         G.audio.paper();
-        await G.think('El abrigo todavía está húmedo en los puños.');
         if (!G.has('placa')) G.give('placa');
         if (!G.has('penique') && !G.flag('penique_given')) G.give('penique');
-        await G.think('En el bolsillo, la placa de la División H y un penique.');
       },
     },
     {
@@ -233,20 +229,16 @@ export default {
         G.flag('lantern_taken', true);
         G.audio.match();
         G.player.lanternOn = true;
-        await G.think(G.two('La linterna del servicio. Está tibia y la mecha, quemada. Yo no la encendí.', 'La linterna del servicio. La mecha está quemada, como si la hubiera tenido encendida toda la noche.'));
+        await G.think(G.two('La mecha sigue caliente. No recuerdo encenderla.', 'La usé anoche. ¿Adónde fui?'));
       },
     },
     {
       id: 'mirror', name: 'Espejo cubierto', rect: [404, GROUND - 340, 124, 180], walk: 470, face: -1,
       act: async (G) => {
         const n = (G.state.flags.mirror_n || 0) + 1; G.state.flags.mirror_n = n;
-        const lines = [
-          'La sábana sigue ahí desde la semana pasada. Me corté afeitándome; la luz es mala.',
-          'Prefiero no mirar.',
-          'No.',
-        ];
-        await G.think(lines[Math.min(n - 1, lines.length - 1)]);
-        if (n >= 3) { G.audio.whisper(1.4, 0.1); G.sanity(-2); }
+        // once, a thought; after that the sheet stays where it is and only the room answers
+        if (n === 1) await G.think('La sábana no tiene por qué estar aquí.');
+        else if (n >= 3) { G.audio.whisper(1.4, 0.1); G.sanity(-2); }
       },
     },
     {
@@ -256,16 +248,15 @@ export default {
         if (p === 'c3a' && G.flag('woke_c3')) { await G.game.chapterHooks.sleepC3a(G); return; }
         if (p === 'c3b') {
           G.player.pose = 'kneel';
-          await G.think('Debajo de la cama está mi viejo estuche de disección. Lo abro.');
-          await G.think('Seis huecos de terciopelo y cinco bisturís. Falta el del mango de ébano.');
+          await G.think('Falta el de ébano. Siempre guardaba seis.');
           G.player.pose = null;
           G.clue('estuche');
           G.sanity(-4);
           if (G.flag('paper_read')) G.game.chapterHooks.c3bObjective(G);
           return;
         }
-        await G.think(G.two('Hay barro en las tablas, en pisadas que van de la ventana a la cama y se paran ahí. Alguien ha estado de pie a mi lado mientras dormía.',
-          'Las sábanas están revueltas y hay barro en el borde del colchón.'));
+        await G.think(G.two('Pisadas de la ventana hasta mi cama. Alguien me observó mientras dormía.',
+          'Barro en mi lado del colchón.'));
       },
     },
     {
@@ -273,11 +264,9 @@ export default {
       act: async (G) => {
         const p = phase(G);
         if (p === 'c1') {
-          await G.think('Nat y yo en las escaleras de Limehouse, el verano antes del cólera. Él tenía nueve años y yo doce.');
-          await G.think('Es la única fotografía que nos hicieron.');
+          await G.think('Nat odiaba posar. Aquí se reía.');
         } else {
-          await G.think('Alguien ha rascado la cara del niño mayor con la punta de algo afilado. La de Nat está intacta.');
-          await G.think('La del niño mayor es la mía.');
+          await G.think('Han raspado mi cara. La de Nat está intacta.');
           G.sanity(-4); G.audio.whisper(1.2, 0.08);
         }
       },
@@ -288,14 +277,14 @@ export default {
         const p = phase(G);
         if (p === 'c1') {
           if (!G.hasClue('ventana')) {
-            await G.think(G.two('La ventana está entornada y hay barro negro en el alféizar. Anoche la cerré. Estoy seguro de que la cerré.',
-              'Entornada, con barro en el alféizar. Por aquí salgo cuando no quiero que la señora Pell me oiga en la escalera.'));
+            await G.think(G.two('Cerré esta ventana. Lo sé.',
+              'Salí por aquí para no despertar a Pell.'));
             G.clue('ventana'); G.sanity(-2);
           }
-          await G.think('Thrawl Street bajo la lluvia. Abajo, la cerería. Más allá, el olor del Ditch.');
         }
-        else if (p === 'c3a') await G.think('No pasa nadie. El cristal está empañado por dentro, como si alguien hubiera estado respirando contra él.');
-        else await G.think('Unos chicos vocean el periódico en la esquina. Gritan un nombre que no entiendo.');
+        // no words: the glass fogged from inside (c3a), the newsboys down the street (later)
+        else if (p === 'c3a') G.audio.whisper(1.2, 0.05);
+        else G.audio.whistle(0.03, true);
       },
     },
     {
@@ -303,43 +292,39 @@ export default {
       act: async (G) => {
         const p = phase(G);
         if (p === 'c1') {
-          if (!G.has('penique') && !G.flag('penique_given')) { G.give('penique'); await G.think('Un penique suelto entre los informes.'); }
+          if (!G.has('penique') && !G.flag('penique_given')) G.give('penique');
           if (!G.has('placa')) G.give('placa');
-          if (!G.flag('saw_red_ink')) { G.flag('saw_red_ink', true); await G.think('Los dos tinteros: el negro para los informes y el rojo para corregir los de los sargentos.'); }
-          else await G.think('Informes atrasados. Robos, borracheras, una mujer que se cayó al canal.');
+          G.flag('saw_red_ink', true);
         } else if (p === 'c3a') {
           if (!G.flag('woke_c3')) await G.game.chapterHooks.writeC3a(G);
-          else await G.think(G.two('El informe está terminado. Las últimas páginas tienen mi letra, o una muy parecida, y no recuerdo haberlas escrito. Falta papel de cartas.',
-            'El informe está terminado y la letra es mía, pero no recuerdo haber escrito las últimas páginas. Falta papel de cartas.'));
+          else await G.think(G.two('Es mi letra. Las últimas dos páginas no son mías... ¿o sí?',
+            'Lo escribí yo. ¿Cuándo?'));
         } else if (G.flag('paper_read') && !G.hasClue('letra')) {
           await G.game.chapterHooks.compareHands(G);
-        } else {
-          await G.think('El tintero rojo está casi vacío y el plumín, doblado.');
         }
       },
     },
     {
       id: 'laudano', name: 'Frasco de láudano', rect: [1372, GROUND - 146, 40, 50], walk: 1300,
       act: async (G) => {
-        if (!G.hasClue('laudano')) { G.clue('laudano'); await G.think('Láudano, para dormir. Casi vacío. Lo compré el martes.'); }
+        if (!G.hasClue('laudano')) { G.clue('laudano'); await G.think('Compré este frasco hace tres días. Ya está casi vacío.'); }
         else if (!G.flag('drank')) {
           const c = await G.choice(['Un trago. Solo uno.', 'Dejarlo.']);
-          if (c === 0) { G.flag('drank', true); G.sanity(+8); G.audio.drip(); await G.think('El amargor me calma. Las manos dejan de temblar.'); }
-        } else await G.think('Ya no queda casi nada.');
+          if (c === 0) { G.flag('drank', true); G.sanity(+8); G.audio.drip(); }
+        }
       },
     },
     {
       id: 'clock', name: 'Reloj', rect: [1360, GROUND - 476, 70, 100], walk: 1340,
       act: async (G) => {
         const h = G.state.clockHands || [3, 40];
-        await G.think(`Las ${h[0]}:${String(h[1]).padStart(2, '0')}. ${phase(G) === 'c1' ? 'Me acosté a las once. Me parece que hace un momento.' : 'Va bien. Nunca atrasa.'}`);
+        await G.think(`${h[0]}:${String(h[1]).padStart(2, '0')}. ${phase(G) === 'c1' ? 'Me acosté a las once.' : 'No puede haber pasado tanto tiempo.'}`);
       },
     },
     {
       id: 'map', name: 'Mapa de Whitechapel', rect: [1200, GROUND - 526, 140, 106], walk: 1260,
       act: async (G) => {
-        await G.think('El mapa de la división, lleno de alfileres. Los rojos marcan las agresiones de este año.');
-        if (G.state.chapter === 'c3' || G.state.chapter === 'c4') await G.think('Todos los alfileres rojos están a menos de diez minutos de esta habitación.');
+        if (G.state.chapter === 'c3' || G.state.chapter === 'c4') await G.think('Todo ocurrió a diez minutos de mi puerta.');
       },
     },
   ],

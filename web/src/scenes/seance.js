@@ -174,15 +174,15 @@ export default {
     G.date('8 de septiembre de 1888', '23:04');
     await G.walk(420);
     const w = G.actor('Wexley'); w.talking = true;
-    await G.say('Madame Wexley', 'Inspector Ashgrove. Le estaban esperando.');
+    await G.say('Madame Wexley', 'Inspector Ashgrove. Ha llegado antes de lo previsto.');
     w.talking = false;
     const c = await G.choice(['¿Quién me esperaba?', 'Usted me mandó una nota. Quiero saber quién se la dictó.']);
     w.talking = true;
-    if (c === 0) await G.say('Madame Wexley', 'Los que están al otro lado. No suelen pedir a nadie por su nombre, y esta semana han pedido el suyo.');
-    else await G.say('Madame Wexley', 'Nadie me dicta nada, inspector. Yo escucho y luego escribo lo que oigo.');
-    await G.say('Madame Wexley', 'Siéntese. Y ponga sobre la mesa lo que lleva en el bolsillo. Lo de ella.');
+    if (c === 0) await G.say('Madame Wexley', 'Una voz preguntó por usted. No le dije que viniera, pero está aquí.');
+    else await G.say('Madame Wexley', 'Si me la dictaran, cobraría más.');
+    await G.say('Madame Wexley', 'Siéntese. Lo que guarda en el bolsillo: póngalo sobre la mesa.');
     w.talking = false;
-    await G.think('El peine. No se lo he enseñado a nadie.');
+    await G.think('El peine. No se lo he mostrado.');
     G.objective('Poner el peine de Annie sobre la mesa.');
     G.sanity(-3);
   },
@@ -192,8 +192,8 @@ export default {
       id: 'table', name: 'Mesa de la sesión', rect: [TABLE_X - 160, GROUND - 180, 320, 120], walk: TABLE_X - 230, face: 1,
       act: async (G) => {
         if (G.flag('seance_done') && !G.hasClue('hospes')) { await G.game.chapterHooks.raps(G); return; }
-        if (G.flag('seance_done')) { await G.think('La cera de las velas sigue blanda.'); return; }
-        await G.think('Tres velas, un mantel de terciopelo gastado y huellas de dedos en la madera. Wexley espera a que deje algo encima.');
+        if (G.flag('seance_done')) return;
+        G.audio.tick();   // the empty place at the table, waiting for the comb: no words
       },
       use: async (G, item) => {
         if (item !== 'peine' || G.flag('seance_done')) return false;
@@ -206,18 +206,18 @@ export default {
       act: async (G) => {
         const w = G.actor('Wexley'); w.talking = true;
         if (G.flag('seance_done')) {
-          await G.say('Madame Wexley', 'Váyase, por favor. Y llévese eso con usted.');
+          await G.say('Madame Wexley', 'Fuera, inspector. Ahora.');
           w.talking = false;
           const c = await G.choice(['¿El qué?', '(Salir sin decir nada)']);
-          if (c === 0) { w.talking = true; await G.say('Madame Wexley', 'Lo que lleva puesto, inspector. No hablo del abrigo.'); w.talking = false; G.sanity(-3); }
+          if (c === 0) { w.talking = true; await G.say('Madame Wexley', 'No es el abrigo lo que debe quitarse.'); w.talking = false; G.sanity(-3); }
           return;
         }
         if (!G.flag('wex_q1')) {
           G.flag('wex_q1', true);
-          await G.say('Madame Wexley', 'No cobro a la policía. Usted no ha venido por voluntad propia.');
-          await G.say('Madame Wexley', 'En esta calle casi todos tapamos los espejos cuando hay un muerto, para que no se quede atrapado dentro. Yo dejo el mío destapado, para que puedan mirar.');
+          await G.say('Madame Wexley', 'A un policía le cobraría el doble. A usted no le cobraré nada.');
+          await G.say('Madame Wexley', 'Aquí tapamos los espejos cuando alguien muere. Yo no lo hice. Creí que era más valiente.');
         } else {
-          await G.say('Madame Wexley', 'El peine, inspector. Encima de la mesa.');
+          await G.say('Madame Wexley', 'El peine. No estoy fingiendo que no lo veo.');
         }
         w.talking = false;
       },
@@ -228,7 +228,6 @@ export default {
         const n = (G.state.flags.wex_mirror || 0) + 1; G.state.flags.wex_mirror = n;
         if (n === 1) await G.think('Prefiero no mirar.');
         else if (n === 2) {
-          await G.think('Se ve la mesa, las velas, la viuda y el joven. Hay tan poca luz que no consigo encontrarme.');
           G.audio.whisper(1.2, 0.08); G.sanity(-3);
         } else await G.think('No.');
       },
@@ -236,47 +235,33 @@ export default {
     {
       id: 'widow', name: 'Viuda', cursor: 'talk', rect: [TABLE_X - 200, GROUND - 190, 80, 190], walk: TABLE_X - 260,
       act: async (G) => {
-        if (G.flag('seance_done')) { await G.think('Se ha ido sin despedirse. Su silla sigue caliente.'); return; }
-        await G.say('Viuda', 'Mi marido se ahogó en el muelle de la Reina Victoria. Vengo todos los sábados.');
-        await G.say('Viuda', 'Nunca habla él. Siempre habla otro que se hace pasar por él.');
+        if (G.flag('seance_done')) {  return; }
+        await G.say('Viuda', 'Mi marido se ahogó hace dos inviernos. Vengo cuando me alcanza para la entrada.');
+        await G.say('Viuda', 'Nunca es su voz. La señora dice que es él. Yo conozco la voz de mi marido.');
       },
     },
     {
       id: 'young', name: 'Joven', cursor: 'talk', rect: [TABLE_X + 10, GROUND - 210, 70, 120], walk: TABLE_X - 230,
       act: async (G) => {
-        if (G.flag('seance_done')) { await G.think('Ha salido corriendo. Ni ha cogido el sombrero.'); return; }
-        await G.say('Joven', 'Soy periodista, del Star. No crea que me lo trago.');
-        await G.say('Joven', 'Aunque si esta noche pasa algo, mañana venderemos cien mil ejemplares.');
+        if (G.flag('seance_done')) {  return; }
+        await G.say('Joven', 'Del Star. No, no me creo lo que dice.');
+        await G.say('Joven', 'Pero tampoco me iré sin escucharla terminar.');
       },
-    },
-    {
-      id: 'trumpet', name: 'Trompeta de espiritismo', rect: [560, GROUND - 130, 110, 40], walk: 600,
-      act: async (G) => { await G.think('Una trompeta de latón para que "los espíritus" hablen por ella. Un truco de feria.'); },
-    },
-    {
-      id: 'photos', name: 'Fotografías de espíritus', rect: [230, 190, 200, 110], walk: 330,
-      act: async (G) => { await G.think('Fotografías de difuntos, con "espíritus" añadidos con doble exposición. Una de ellas tiene la cara borrada por la humedad, o eso parece.'); },
     },
     {
       id: 'clock', name: 'Reloj de la repisa', rect: [430, GROUND - 210, 60, 56], walk: 460,
       act: async (G) => {
-        await G.think('Un reloj de sobremesa, parado a las tres y cuarto.');
-        await G.think("A las tres y cuarto pasó Neil por Buck's Row y no vio a nadie.");
+        await G.think('Tres y cuarto. La primera ronda de Neil.');
         G.audio.tick(); G.sanity(-2);
       },
     },
     {
-      id: 'raven', name: 'Cuervo disecado', rect: [995, GROUND - 216, 62, 66], walk: 980,
-      act: async (G) => { await G.think('Un cuervo disecado bajo una campana de cristal. Tiene la cabeza vuelta hacia la puerta, como si esperara a alguien.'); },
-    },
-    {
       id: 'chart', name: 'Carta astral', rect: [930, 150, 96, 96], walk: 980,
       act: async (G) => {
-        await G.think('Una carta astral dibujada a mano. En el margen alguien ha escrito "T. A." y la fecha de mi nacimiento.');
+        await G.think('«T. A.» y mi fecha. ¿Quién le contó eso?');
         if (!G.flag('knock_board')) {
           G.flag('knock_board', true);
-          await G.think('Debajo, clavada con chinchetas, una tabla de veinticinco letras en cinco filas, sin la K, con las filas y las columnas numeradas del uno al cinco.');
-          await G.think('Los presos de las cárceles del zar hablaban así entre celdas, a golpes: primero la fila, luego la columna. Los espíritus de Madame Wexley, por lo visto, también.');
+          await G.think('Dos grupos de golpes. Fila y columna. Como en las cárceles del zar.');
         }
         G.sanity(-3);
       },
@@ -284,8 +269,8 @@ export default {
     {
       id: 'door', name: 'Salir a Fournier Street', cursor: 'exit', rect: [180, GROUND - 280, 140, 280], walk: 250, face: -1,
       act: async (G) => {
-        if (!G.flag('seance_done')) { await G.think('He venido a saber quién le habló de mí. No me voy sin saberlo.'); return; }
-        if (!G.hasClue('hospes')) { await G.think('Los golpes de la mesa. Los tengo apuntados y no sé qué dicen. No me voy sin saberlo.'); return; }
+        if (!G.flag('seance_done')) { await G.think('Todavía no sé quién conoce a Nat.'); return; }
+        if (!G.hasClue('hospes')) { await G.think('Sin la tabla no puedo descifrar los golpes.'); return; }
         await G.game.chapterHooks.leaveSeance(G);
       },
     },

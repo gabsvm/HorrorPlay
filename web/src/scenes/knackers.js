@@ -19,7 +19,6 @@ async function payWren(G) {
   await G.walk(1660);
   G.player.facing = -1;
   G.audio.tick();
-  await G.think('Dejo el penique en el poste de piedra y me aparto.');
   await G.walk(1860);
   const w = G.actor('Wren');
   await w.walkTo(1610);
@@ -27,7 +26,7 @@ async function payWren(G) {
   await G.wait(500);
   w.pose = null;
   w.talking = true;
-  await G.say('Wren', "Esto estaba en la rejilla de Buck's Row, antes de que llegaran los suyos. Brillaba.");
+  await G.say('Wren', 'Estaba en la rejilla, antes de que llegara la policía. Brillaba.');
   w.talking = false;
   await w.walkTo(1474);
   w.facing = -1;
@@ -268,7 +267,6 @@ export default {
     G.flag('kn_intro', true);
     G.date(null, '4:31');
     await G.walk(1620);
-    await G.think('Desde el desolladero llega un olor espeso a cal, a sangre de caballo y a vapor.');
     G.objective('Hablar con Brennan y con la niña de las cajas.');
   },
 
@@ -285,8 +283,6 @@ export default {
         const c = opts[await G.choice(opts.map((o) => o[0]))][1];
         if (c === 'bye') return;
         if (c === 'look') {
-          await G.think('Afila un cuchillo de desollar en la muela, con la mano izquierda. Lo hace sin mirar, como quien lo ha hecho diez mil veces.');
-          await G.think('Lleva un delantal de cuero hasta las rodillas.');
           G.clue('brennan_zurdo');
           if (G.flag('bisturi_taken')) G.game.chapterHooks.c1Objective(G);
           return;
@@ -294,12 +290,12 @@ export default {
         b.talking = true; b.pose = null; b.facing = 1;
         if (c === 'alibi') {
           G.flag('br_alibi', true);
-          await G.say('Brennan', 'Aquí. Con Tomkins, con Mumford y con Britten. Ya vinieron dos de los suyos a preguntarlo, y les dijimos lo mismo.');
-          await G.say('Brennan', 'Seis caballos esta noche, inspector. Un caballo no se despieza solo.');
+          await G.say('Brennan', 'Aquí. Con tres hombres. Puede preguntarles. Ya lo hicieron sus agentes.');
+          await G.say('Brennan', 'Seis caballos, inspector. Un caballo no se despieza solo.');
         } else if (c === 'heard') {
           G.flag('br_heard', true);
-          await G.say('Brennan', 'Aquí dentro los caballos gritan más que cualquier mujer.');
-          await G.say('Brennan', 'Si quiere saber quién anda por ahí a esas horas, pregúntele a la cría. Esa no duerme nunca.');
+          await G.say('Brennan', 'Aquí dentro ni los gritos de los caballos dejan oír la calle.');
+          await G.say('Brennan', 'Pregúntele a la cría de las cajas. Ella ve lo que ustedes pasan por alto.');
         }
         b.talking = false;
       },
@@ -312,16 +308,15 @@ export default {
         if (!G.flag('wren_met')) {
           G.flag('wren_met', true);
           await G.walk(1640);
-          await G.say('Niña', '¡No se acerque!');
+          await G.say('Niña', 'No se acerque.');
           w.talking = false;
           await G.walk(1760);
           w.talking = true;
           await G.say('Niña', 'Usted huele al Ditch, señor.');
           await G.say('Ashgrove', 'Soy policía.');
           await G.say('Niña', 'Ya. Por eso.');
-          await G.say('Wren', 'Me llamo Wren. Busco cosas en el fango y las vendo. Esta noche he encontrado algo, pero las cosas cuestan.');
+          await G.say('Wren', 'Wren. Lo que encuentro en el fango se paga.');
           w.talking = false;
-          await G.think('Pide un penique. No se va a acercar a mí.');
           if (G.has('penique')) {
             const c = await G.choice(['Dejarle el penique en el poste.', 'Ahora no.']);
             if (c === 0) { await payWren(G); return; }
@@ -330,14 +325,18 @@ export default {
           return;
         }
         if (G.flag('wren_paid')) {
-          await G.say('Wren', 'Ya se lo he dicho. Si el agua dice su nombre, no conteste.');
+          await G.say('Wren', 'Se lo he dicho: si el agua pronuncia su nombre, no conteste.');
+          if (G.flag('c1_done') && !G.flag('wren_return_visit')) {
+            G.flag('wren_return_visit', true);
+            await G.say('Wren', 'Encontraron a otra mujer. Usted guarda cosas de los muertos, inspector. Yo también. La diferencia es que yo las vendo.');
+          }
           w.talking = false;
           return;
         }
         w.talking = false;
         if (G.has('penique')) { await payWren(G); return; }
         await G.say('Wren', 'Un penique, señor. Las cosas cuestan.');
-        await G.think('No llevo ni un penique encima. En mi cuarto, entre los informes, había uno suelto.');
+        await G.think('Dejé el penique sobre los informes.');
       },
       use: async (G, item) => {
         if (item !== 'penique' || G.flag('wren_paid')) return false;
@@ -349,7 +348,6 @@ export default {
       id: 'bollard', name: 'Poste de piedra', rect: [1590, GROUND - 66, 46, 66], walk: 1660, face: -1,
       act: async (G) => {
         if (G.flag('wren_paid') && !G.has('bisturi') && !G.flag('bisturi_taken')) { await G.game.chapterHooks.takeScalpel(G); return; }
-        await G.think('Un poste para amarrar caballos, gastado por las cuerdas.');
       },
       use: async (G, item) => {
         if (item !== 'penique' || !G.flag('wren_met') || G.flag('wren_paid')) return false;
@@ -358,26 +356,12 @@ export default {
       },
     },
     {
-      id: 'yard', name: 'Patio del desolladero', when: (G) => !isMob(G), rect: [820, 300, 300, GROUND - 300], walk: 960, face: -1,
-      act: async (G) => {
-        await G.think('Dentro hay tres hombres desollando a la luz de un brasero. Los caballos cuelgan de los ganchos como abrigos.');
-        await G.think('Aquí todo el mundo tiene un cuchillo y sangre en las manos. Por eso nadie mira dos veces.');
-      },
-    },
-    {
-      id: 'arch', name: 'Arco del ferrocarril', rect: [90, 140, 380, GROUND - 140], walk: 300,
-      act: async (G) => {
-        await G.think('Bajo el arco del Great Eastern duermen los que no tienen cuatro peniques para una cama.');
-      },
-    },
-    {
       id: 'trough', name: 'Abrevadero', rect: [1720, GROUND - 50, 140, 40], walk: 1790,
       act: async (G) => {
         if (!G.flag('trough_seen')) {
           G.flag('trough_seen', true);
-          await G.think('Agua negra y quieta. Me asomo y no veo mi reflejo, solo la linterna, flotando sola.');
           G.audio.drip(); G.sanity(-4); G.mad(0.25); await G.wait(1500); G.mad(0);
-          await G.think('Habrá sido el ángulo.');
+          await G.think('Me habré colocado mal.');
         } else await G.think('No vuelvo a asomarme.');
       },
     },

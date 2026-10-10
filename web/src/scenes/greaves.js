@@ -127,9 +127,8 @@ export default {
     G.flag('gr_intro', true);
     G.date('8 de noviembre de 1888', '22:40');
     await G.walk(420);
-    if (G.flag('sospecha_greaves')) await G.think('Greaves no está. Si es él, aquí habrá algo que lo demuestre.');
-    else await G.think('Greaves no está. Me dijo que viniera si necesitaba algo para dormir. Pero no he venido a eso.');
-    await G.think('La puerta estaba cerrada con llave. No recuerdo haberla forzado, pero el marco está astillado.');
+    if (G.flag('sospecha_greaves')) await G.think('Si Greaves me miente, guarda aquí la prueba.');
+    else await G.think('Vine por una respuesta, no por otra dosis.');
     G.sanity(-3);
   },
 
@@ -137,8 +136,8 @@ export default {
     {
       id: 'drawer', name: 'Cajón del escritorio', rect: [560, GROUND - 100, 300, 100], walk: 600, face: 1,
       act: async (G) => {
-        if (G.flag('drawer_open')) { await G.think('Ya está abierto. Solo había recetas y la llave.'); return; }
-        await G.think('Está cerrado con llave. Con algo fino podría forzar la cerradura.');
+        if (G.flag('drawer_open')) {  return; }
+        await G.think('La cerradura es pequeña. Necesito algo fino.');
       },
       use: async (G, item) => {
         if (item !== 'bisturi' || G.flag('drawer_open')) return false;
@@ -146,8 +145,7 @@ export default {
         G.audio.tick(); await G.wait(300); G.audio.tick(); await G.wait(300); G.audio.thud();
         G.player.pose = null;
         G.flag('drawer_open', true);
-        await G.think('El bisturí entra en la cerradura como si la conociera. Dentro hay recetas de cloral y una llave pequeña de latón.');
-        await G.think('Lo he hecho con la izquierda, sin pensar.');
+        await G.think('Ni siquiera tuve que probar dos veces.');
         G.give('llave');
         return true;
       },
@@ -156,39 +154,33 @@ export default {
       id: 'cabinet', name: 'Vitrina cerrada', rect: [1240, GROUND - 400, 180, 400], walk: 1220, face: 1,
       act: async (G) => {
         if (G.flag('cabinet_open')) { await G.game.chapterHooks.readFile(G); return; }
-        await G.think('Expedientes clínicos ordenados por año, detrás de un cristal cerrado con llave. Hay uno de 1879.');
+        await G.think('Expedientes por año. El de 1879 está apartado.');
       },
       use: async (G, item) => {
         if (item !== 'llave') return false;
         G.take('llave');
         G.flag('cabinet_open', true);
         G.audio.door();
-        await G.think('La llave gira. Saco el expediente de 1879.');
         await G.game.chapterHooks.readFile(G);
         return true;
       },
     },
     {
       id: 'jars', name: 'Frascos de especímenes', rect: [300, 80, 300, 380], walk: 450,
-      act: async (G) => { await G.think('Órganos en formol con etiquetas escritas a mano. En uno de ellos pone "Ahogado, Limehouse, 1866".'); G.sanity(-4); G.audio.whisper(1, 0.07); },
+      act: async (G) => { G.sanity(-4); G.audio.whisper(1, 0.07); G.red(0.25); },   // a label: Limehouse, 1866. Nothing said
     },
     {
       id: 'chart', name: 'Lámina anatómica', rect: [660, 140, 150, 230], walk: 735,
-      act: async (G) => { await G.think('Yo me la sabía de memoria. Todavía me la sé: cada órgano, cada arteria y qué se corta primero.'); },
+      act: async (G) => { await G.think('Puedo señalar cada arteria sin mirar.'); },
     },
     {
       id: 'skeleton', name: 'Esqueleto', rect: [1100, GROUND - 330, 80, 330], walk: 1060,
-      act: async (G) => { await G.think('Los estudiantes lo llaman "el señor Bones". Una vez me quedé dormido en la sala de disección, al lado de uno como este, y al despertar...'); await G.think('No recuerdo al despertar.'); },
-    },
-    {
-      id: 'window', name: 'Ventana', rect: [840, 140, 210, 280], walk: 940,
-      act: async (G) => { await G.think('Whitechapel Road. Hay grupos de vigilancia vecinal con faroles y palos en cada esquina. Buscan a un hombre con abrigo oscuro.'); },
+      act: async (G) => { await G.think('El sueño terminó aquí, en otra mesa. El resto está borrado.');  },
     },
     {
       id: 'door', name: 'Puerta', cursor: 'exit', rect: [70, GROUND - 290, 150, 290], walk: 230, face: -1,
       act: async (G) => {
-        if (!G.flag('file_read')) { await G.think('No me voy de aquí sin saber qué sabe Greaves.'); return; }
-        await G.think('Afuera se oyen pasos. Alguien sube la escalera.');
+        if (!G.flag('file_read')) { await G.think('Sin el expediente no salgo.'); return; }
       },
     },
   ],

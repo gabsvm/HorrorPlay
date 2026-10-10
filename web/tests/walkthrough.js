@@ -42,8 +42,8 @@ export async function run({ log = true, second = false } = {}) {
     await settle();
     expectScene('foreshore');
     await act('boat');
-    await act('water', null, [1, 1]);         // the boy keeps quiet (first reading)
-    need(second ? game.state.flags.answered1866 : !game.state.flags.answered1866, second ? 'En la segunda lectura el niño siempre contesta' : 'El niño no debería haber contestado');
+    await act('water', null, [1, 1]);         // the boy keeps quiet, both times: it waits for 1879
+    need(!game.state.flags.answered1866 && game.state.flags.entry_year === 1879, 'El niño calló: el agua entra en 1879');
     await settle();
 
     // Chapter 1
@@ -92,7 +92,7 @@ export async function run({ log = true, second = false } = {}) {
     await act('passage');
     expectScene('seance');
     await act('wexley'); await act('mirror'); await act('mirror');
-    await act('clock'); await act('raven'); await act('chart');
+    await act('clock'); await act('chart');
     await act('table', 'peine');
     need(game.state.flags.seance_done, 'La sesión no terminó');
     await act('door');

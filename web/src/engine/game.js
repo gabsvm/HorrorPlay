@@ -834,7 +834,7 @@ export class Game {
       },
       cinema: (on) => { game.stage.classList.toggle('cinema', !!on); },
       save: () => game.save(),
-      nameEntry: (prompt, forced) => game.ui.nameEntry(prompt, forced),
+      nameEntry: (prompt, morph, initial) => game.ui.nameEntry(prompt, morph, initial),
       Actor,
     };
     return G;

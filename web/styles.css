@@ -119,6 +119,7 @@ button { font-family: var(--sc); color: var(--ink); background: none; border: 0;
 #clue-list li.used { opacity: 0.55; }
 #clue-list li .tag { font-style: normal; font-family: var(--sc); font-size: calc(14*var(--u)); color: #7a6440; display: block; }
 #deduction-list li { border-left-color: rgba(42,33,22,0.4); }
+#deduction-list .ded-kind { font-family: var(--sc); font-size: 0.72em; letter-spacing: 0.1em; text-transform: uppercase; color: #7a5a2e; }
 #profile-list li { font-family: var(--sc); font-style: normal; color: var(--blood); font-size: calc(19*var(--u)); }
 #profile-list li::before { content: "— "; }
 #nb-feedback { min-height: calc(30*var(--u)); font-style: italic; color: var(--blood); font-size: calc(19*var(--u)); }

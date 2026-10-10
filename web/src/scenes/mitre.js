@@ -119,9 +119,8 @@ export default {
     G.date('30 de septiembre de 1888', '1:52');
     await G.walk(420);
     const w = G.actor('Watkins'); w.talking = true;
-    await G.say('Agente Watkins', '¡Alto ahí! Esto es la City. ¿Quién es usted?');
+    await G.say('Agente Watkins', '¡Quieto! ¿Quién lo ha dejado entrar?');
     w.talking = false;
-    await G.think('La City de Londres tiene su propia policía. Aquí no soy nadie, salvo que les enseñe la placa.');
     G.objective('Enseñar la placa al agente de la City (inventario).');
   },
 
@@ -130,7 +129,7 @@ export default {
       id: 'watkins', name: 'Agente Watkins (Policía de la City)', cursor: 'talk', rect: (G) => { const a = G.actor('Watkins'); return [a.x - 40, GROUND - 189, 80, 189]; }, walk: (G) => G.actor('Watkins').x - 90, face: 1,
       act: async (G) => {
         const w = G.actor('Watkins'); w.facing = -1; w.talking = true;
-        if (!G.flag('mitre_badge')) { await G.say('Agente Watkins', 'Sin identificación no pasa nadie. Ni la reina.'); w.talking = false; return; }
+        if (!G.flag('mitre_badge')) { await G.say('Agente Watkins', 'Sin placa, ni un paso más. Esto no es Whitechapel.'); w.talking = false; return; }
         w.talking = false;
         const opts = [];
         if (!G.hasClue('trozo')) opts.push(['¿Qué ha encontrado?', 'found']);
@@ -140,41 +139,40 @@ export default {
         const c = opts[await G.choice(opts.map((o) => o[0]))][1];
         w.talking = true;
         if (c === 'found') {
-          await G.say('Agente Watkins', 'Hago esta ronda cada quince minutos. A la una y media no había nada. A la una y cuarenta y cuatro estaba ahí, en la esquina.');
-          await G.say('Agente Watkins', 'Le falta un trozo del delantal, cortado a cuchillo. Se lo llevó.');
+          await G.say('Agente Watkins', 'Paso aquí cada cuarto de hora. A la una y media, nada. A la una y cuarenta y cuatro, la vi.');
+          await G.say('Agente Watkins', 'Falta una pieza del delantal. Se la llevó quien lo hizo.');
           G.clue('trozo');
           mitreObjective(G);
-          await G.say('Agente Watkins', 'Y dicen que hace una hora han encontrado a otra en Berner Street, en el patio de un club. Dos en una noche, inspector.');
+          await G.say('Agente Watkins', 'Han encontrado a otra mujer en Berner Street. Stride. Dos casas van a esperar noticias.');
         } else if (c === 'witness') {
           await G.say('Agente Watkins', 'Tres hombres salían de un club de Duke\'s Place a la una y media. Uno vio a una mujer hablando con un hombre a la entrada de Church Passage.');
-          await G.say('Agente Watkins', 'Abrigo oscuro y bombín. Dice que el hombre llevaba una linterna como las nuestras, de policía. Por eso no le dio importancia.');
+          await G.say('Agente Watkins', 'Uno vio a un hombre en Church Passage. Abrigo oscuro. Bombín. Linterna policial.');
           G.clue('testigo');
           mitreObjective(G);
           w.talking = false;
-          await G.think(G.two('Una linterna de policía. Uno de los nuestros: abrigo oscuro y bombín, como Pike. Como media División H.', 'Una linterna de policía. Como la mía.'));
+          await G.think(G.two('Así viste Pike. Así vestimos todos.', 'Así visto yo.'));
         } else if (c === 'name') {
           G.flag('watkins_name', true);
-          await G.say('Agente Watkins', 'La soltaron de la comisaría de Bishopsgate a la una, cuando se le pasó la borrachera. Dio un nombre: Mary Ann Kelly.');
-          await G.say('Agente Watkins', 'Pero en la casa de huéspedes la conocían como Kate. Catherine Eddowes. Volvía de Kent, de recoger lúpulo, con su hombre.');
+          await G.say('Agente Watkins', 'Cuando salió de Bishopsgate dio un nombre que quizá no fuera suyo: Mary Ann Kelly.');
+          await G.say('Agente Watkins', 'En la pensión la llamaban Kate Eddowes.');
           w.talking = false;
-          await G.think('Mary Ann Kelly. Ese nombre me da frío, y no sé por qué.');
           G.sanity(-2);
         }
         w.talking = false;
       },
       use: async (G, item) => {
         if (item !== 'placa') return false;
-        if (G.flag('mitre_badge')) { await G.think('Ya la ha visto.'); return true; }
+        if (G.flag('mitre_badge')) {  return true; }
         G.flag('mitre_badge', true);
         const w = G.actor('Watkins'); w.talking = true;
-        await G.say('Agente Watkins', 'División H. Está bien, inspector, pero no toque nada. Esto es asunto de la City.');
-        await G.say('Agente Watkins', '...¿Cómo ha llegado tan rápido? La encontré hace cuatro minutos. Todavía no hemos avisado a nadie de la Metropolitana.');
+        await G.say('Agente Watkins', 'División H. Adelante. Y tenga las manos donde pueda verlas.');
+        await G.say('Agente Watkins', '¿Cómo llegó antes que mi aviso?');
         w.talking = false;
         G.clue('rapido');
         G.objective('Averiguar qué encontró Watkins y si alguien vio algo.');
         const c = await G.choice(['Estaba cerca, en Aldgate.', 'Oí los silbatos.']);
-        if (c === 0) await G.think(G.two('Estaba en Aldgate. Pike me pidió que revisara las rondas de la City. Eso creo.', 'Estaba en Aldgate. Eso creo. ¿Qué hacía yo en Aldgate a las dos menos cuarto?'));
-        else await G.think('No ha sonado ningún silbato. Watkins no ha llegado a tocar el suyo.');
+        if (c === 0) await G.think(G.two('Pike me mandó a Aldgate... creo.', '¿Por qué fui a Aldgate?'));
+        else await G.think('Mentira. No hubo silbatos.');
         G.sanity(-5);
         w.x = 600; w.facing = 1;
         return true;
@@ -183,44 +181,40 @@ export default {
     {
       id: 'corner', name: 'El cuerpo, en la esquina más oscura', verb: 'Examinar', rect: [700, GROUND - 30, 260, 90], walk: 690, face: 1, gesture: false,
       act: async (G) => {
-        if (!G.flag('mitre_badge')) { await G.think('Watkins no me deja acercarme sin enseñarle la placa.'); return; }
-        await G.think('El rincón donde no llega la farola. Desde aquí no se ve ninguna ventana con luz.');
-        await G.think('Él conocía este rincón. Sabía que estaba a oscuras.');
+        if (!G.flag('mitre_badge')) {  return; }
+        await G.think('Aquí nadie podía verlo trabajar.');
         // the points sit on the painted close-up (assets/closeups/eddowes.jpg)
         await G.inspect('kate', {
           title: 'Catherine Eddowes', body: 'eddowes',
           points: [
             { id: 'cara', x: 253, y: 306, r: 60, name: 'La cara', act: async (G) => {
               G.red(0.4); G.audio.sting(0.18);
-              await G.think('Le ha cortado la cara. Un tajo en cada párpado. Una V en cada mejilla, con la punta hacia los ojos.');
-              await G.think('Esto no la mató. Esto lo hizo después, con calma, sabiendo que Watkins pasaba cada quince minutos.');
+              await G.think('Las marcas no la mataron. Las hizo después.');
+              await G.think('Tenía menos de quince minutos para hacerlas.');
               G.clue('marcas');
               G.sanity(-4);
             } },
             { id: 'cuello', x: 360, y: 337, r: 45, name: 'El cuello', act: async (G) => {
-              await G.think('Un solo corte, de izquierda a derecha. La misma mano que en Buck\'s Row.');
+              await G.think('Otra vez de izquierda a derecha.');
             } },
             { id: 'vientre', x: 766, y: 398, r: 85, name: 'El vientre', act: async (G) => {
               G.red(0.5); G.shake(4);
-              await G.think('Abierta de arriba abajo. Lo de dentro, sobre el hombro, como en Hanbury Street.');
-              await G.think('Le falta un riñón. Lo sé antes de mirar. ¿Cómo lo sé antes de mirar?');
+              await G.think('Repite el orden de Hanbury.');
+              await G.think('Falta un riñón... ¿Por qué ya lo sabía?');
               G.sanity(-5);
             } },
             { id: 'delantal', x: 1110, y: 536, r: 70, name: 'El delantal', act: async (G) => {
-              await G.think('Al delantal le falta una esquina, cortada a cuchillo, en línea recta. Con eso se limpió las manos.');
+              await G.think('Falta una esquina; el corte es limpio.');
               G.clue('trozo');
           mitreObjective(G);
             } },
             { id: 'pulso', x: 903, y: 100, r: 55, name: 'La muñeca', act: async (G) => {
-              await G.think('Le cojo la muñeca para buscarle el pulso. Es la costumbre.');
-              await G.think('Al soltarla, mis guantes se quedan pegados a su piel.');
+              G.audio.play('leather', { vol: 0.5, rate: 0.8 });   // the glove coming away from her skin
               if (G.second()) {
                 await G.vision('hands');
                 G.red(0.6);
-                await G.think('Me miro los guantes. Están pegajosos. Y la sangre del dorso ya está seca.');
               } else {
                 G.red(0.4);
-                await G.think('Me limpio los guantes en el abrigo. No consigo dejar de temblar.');
               }
               G.clue('guantes');
               G.sanity(-6);
@@ -231,41 +225,29 @@ export default {
         if (seen.pulso && !G.flag('watkins_touch')) {
           G.flag('watkins_touch', true);
           const w = G.actor('Watkins'); w.facing = 1; w.talking = true;
-          await G.say('Agente Watkins', '¡Le he dicho que no la toque! ¿Qué hace con las manos en ella?');
+          await G.say('Agente Watkins', 'Le he dicho que no la toque. ¿Me ha oído?');
           w.talking = false;
           const c = await G.choice(['Buscarle el pulso.', '(Esconder las manos en los bolsillos)']);
-          if (c === 0) { w.talking = true; await G.say('Agente Watkins', '¿El pulso? Mírela, inspector. Mírela bien.'); w.talking = false; }
-          else { await G.think('Meto las manos en los bolsillos del abrigo. Están pegajosos por dentro también.'); G.sanity(-2); }
+          if (c === 0) { w.talking = true; await G.say('Agente Watkins', '¿El pulso? Inspector, mírela.'); w.talking = false; }
+          else {  G.sanity(-2); }
         }
       },
     },
     {
       id: 'morris', name: 'Morris, el vigilante', cursor: 'talk', rect: [1200, GROUND - 172, 80, 172], walk: 1140, face: 1,
       act: async (G) => {
-        if (!G.flag('mitre_badge')) { await G.think('Watkins no me deja pasar hasta que le enseñe la placa.'); return; }
+        if (!G.flag('mitre_badge')) {  return; }
         const m = G.actor('Morris'); m.talking = true;
-        await G.say('Morris', 'Estaba barriendo ahí dentro, con la puerta entornada. No oí nada, señor. Nada de nada.');
-        await G.say('Morris', 'Fui policía, ¿sabe? Pensé que ya había visto de todo.');
+        await G.say('Morris', 'Tenía la puerta entornada. No oí ni una palabra.');
+        await G.say('Morris', 'Fui agente veinte años. No me acostumbro a esto.');
         m.talking = false;
       },
     },
     {
-      id: 'notice', name: 'Aviso de la Policía de la City', rect: [1686, 466, 104, 78], walk: 1740,
-      act: async (G) => { await G.think('Un aviso pidiendo testigos de la noche del 8 de septiembre. Ya lo han tapado a medias con otro: un spaniel perdido.'); },
-    },
-    {
-      id: 'lamp', name: 'Farola', rect: [1430, GROUND - 350, 60, 350], walk: 1400,
-      act: async (G) => { await G.think('La farola de la plaza da luz a todo menos a la esquina donde estaba ella. Watkins pasa por aquí cada quince minutos.'); },
-    },
-    {
-      id: 'passage', name: 'Church Passage', cursor: 'exit', rect: [60, GROUND - 270, 130, 270], walk: 160, face: -1,
-      act: async (G) => { await G.think('Por ahí he venido. No recuerdo haber cruzado el pasaje.'); },
-    },
-    {
       id: 'east', name: 'Hacia Goulston Street', cursor: 'exit', rect: [2160, GROUND - 420, 140, 440], walk: 2150, face: 1,
       act: async (G) => {
-        if (!G.hasClue('trozo') || !G.hasClue('testigo')) { await G.think('Antes tengo que oír lo que sabe Watkins.'); return; }
-        await G.think('Se llevó un trozo del delantal. Lo tirará en algún sitio de camino a casa. Hacia el este, de vuelta a Whitechapel.');
+        if (!G.hasClue('trozo') || !G.hasClue('testigo')) {  return; }
+        await G.think('Hacia el este. El trozo de delantal no habrá llegado muy lejos.');
         await G.game.chapterHooks.toGoulston(G);
       },
     },

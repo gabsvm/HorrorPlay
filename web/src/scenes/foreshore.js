@@ -295,16 +295,15 @@ export default {
       id: 'outfall', name: 'Desagüe del Black Ditch', rect: [140, 330, 220, GROUND - 330], walk: 400, face: -1,
       act: async (G) => {
         if (is1866(G)) {
-          await G.think('El agua que sale de ahí es negra y está tibia, aunque sea octubre. Mamá dice que no me acerque.');
-          await G.think('Nat decía que ahí dentro vive alguien.');
+          await G.think('El agua está tibia. Nat decía que aquí vivía alguien.');
         } else await G.game.chapterHooks.outfall1888(G);
       },
     },
     {
       id: 'jetty', name: 'El embarcadero', rect: [900, 400, 640, 120], walk: 1300,
       act: async (G) => {
-        if (is1866(G)) { await G.think('Nat se sentaba en la punta del embarcadero con los pies colgando. Mamá le gritaba que se iba a caer.'); await G.think('No se cayó de ahí. Nadie sabe de dónde se cayó.'); }
-        else { await G.think('Los mismos pilotes, veintidós años más podridos. La escalera sigue bajando hasta el agua.'); await G.think('Desde aquí, el desagüe se ve como una boca abierta.'); }
+        if (is1866(G)) await G.think('Nadie supo decir dónde se cayó Nat.');
+        else G.audio.drip();   // the same piles, twenty-two years more rotten: nothing to say about them
       },
     },
     {
@@ -314,8 +313,8 @@ export default {
     {
       id: 'stairs', name: 'Escaleras a Narrow Street', cursor: 'exit', rect: [10, 330, 150, 290], walk: 400, face: -1,
       act: async (G) => {
-        if (is1866(G)) await G.think('Todavía no. Hoy no me voy sin encontrar algo de Nat. Él siempre jugaba allí, junto a los pilotes del embarcadero.');
-        else await G.think('Arriba están los silbatos. No hay a dónde volver.');
+        if (is1866(G)) await G.think('Primero el barco. Nat no lo habría dejado aquí por nada.');
+        else G.audio.whistle(0.07, true);   // the whistles up on Narrow Street: nowhere to go back to
       },
     },
   ],

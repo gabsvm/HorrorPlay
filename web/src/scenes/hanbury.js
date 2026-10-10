@@ -160,11 +160,9 @@ export default {
     G.flag('hb_intro', true);
     G.date('8 de septiembre de 1888', '6:20');
     await G.walk(560);
-    await G.think('En la calle hay vecinos cobrando un penique por asomarse a la ventana a mirar el patio.');
     const pike = G.actor('Pike'); pike.facing = -1;
-    await G.say('Pike', 'Annie Chapman. Cuarenta y siete años. Vendía flores y ganchillo cuando estaba sana. Ya no lo estaba.');
-    await G.say('Pike', 'La encontró un vecino a las seis menos cuarto, entre los escalones y la valla. Phillips no ha querido que la muevan hasta que usted la viera.');
-    await G.narrate('Pike escribe la hora en la libreta.');
+    await G.say('Pike', 'Annie Chapman. Los de la casa la llamaban Dark Annie.');
+    await G.say('Pike', 'La encontró Davis, antes de las seis. Phillips espera que la vea antes de moverla.');
     G.objective('Examinar el cuerpo y el patio. Hablar con Pike, con el médico y con la casera.');
   },
 
@@ -174,23 +172,24 @@ export default {
       act: async (G) => {
         const pike = G.actor('Pike'); pike.facing = -1; pike.talking = true;
         if (!G.hasClue('ordenados')) {
-          await G.say('Pike', 'El doctor Phillips dice que la mataron entre las cuatro y media y las cinco y media. Y otra cosa más.');
-          await G.say('Pike', 'Sus pertenencias estaban a sus pies: un trozo de muselina, un peine, un sobre roto. En fila, colocadas con cuidado.');
+          await G.say('Pike', 'Phillips calcula entre las cuatro y media y las cinco y media.');
+          pike.talking = false;
+          await G.say('Ashgrove', '¿Y por qué no han recogido sus cosas?');
+          pike.talking = true;
+          await G.say('Pike', 'Porque alguien las colocó en fila. Quería que las viéramos así.');
           G.clue('ordenados');
           pike.talking = false;
-          await G.think('Ordenadas como el instrumental antes de una operación.');
         } else if (!G.flag('pike_hb2')) {
           G.flag('pike_hb2', true);
-          await G.say('Pike', '¿Dónde estuvo anoche, inspector?');
+          await G.say('Pike', 'Inspector, ¿dónde pasó la noche?');
           pike.talking = false;
           const c = await G.choice(['En mi cuarto. Durmiendo.', '¿Por qué lo pregunta?']);
           pike.talking = true;
-          if (c === 0) await G.say('Pike', 'Bien.');
-          else await G.say('Pike', 'Por la libreta, señor. Se lo pregunto a todos.');
+          if (c === 0) await G.say('Pike', 'Entendido.');
+          else await G.say('Pike', 'No lo haría si no necesitara una respuesta.');
           pike.talking = false;
-          await G.narrate('Escribe algo. Esta vez tarda más.');
         } else {
-          await G.say('Pike', 'La gente ya está diciendo "Leather Apron". Los periódicos se lo han puesto fácil.');
+          await G.say('Pike', 'Ya han decidido que fue «Leather Apron». Los diarios. No los testigos.');
         }
         pike.talking = false;
       },
@@ -201,25 +200,28 @@ export default {
         const g = G.actor('Greaves'); g.facing = -1; g.talking = true;
         if (!G.flag('greaves_met')) {
           G.flag('greaves_met', true);
-          await G.say('Greaves', 'Thomas. Cuánto tiempo.');
-          await G.say('Greaves', 'Ayudo a Phillips con la autopsia. Me alegra ver que te ha ido bien, después de... la facultad.');
+          await G.say('Greaves', 'Sigues mirando las manos primero, Thomas.');
+          g.talking = false;
+          await G.say('Ashgrove', '¿Ha venido por Phillips o por mí?');
+          g.talking = true;
+          await G.say('Greaves', 'Phillips me pidió que viniera. Lo otro es una pregunta difícil.');
           g.talking = false;
           const c = await G.choice(['¿Qué opina del corte?', 'Me alegro de verle, doctor.']);
           g.talking = true;
           if (c === 0) {
-            await G.say('Greaves', 'Que quien lo hizo ha pasado tiempo en una sala de disección. Mucho tiempo.');
-            await G.say('Greaves', 'Tú lo sabrías mejor que yo. Eras el mejor de tu promoción con el bisturí.');
+            await G.say('Greaves', 'Es trabajo de alguien acostumbrado a la disección.');
+            await G.say('Greaves', 'Tú tenías buena mano. No era un elogio que hiciera a menudo.');
           } else {
-            await G.say('Greaves', 'Y yo de verte a ti. Aunque tienes cara de no dormir.');
+            await G.say('Greaves', 'Habría preferido verte descansado.');
           }
-          await G.say('Greaves', '¿Has vuelto al láudano? No se te ocurra mezclarlo con ginebra.');
+          await G.say('Greaves', '¿Sigues tomando láudano? Si es así, no lo mezcles con ginebra.');
           G.clue('greaves_sabe');
           if (G.hasClue('delantal')) G.objective(G.flag('peine_taken') ? 'Salir por el pasillo a Hanbury Street.' : 'Mirar lo que hay junto a la valla, a los pies de Annie. Luego salir por el pasillo.');
           g.talking = false;
           await G.think('Nunca le he contado a nadie lo del láudano. ¿Cómo lo sabe?');
           G.sanity(-3);
         } else {
-          await G.say('Greaves', 'Ven a verme al hospital si necesitas algo para dormir, Thomas. Lo digo en serio.');
+          await G.say('Greaves', 'Sabes dónde encontrarme. Y aún conservo tu vieja ficha.');
           g.talking = false;
         }
       },
@@ -230,12 +232,12 @@ export default {
         const a = G.actor('Amelia'); a.talking = true; a.facing = 1;
         if (!G.flag('amelia1')) {
           G.flag('amelia1', true);
-          await G.say('Sra. Richardson', 'Diecisiete personas duermen en esta casa, inspector. Diecisiete. Y nadie oyó nada.');
-          await G.say('Sra. Richardson', 'El delantal que hay junto al grifo es de mi hijo John. Lo lavé yo misma el jueves y lo dejé ahí para que se secara. Ya se lo he dicho a sus hombres.');
+          await G.say('Sra. Richardson', 'Diecisiete personas bajo este techo. Dígame cómo nadie oyó nada.');
+          await G.say('Sra. Richardson', 'Ese delantal lo lavé yo. Es de mi hijo John. ¿Va a escribirlo o va a preguntar otra vez?');
           a.talking = false;
-          await G.think('Eso dice. Pero el delantal también estaba en la escena.');
+          await G.think('Es del hijo de Richardson. También estaba junto al cuerpo; necesito conservar ambos datos.');
         } else {
-          await G.say('Sra. Richardson', 'Esos de la ventana están cobrando por mirar. A mí ni me han preguntado.');
+          await G.say('Sra. Richardson', 'Los de la ventana cobran por mirar. Yo vivo aquí y nadie me deja cerrar la puerta.');
         }
         a.talking = false;
       },
@@ -244,23 +246,20 @@ export default {
       id: 'apron', name: 'Delantal de cuero', rect: [1590, GROUND - 40, 130, 50], walk: 1560, face: 1,
       act: async (G) => {
         G.player.pose = 'kneel';
-        await G.think('Un delantal de cuero, empapado, tirado junto al grifo.');
         G.clue('delantal');
         if (G.flag('greaves_met')) G.objective(G.flag('peine_taken') ? 'Salir por el pasillo a Hanbury Street.' : 'Mirar lo que hay junto a la valla, a los pies de Annie. Luego salir por el pasillo.');
         G.player.pose = null;
-        await G.think('Los periódicos llevan una semana hablando de un tal "Leather Apron". Ahora tendrán su delantal.');
       },
     },
     {
       id: 'comb', name: 'Algo junto a la valla', verb: 'Recoger', when: (G) => !G.flag('peine_taken'), rect: [970, GROUND - 2, 70, 30], walk: 1060, face: -1,
       act: async (G) => {
         G.player.pose = 'kneel';
-        await G.think('Un peine de bolsillo con dos púas rotas, apartado de las otras cosas. Se les ha pasado.');
+        await G.think('Dos púas rotas. Alguien dejó el peine fuera del montón.');
         G.player.pose = null;
         const c = await G.choice(['Dárselo a Pike.', 'Guardármelo.']);
         if (c === 0) {
-          await G.think('Me acerco a Pike con el peine en la mano...');
-          await G.think('...y cuando llego, ya no lo tengo en la mano. Lo tengo en el bolsillo del abrigo, y no recuerdo haberlo metido ahí.');
+          await G.think('¿Cuándo lo guardé?');
           G.sanity(-4);
         } else {
           await G.think('Me lo guardo. Más tarde se lo daré a Pike.');
@@ -273,12 +272,11 @@ export default {
     {
       id: 'window', name: 'Ventana trasera', rect: [334, 414, 92, 150], walk: 300, face: 1,
       act: async (G) => {
-        if (G.hasClue('reflejo')) { await G.think('Ahora solo se ve la cocina de la señora Richardson.'); return; }
-        await G.think('En el cristal sucio se refleja el patio, la valla y yo. Y alguien detrás de mí, muy cerca.');
+        if (G.hasClue('reflejo')) {  return; }
         G.red(0.4); G.audio.sting(0.18); G.shake(6);
         G.face(1);
         await G.wait(600);
-        await G.think('No hay nadie.');
+        await G.think('No había nadie.');
         G.clue('reflejo');
         G.sanity(-6);
       },
@@ -286,59 +284,49 @@ export default {
     {
       id: 'steps', name: 'Escalones', rect: [540, GROUND - 48, 140, 50], walk: 700, face: -1,
       act: async (G) => {
-        await G.think('Aquí, entre los escalones y la valla. La tierra está removida y alguien ha echado serrín.');
         await G.think('En esta casa duermen diecisiete personas, y hubo luz de sobra para verlo todo. Nadie vio nada.');
       },
     },
     {
       id: 'annie', name: 'El cuerpo de Annie Chapman', verb: 'Examinar', when: (G) => !G.flag('annie_taken'), rect: [690, GROUND - 30, 170, 60], walk: 640, face: 1, gesture: false,
       act: async (G) => {
-        await G.think('Aparto el saco.');
         // the points sit on the painted close-up (assets/closeups/chapman.jpg)
         await G.inspect('annie', {
           title: 'Annie Chapman', body: 'chapman',
           points: [
             { id: 'cara', x: 360, y: 283, r: 60, name: 'La cara', act: async (G) => {
-              await G.think('La cara hinchada, la lengua entre los dientes. La estrangularon primero, hasta dejarla sin sentido.');
-              await G.think('Por eso nadie oyó nada. Cuando empezó a cortar, ella ya no podía gritar.');
+              await G.think('La estrangularon antes de usar el cuchillo.');
+              await G.think('Nadie habría oído el segundo ataque.');
             } },
             { id: 'cuello', x: 440, y: 302, r: 42, name: 'El cuello', act: async (G) => {
-              await G.think('El corte da toda la vuelta. Casi le separa la cabeza. Hay que tener mucha fuerza en la mano, o mucha costumbre.');
+              await G.think('La incisión es demasiado firme para un primer intento.');
             } },
             { id: 'hombro', x: 398, y: 398, r: 60, name: 'Sobre el hombro', act: async (G) => {
               G.red(0.5); G.audio.sting(0.2); G.shake(4);
-              await G.think('Sobre el hombro derecho, lo que le sacaron del vientre. No está tirado: está colocado.');
+              await G.think('Han colocado lo que extrajeron. Con precisión deliberada.');
               G.sanity(-5);
-              await G.think('He visto esto antes. En una mesa de mármol, en el London Hospital, con un profesor señalando con el puntero.');
+              await G.think('Lo vi en la sala de disección. No quiero volver a verlo.');
             } },
             { id: 'saco', x: 1034, y: 322, r: 100, name: 'Bajo el saco', act: async (G) => {
-              await G.think('Phillips dejó el saco sobre el vientre. No hace falta levantarlo: me lo contó Greaves.');
-              await G.think('Falta algo de dentro. Lo sacó entero, con cortes limpios. Sabía dónde estaba y cómo se suelta.');
+              await G.think('Extrajo un órgano entero. Sabía cómo separarlo.');
               G.clue('falta');
             } },
             { id: 'mano', x: 819, y: 536, r: 50, name: 'La mano', act: async (G) => {
-              await G.think('Le queda un anillo. Junto a él, dos marcas claras y la piel levantada: ahí había otros dos, y se los arrancaron.');
-              await G.think('Anillos de latón; no valían nada. No los cogió para venderlos.');
+              await G.think('Quedan marcas de dos anillos arrancados.');
+              await G.think('Latón barato. No se los llevó por dinero.');
               G.clue('anillos');
             } },
             { id: 'cosas', x: 1090, y: 588, r: 110, name: 'Sus cosas', act: async (G) => {
-              await G.think('Un trozo de muselina, un sobre roto con el sello de un regimiento, dos peniques. En fila, a sus pies.');
               G.clue('ordenados');
-              await G.think('Como el instrumental antes de una operación.');
             } },
           ],
         });
-        await G.think('Vuelvo a taparla. Ahora me miran todos los de las ventanas.');
       },
-    },
-    {
-      id: 'neighbours', name: 'Vecinos en las ventanas', rect: [1300, 150, 600, 190], walk: 1500,
-      act: async (G) => { await G.think('Los de la casa de al lado cobran un penique por asomarse a mirar el patio. Ya hay cola en la calle.'); },
     },
     {
       id: 'passage', name: 'Pasillo a Hanbury Street', cursor: 'exit', rect: [30, GROUND - 250, 130, 250], walk: 190, face: -1,
       act: async (G) => {
-        if (!G.hasClue('delantal') || !G.flag('greaves_met')) { await G.think('Todavía no he terminado aquí. Me falta examinar el patio y hablar con el médico.'); return; }
+        if (!G.hasClue('delantal') || !G.flag('greaves_met')) { await G.think('No me deja irme sin que mire el peine.'); return; }
         if (!G.flag('peine_taken')) { await G.think('A los pies de Annie, junto a la valla, hay algo que los de Phillips no han recogido. Antes de irme quiero verlo.'); G.objective('Mirar lo que hay junto a la valla, a los pies de Annie.'); return; }
         G.flag('annie_taken', true);
         await G.game.chapterHooks.leaveHanbury(G);
