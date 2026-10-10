@@ -97,11 +97,13 @@ export async function run({ log = true, second = false } = {}) {
     await act('wexley'); await act('mirror'); await act('mirror');
     await act('clock'); await act('chart');
     await act('table', 'peine');
-    need(game.state.flags.seance_done, 'La sesión no terminó');
-    await act('door');
-    expectScene('seance');                    // the raps first
-    await act('table');
+    need(!game.state.flags.seance_done, 'La sesión no debe empezar antes de leer los golpes');
+    await act('table');                       // the table knocks by itself
+    need(game.state.flags.raps_heard, 'La mesa debería golpear antes de la sesión');
+    await act('table');                       // read with the board on the wall
     need(game.G.hasClue('hospes'), 'Faltan los golpes (HOSPES)');
+    await act('table', 'peine');
+    need(game.state.flags.seance_done, 'La sesión no terminó');
     await deduce('hospes', 'regla');
     await deduce('greaves_sabe', 'alguien_detras');
     await deduce('nat_voz', 'regla');

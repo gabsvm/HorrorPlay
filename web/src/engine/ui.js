@@ -538,39 +538,63 @@ export class UI {
 
   // ------------------------------------------------------------ the séance raps
   // raps: [[row, col], ...] as knocked; board: whether Thomas has seen the board that reads them.
-  // Resolves true when the word is spelt, false if he leaves it for later.
-  async knockPuzzle({ raps, answer, board, rows }) {
-    if (window.FAST) { (window.LOG ||= []).push(`[golpes: ${answer}]`); return true; }
+  // help: how much has gone wrong before (0, 1, 2, 3+): the page says more each time, and from the
+  // third miss Wexley can be asked to read the first letters. Nobody is left guessing.
+  // Resolves { ok, misses } — ok when the word is spelt, false if he leaves it for later.
+  async knockPuzzle({ raps, answer, board, rows, help = 0, helper = null }) {
+    if (window.FAST) {
+      (window.LOG ||= []).push(`[golpes: ${board ? answer : 'sin tabla'}]`);
+      return { ok: !!board && !window.KNOCK_FAIL, misses: window.KNOCK_FAIL ? 1 : 0 };
+    }
     const box = document.createElement('div');
     box.id = 'knocks';
     const dots = (n) => '•'.repeat(n);
+    const hint = () => [
+      'Cada letra son dos grupos de golpes.',
+      'El primer grupo es la fila de la tabla; el segundo, la columna.',
+      `La primera letra: ${raps[0][0]} golpes y ${raps[0][1]} golpes. Fila ${raps[0][0]}, columna ${raps[0][1]}: ${rows[raps[0][0] - 1][raps[0][1] - 1]}.`,
+    ][Math.min(2, help)];
     box.innerHTML = `<div class="doc-paper"><h3>Los golpes</h3>
-      <p class="small">Los apunté en la oscuridad, tal como sonaban: un grupo, una pausa, otro grupo.</p>
+      <p class="small">Los apunté tal como sonaban: un grupo, una pausa, otro grupo.</p>
       <div class="raps">${raps.map(([r, c]) => `<span>${dots(r)}&ensp;${dots(c)}</span>`).join('<i>|</i>')}</div>
       ${board ? `<div class="grid"><b></b>${[1, 2, 3, 4, 5].map((c) => `<b>${c}</b>`).join('')}
         ${rows.map((row, r) => `<b>${r + 1}</b>${[...row].map((ch) => `<button data-ch="${ch}">${ch}</button>`).join('')}`).join('')}</div>`
-    : '<p class="nogrid">No sé leerlos. En la pared había una tabla de letras: quizá sea la clave.</p>'}
+    : '<p class="nogrid">No sé leerlos. En la pared, bajo la carta astral, había una tabla de letras: quizá sea la clave.</p>'}
+      <p class="khelp">${board ? hint() : ''}</p>
       <div class="word"></div>
-      <div class="row">${board ? '<button class="close erase">Borrar</button>' : ''}<button class="close leave">Dejarlo</button></div></div>`;
+      <div class="row">${board ? '<button class="close erase">Borrar</button>' : ''}${board && helper && help >= 2 ? '<button class="close ask">Pedir ayuda a Wexley</button>' : ''}<button class="close leave">Dejarlo</button></div></div>`;
     document.getElementById('ui').appendChild(box);
-    const word = box.querySelector('.word');
-    let typed = '';
+    const word = box.querySelector('.word'), khelp = box.querySelector('.khelp');
+    let typed = '', misses = 0, given = '';
     const result = await new Promise((done) => {
       box.querySelector('.leave').addEventListener('click', () => { audio.click(); done(false); });
-      box.querySelector('.erase')?.addEventListener('click', () => { typed = ''; word.textContent = ''; audio.click(); });
+      box.querySelector('.erase')?.addEventListener('click', () => { typed = given; word.textContent = typed; audio.click(); });
+      box.querySelector('.ask')?.addEventListener('click', async (e) => {
+        e.target.disabled = true;
+        given = await helper();   // she reads the first letters aloud
+        typed = given; word.textContent = typed;
+        khelp.textContent = 'Wexley ha leído las primeras. El resto, igual: fila y columna.';
+      });
       for (const b of box.querySelectorAll('.grid button')) {
         b.addEventListener('click', async () => {
           if (typed.length >= answer.length) return;
           typed += b.dataset.ch; word.textContent = typed; audio.tick();
           if (typed.length < answer.length) return;
           if (typed === answer) { audio.sting(0.2); await wait(900); done(true); return; }
+          misses++; help++;
           word.classList.remove('nope'); void word.offsetWidth; word.classList.add('nope');
-          await wait(700); typed = ''; word.textContent = '';
+          khelp.textContent = hint();
+          await wait(700); typed = given; word.textContent = typed;
+          if (helper && help >= 2 && !box.querySelector('.ask')) {
+            const ask = document.createElement('button'); ask.className = 'close ask'; ask.textContent = 'Pedir ayuda a Wexley';
+            ask.addEventListener('click', async () => { ask.disabled = true; given = await helper(); typed = given; word.textContent = typed; khelp.textContent = 'Wexley ha leído las primeras. El resto, igual: fila y columna.'; });
+            box.querySelector('.row').insertBefore(ask, box.querySelector('.leave'));
+          }
         });
       }
     });
     box.remove();
-    return result;
+    return { ok: result, misses };
   }
 
   // ------------------------------------------------------------ name entry (the ending)

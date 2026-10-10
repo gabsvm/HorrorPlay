@@ -74,7 +74,7 @@ button { font-family: var(--sc); color: var(--ink); background: none; border: 0;
 #tip kbd { font-family: var(--sc); color: var(--gold); border: 1px solid rgba(176,138,78,0.5); padding: 0 calc(5*var(--u)); border-radius: 3px; font-size: 0.9em; }
 
 /* Dialogue */
-#dialogue { position: absolute; left: 50%; bottom: calc(22 * var(--u)); transform: translateX(-50%); width: calc(980 * var(--u)); padding: calc(10 * var(--u)) calc(24 * var(--u)) calc(12 * var(--u)); text-align: center; cursor: pointer; text-shadow: 0 0 calc(3*var(--u)) #000, 0 calc(2*var(--u)) calc(4*var(--u)) #000, 0 0 calc(14*var(--u)) rgba(0,0,0,0.9); }
+#dialogue { z-index: 41; position: absolute; left: 50%; bottom: calc(22 * var(--u)); transform: translateX(-50%); width: calc(980 * var(--u)); padding: calc(10 * var(--u)) calc(24 * var(--u)) calc(12 * var(--u)); text-align: center; cursor: pointer; text-shadow: 0 0 calc(3*var(--u)) #000, 0 calc(2*var(--u)) calc(4*var(--u)) #000, 0 0 calc(14*var(--u)) rgba(0,0,0,0.9); }
 #dlg-name { font-family: var(--sc); color: var(--gold); font-size: calc(17 * var(--u)); letter-spacing: 0.12em; margin-bottom: calc(3 * var(--u)); }
 #dlg-name:empty { display: none; }
 #dlg-text { font-size: calc(25 * var(--u)); line-height: 1.32; color: var(--ink); }
@@ -288,6 +288,7 @@ html.touch #cursor, html.touch #cursor-item { display: none !important; }
 #knocks .grid b { font-family: var(--serif); color: #5a4630; padding: calc(4*var(--u)); }
 #knocks .grid button { font-family: var(--type); font-size: 1em; min-width: calc(40*var(--u)); min-height: calc(36*var(--u)); background: rgba(255,250,235,0.35); border: 1px solid rgba(60,40,20,0.4); color: var(--paper-ink); cursor: pointer; }
 #knocks .grid button:active { background: rgba(140,30,20,0.35); }
+#knocks .khelp { font-style: italic; color: #5a4a33; min-height: 1.3em; margin: 0 0 calc(6*var(--u)); }
 #knocks .word { font-family: var(--serif); font-size: 1.7em; letter-spacing: 0.3em; min-height: 1.4em; color: #8e1b16; }
 #knocks .word.nope { animation: shake .35s; }
 #knocks .nogrid { font-style: italic; margin: calc(16*var(--u)) 0; }

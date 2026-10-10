@@ -11,10 +11,8 @@ export async function run(opts) {
     await act('greaves', null, ['corte']); await act('apron'); await act('amelia');
     await act('comb', null, ['Guardármelo']);
     await act('passage'); expectScene('seance');
-    await game.G.game.chapterHooks.prepareSeance?.(game.G);
-    if (!game.state.clues.includes('hospes')) await act('table');           // the raps, if they come first
-    await act('table', game.state.items.includes('peine') ? 'peine' : null);
-    if (!game.state.clues.includes('hospes')) await act('table');           // or after
+    await act('chart'); await act('table'); await act('table');   // the knocks, then their reading
+    await act('table', 'peine');
     need(flag('seance_done') && game.state.clues.includes('hospes'), 'Sesión y golpes hechos');
     const before = JSON.parse(JSON.stringify(game.state));
     const seen = {};

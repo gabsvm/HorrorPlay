@@ -22,7 +22,7 @@ node web/tools/unit.mjs                # solo la lógica pura (web/tests/unit/)
 | 2 · Feedback y ritmo | CODE_COMPLETE | Ninguna interacción muda (inventario abajo); `again` para la segunda mirada corta; «Volver a mirar» en lo ya examinado; respuestas variadas por familia al usar mal un objeto; salidas bloqueadas que dicen lo que falta (Hanbury, Mitre, cuarto en c3); aviso al cerrar un primer plano con detalles clave sin ver; tarjetas que se cortan con clic/toque/tecla; opción «Lo ya leído: Al instante»; protección de 280 ms contra elegir con el clic que terminó la línea; opción «Movimiento: Reducido» (respeta `prefers-reduced-motion`) | ver historial | feedback + suite | Duraciones de tarjetas y esperas se revisan en la Fase 10 | Navegador: tarjeta cortada con clic (1,8 s en vez de 7), elección protegida, menú de opciones |
 | 3 · Capítulo I | CODE_COMPLETE | La noche se cierra cuando el jugador lo decide, con Pike en Buck's Row («Cerramos por esta noche, Pike.») o con Brennan en el desolladero («Esto es todo por esta noche.»), si `canFinishC1` se cumple; ninguna deducción ni entrada en una calle cambia de capítulo sola; al cerrar se registra la postura sobre Brennan (`brennan_stance`: vigilarlo / nada contra él / no lo sé) y la ruta en `investigation.routes.c1`; Pike responde a cada postura; `endC1` se pone en escena donde se cierra; la hoja de rondas, tras dos fallos, vuelve a señalar las dos horas que importan | ver historial | c1-minimal, walk (Brennan, sospecha), walk alt (Pike, sin sospecha) | La turba usa la postura en la Fase 4 | Navegador: el menú de Pike ofrece «Cerramos por esta noche, Pike.» con el mínimo reunido (el resto del flujo, en las partidas automáticas: el panel oculto pausa las animaciones) |
 | 4 · Hanbury y peine | CODE_COMPLETE | «Dárselo a Pike» le entrega el peine de verdad (`comb_custody: 'pike'`, sin objeto en el inventario, Pike lo anota); «Guardármelo» lo da a Thomas (`'thomas'`); los guardados viejos con el peine quedan como `'thomas'`; la salida exige una decisión, no el objeto; la sesión empieza sin peine si lo tiene Pike (Wexley lo sabe, Thomas lo describe en voz alta); una línea verificable sobre Annie (ganchillo y flores, enferma); acusar en la turba solo si hay razón (`d_delantal` o postura «vigilarlo»); si acusa sabiendo de quién era el delantal, Thomas lo recuerda; Wren responde a lo que Thomas hizo (agradece la escolta, reprocha el resto) y su respuesta se guarda (`wren_mob_reply`) | ver historial | comb-pike, mob, walk, walk alt | — | Sin comprobación visual de esta fase |
-| 5 · Sesión | TODO | | | | | |
+| 5 · Sesión | CODE_COMPLETE | Orden nuevo: la mesa golpea sola antes de empezar (`raps_heard`, Wexley: «Yo no he empezado»), Thomas los lee con la tabla de la pared (`hospes_decoded`, `seance_prepared`) y solo entonces la sesión; en la oscuridad suenan los mismos golpes y HOSPES cobra su doble sentido; la salida queda libre al terminar; el puzle explica más con cada fallo (grupos → fila/columna → la primera letra) y desde el tercero Wexley puede leer «HOS»; fallos y ayuda guardados en `investigation.evaluations.raps`; los guardados viejos con la sesión hecha y los golpes sin leer siguen funcionando; nunca hay dos sesiones | ver historial | seance, comb-pike, mob, walk | — | Navegador: puzle con la ayuda de la primera letra, botón «Pedir ayuda a Wexley» que rellena HOS, palabra completada; corregido que la línea de Wexley quedaba tapada por el puzle (z-index) |
 | 6 · Capítulo III | TODO | | | | | |
 | 7 · Capítulo IV | TODO | | | | | |
 | 8 · Cordura | TODO | | | | | |
@@ -180,5 +180,24 @@ PASS  scenario mob                 1.6s
 PASS  scenario notebook            0.3s
 PASS  walk                         3.6s
 PASS  walk second                  3.4s
+PASS  walk alt                     0.6s
+```
+
+### Fase 5
+
+```
+PASS  unit                         0.1s
+PASS  smoke                        2.9s
+PASS  audio                        0.1s
+PASS  scenario c1-minimal          0.6s
+PASS  scenario comb-pike           2.0s
+PASS  scenario compat              0.4s
+PASS  scenario feedback            0.6s
+PASS  scenario integrity           0.3s
+PASS  scenario mob                 2.4s
+PASS  scenario notebook            0.3s
+PASS  scenario seance              2.2s
+PASS  walk                         4.1s
+PASS  walk second                  4.2s
 PASS  walk alt                     0.6s
 ```

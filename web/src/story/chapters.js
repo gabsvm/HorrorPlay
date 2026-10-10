@@ -340,13 +340,14 @@ export function makeChapters() {
       s.lights.forEach((l) => { l.off = true; });
       G.audio.thud();
       await G.fade(1, 200);
-      // in the dark the table knocks: two groups, a pause, two groups... Thomas counts them blind
+      // in the dark the table knocks again, the same six groups, louder: this time he knows the word
       for (const [r, c] of RAPS) {
-        for (let i = 0; i < r; i++) { G.audio.rap(); await G.wait(window.FAST ? 0 : 170); }
-        await G.wait(window.FAST ? 0 : 380);
-        for (let i = 0; i < c; i++) { G.audio.rap(); await G.wait(window.FAST ? 0 : 170); }
-        await G.wait(window.FAST ? 0 : 900);
+        for (let i = 0; i < r; i++) { G.audio.rap(); await G.wait(window.FAST ? 0 : 140); }
+        await G.wait(window.FAST ? 0 : 300);
+        for (let i = 0; i < c; i++) { G.audio.rap(); await G.wait(window.FAST ? 0 : 140); }
+        await G.wait(window.FAST ? 0 : 600);
       }
+      if (G.hasClue('hospes')) await G.think('HOSPES. El que entra en una casa. Y el que lo recibe.');
       await G.wait(1200);
       G.removeActor('Viuda'); G.removeActor('Joven');
       G.player.pose = null;
@@ -363,19 +364,48 @@ export function makeChapters() {
       G.flag('seance_done', true);
       G.cinema(false);
       await G.think('Había alguien detrás de mí. O lo vio Wexley. O quiso que yo lo creyera.');
-      G.objective('Descifrar los golpes de la mesa. En la pared había una tabla de letras.');
+      G.objective(G.hasClue('hospes') ? 'Salir a Fournier Street.' : 'Leer los golpes de la mesa. En la pared había una tabla de letras.');
     },
 
-    // the raps, read against the board on the wall: row, then column
+    // Before anything begins, the table knocks by itself: Wexley has not started, and does not like it.
+    // Thomas writes the knocks down. Reading them is the way into the séance, not a chore after it.
+    async tableKnocks(G) {
+      G.flag('raps_heard', true);
+      const w = G.actor('Wexley');
+      G.audio.setBeds({ room: 0.3, drone: 0.25 }, 2);
+      for (const [r, c] of RAPS) {
+        for (let i = 0; i < r; i++) { G.audio.rap(); await G.wait(170); }
+        await G.wait(380);
+        for (let i = 0; i < c; i++) { G.audio.rap(); await G.wait(170); }
+        await G.wait(700);
+      }
+      if (w) { w.talking = true; await G.say('Madame Wexley', 'Yo no he empezado. ¿Lo ha oído usted también?'); w.talking = false; }
+      await G.think('Seis grupos de golpes, dos a dos. Los apunto.');
+      G.objective(G.flag('knock_board') ? 'Leer los golpes con la tabla de letras de la pared (en la mesa).' : 'Leer los golpes. En la pared, bajo la carta astral, hay algo con letras.');
+    },
+
+    // the raps, read against the board on the wall: row, then column. Misses make the page say
+    // more; after three, Wexley can read the first letters aloud.
     async raps(G) {
-      const ok = await G.knocks({ raps: RAPS, answer: 'HOSPES', board: G.flag('knock_board'), rows: ['ABCDE', 'FGHIJ', 'LMNOP', 'QRSTU', 'VWXYZ'] });
-      if (!ok) { await G.think(G.flag('knock_board') ? 'Más tarde. Fila y columna; tiene que salir algo.' : 'Sin la tabla de la pared no hay manera de leerlos.'); return; }
+      const ev = ((G.state.investigation ??= {}).evaluations ??= {});
+      const help = (ev.raps && ev.raps.misses) || 0;
+      const helper = async () => {
+        const w = G.actor('Wexley');
+        if (w) { w.talking = true; await G.say('Madame Wexley', 'Fila y columna. Me lo enseñó un preso de Odesa. Hache. O. Ese. Lo demás, léalo usted.'); w.talking = false; }
+        ev.raps = { ...(ev.raps || {}), helped: true };
+        return 'HOS';
+      };
+      const res = await G.knocks({ raps: RAPS, answer: 'HOSPES', board: G.flag('knock_board'), rows: ['ABCDE', 'FGHIJ', 'LMNOP', 'QRSTU', 'VWXYZ'], help, helper });
+      ev.raps = { ...(ev.raps || {}), misses: help + (res.misses || 0) };
+      if (!res.ok) { await G.think(G.flag('knock_board') ? 'Más tarde. Fila y columna; tiene que salir algo.' : 'Sin la tabla de la pared no hay manera de leerlos.'); return; }
       G.clue('hospes');
-      G.mad(0.3); G.audio.whisper(1.6, 0.12);
-      await G.think('HOSPES. El que entra en una casa. Y el que lo recibe.');
-      await G.think(G.two('No pienso creer a una médium por un puñado de golpes.', 'No estaba dando el nombre de un muerto.'));
+      G.flag('hospes_decoded', true);
+      G.flag('seance_prepared', true);
+      G.mad(0.2); G.audio.whisper(1.2, 0.08);
+      await G.think('HOSPES. Latín. El huésped.');
       G.mad(0);
-      G.objective('Salir a Fournier Street.');
+      if (!G.flag('seance_done')) G.objective(G.state.flags.comb_custody === 'pike' ? 'Sentarse a la mesa de la sesión.' : 'Poner el peine de Annie sobre la mesa.');
+      else G.objective('Salir a Fournier Street.');
     },
 
     async leaveSeance(G) {

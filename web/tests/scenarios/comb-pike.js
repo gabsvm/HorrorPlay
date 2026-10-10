@@ -26,6 +26,8 @@ export async function run(opts) {
     expectScene('seance');
     need(/Sentarse/.test(game.state.objective || ''), `El objetivo de la sesión no debería pedir el peine: ${game.state.objective}`);
     await act('wexley');
+    await act('chart'); await act('table'); await act('table');   // the knocks, read with the board
+    need(game.state.clues.includes('hospes'), 'Los golpes leídos antes de la sesión');
     await act('table');
     need(flag('seance_done'), 'La sesión debería empezar sin el peine');
     need(!flag('comb_on_table'), 'No hay peine sobre la mesa');

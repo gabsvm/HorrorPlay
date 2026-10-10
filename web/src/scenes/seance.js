@@ -163,9 +163,11 @@ export default {
     }
   },
 
-  hint: (G) => (G.flag('seance_done') && !G.hasClue('hospes')
-    ? (G.flag('knock_board') ? 'Cada letra son dos grupos de golpes: el primero es la fila de la tabla, el segundo la columna. Dos golpes y tres golpes: fila 2, columna 3.' : 'En la pared, bajo la carta astral, hay una tabla de letras. Sin ella los golpes no se pueden leer.')
-    : null),
+  hint: (G) => {
+    if (G.hasClue('hospes')) return null;
+    if (!G.flag('raps_heard')) return 'La mesa: antes de que Wexley empiece, conviene acercarse a ella y escuchar.';
+    return G.flag('knock_board') ? 'Cada letra son dos grupos de golpes: el primero es la fila de la tabla, el segundo la columna. Dos golpes y tres golpes: fila 2, columna 3.' : 'En la pared, bajo la carta astral, hay una tabla de letras. Sin ella los golpes no se pueden leer.';
+  },
 
   async enter(G) {
     this.G = G;
@@ -199,14 +201,22 @@ export default {
     {
       id: 'table', name: 'Mesa de la sesión', rect: [TABLE_X - 160, GROUND - 180, 320, 120], walk: TABLE_X - 230, face: 1,
       act: async (G) => {
-        if (G.flag('seance_done') && !G.hasClue('hospes')) { await G.game.chapterHooks.raps(G); return; }
-        if (G.flag('seance_done')) return;
+        // first the table speaks by itself; then its knocks can be read; then the séance
+        if (!G.flag('raps_heard') && !G.flag('seance_done')) { await G.game.chapterHooks.tableKnocks(G); return; }
+        if (!G.hasClue('hospes')) { await G.game.chapterHooks.raps(G); return; }
+        if (G.flag('seance_done')) { G.audio.tick(); return; }
         // Pike has the comb: sitting down is enough, Annie is described aloud instead
         if (G.state.flags.comb_custody === 'pike') { await G.game.chapterHooks.seance(G); return; }
         G.audio.tick();   // the empty place at the table, waiting for the comb: no words
       },
       use: async (G, item) => {
         if (item !== 'peine' || G.flag('seance_done')) return false;
+        if (!G.hasClue('hospes')) {
+          const w = G.actor('Wexley'); w.talking = true;
+          await G.say('Madame Wexley', 'Todavía no. La mesa ya está diciendo algo; escúchela primero.');
+          w.talking = false;
+          return true;
+        }
         await G.game.chapterHooks.seance(G);
         return true;
       },
@@ -271,6 +281,7 @@ export default {
         await G.think('«T. A.» y mi fecha. ¿Quién le contó eso?');
         if (!G.flag('knock_board')) {
           G.flag('knock_board', true);
+          if (G.flag('raps_heard') && !G.hasClue('hospes')) G.objective('Leer los golpes con la tabla de letras de la pared (en la mesa).');
           await G.think('Dos grupos de golpes. Fila y columna. Como en las cárceles del zar.');
         }
         G.sanity(-3);
@@ -280,7 +291,6 @@ export default {
       id: 'door', name: 'Salir a Fournier Street', cursor: 'exit', rect: [180, GROUND - 280, 140, 280], walk: 250, face: -1,
       act: async (G) => {
         if (!G.flag('seance_done')) { await G.think('Todavía no sé quién conoce a Nat.'); return; }
-        if (!G.hasClue('hospes')) { await G.think('Sin la tabla no puedo descifrar los golpes.'); return; }
         await G.game.chapterHooks.leaveSeance(G);
       },
     },
