@@ -1,6 +1,7 @@
 // Every automated check, one after another, with a summary at the end.
 //   node web/tools/test-all.mjs [--quick]     (--quick skips the long playthroughs)
 import { spawnSync } from 'node:child_process';
+import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const web = fileURLToPath(new URL('..', import.meta.url));
@@ -9,13 +10,13 @@ const runs = [
   ['unit', ['tools/unit.mjs']],
   ['smoke', ['tools/smoke.mjs']],
   ['audio', ['tools/audio-smoke.mjs']],
-  ['integrity', ['tools/walk.mjs', 'integrity']],
-  ['compat', ['tools/walk.mjs', 'compat']],
+  // every scenario in tests/scenarios (the short ones; --quick runs only these)
+  ...readdirSync(new URL('../tests/scenarios/', import.meta.url)).filter((f) => f.endsWith('.js') && f !== 'harness.js')
+    .map((f) => f.replace(/\.js$/, '')).sort().map((s) => [`scenario ${s}`, ['tools/walk.mjs', s]]),
   ...(quick ? [] : [
     ['walk', ['tools/walk.mjs']],
     ['walk second', ['tools/walk.mjs', 'second']],
     ['walk alt', ['tools/walk.mjs', 'alt']],
-    ...(process.env.SCENARIOS || '').split(',').filter(Boolean).map((s) => [`walk ${s}`, ['tools/walk.mjs', s]]),
   ]),
 ];
 const results = [];

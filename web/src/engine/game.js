@@ -12,16 +12,21 @@ import { paintBody, paintVision } from '../art/bodies.js';
 import { UI } from './ui.js';
 import { audio } from './audio.js';
 import { prefs } from './prefs.js';
+import { normalizeState, currentGate, canEnterFinale } from '../story/progression.js';
+import { statuses } from '../story/theories.js';
 
 const wait = (ms) => new Promise((r) => setTimeout(r, window.FAST ? 0 : ms));
 const SAVE_KEY = 'elhuesped.save.v1';
 
 export function freshState() {
-  return {
+  return normalizeState({
     chapter: null, scene: null, flags: {}, items: [], clues: [], deductions: [], profile: [],
     sanity: 100, date: '', clock: '',
-  };
+  });
 }
+
+// in development (localhost or ?dev) a script that fails says so on screen; players never see it
+const DEV = typeof location !== 'undefined' && (/[?&]dev/.test(location.search || '') || /^(localhost|127\.0\.0\.1)$/.test(location.hostname || ''));
 
 export class Game {
   constructor({ scenes, chapters, items, clues, deductions }) {
@@ -269,7 +274,12 @@ export class Game {
     this.running++;
     this.ui.busy(true);
     this.ui.hover(null);
-    try { await fn(this.G); } catch (err) { console.error(err); }
+    try { await fn(this.G); } catch (err) {
+      console.error(err);
+      (this.scriptErrors ||= []).push({ at: this.state.scene, chapter: this.state.chapter, message: String(err && err.message || err) });
+      if (this.scriptErrors.length > 20) this.scriptErrors.shift();
+      if (DEV) this.ui.toast(`Error de guion: ${err && err.message}`, 6000);
+    }
     finally {
       this.running--;
       if (!this.running) { this.ui.busy(false); this.ui.hideDialogue(); if (!this.zoomTarget?.hold) this.zoomTarget = null; this.autosave(); }
@@ -303,13 +313,26 @@ export class Game {
     const ready = this.deductions.find((d) => !st.deductions.includes(d.id) && (!d.final || st.flags.awake)
       && st.clues.includes(d.a) && st.clues.includes(d.b));
     const gist = (id) => { const c = this.clues[id], t = typeof c.text === 'function' ? c.text(st) : c.text; return `«${t.split(/[.:;]/)[0]}»`; };
-    if (ready && (/cuaderno/i.test(st.objective || '') || again)) {
-      return again ? `Junta ${gist(ready.a)} con ${gist(ready.b)}.` : 'Hay dos pistas en el cuaderno que encajan y que todavía no he relacionado. (Vuelve a preguntar si no las encuentras.)';
+    // what the place still asks for before the story moves on (story/progression.js)
+    const gate = currentGate(st);
+    const lack = gate && !gate.ok ? gate.missing[0] : null;
+    const needsNotebook = lack && /cuaderno|relacionar/.test(lack);
+    if (ready && (needsNotebook || /cuaderno/i.test(st.objective || '') || again)) {
+      return again ? `Junta ${gist(ready.a)} con ${gist(ready.b)}.` : 'Hay dos pruebas en el cuaderno que encajan y que todavía no he relacionado. (Vuelve a preguntar si no las encuentras.)';
     }
-    if (!again) return `${st.objective || 'Mirar alrededor.'} (Vuelve a preguntar si sigues atascado.)`;
+    if (!again) {
+      const base = st.objective || 'Mirar alrededor.';
+      return lack ? `${base} Antes de seguir me falta ${lack}. (Vuelve a preguntar si sigues atascado.)` : `${base} (Vuelve a preguntar si sigues atascado.)`;
+    }
     this.ui.closeNotebook();
     this.reveal();
-    return (this.scene?.hint && this.scene.hint(G)) || `${st.objective || ''} Todo lo que se puede tocar queda marcado un momento.`;
+    return (this.scene?.hint && this.scene.hint(G)) || `${lack ? `Me falta ${lack}. ` : ''}${st.objective || ''} Todo lo que se puede tocar queda marcado un momento.`;
+  }
+
+  // keep the theories' statuses in the save, so later scenes (and old saves) can read them
+  updateInvestigation() {
+    normalizeState(this.state);
+    this.state.investigation.hypotheses = statuses(this.state);
   }
 
   clueExhausted(id) {
@@ -324,7 +347,8 @@ export class Game {
     if (d.profile && !this.state.profile.includes(d.profile)) this.state.profile.push(d.profile);
     if (d.flag) this.state.flags[d.flag] = true;
     if (d.denial) { this.state.sanity = Math.max(0, this.state.sanity - 6); this.ui.setSanity(this.state.sanity); audio.heartbeat(0.7); }
-    if (d.final && this.state.deductions.filter((x) => x.startsWith('f_')).length >= 3) { this.state.objective = 'Ir al agua.'; this.ui.setObjective(this.state.objective); }
+    if (d.final && canEnterFinale(this.state).ok) { this.state.objective = 'Ir al agua.'; this.ui.setObjective(this.state.objective); }
+    this.updateInvestigation();
     if (d.final) { audio.whisper(1.4, 0.1); this.state.sanity = Math.max(0, this.state.sanity - 4); this.ui.setSanity(this.state.sanity); }
     this.pendingDeduction = d;
     return d;
@@ -626,7 +650,7 @@ export class Game {
   }
 
   async resume(r) {
-    this.state = JSON.parse(JSON.stringify(r.state));
+    this.state = normalizeState(JSON.parse(JSON.stringify(r.state)));
     this.selectedItem = null;
     this.madTarget = 0;
     this.r.fx.desat = 0; this.r.fx.mad = 0;
@@ -658,7 +682,7 @@ export class Game {
   }
 
   async startChapter(id, snapshot) {
-    this.state = snapshot ? JSON.parse(JSON.stringify(snapshot)) : this.state;
+    this.state = normalizeState(snapshot ? JSON.parse(JSON.stringify(snapshot)) : this.state);
     this.state.chapter = id;
     this.selectedItem = null;
     this.madTarget = 0;
@@ -791,6 +815,7 @@ export class Game {
       clue: (id) => {
         if (game.state.clues.includes(id)) return false;
         game.state.clues.push(id);
+        game.updateInvestigation();
         const pl = game.player;
         if (!window.FAST && pl.visible && !pl.pose && !pl.moving) {
           pl.pose = 'write'; audio.pen();

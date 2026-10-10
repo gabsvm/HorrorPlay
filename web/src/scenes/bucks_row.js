@@ -3,6 +3,7 @@ import * as A from '../art/paint.js';
 import { nightBackdrop, facade, warehouse } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
+import { canFinishC1 } from '../story/progression.js';
 import { Smoke, Drip, Rat, Cat, Crow, Moths, Paper, Ripples } from '../engine/life.js';
 import { drawCorpse, groundLantern } from './corpse.js';
 
@@ -154,9 +155,9 @@ export default {
   },
 
   async onDeduce(G) {
-    if (G.deduced('d_brennan') && G.deduced('d_bisturi') && !G.flag('c1_done')) {
+    if (canFinishC1(G.state).ok && !G.flag('c1_done')) {
       G.objective('Volver al desolladero de Winthrop Street.');
-      await G.think('Brennan tiene que explicar ese cuchillo. Y el hospital, ese bisturí.');
+      await G.think(G.deduced('d_brennan') ? 'Brennan tiene que explicar ese cuchillo. Y el hospital, ese bisturí.' : 'Ese bisturí salió de un hospital. Alguien tiene que explicarlo.');
     }
   },
 

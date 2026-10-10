@@ -6,6 +6,7 @@ import { P } from '../art/palette.js';
 import { drawProp, hasProp } from '../art/models.js';
 import { Actor } from '../engine/actor.js';
 import { Smoke, Drip, Rat, Crow, Moths, Ripples } from '../engine/life.js';
+import { canFinishC1 } from '../story/progression.js';
 
 const WIDTH = 2200, GROUND = 628;
 const isMob = (G) => G.flag('mob');
@@ -261,7 +262,7 @@ export default {
     this.G = G;
     if (isMob(G)) { await G.game.chapterHooks.mobScene(G); return; }
     if (G.flag('kn_intro')) {
-      if (G.deduced('d_brennan') && G.deduced('d_bisturi') && !G.flag('c1_done')) { G.flag('c1_done', true); await G.game.chapterHooks.endC1(G); }
+      if (canFinishC1(G.state).ok && !G.flag('c1_done')) { G.flag('c1_done', true); await G.game.chapterHooks.endC1(G); }
       return;
     }
     G.flag('kn_intro', true);
@@ -373,7 +374,7 @@ export default {
   ],
 
   async onDeduce(G) {
-    if (!isMob(G) && G.deduced('d_brennan') && G.deduced('d_bisturi') && !G.flag('c1_done')) {
+    if (!isMob(G) && canFinishC1(G.state).ok && !G.flag('c1_done')) {
       G.flag('c1_done', true);
       await G.game.chapterHooks.endC1(G);
     }

@@ -3,6 +3,7 @@ import { audio } from './audio.js';
 import { prefs } from './prefs.js';
 import { pixelize } from '../art/pixel.js';
 import { Actor } from './actor.js';
+import { evaluate as theories } from '../story/theories.js';
 
 const $ = (id) => document.getElementById(id);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -14,7 +15,7 @@ export class UI {
       dlg: $('dialogue'), dlgName: $('dlg-name'), dlgText: $('dlg-text'), dlgNext: $('dlg-next'),
       choices: $('choices'), toast: $('toast'), hover: $('hover-label'),
       inv: $('inventory'), nb: $('notebook'), clueList: $('clue-list'), dedList: $('deduction-list'),
-      profList: $('profile-list'), profTitle: $('profile-title'), nbFeedback: $('nb-feedback'),
+      profList: $('profile-list'), profTitle: $('profile-title'), nbFeedback: $('nb-feedback'), theoryList: $('theory-list'),
       doc: $('document'), docBody: $('doc-body'), card: $('card'),
       nameEntry: $('name-entry'), namePrompt: $('name-prompt'), nameInput: $('name-input'), nameOk: $('name-ok'),
       menu: $('menu'), menuButtons: $('menu-buttons'),
@@ -28,6 +29,8 @@ export class UI {
     });
     $('doc-close').addEventListener('click', () => this._docClose && this._docClose());
     $('nb-close').addEventListener('click', () => this.closeNotebook());
+    // the right-hand page: conclusions, the open questions, the profile
+    for (const b of document.querySelectorAll ? document.querySelectorAll('#nb-tabs button') : []) b.addEventListener('click', () => { audio.paper?.(); this.notebookTab(b.dataset.tab); });
     $('nb-hint').addEventListener('click', () => this.hint());
     this.selectedClues = [];
     this.el.inv.addEventListener('pointerenter', () => { this.invHover = true; });
@@ -387,6 +390,7 @@ export class UI {
     this.game = game;
     this.selectedClues = [];
     this.el.nbFeedback.textContent = '';
+    this.notebookTab(this._tab || 'ded');
     game.state.unread = 0;
     this.setBadge(0);
     this.renderNotebook();
@@ -436,9 +440,29 @@ export class UI {
     });
     this._inkFrom = null;
     if (!st.deductions.length) dedList.innerHTML = '<li>Ninguna todavía.</li>';
+    // the open questions: each explanation with what supports it and what does not
+    const ths = theories(st);
+    const tl = this.el.theoryList;
+    if (tl) {
+      tl.innerHTML = '';
+      for (const t of ths) {
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="q">${t.q}</span>` + t.hyps.map((h) => `<span class="h"><span class="st ${h.status.replace(' ', '-')}">${h.status}</span>${h.text}</span>`
+          + (h.for.length ? `<span class="ev">A favor: ${h.for.join('; ')}.</span>` : '')
+          + (h.against.length ? `<span class="ev">En contra: ${h.against.join('; ')}.</span>` : '')).join('');
+        tl.appendChild(li);
+      }
+      if (!ths.length) tl.innerHTML = '<li>Todavía no hay preguntas que sostener.</li>';
+    }
     profList.innerHTML = '';
     profTitle.style.display = st.profile.length ? '' : 'none';
     for (const p of st.profile) { const li = document.createElement('li'); li.innerHTML = awake ? `${p} <span class="truth">— T. A.</span>` : p; profList.appendChild(li); }
+  }
+
+  notebookTab(tab) {
+    this._tab = tab;
+    for (const b of document.querySelectorAll ? document.querySelectorAll('#nb-tabs button') : []) b.classList.toggle('on', b.dataset.tab === tab);
+    for (const d of document.querySelectorAll ? document.querySelectorAll('#notebook .tab') : []) d.classList.toggle('hidden', d.dataset.tab !== tab);
   }
 
   // "What now?": first a nudge, then (asked again with nothing changed) the answer

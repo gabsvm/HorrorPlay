@@ -5,6 +5,7 @@
 // second reading he never could.
 import { Actor } from '../engine/actor.js';
 import { playIntro } from './intro.js';
+import { canFinishC1, canEnterFinale } from './progression.js';
 
 const LOOKS = {
   child: { hat: 'cap', coat: '#3a342c', coatLen: 0.62, flare: 1.05, build: 0.9, speed: 120, lantern: false, collarUp: false, patches: true, scarf: '#5a2a22', sideburns: false, hair: '#2a1e16', gloves: null, stubble: null },
@@ -15,7 +16,6 @@ function look(G, k) { Object.assign(G.player, LOOKS[k]); }
 // the séance raps, as [row, column] knocks on the board under the star chart: H O S P E S
 const RAPS = [[2, 3], [3, 4], [4, 3], [3, 5], [1, 5], [4, 3]];
 
-const finals = (G) => G.state.deductions.filter((d) => d.startsWith('f_')).length;
 
 // The clock jumps. Nothing happens on screen; that is the point.
 async function lostTime(G, from, to, { date = null } = {}) {
@@ -194,8 +194,8 @@ export function makeChapters() {
 
     // what the player still needs to close chapter one
     c1Objective(G) {
-      if (!G.hasClue('brennan_zurdo')) G.objective('Fijarse en cómo trabaja Brennan. Luego, en el cuaderno, relacionarlo con lo que dijo el forense.');
-      else if (!G.deduced('d_brennan') || !G.deduced('d_bisturi')) G.objective('En el cuaderno: relacionar a Brennan y el bisturí con lo que dijo el forense.');
+      const gate = canFinishC1(G.state);
+      if (!gate.ok) G.objective(`${gate.missing[0].replace(/^./, (m) => m.toUpperCase())}.`);
     },
 
     // Buck's Row: the night's beats, and the only ten minutes when no one could see the gateway
@@ -633,13 +633,13 @@ export function makeChapters() {
 
     async outfall1888(G) {
       G.flag('ditch_glow', true);
-      if (finals(G) < 3) { await G.think('Todavía no. Antes tengo que estar seguro. El cuaderno.'); return; }
+      if (!canEnterFinale(G.state).ok) { await G.think('Todavía no. Antes tengo que estar seguro. El cuaderno.'); return; }
       G.zoom(1.22, G.player.x, G.scene.groundY - G.player.h * 0.7, 0.35);
       await G.voice('Ven al agua, Tommy.');
     },
 
     async finaleWater(G) {
-      if (finals(G) < 3) { await G.think('Primero comprobaré lo que sé. No voy a contestar a ciegas.'); return; }
+      if (!canEnterFinale(G.state).ok) { await G.think('Primero comprobaré lo que sé. No voy a contestar a ciegas.'); return; }
       G.flag('ditch_glow', true); G.flag('water_light', true);
       G.cinema(true);
       G.audio.setBeds({ river: 0.5, drone: 0.7, heart: 0.5 }, 4);

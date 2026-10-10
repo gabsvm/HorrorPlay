@@ -51,16 +51,16 @@
       <div class="book">
         <div class="page left">
           <div id="objective"></div>
-          <h2>Pistas</h2>
-          <p class="hint">Selecciona dos pistas para relacionarlas.</p>
+          <h2>Pruebas</h2>
+          <p class="hint">Selecciona dos pruebas para relacionarlas.</p>
           <ul id="clue-list"></ul>
         </div>
         <div class="page right">
-          <h2>Deducciones</h2>
-          <ul id="deduction-list"></ul>
-          <h2 id="profile-title">Perfil del asesino</h2>
-          <ul id="profile-list"></ul>
+          <div id="nb-tabs"><button data-tab="ded" class="on">Conclusiones</button><button data-tab="theory">Teorías</button><button data-tab="profile">Perfil</button></div>
           <div id="nb-feedback"></div>
+          <div class="tab" data-tab="ded"><ul id="deduction-list"></ul></div>
+          <div class="tab hidden" data-tab="theory"><p class="hint">Lo que las pruebas sostienen y lo que no. No hace falta elegir una para seguir.</p><ul id="theory-list"></ul></div>
+          <div class="tab hidden" data-tab="profile"><h2 id="profile-title">Perfil del asesino</h2><ul id="profile-list"></ul></div>
         </div>
         <button id="nb-hint" class="close hint-btn">¿Qué hago ahora?</button>
         <button id="nb-close" class="close">Cerrar</button>

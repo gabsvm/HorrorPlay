@@ -18,7 +18,7 @@ node web/tools/unit.mjs                # solo la lógica pura (web/tests/unit/)
 | Fase | Estado | Qué se hizo | Commit | Pruebas | Pendiente | Observación manual |
 |---|---|---|---|---|---|---|
 | 0 · Baseline | CODE_COMPLETE | Línea base registrada; harness de escenarios con elecciones por texto; instantáneas de guardado por capítulo (ambas lecturas) y un guardado anterior a la V3; pruebas de compatibilidad, integridad y unitarias; `test-all.mjs` | ver historial | ver abajo | — | Sin comprobación visual (la fase no cambia nada visible) |
-| 1 · Progresión y teorías | TODO | | | | | |
+| 1 · Progresión y teorías | CODE_COMPLETE | `story/progression.js` (condiciones puras `canFinishC1`, `canLeaveHanbury`, `canStartSeance`, `canLeaveMitre`, `canLeaveRoomC3b`, `canEnterFinale` con fuentes independientes, `currentGate`, `normalizeState`); `story/theories.js` (4 preguntas del caso con hipótesis y estado derivado de las pruebas); cuaderno con pestañas Conclusiones / Teorías / Perfil; ayuda en dos niveles que dice qué falta; estados guardados en `state.investigation`; errores de guion visibles solo en desarrollo | ver historial | unit 21/21, notebook, compat, walks | El cierre explícito del capítulo I llega en la Fase 3 (por ahora sigue siendo automático, pero ya no exige `d_brennan`) | Navegador: pestañas y ayuda comprobadas en Hanbury con un estado preparado |
 | 2 · Feedback y ritmo | TODO | | | | | |
 | 3 · Capítulo I | TODO | | | | | |
 | 4 · Hanbury y peine | TODO | | | | | |
@@ -86,3 +86,19 @@ PASS  walk                         3.5s
 PASS  walk second                  3.4s
 PASS  walk alt                     0.6s
 ```
+
+### Fase 1
+
+```
+PASS  unit (21 pruebas)            0.1s
+PASS  smoke                        2.9s
+PASS  audio                        0.1s
+PASS  scenario compat              0.4s
+PASS  scenario integrity           0.3s
+PASS  scenario notebook            0.3s
+PASS  walk                         3.5s
+PASS  walk second                  3.5s
+PASS  walk alt                     0.7s
+```
+
+Navegador (localhost:5317, Hanbury con un estado preparado): las pestañas Conclusiones / Teorías / Perfil cambian; la pestaña Teorías muestra dos preguntas con estados `plausible`, `sin evaluar` y `no demostrada` y sus pruebas; «¿Qué hago ahora?» responde con el objetivo y «me falta mirar lo que hay junto a la valla, a los pies de Annie». Sin errores en consola.
