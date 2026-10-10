@@ -21,7 +21,7 @@ node web/tools/unit.mjs                # solo la lógica pura (web/tests/unit/)
 | 1 · Progresión y teorías | CODE_COMPLETE | `story/progression.js` (condiciones puras `canFinishC1`, `canLeaveHanbury`, `canStartSeance`, `canLeaveMitre`, `canLeaveRoomC3b`, `canEnterFinale` con fuentes independientes, `currentGate`, `normalizeState`); `story/theories.js` (4 preguntas del caso con hipótesis y estado derivado de las pruebas); cuaderno con pestañas Conclusiones / Teorías / Perfil; ayuda en dos niveles que dice qué falta; estados guardados en `state.investigation`; errores de guion visibles solo en desarrollo | ver historial | unit 21/21, notebook, compat, walks | El cierre explícito del capítulo I llega en la Fase 3 (por ahora sigue siendo automático, pero ya no exige `d_brennan`) | Navegador: pestañas y ayuda comprobadas en Hanbury con un estado preparado |
 | 2 · Feedback y ritmo | CODE_COMPLETE | Ninguna interacción muda (inventario abajo); `again` para la segunda mirada corta; «Volver a mirar» en lo ya examinado; respuestas variadas por familia al usar mal un objeto; salidas bloqueadas que dicen lo que falta (Hanbury, Mitre, cuarto en c3); aviso al cerrar un primer plano con detalles clave sin ver; tarjetas que se cortan con clic/toque/tecla; opción «Lo ya leído: Al instante»; protección de 280 ms contra elegir con el clic que terminó la línea; opción «Movimiento: Reducido» (respeta `prefers-reduced-motion`) | ver historial | feedback + suite | Duraciones de tarjetas y esperas se revisan en la Fase 10 | Navegador: tarjeta cortada con clic (1,8 s en vez de 7), elección protegida, menú de opciones |
 | 3 · Capítulo I | CODE_COMPLETE | La noche se cierra cuando el jugador lo decide, con Pike en Buck's Row («Cerramos por esta noche, Pike.») o con Brennan en el desolladero («Esto es todo por esta noche.»), si `canFinishC1` se cumple; ninguna deducción ni entrada en una calle cambia de capítulo sola; al cerrar se registra la postura sobre Brennan (`brennan_stance`: vigilarlo / nada contra él / no lo sé) y la ruta en `investigation.routes.c1`; Pike responde a cada postura; `endC1` se pone en escena donde se cierra; la hoja de rondas, tras dos fallos, vuelve a señalar las dos horas que importan | ver historial | c1-minimal, walk (Brennan, sospecha), walk alt (Pike, sin sospecha) | La turba usa la postura en la Fase 4 | Navegador: el menú de Pike ofrece «Cerramos por esta noche, Pike.» con el mínimo reunido (el resto del flujo, en las partidas automáticas: el panel oculto pausa las animaciones) |
-| 4 · Hanbury y peine | TODO | | | | | |
+| 4 · Hanbury y peine | CODE_COMPLETE | «Dárselo a Pike» le entrega el peine de verdad (`comb_custody: 'pike'`, sin objeto en el inventario, Pike lo anota); «Guardármelo» lo da a Thomas (`'thomas'`); los guardados viejos con el peine quedan como `'thomas'`; la salida exige una decisión, no el objeto; la sesión empieza sin peine si lo tiene Pike (Wexley lo sabe, Thomas lo describe en voz alta); una línea verificable sobre Annie (ganchillo y flores, enferma); acusar en la turba solo si hay razón (`d_delantal` o postura «vigilarlo»); si acusa sabiendo de quién era el delantal, Thomas lo recuerda; Wren responde a lo que Thomas hizo (agradece la escolta, reprocha el resto) y su respuesta se guarda (`wren_mob_reply`) | ver historial | comb-pike, mob, walk, walk alt | — | Sin comprobación visual de esta fase |
 | 5 · Sesión | TODO | | | | | |
 | 6 · Capítulo III | TODO | | | | | |
 | 7 · Capítulo IV | TODO | | | | | |
@@ -160,4 +160,25 @@ PASS  scenario notebook            0.3s
 PASS  walk                         3.4s
 PASS  walk second                  3.4s
 PASS  walk alt                     0.7s
+```
+
+### Fase 4
+
+- `comb-pike`: entrega a Pike, orden distinto (casera, peine, médico, delantal), reanudación sin duplicar ni recuperar el peine, sesión sin peine.
+- `mob`: los tres desenlaces desde la misma noche; acusar solo con razón; Wren no culpa la ruta `protected`; respuesta guardada.
+
+```
+PASS  unit                         0.1s
+PASS  smoke                        2.9s
+PASS  audio                        0.1s
+PASS  scenario c1-minimal          0.6s
+PASS  scenario comb-pike           1.2s
+PASS  scenario compat              0.4s
+PASS  scenario feedback            0.6s
+PASS  scenario integrity           0.3s
+PASS  scenario mob                 1.6s
+PASS  scenario notebook            0.3s
+PASS  walk                         3.6s
+PASS  walk second                  3.4s
+PASS  walk alt                     0.6s
 ```

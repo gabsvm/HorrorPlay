@@ -5,6 +5,12 @@ import { facade } from '../art/build.js';
 import { P, shade } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
 import { canLeaveHanbury } from '../story/progression.js';
+
+// what the yard still asks before the passage, in the order it is natural to get it
+function hanburyObjective(G) {
+  const gate = canLeaveHanbury(G.state);
+  G.objective(gate.ok ? 'Salir por el pasillo a Hanbury Street.' : `${gate.missing.join('; ').replace(/^./, (m) => m.toUpperCase())}. Luego salir por el pasillo.`);
+}
 import { rng } from '../art/noise.js';
 import { Smoke, Drip, Crow, Cat } from '../engine/life.js';
 import { drawCorpse } from './corpse.js';
@@ -163,6 +169,7 @@ export default {
     await G.walk(560);
     const pike = G.actor('Pike'); pike.facing = -1;
     await G.say('Pike', 'Annie Chapman. Los de la casa la llamaban Dark Annie.');
+    await G.say('Pike', 'Hacía labores de ganchillo y vendía flores, cuando la salud la dejaba.');
     await G.say('Pike', 'La encontró Davis, antes de las seis. Phillips espera que la vea antes de moverla.');
     G.objective('Examinar el cuerpo y el patio. Hablar con Pike, con el médico y con la casera.');
   },
@@ -217,7 +224,7 @@ export default {
           }
           await G.say('Greaves', '¿Sigues tomando láudano? Si es así, no lo mezcles con ginebra.');
           G.clue('greaves_sabe');
-          if (G.hasClue('delantal')) G.objective(G.flag('peine_taken') ? 'Salir por el pasillo a Hanbury Street.' : 'Mirar lo que hay junto a la valla, a los pies de Annie. Luego salir por el pasillo.');
+          hanburyObjective(G);
           g.talking = false;
           await G.think('Nunca le he contado a nadie lo del láudano. ¿Cómo lo sabe?');
           G.sanity(-3);
@@ -248,7 +255,7 @@ export default {
       act: async (G) => {
         G.player.pose = 'kneel';
         G.clue('delantal');
-        if (G.flag('greaves_met')) G.objective(G.flag('peine_taken') ? 'Salir por el pasillo a Hanbury Street.' : 'Mirar lo que hay junto a la valla, a los pies de Annie. Luego salir por el pasillo.');
+        hanburyObjective(G);
         G.player.pose = null;
       },
     },
@@ -258,16 +265,21 @@ export default {
         G.player.pose = 'kneel';
         await G.think('Dos púas rotas. Alguien dejó el peine fuera del montón.');
         G.player.pose = null;
+        // what Thomas decides is what happens: Pike gets it, or it goes in his pocket
         const c = await G.choice(['Dárselo a Pike.', 'Guardármelo.']);
+        G.flag('peine_taken', true);
         if (c === 0) {
-          await G.think('¿Cuándo lo guardé?');
-          G.sanity(-4);
+          G.state.flags.comb_custody = 'pike';
+          await G.walk(820);
+          const pike = G.actor('Pike'); pike.facing = -1; pike.talking = true;
+          await G.say('Pike', 'Lo apunto: un peine de bolsillo, dos púas rotas, junto a la valla. Se queda con las pruebas.');
+          pike.talking = false;
         } else {
+          G.state.flags.comb_custody = 'thomas';
+          G.give('peine');
           await G.think('Me lo guardo. Más tarde se lo daré a Pike.');
         }
-        G.flag('peine_taken', true);
-        G.give('peine');
-        if (G.hasClue('delantal') && G.flag('greaves_met')) G.objective('Salir por el pasillo a Hanbury Street.');
+        hanburyObjective(G);
       },
     },
     {

@@ -297,13 +297,20 @@ export function makeChapters() {
 
     async seance(G) {
       const s = G.scene;
-      G.take('peine');
-      G.flag('comb_on_table', true);
+      const onTable = G.has('peine');
+      if (onTable) { G.take('peine'); G.flag('comb_on_table', true); }
       G.cinema(true);
       await G.walk(560);
       G.face(1);
       G.player.pose = 'sit';
       const w = G.actor('Wexley');
+      if (!onTable) {
+        // no comb on the cloth: Wexley asks for her, and Thomas gives what Pike wrote down
+        w.talking = true;
+        await G.say('Madame Wexley', 'No hace falta tocarlo. Descríbamelo.');
+        w.talking = false;
+        await G.say('Ashgrove', 'Un peine de bolsillo. Dos púas rotas. Estaba apartado de sus otras cosas.');
+      }
       w.talking = true;
       await G.say('Madame Wexley', 'Pongan las manos en la mesa. No suelten a nadie.');
       w.talking = false;
@@ -392,12 +399,14 @@ export function makeChapters() {
       // what Thomas does here decides what becomes of Brennan (brennan_outcome), and nothing else:
       // accusing him needs the apron joined to him in the notebook
       const opts = [['Pedir que se disperse la multitud.', 'injured'], ['Ordenar que lo escolten a salvo.', 'protected']];
-      if (G.deduced('d_delantal')) opts.unshift(['Acusar a Brennan.', 'severe']);
+      if (G.deduced('d_delantal') || G.state.flags.brennan_stance === 'suspect') opts.unshift(['Acusar a Brennan.', 'severe']);
       const outcome = opts[await G.choice(opts.map((o) => o[0]))][1];
       G.state.flags.brennan_outcome = outcome;
       if (outcome === 'severe') {
         G.flag('accused', true);
         await G.say('Ashgrove', 'Queda detenido, Brennan. ¡Retírense!');
+        // he knew whose apron it was; the accusation does not become true for that
+        if (G.flag('amelia1')) await G.think('El delantal lo lavó la señora Richardson. Era de su hijo. Lo sabía.');
         // the order is lost under the shouting: the crowd gets there first
       } else if (outcome === 'injured') {
         await G.say('Ashgrove', '¡Basta! ¡Nadie aquí puede demostrar nada!');
@@ -422,9 +431,18 @@ export function makeChapters() {
       const w = G.actor('Wren');
       await w.walkTo(1640);
       w.talking = true;
-      await G.say('Wren', 'Usted sabía que no tenía nada contra él.');
-      w.talking = false;
-      await G.choice(['Lo sospechaba.', '(No decir nada)']);
+      if (outcome === 'protected') {
+        await G.say('Wren', 'Lo ha sacado de ahí. No pensé que un policía lo haría.');
+        w.talking = false;
+        const r = await G.choice(['Era lo que había que hacer.', '(No decir nada)']);
+        G.state.flags.wren_mob_reply = r === 0 ? 'duty' : 'silent';
+      } else {
+        await G.say('Wren', outcome === 'severe' ? 'Usted sabía que no tenía nada contra él.' : 'Lo dijo tarde. Ya le habían dado.');
+        w.talking = false;
+        const r = await G.choice([outcome === 'severe' ? 'Lo sospechaba.' : 'No me dejaron.', '(No decir nada)']);
+        G.state.flags.wren_mob_reply = r === 0 ? 'excuse' : 'silent';
+        if (r === 0) { w.talking = true; await G.say('Wren', outcome === 'severe' ? 'Sospechar no es saber, señor.' : 'Ya.'); w.talking = false; }
+      }
       w.walkTo(2300, { speed: 200 });
       await G.wait(1000);
       await G.fade(1, 1200);

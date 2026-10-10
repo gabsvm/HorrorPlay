@@ -180,10 +180,18 @@ export default {
     w.talking = true;
     if (c === 0) await G.say('Madame Wexley', 'Una voz preguntó por usted. No le dije que viniera, pero está aquí.');
     else await G.say('Madame Wexley', 'Si me la dictaran, cobraría más.');
-    await G.say('Madame Wexley', 'Siéntese. Lo que guarda en el bolsillo: póngalo sobre la mesa.');
-    w.talking = false;
-    await G.think('El peine. No se lo he mostrado.');
-    G.objective('Poner el peine de Annie sobre la mesa.');
+    if (G.state.flags.comb_custody === 'pike') {
+      // the comb is with Pike's evidence: she knows it anyway
+      await G.say('Madame Wexley', 'Siéntese. Esta mañana ha tenido algo de ella en las manos. Todavía lo lleva encima, aunque ya no lo tenga.');
+      w.talking = false;
+      await G.think('El peine. Se lo di a Pike. No se lo he contado a nadie.');
+      G.objective('Sentarse a la mesa de la sesión.');
+    } else {
+      await G.say('Madame Wexley', 'Siéntese. Lo que guarda en el bolsillo: póngalo sobre la mesa.');
+      w.talking = false;
+      await G.think('El peine. No se lo he mostrado.');
+      G.objective('Poner el peine de Annie sobre la mesa.');
+    }
     G.sanity(-3);
   },
 
@@ -193,6 +201,8 @@ export default {
       act: async (G) => {
         if (G.flag('seance_done') && !G.hasClue('hospes')) { await G.game.chapterHooks.raps(G); return; }
         if (G.flag('seance_done')) return;
+        // Pike has the comb: sitting down is enough, Annie is described aloud instead
+        if (G.state.flags.comb_custody === 'pike') { await G.game.chapterHooks.seance(G); return; }
         G.audio.tick();   // the empty place at the table, waiting for the comb: no words
       },
       use: async (G, item) => {
@@ -217,7 +227,7 @@ export default {
           await G.say('Madame Wexley', 'A un policía le cobraría el doble. A usted no le cobraré nada.');
           await G.say('Madame Wexley', 'Aquí tapamos los espejos cuando alguien muere. Yo no lo hice. Creí que era más valiente.');
         } else {
-          await G.say('Madame Wexley', 'El peine. No estoy fingiendo que no lo veo.');
+          await G.say('Madame Wexley', G.state.flags.comb_custody === 'pike' ? 'Siéntese cuando quiera. Ella ya está aquí.' : 'El peine. No estoy fingiendo que no lo veo.');
         }
         w.talking = false;
       },
