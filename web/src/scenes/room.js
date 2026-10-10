@@ -316,7 +316,7 @@ export default {
         if (!G.hasClue('laudano')) { G.clue('laudano'); await G.think('Compré este frasco hace tres días. Ya está casi vacío.'); }
         else if (!G.flag('drank')) {
           const c = await G.choice(['Un trago. Solo uno.', 'Dejarlo.']);
-          if (c === 0) { G.flag('drank', true); G.sanity(+8); G.audio.drip(); }
+          if (c === 0) { G.flag('drank', true); G.sanity(+8); G.audio.drip(); await G.think('Las manos dejan de temblar. Esta noche dormiré más hondo. Demasiado.'); }
         } else await G.think('Ya no queda.');
       },
     },

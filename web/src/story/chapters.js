@@ -6,6 +6,7 @@
 import { Actor } from '../engine/actor.js';
 import { playIntro } from './intro.js';
 import { canFinishC1, canEnterFinale } from './progression.js';
+import { perception, perceptionBand } from './perception.js';
 
 const LOOKS = {
   child: { hat: 'cap', coat: '#3a342c', coatLen: 0.62, flare: 1.05, build: 0.9, speed: 120, lantern: false, collarUp: false, patches: true, scarf: '#5a2a22', sideburns: false, hair: '#2a1e16', gloves: null, stubble: null },
@@ -242,7 +243,7 @@ export function makeChapters() {
           'Entonces Thain la habría visto al alumbrar a las 3:30. No había nada.', '',
           'A las 3:40 ya estaba muerta: Cross la encontró.'][c]);
         // two misses: no more guessing, the two statements that close the window, side by side
-        if (misses === 2) await G.think('Lo que importa son dos horas: cuándo alumbró Thain la calle vacía, y cuándo llegó Cross y la encontró.');
+        if (misses === perception.beatsHelpAfter(G.state.sanity)) await G.think('Lo que importa son dos horas: cuándo alumbró Thain la calle vacía, y cuándo llegó Cross y la encontró.');
       }
       (G.state.investigation ??= {}).evaluations ??= {};
       G.state.investigation.evaluations.beats = { misses };
@@ -388,7 +389,7 @@ export function makeChapters() {
     // more; after three, Wexley can read the first letters aloud.
     async raps(G) {
       const ev = ((G.state.investigation ??= {}).evaluations ??= {});
-      const help = (ev.raps && ev.raps.misses) || 0;
+      const help = Math.max((ev.raps && ev.raps.misses) || 0, perception.knockHelpStart(G.state.sanity));
       const helper = async () => {
         const w = G.actor('Wexley');
         if (w) { w.talking = true; await G.say('Madame Wexley', 'Fila y columna. Me lo enseñó un preso de Odesa. Hache. O. Ese. Lo demás, léalo usted.'); w.talking = false; }
@@ -653,6 +654,7 @@ export function makeChapters() {
       else if (hand === 'inconclusive') await G.say('Greaves', 'No acusaste a nadie por una letra. Siempre fuiste prudente con las pruebas. Con las tuyas también.');
       else if (hand === 'self_recognition') await G.say('Greaves', 'Reconociste tu letra. Yo la reconocí en marzo de 1879.');
       if (G.state.flags.chase_outcome === 'injured') await G.say('Greaves', 'Y esa mano. ¿Quién te la ha cosido?');
+      if (perception.othersNotice(G.state.sanity)) await G.say('Greaves', 'No duermes. Se te ve en los ojos, Thomas.');
       await G.say('Greaves', 'Aquel día te hallé en la sala. No sé lo que ocurrió antes.');
       await G.say('Greaves', 'Pike vino a preguntarme si alguien puede actuar sin recordarlo. Le respondí que sí.');
       gr.talking = false;
@@ -861,10 +863,11 @@ export function makeChapters() {
       G.audio.sting(0.3);
       w.talking = true;
       // her last line answers what he did, and how much of him is left to hear it
-      const last = G.state.sanity < 40 ? 'No era este. Antes tenía otro.'
-        : { surrender: 'Era Thomas. Usted quiso que lo detuvieran. Acuérdese de eso.',
-          warn_wren: 'Era Thomas. Usted le dijo a Pike dónde dormía yo. Por eso no me acerco.',
-          destroy_page: 'Era Thomas. Romper papeles no cambia los nombres, señor.' }[intent] || 'Era Thomas. Puede acordarse.';
+      const lead = perceptionBand(G.state.sanity) === 'frayed' ? 'No era este. Antes tenía otro.' : 'Era Thomas.';
+      const what = { surrender: 'Usted quiso que lo detuvieran. Acuérdese de eso.',
+        warn_wren: 'Usted le dijo a Pike dónde dormía yo. Por eso no me acerco.',
+        destroy_page: 'Romper papeles no cambia los nombres, señor.' }[intent] || 'Puede acordarse.';
+      const last = `${lead} ${what}`;
       await G.say('Wren', last);
       w.talking = false;
       w.walkTo(2100, { speed: 240 });

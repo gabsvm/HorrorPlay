@@ -14,6 +14,7 @@ import { audio } from './audio.js';
 import { prefs } from './prefs.js';
 import { normalizeState, currentGate, canEnterFinale } from '../story/progression.js';
 import { statuses } from '../story/theories.js';
+import { perception } from '../story/perception.js';
 
 const wait = (ms) => new Promise((r) => setTimeout(r, window.FAST ? 0 : ms));
 const SAVE_KEY = 'elhuesped.save.v1';
@@ -262,6 +263,7 @@ export class Game {
         else if (h.act) await h.act(G);
         else if (h.look) await h.look(G);
       } finally { settle(); (this.state.seen ||= {})[this.seenKey(h)] = true; }
+      if (h.cursor !== 'exit' && Math.random() < perception.whisperChance(this.state.sanity)) audio.whisper(0.6, 0.03);
     });
   }
 
@@ -790,7 +792,7 @@ export class Game {
         else {
           // the scene stays black behind the close-up, and comes back when he stands up
           await G.fade(1, 450);
-          await game.ui.inspect({ title, paint: (ctx, w, h) => paintBody(ctx, w, h, body), points, seen, fx: () => ({ red: game.r.fx.red, shake: game.r.cam.shake }) }, (pt) => pt.act(G));
+          await game.ui.inspect({ title, paint: (ctx, w, h) => paintBody(ctx, w, h, body), points, seen, keyMarks: perception.forensicMarks(game.state.sanity), fx: () => ({ red: game.r.fx.red, shake: game.r.cam.shake }) }, (pt) => pt.act(G));
           await G.fade(0, 600);
           // closing early is allowed; a word says that something that matters was left unexamined
           if (points.some((pt) => pt.key && !seen[pt.id])) game.ui.toast('Quedan detalles del cuerpo sin examinar.', 3200);

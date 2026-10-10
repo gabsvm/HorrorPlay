@@ -1,6 +1,7 @@
 // Limehouse foreshore at low tide, where the Black Ditch empties into the Thames.
 // Prologue (1866, dusk, Thomas as a boy) and climax (1888, night).
 import * as A from '../art/paint.js';
+import { perception } from '../story/perception.js';
 import { profileStairs } from '../art/props.js';
 import { P, shade } from '../art/palette.js';
 import { rng } from '../art/noise.js';
@@ -240,7 +241,8 @@ export default {
         ctx.fillRect(1130 + 16, GROUND + 30 - 62, 4, 22); ctx.fillRect(1130 + 7, GROUND + 30 - 53, 22, 4);
       }
     }
-    if (G && G.flag('water_light')) {
+    // frayed, the Ditch's green shows in the river even when nothing calls (a signal, not evidence)
+    if (G && (G.flag('water_light') || (G.flag('fs_1888') && perception.waterGlow(G.state.sanity)))) {
       const x = 1500 + Math.sin(t * 0.2) * 200;
       const g = ctx.createRadialGradient(x, 560, 4, x, 560, 260);
       const k = 0.5 + Math.sin(t * 1.7) * 0.15;

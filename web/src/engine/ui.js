@@ -5,6 +5,7 @@ import { pixelize } from '../art/pixel.js';
 import { Actor } from './actor.js';
 import { evaluate as theories } from '../story/theories.js';
 import { morphFrames } from './signature.js';
+import { perception } from '../story/perception.js';
 
 const $ = (id) => document.getElementById(id);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -245,7 +246,7 @@ export class UI {
   // ------------------------------------------------------------ crime-scene close-up
   // A painted close-up explored in the dark: the pointer carries the lantern, and anything worth
   // examining names itself when the light falls on it. `onPoint(point)` runs the examination.
-  async inspect({ title, paint, points, seen = {}, fx = null }, onPoint) {
+  async inspect({ title, paint, points, seen = {}, fx = null, keyMarks = false }, onPoint) {
     const box = $('inspect'), img = $('insp-img'), dark = $('insp-dark'), label = $('insp-label');
     this.hideDialogue();
     const hi = document.createElement('canvas'); hi.width = 1280; hi.height = 720;
@@ -283,8 +284,10 @@ export class UI {
       dc.fillStyle = w; dc.fillRect(0, 0, 640, 360);
       for (const p of points) {
         const d = Math.hypot(p.x - lx, p.y - ly);
-        if (d > 260) continue;
-        const a = Math.max(0, 1 - d / 260) * (seen[p.id] ? 0.35 : 0.8);
+        // steady: what matters and is still unexamined shows from farther away
+        const reach = keyMarks && p.key && !seen[p.id] ? 520 : 260;
+        if (d > reach) continue;
+        const a = Math.max(0, 1 - d / reach) * (seen[p.id] ? 0.35 : 0.8);
         dc.strokeStyle = seen[p.id] ? `rgba(160,160,150,${a})` : `rgba(255,214,140,${a})`;
         dc.lineWidth = 1;
         dc.beginPath(); dc.arc(p.x / 2, p.y / 2, (seen[p.id] ? 4 : 6) + Math.sin(t * 4) * 1, 0, Math.PI * 2); dc.stroke();
@@ -305,7 +308,8 @@ export class UI {
     const move = (e) => { const p = toLocal(e); lx = p.x; ly = p.y; hover = at(lx, ly); box.style.cursor = hover && !busy ? 'pointer' : 'none'; showLabel(); };
     const tally = () => {
       const n = points.filter((p) => seen[p.id]).length;
-      $('insp-hint').textContent = n ? `Examinado: ${n} de ${points.length}` : this.coarse ? 'Toca para llevar la luz; toca otra vez para examinar.' : 'Mueve la luz. Haz clic en lo que quieras examinar.';
+      const keysLeft = keyMarks ? points.filter((p) => p.key && !seen[p.id]).length : 0;
+      $('insp-hint').textContent = n ? `Examinado: ${n} de ${points.length}${keysLeft ? ` · quedan ${keysLeft} detalle${keysLeft === 1 ? '' : 's'} importante${keysLeft === 1 ? '' : 's'}` : ''}` : this.coarse ? 'Toca para llevar la luz; toca otra vez para examinar.' : 'Mueve la luz. Haz clic en lo que quieras examinar.';
       $('insp-close').classList.toggle('done', n === points.length);
     };
     tally();
@@ -480,7 +484,8 @@ export class UI {
       tl.innerHTML = '';
       for (const t of ths) {
         const li = document.createElement('li');
-        li.innerHTML = `<span class="q">${t.q}</span>` + t.hyps.map((h) => `<span class="h"><span class="st ${h.status.replace(' ', '-')}">${h.status}</span>${h.text}</span>`
+        const doubt = perception.doubtTheories(st.sanity);
+        li.innerHTML = `<span class="q">${t.q}</span>` + t.hyps.map((h) => `<span class="h"><span class="st ${h.status.replace(' ', '-')}">${h.status}${doubt && h.status === 'plausible' ? ', lo dudo' : ''}</span>${h.text}</span>`
           + (h.for.length ? `<span class="ev">A favor: ${h.for.join('; ')}.</span>` : '')
           + (h.against.length ? `<span class="ev">En contra: ${h.against.join('; ')}.</span>` : '')).join('');
         tl.appendChild(li);
@@ -544,7 +549,7 @@ export class UI {
   // Resolves { ok, misses } — ok when the word is spelt, false if he leaves it for later.
   async knockPuzzle({ raps, answer, board, rows, help = 0, helper = null }) {
     if (window.FAST) {
-      (window.LOG ||= []).push(`[golpes: ${board ? answer : 'sin tabla'}]`);
+      (window.LOG ||= []).push(`[golpes: ${board ? answer : 'sin tabla'}, ayuda ${help}]`);
       return { ok: !!board && !window.KNOCK_FAIL, misses: window.KNOCK_FAIL ? 1 : 0 };
     }
     const box = document.createElement('div');

@@ -4,6 +4,7 @@ import { nightBackdrop, facade, warehouse } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
 import { canLeaveMitre } from '../story/progression.js';
+import { perception } from '../story/perception.js';
 import { Smoke, Drip, Rat, Crow, Moths, Paper, Ripples } from '../engine/life.js';
 import { drawCorpse, groundLantern } from './corpse.js';
 
@@ -167,6 +168,7 @@ export default {
         G.flag('mitre_badge', true);
         const w = G.actor('Watkins'); w.talking = true;
         await G.say('Agente Watkins', 'División H. Adelante. Y tenga las manos donde pueda verlas.');
+        if (perception.othersNotice(G.state.sanity)) await G.say('Agente Watkins', '¿Se encuentra bien, inspector? Le tiemblan.');
         await G.say('Agente Watkins', '¿Cómo llegó antes que mi aviso?');
         w.talking = false;
         G.clue('rapido');
