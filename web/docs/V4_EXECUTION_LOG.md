@@ -900,3 +900,109 @@ Estado del repositorio (`git status --porcelain`):
 - Clasificación de H-04 y del dato de Bishopsgate (desviación 4).
 
 **Revisión de cierre (Opus, V4-06): APPROVED con tres cambios de texto aplicados.** (1) `trozo` dice «la víctima», no el nombre (data.js:146). (2) El título del inspect de Mitre Square es «La mujer de Mitre Square» (mitre.js). (3) Las hipótesis de `doble` quedan: «Probablemente el mismo hombre: la misma noche, a menos de una hora.» y «Sin vínculo por ahora: otra calle y otra jurisdicción.» Deudas: `walkthrough.js` elige opciones por posición (frágil; elegir por texto en F16 o F17). Hallazgos fuera de F06 para F09: Pike nombra a Nichols a las 4:12 del 31 de agosto (bucks_row.js:151,255,266, [A]); Chapman y la hora de su identificación por la pensión (hanbury.js:171,304,308, [U]).
+
+## V4-07 — implementación (pendiente de revisión)
+
+Implementado por el agente implementador (Haiku), sin commit ni push. Base `b735471`. Revisión del observador pendiente.
+
+### Decisiones y textos
+
+- **Documento del Daily News (`story/chapters.js`, `readPaper`).** Se quita la línea «Se ruega a quien reconozca la letra que se presente en Scotland Yard.». Nada más del documento cambia (incluida la frase «Escrita con tinta roja», ver desviación 1).
+- **Sospecha de engaño.** Pensamiento de Thomas, solo en la primera lectura: `if (!G.second()) await G.think('Puede que la haya inventado un periodista. Una carta así vende periódicos.');`. No guarda flag ni pista.
+- **Pista `carta` (`story/data.js`).** Mismo ID, mismo flag, `truth2` sin cambio. Solo la última frase: «Según el periódico, está escrita con tinta roja.».
+- **Comparación de letras (`compareHands`).** Cabecera: «Copia de la carta que circula entre los inspectores y cuatro escrituras». Línea previa a la cita: «La copia de la carta, sin la letra del original:». Pensamiento de `inconclusive`: «Una copia y cuatro letras de mi mesa. Con esto no se acusa a nadie.». Las opciones, `greaves_like`, `self_recognition`, la revisión de muestras y `handwriting_assessment` no cambian. No se añade `handwriting_category` ni `handwritingCategory`.
+- **Tests.** `tests/unit/carta.test.mjs` (9 pruebas) y `tests/scenarios/carta.js`. El escenario recorre la persecución limpia de `chapter3` dos veces (primera y segunda lectura) y comprueba la duda y que no quedan flags ni pistas nuevas.
+
+### Posiciones exactas de la sospecha (`web/src/story/chapters.js`)
+
+- Línea 621: `await G.think(G.two('Fechada el 25. La noche que perdí.', ...))`: el pensamiento de la fecha.
+- **Línea 622: la sospecha**, dentro de `readPaper`, justo después de la fecha y antes del susurro, de la voz y de «Esa letra la he visto antes».
+- Línea 623: `G.audio.whisper(2, 0.14);`.
+- Línea 624: `if (G.second()) await G.voice('Jack.');`.
+- Línea 625: «Esa letra la he visto antes».
+
+### Desviaciones y observaciones
+
+1. **Restos del grep de E que la especificación no pedía cambiar.** Tres apariciones de «tinta roja» o de autoría sin atribución quedan fuera de la lista:
+   - `story/chapters.js:613` (documento de `readPaper`): «Escrita con <b>tinta roja</b>». La especificación dice «Nada más del documento cambia».
+   - `story/data.js:180` (deducción `d_rojo`, `text`): «La carta fechada el 25 está escrita en rojo.». Su `truth` no cambia, como se pidió; el `text` no se menciona en la especificación.
+   - `story/theories.js:49` (opción de la teoría `carta`): «La escribió Greaves.». Es una hipótesis que el jugador puede elegir, no un hecho del juego, y el archivo no está en la lista.
+   Las pruebas de autoría de `carta.test.mjs` cubren `chapters.js` y `data.js`, no `theories.js`; el documento de `readPaper` no se comprueba por «tinta roja». **Requiere decisión del observador.**
+2. **H-13.** La especificación dice que la petición de reconocer la letra «es de un cartel posterior con facsímil». No he abierto ninguna fuente: en el registro figura como `[A]` con **FUENTE PENDIENTE**.
+3. **Escenario de compatibilidad.** La especificación habla de «escenario compat existente» para `handwriting_assessment`. `tests/scenarios/compat.js` no menciona ese flag. La comprobación de guardados antiguos está en `carta.test.mjs` (unit: un guardado con cada uno de los tres valores conserva su valor, e `normalizeState` es idempotente con él).
+4. **Comprobación en navegador.** No se hizo: el cambio es de texto y lo cubren los recorridos headless (`walk`, `chapter3`, `carta`). No hay servidor de vista previa.
+5. **Finales de línea.** `tools/script/export.mjs` escribió CR en `GUION.md`. Se normalizó a LF con `sed -i 's/\r$//'`, igual que en V4-06. El `git diff` de `GUION.md` queda en 6 inserciones y 4 eliminaciones.
+
+### Archivos tocados (git status, antes de escribir esta sección)
+
+```
+ M web/GUION.md
+ M web/docs/V4_HISTORICAL_LEDGER.md
+ M web/docs/V4_STATE_SCHEMA.md
+ M web/src/story/chapters.js
+ M web/src/story/data.js
+?? web/tests/scenarios/carta.js
+?? web/tests/unit/carta.test.mjs
+```
+
+`git diff --stat` (sin el log): `web/GUION.md` 10, `V4_HISTORICAL_LEDGER.md` 14, `V4_STATE_SCHEMA.md` 14, `chapters.js` 8, `data.js` 2. Todos en `i/lf w/lf`.
+
+### Snapshot de `evaluate()` (11 fixtures, `normalizeState` antes, 6 teorías: intruso, brennan, carta, horas, rondas, doble)
+
+Scripts y salidas en `scratchpad/v4-07/` (fuera del repositorio): `snapshot.mjs`, `snapshot-before.json`, `snapshot-after.json`.
+
+- Antes de editar: 11 fixtures (todos los de `tests/fixtures/**`, legacy incluido).
+- Después: `cmp snapshot-before.json snapshot-after.json` → sin diferencias (`SNAPSHOT: IDENTICAL`).
+- `doble` no aparece en ningún fixture (su regla `show` lo oculta). Las demás teorías coinciden antes y después.
+
+### Comandos y salidas reales
+
+```
+$ node tools/unit.mjs | tail -1
+131 pruebas bien, 0 mal                                  (exit 0)
+
+$ node tools/walk.mjs chapter3
+{ "scenario": "chapter3", "ok": true, "errors": [], "lines": 393, "deductions": 12, "scene": "foreshore",
+  "seen": { "clean": "inconclusive", "spotted": "greaves_like", "injured": "inconclusive" } }   (exit 0)
+
+$ node tools/walk.mjs carta
+{ "scenario": "carta", "ok": true, "errors": [], "lines": 154, "deductions": 12, "scene": "room",
+  "first": { "duda": true }, "second": { "duda": false } }                                      (exit 0)
+
+$ node tools/test-all.mjs        (salida completa en scratchpad/v4-07/test-all-final.txt)
+PASS  unit    PASS  smoke    PASS  audio    PASS  scenario beats    PASS  scenario brennan
+PASS  scenario c1-minimal    PASS  scenario calm    PASS  scenario carta    PASS  scenario chapter3
+PASS  scenario comb-pike    PASS  scenario compat    PASS  scenario feedback    PASS  scenario finale
+PASS  scenario forense    PASS  scenario goulston    PASS  scenario hint    PASS  scenario hint-ui
+PASS  scenario integrity    PASS  scenario mitre6    PASS  scenario mob    PASS  scenario notebook
+PASS  scenario positions    PASS  scenario resume    PASS  scenario sanity    PASS  scenario seance
+PASS  scenario second-reading    PASS  walk    PASS  walk second    PASS  walk alt
+(29 PASS, 0 FAIL, exit 0)
+
+$ node tools/script/export.mjs && git diff --stat -- web/GUION.md
+ web/GUION.md | 10 ++++++----      (6 inserciones, 4 eliminaciones)
+```
+
+Lo que cambia en el guion (`git diff -- web/GUION.md`, solo esto):
+
+- `readPaper`: el documento sin «Se ruega…».
+- `readPaper`: «Puede que la haya inventado un periodista…» dentro de `if (!G.second())`, tras «Fechada el 25…».
+- `compareHands`: la cabecera del documento y la línea de la copia; el pensamiento de `inconclusive`.
+- Pista `carta`: «Según el periódico, está escrita con tinta roja.».
+
+Grep de la sección E (sobre `web/src`):
+
+```
+Se ruega a quien reconozca la letra ........... 0
+tal como la reproduce el Daily News ........... 0
+Puede que la haya inventado un periodista ..... 1 (src/story/chapters.js:622)
+Está escrita con tinta roja (sin atribución) ... 0
+autoría como hecho (Greaves/Brennan/prensa) ... 1 (src/story/theories.js:49: 'La escribió Greaves.'; ver desviación 1)
+```
+
+### Preguntas abiertas para el observador
+
+- ¿Se quitan «Escrita con tinta roja» del documento (`chapters.js:613`), «escrita en rojo» de `d_rojo.text` y «La escribió Greaves.» de `theories.js:49`? La especificación no los autoriza. Si se cambian, las pruebas de autoría pueden extenderse a esos archivos.
+- Fuente de H-13 (cartel posterior con facsímil) y de la circulación de copias (H-35): FUENTE PENDIENTE, primaria en F07/F17.
+
+**Cierre de V4-07 (decisiones del implementador revisadas):** se aceptan el documento del periódico con «escrita con tinta roja» (es la prensa en el mundo del juego), la hipótesis «La escribió Greaves.» (opción de hipótesis, no hecho) y el *test* de compatibilidad que comprueba `handwriting_assessment`. Se modaliza la deducción `d_rojo` a «Según el periódico, la carta fechada el 25 está escrita en rojo.» (un hecho de prensa, no del cuaderno). Ningún cambio de verdad canónica: `d_rojo.truth` y `carta.truth2` siguen atribuyendo la carta a Thomas.

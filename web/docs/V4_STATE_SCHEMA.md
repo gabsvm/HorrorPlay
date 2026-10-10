@@ -154,3 +154,17 @@ Fuente: `src/story/positions.js` (puro, sin DOM). Campos añadidos en `investiga
 - **Lo que no cambia:** `canLeaveMitre` (el aviso no es puerta), `normalizeState` (ningún campo nuevo que sanear), `FINAL_SOURCES`, la placa (`use`), la cordura (solo el −2 de `watkins_name`, como antes) y el objeto `kate`.
 - **Guardados.** Un guardado con `trozo` y `testigo` sin `berner_aviso` no muestra `doble` ni la pregunta `double_event`. Un guardado con `trozo` muestra la opción del aviso sin pista previa; no hay pistas retroactivas.
 - **Lista de `flags` (§2).** No se ha regenerado. Con `mitre_city`, la unión sube de 97 a 98 nombres. Los demás nombres de V4-06 son pistas (`berner_aviso`), no flags.
+
+## 11. V4-07 — el periódico del 1 de octubre, la copia de la carta y la sospecha de engaño
+
+| Campo | Valor |
+|---|---|
+| Campos de estado nuevos | **Ninguno.** No hay flag, pista, deducción ni campo de `investigation` nuevos. Sin migración |
+| `flags.handwriting_assessment` | **Sin cambio.** Sigue con sus tres valores: `greaves_like`, `inconclusive`, `self_recognition` (`story/chapters.js`, `compareHands`). Solo cambia el texto que los acompaña: la copia de la carta y el pensamiento de `inconclusive` |
+| Sospecha de engaño («Puede que la haya inventado un periodista…») | **No se guarda.** Es un pensamiento de Thomas en `readPaper`, dentro de `if (!G.second())`. No escribe flag ni pista, y no la lee nada |
+| Pista `carta` (`story/data.js`) | Mismo ID, mismo flag, `truth2` sin cambio. Cambia solo la última frase del texto: «Según el periódico, está escrita con tinta roja» |
+| Teorías (`evaluate()`) | Sin cambio: la instantánea de las seis teorías sobre los 11 fixtures es idéntica antes y después (`V4_EXECUTION_LOG.md`, V4-07) |
+
+- **Guardados antiguos con `handwriting_assessment`.** Cargan sin cambio de estado: `normalizeState` lo conserva para los tres valores (`tests/unit/carta.test.mjs`).
+- **Lo que no cambia:** `writeC3a` (fecha 25, 23:41 a 3:15, `tinta_vacia`, `woke_c3`), `truth2` de `carta`, `truth` de `d_rojo`, `FINAL_SOURCES`, los finales, `letter_author` (F01), la pista `letra`, `room.js` (`s2_draft`) y `canLeaveRoomC3b`.
+- **Lista de `flags` (§2).** No se ha regenerado: no hay flags nuevos.

@@ -1181,10 +1181,12 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - [Objetivo] Leer el periódico. Mirar debajo de la cama.
 
 ### `readPaper`
-- [Documento] THE DAILY NEWS — 1 de octubre de 1888 LOS CRÍMENES DEL EAST END. LA CARTA FIRMADA «JACK THE RIPPER». Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con tinta roja, menciona al «Leather Apron» y reivindica los crímenes: "I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..." Yours truly / Jack the Ripper Se ruega a quien reconozca la letra que se presente en Scotland Yard. {{ spotted: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. Asegura que podría reconocerlo.', injured: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.' }[state.flags.chase_outcome] || ''}
+- [Documento] THE DAILY NEWS — 1 de octubre de 1888 LOS CRÍMENES DEL EAST END. LA CARTA FIRMADA «JACK THE RIPPER». Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con tinta roja, menciona al «Leather Apron» y reivindica los crímenes: "I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..." Yours truly / Jack the Ripper {{ spotted: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. Asegura que podría reconocerlo.', injured: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.' }[state.flags.chase_outcome] || ''}
 - [+ Pista al cuaderno: carta]
 - *Thomas (piensa):* Fechada el 25. La noche que perdí. _(1ª lectura)_
 - *Thomas (piensa):* Fechada el 25. Faltaban tres pliegos en mi mesa. _(2ª lectura)_
+- _Si !second():_
+  - *Thomas (piensa):* Puede que la haya inventado un periodista. Una carta así vende periódicos.
 - _Si second():_
   - **La voz (la voz):** _Jack._
 - *Thomas (piensa):* Esa letra la he visto antes. En el escritorio tengo letras de todos.
@@ -1198,7 +1200,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - [Objetivo] {`${left.join('; ')}.`.replace(/^./, (m) => m.toUpperCase())} | Salir.
 
 ### `compareHands`
-- [Documento] Una carta y cuatro escrituras La carta, tal como la reproduce el Daily News: "Dear Boss... Yours truly, Jack the Ripper" La nota de Madame Wexley:Mano redondeada y espaciada. "Los muertos piden hablar con usted..." Un informe del sargento Pike, con mis correcciones en rojo:Letra cerrada y recta. "Ronda sin novedad. Las farolas de Buck's Row siguen sin gas..." La receta del láudano, del doctor Greaves:Letras unidas, la J con una cola larga, el remate de las t muy corto. "Tinctura opii. Veinte gotas al acostarse. — L. G." El recibo del desolladero de Barber, de Silas Brennan:"X — su marca" {two('', 'Mis apuntes de anatomía, cuarto curso, 1878:La misma J, las mismas t. "Carótida: corre junto a la tráquea..."')}
+- [Documento] Copia de la carta que circula entre los inspectores y cuatro escrituras La copia de la carta, sin la letra del original: "Dear Boss... Yours truly, Jack the Ripper" La nota de Madame Wexley:Mano redondeada y espaciada. "Los muertos piden hablar con usted..." Un informe del sargento Pike, con mis correcciones en rojo:Letra cerrada y recta. "Ronda sin novedad. Las farolas de Buck's Row siguen sin gas..." La receta del láudano, del doctor Greaves:Letras unidas, la J con una cola larga, el remate de las t muy corto. "Tinctura opii. Veinte gotas al acostarse. — L. G." El recibo del desolladero de Barber, de Silas Brennan:"X — su marca" {two('', 'Mis apuntes de anatomía, cuarto curso, 1878:La misma J, las mismas t. "Carótida: corre junto a la tráquea..."')}
 - *Thomas (piensa):* Esa J. Esas t. Las conozco.
 - > **Elección:** 1) Madame Wexley.  ·  2) Pike.  ·  3) Greaves: se parece a la suya.  ·  4) Brennan.  ·  5) {...(second() ? ['La mía.'] : [])}  ·  6) La muestra no basta. Necesito más pruebas.  ·  7) Revisar las muestras.
 - _Si pick.startsWith('Greaves'):_
@@ -1206,7 +1208,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - _Si pick === 'La mía.':_
   - *Thomas (piensa):* Es mi propia letra. Copié a Greaves años atrás.
 - _Si pick.startsWith('La muestra'):_
-  - *Thomas (piensa):* Una carta impresa en un periódico y cuatro letras de mi mesa. Con esto no se acusa a nadie.
+  - *Thomas (piensa):* Una copia y cuatro letras de mi mesa. Con esto no se acusa a nadie.
 - *Thomas (piensa):* No coincide con Wexley. _(para "Madame Wexley.")_
 - *Thomas (piensa):* No coincide con Pike. Sus notas sí llevan mis correcciones. _(para "Pike.")_
 - *Thomas (piensa):* Brennan firmó con una cruz. No hay muestra suficiente. _(para "Brennan.")_
@@ -1546,7 +1548,7 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 
 **`carta`**
 - Dónde: Prensa · 1 oct
-- Texto: Una carta fechada el 25 y recibida por la Central News el 27 circula bajo la firma «Jack the Ripper». Está escrita con tinta roja.
+- Texto: Una carta fechada el 25 y recibida por la Central News el 27 circula bajo la firma «Jack the Ripper». Según el periódico, está escrita con tinta roja.
 - Verdad (2ª lectura): La escribí durante las horas perdidas de la noche del 24 al 25.
 
 **`letra`**
@@ -1625,7 +1627,7 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 
 **`d_rojo`**
 - Une las pistas: `dedos` + `carta`
-- Texto: La carta fechada el 25 está escrita en rojo. La misma madrugada faltaron hojas de mi escritorio. Es posible que se escribiera aquí.
+- Texto: Según el periódico, la carta fechada el 25 está escrita en rojo. La misma madrugada faltaron hojas de mi escritorio. Es posible que se escribiera aquí.
 - Verdad (2ª lectura): Escribí esa carta. Le di un nombre.
 
 **`d_pike`**

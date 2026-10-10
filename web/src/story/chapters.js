@@ -613,13 +613,13 @@ export function makeChapters() {
         <p>Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con <b>tinta roja</b>, menciona al «Leather Apron» y reivindica los crímenes:</p>
         <p class="red">"I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..."</p>
         <p class="red" style="text-align:right">Yours truly<br>Jack the Ripper</p>
-        <p class="small">Se ruega a quien reconozca la letra que se presente en Scotland Yard.</p>
         ${{ spotted: '<p class="small">Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. Asegura que podría reconocerlo.</p>',
           injured: '<p class="small">Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.</p>' }[G.state.flags.chase_outcome] || ''}`);
       G.flag('paper_read', true);
       G.clue('carta');
       hooks.c3bObjective(G);
       await G.think(G.two('Fechada el 25. La noche que perdí.', 'Fechada el 25. Faltaban tres pliegos en mi mesa.'));
+      if (!G.second()) await G.think('Puede que la haya inventado un periodista. Una carta así vende periódicos.');
       G.audio.whisper(2, 0.14);
       if (G.second()) await G.voice('Jack.');
       await G.think('Esa letra la he visto antes. En el escritorio tengo letras de todos.');
@@ -638,8 +638,8 @@ export function makeChapters() {
     // the letter's hand against every hand on the desk: the tail of the J and the short cross of the t.
     // A likeness, not an identification: the file at Greaves's surgery is what settles it.
     async compareHands(G) {
-      const hands = () => G.doc(`<h3>Una carta y cuatro escrituras</h3>
-        <p class="small">La carta, tal como la reproduce el Daily News:</p>
+      const hands = () => G.doc(`<h3>Copia de la carta que circula entre los inspectores y cuatro escrituras</h3>
+        <p class="small">La copia de la carta, sin la letra del original:</p>
         <p class="red">"Dear Boss... Yours truly, Jack the Ripper"</p>
         <p class="small">La nota de Madame Wexley:</p><p class="hand">Mano redondeada y espaciada. "Los muertos piden hablar con usted..."</p>
         <p class="small">Un informe del sargento Pike, con mis correcciones en rojo:</p><p class="hand">Letra cerrada y recta. "Ronda sin novedad. Las farolas de Buck's Row siguen sin gas..."</p>
@@ -656,7 +656,7 @@ export function makeChapters() {
         if (pick === 'Revisar las muestras.') { await hands(); continue; }
         if (pick.startsWith('Greaves')) { await G.think('Es una escritura parecida. No es una identificación.'); assessment = 'greaves_like'; break; }
         if (pick === 'La mía.') { await G.think('Es mi propia letra. Copié a Greaves años atrás.'); assessment = 'self_recognition'; break; }
-        if (pick.startsWith('La muestra')) { await G.think('Una carta impresa en un periódico y cuatro letras de mi mesa. Con esto no se acusa a nadie.'); assessment = 'inconclusive'; break; }
+        if (pick.startsWith('La muestra')) { await G.think('Una copia y cuatro letras de mi mesa. Con esto no se acusa a nadie.'); assessment = 'inconclusive'; break; }
         await G.think({ 'Madame Wexley.': 'No coincide con Wexley.',
           'Pike.': 'No coincide con Pike. Sus notas sí llevan mis correcciones.',
           'Brennan.': 'Brennan firmó con una cruz. No hay muestra suficiente.' }[pick]);
