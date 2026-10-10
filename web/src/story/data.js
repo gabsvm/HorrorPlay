@@ -114,7 +114,7 @@ export const CLUES = {
   ventana: { tag: 'Mi cuarto · 31 ago', text: 'La ventana estaba entornada y había barro negro en el alféizar. Anoche la cerré yo.',
     truth2: 'La abrí yo, desde dentro. Por la escalera me habría oído la señora Pell.' },
   laudano: { tag: 'Mi cuarto · 31 ago', text: 'El frasco de láudano está casi vacío. Lo compré el martes.', truth2: 'Lo bebo para no oír el agua. Ya no sirve.' },
-  ronda: { tag: "Buck's Row · la hoja de rondas", text: 'Entre las 3:30 y las 3:40 nadie podía ver el portón: Thain acababa de alumbrar la calle y Cross aún no había llegado. Diez minutos, y quien lo hizo lo sabía.',
+  ronda: { tag: "Buck's Row · la hoja de rondas", text: 'Según la hoja, Thain alumbró la calle hacia las 3:30 y Cross llegó hacia las 3:40. Son horas de testimonio, no de reloj: la ventana es aproximada.',
     truth2: 'La hoja de rondas la firmé yo.' },
   silencio: { tag: "Buck's Row", text: 'Nadie oyó nada. La señora Green dormía a tres metros, detrás de esa ventana.', truth2: 'No gritó. Un policía no da miedo.' },
   zurdo: { tag: "Buck's Row · Dr. Llewellyn", text: 'Según el forense, los cortes van de izquierda a derecha: quien lo hizo es probablemente zurdo.', truth2: 'Escribo con la izquierda.' },
@@ -163,7 +163,7 @@ export const CLUES = {
 
 // a + b -> deduction. `profile` adds a trait to the killer profile.
 export const DEDUCTIONS = [
-  { id: 'd_ronda', a: 'ronda', b: 'silencio', profile: 'Conoce las rondas de la policía', text: 'Actuó dentro de un hueco de diez minutos. Tal vez conocía las rondas; la precisión del intervalo también admite el azar.' },
+  { id: 'd_ronda', a: 'ronda', b: 'silencio', profile: 'Conoce las rondas de la policía', text: 'Las horas declaradas dejan un hueco de unos diez minutos. Tal vez conocía las rondas; la precisión también admite el azar.' },
   { id: 'd_zurdo', a: 'zurdo', b: 'anatomia', profile: 'Zurdo, con nociones de anatomía', text: 'Un zurdo que sabe dónde cortar: un matarife, un carnicero... o un médico.' },
   { id: 'd_barro', kind: 'hipotesis', a: 'botas', b: 'ventana', denial: true, text: 'Las botas estaban mojadas y la ventana abierta. ¿Alguien pasó por aquí durante la noche? ¿Cómo se explica el barro?', truth: 'Nadie entra. Salgo yo.' },
   { id: 'd_brennan', kind: 'hipotesis', a: 'brennan_zurdo', b: 'zurdo', flag: 'sospecha_brennan', text: 'Brennan coincide con la lateralidad atribuida al asesino y trabaja cerca. Su coartada requiere verificación. No es prueba de culpabilidad.' , truth: 'Brennan es zurdo. Yo también.' , denialLate: true },

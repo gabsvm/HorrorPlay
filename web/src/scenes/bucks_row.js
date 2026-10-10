@@ -221,7 +221,7 @@ export default {
           neil.talking = false;
           await G.say('Ashgrove', '¿Y después?');
           neil.talking = true;
-          await G.say('Neil', 'A las tres cuarenta y cinco, los carreteros me llamaron. Está todo en la hoja.');
+          await G.say('Neil', 'A las tres cuarenta y cinco la encontré yo. Le hice señas a Thain con la linterna. Está todo en la hoja.');
           neil.talking = false;
           if (!G.flag('neil_times')) {
             G.flag('neil_times', true);

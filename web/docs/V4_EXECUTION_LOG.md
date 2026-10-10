@@ -339,7 +339,153 @@ El botón queda con `bottom` 608 ≤ 658 (`.page.right`). Captura: `scratchpad/c
 1. **720p: resuelta.** DESVIACIÓN ACEPTADA (Opus), ver arriba. La maquetación compartida queda en «Pendiente F16».
 2. **Segunda lectura:** resuelta en esta ronda por la opción (ii) del observador (bloqueo en la capa pura y en la UI). Queda registrada aquí como decisión.
 
+## V4-02 — implementación (pendiente de revisión)
+
+Estado: **F02 CODE_COMPLETE (no TESTED por el observador).** Sin commit ni push. Alcance: la ventana de las rondas (`ronda`, `d_ronda`, la hoja, la teoría `rondas` y la pregunta `buck_window`), según la especificación aprobada de V4-02.
+
+### Decisiones y textos
+
+1. **Textos exactos** de la especificación: pista `ronda` (sin «Diez minutos…»), deducción `d_ronda`, pensamiento final de `beats` («De 3:30 a 3:40, si las horas son buenas.»), cabecera de la hoja (DIVISIÓN J (BETHNAL GREEN) — RONDAS · copia a la H), remisión a Whitechapel, «hacia las 3:40» en Cross y la línea de Neil en `bucks_row.js`. La línea de Thain y la firma no cambian; la de Pike tampoco.
+2. **Teoría `rondas`** (`theories.js`): dos hipótesis, `firme` (evidencia `d_ronda`) y `compatible` (evidencia `ronda`). Regla `plausible` o `sin evaluar`; nunca `sostenida`. No lee `flags.awake`, `misses` ni `beats`.
+3. **`buck_window`** (`positions.js`): `theory: 'rondas'`, `visible` con la pista `ronda`. El comentario que decía «oculta en F01» se actualiza a «visible con la pista ronda (F02)».
+4. **Formato de `basis`:** `firme` → `for:ded:d_ronda` (la especificación lo escribía como `ded:d_ronda`); `compatible` → `for:clue:ronda`; `insuficiente` → `[]`. Es el formato de V4-01.
+5. **Compatibilidad:** sin cambios en `normalizeState`, IDs, flags, `canFinishC1` ni `currentGate`. Un guardado con `ronda` muestra la teoría y la pregunta sin postura, y no escribe al reanudar (probado en `scenarios/beats.js`, caso d).
+6. **Renombrada una prueba** de `unit/positions.test.mjs` («buck_window nunca» pasa a «buck_window sin la pista ronda»). Solo el nombre; el contenido no cambia.
+
+### Archivos tocados (git status, antes de escribir esta sección)
+
+- `web/src/story/data.js`: textos de `ronda` y `d_ronda`.
+- `web/src/story/chapters.js`: `beats` (cabecera, remisión, línea de Cross, pensamiento final).
+- `web/src/scenes/bucks_row.js`: línea de Neil.
+- `web/src/story/theories.js`: teoría `rondas` (añadida al final de `THEORIES`).
+- `web/src/story/positions.js`: `buck_window` visible con `ronda`; comentarios.
+- `web/tests/unit/rondas.test.mjs` (nuevo): 12 pruebas.
+- `web/tests/scenarios/beats.js` (nuevo): escenario `beats`, casos a–e.
+- `web/tests/unit/positions.test.mjs`: nombre de una prueba.
+- `web/GUION.md`: regenerado por `export.mjs` (solo cambian los cinco textos aprobados).
+- `web/docs/V4_HISTORICAL_LEDGER.md`: H-09 a SECONDARY; H-23, H-24 y H-25; sección «Fuentes secundarias (V4-02)».
+- `web/docs/V4_STATE_SCHEMA.md`: corrección de `buck_window` en §6 y §7 (V4-02, sin campos nuevos).
+- `web/docs/V4_EXECUTION_LOG.md`: esta sección y F16.
+
+`git status --porcelain` (antes de esta sección):
+
+```
+ M web/GUION.md
+ M web/docs/V4_HISTORICAL_LEDGER.md
+ M web/docs/V4_STATE_SCHEMA.md
+ M web/src/scenes/bucks_row.js
+ M web/src/story/chapters.js
+ M web/src/story/data.js
+ M web/src/story/positions.js
+ M web/src/story/theories.js
+ M web/tests/unit/positions.test.mjs
+?? web/tests/scenarios/beats.js
+?? web/tests/unit/rondas.test.mjs
+```
+
+`git diff --stat`:
+
+```
+ web/GUION.md                      | 10 +++++-----
+ web/docs/V4_HISTORICAL_LEDGER.md  | 12 +++++++++++-
+ web/docs/V4_STATE_SCHEMA.md       |  8 +++++++-
+ web/src/scenes/bucks_row.js       |  2 +-
+ web/src/story/chapters.js         |  7 ++++---
+ web/src/story/data.js             |  4 ++--
+ web/src/story/positions.js        |  7 +++----
+ web/src/story/theories.js         | 14 ++++++++++++++
+ web/tests/unit/positions.test.mjs |  2 +-
+ 9 files changed, 48 insertions(+), 18 deletions(-)
+```
+
+(Los dos ficheros nuevos, `beats.js` y `rondas.test.mjs`, no aparecen en `--stat` porque no están en el índice.)
+
+### Comandos y salidas reales
+
+Instantánea de `evaluate()` sobre los 11 fixtures (`snapshot-before.json` frente a `snapshot-after.json`, fuera del repo): intruso, brennan, carta y horas **IGUALES** en todos los fixtures. La única diferencia es la aparición de `rondas` en los 7 fixtures que tienen la pista `ronda`.
+
+`node web/tools/unit.mjs` (última línea, tras el cambio de nombre):
+
+```
+70 pruebas bien, 0 mal
+```
+
+`node web/tools/walk.mjs beats`:
+
+```
+{ "scenario": "beats", "ok": true, "errors": [], "lines": 199, "deductions": 1, "scene": "hanbury", "misses": 2, "revisions": 2 }
+```
+
+`node web/tools/walk.mjs` (completa), `second` y `alt` (`ok: true` en los tres, sin errores):
+
+```
+walk:        "ok": true, "errors": [], "lines": 425, "deductions": 25, "scene": "bucks_row"
+walk second: "ok": true, "errors": [], "lines": 430, "deductions": 25, "scene": "bucks_row"
+walk alt:    "ok": true, "errors": [], "lines": 125, "deductions": 1,  "scene": "seance"
+```
+
+`node web/tools/test-all.mjs` (última ejecución, tras el cambio de nombre y la documentación; `exit=0`):
+
+```
+PASS  unit                         0.1s
+PASS  smoke                        3.6s
+PASS  audio                        0.2s
+PASS  scenario beats               0.9s
+PASS  scenario c1-minimal          0.7s
+PASS  scenario calm                2.9s
+PASS  scenario chapter3            3.3s
+PASS  scenario comb-pike           2.1s
+PASS  scenario compat              0.6s
+PASS  scenario feedback            0.7s
+PASS  scenario finale              18.2s
+PASS  scenario hint                0.5s
+PASS  scenario hint-ui             0.6s
+PASS  scenario integrity           0.5s
+PASS  scenario mob                 2.6s
+PASS  scenario notebook            0.5s
+PASS  scenario positions           0.5s
+PASS  scenario resume              3.5s
+PASS  scenario sanity              28.1s
+PASS  scenario seance              2.3s
+PASS  scenario second-reading      1.6s
+PASS  walk                         4.6s
+PASS  walk second                  4.7s
+PASS  walk alt                     0.8s
+exit=0
+```
+
+`node web/tools/script/export.mjs`: `C:\Dev\HorrorPlay\web\GUION.md: 1500 lines, 358 spoken or thought`. `git diff -- web/GUION.md`: 5 líneas cambiadas (+5 −5), revisadas una a una: línea de Neil, cabecera y remisión de la hoja, línea de Cross, pensamiento final de `beats`, pista `ronda` y `d_ronda`. Nada más.
+
+### Medida 720p (Chrome headless, CDP, 1280×720, `scratchpad/v4-02/720p/measure.mjs`, servidor 5317)
+
+Estado: partida en `room`, cuaderno abierto, pestaña Teorías, **todo plegado** (ninguna pregunta abierta). Pistas en memoria (no guardadas): `brennan_zurdo`, `carta`, `delantal`, `ronda`, `botas`, `laudano`. Cinco preguntas visibles:
+
+```
+preguntas (#theory-list > li): 5
+  intruso    «¿Alguien entra en mi cuarto de noche, o salgo yo sin recordarlo?»
+  brennan    «¿Brennan, o un barrio que necesita a un hombre con delantal?»
+  carta      «¿Quién escribió la carta: Greaves, alguien que imita, o alguien cercano a mí?»
+  horas      «¿Qué explica las horas que pierdo, y el agua?»
+  rondas     «¿Cuándo quedó el portón fuera de vista, y cómo se sabe?»
+botones «Mi postura» (data-toggle): 3 (br_suspect, letter_author, buck_window)
+aria-expanded="true": 0
+#theory-list:  scrollHeight 1050, clientHeight 1050 (no se desplaza por sí mismo)
+.page.right:   scrollHeight 1277, clientHeight 596, overflow-y auto
+viewport:      1280 × 720
+consoleLogs:   []
+```
+
+**Resultado: NO CABE.** Con cinco preguntas y todo plegado, `.page.right` desbordaría 1277 − 596 = 681 px. Lo que se desplaza es `.page.right`, como en V4-01. Captura: `scratchpad/v4-02/720p/01-five-questions-collapsed-720p.png`. JSON: `scratchpad/v4-02/720p/report.json`.
+
+La maquetación del libro no se ha cambiado en esta fase; la solución compartida queda en «Pendiente F16».
+
+### Preguntas abiertas para el observador
+
+1. **720p con cinco preguntas:** 1277 px frente a 596. La maquetación queda en F16 (ver abajo).
+2. **Nombre de la prueba renombrada:** es solo el nombre. Si el observador quiere el texto original, se revierte.
+3. **Dos pistas añadidas para la medida** (`botas`, `laudano`): solo en memoria, para que `intruso` y `horas` aparezcan. El guardado no se ha tocado.
+
 ## Pendiente F16
 
-- Maquetación compartida del libro a 720p (todas las pestañas; la línea plegada de cada postura, unos 59 px, debe caber en la línea de su pregunta o ser más compacta).
+- Maquetación compartida del libro a 720p (todas las pestañas). **V4-02:** la pestaña Teorías tiene ahora **cinco preguntas** (intruso, brennan, carta, horas, rondas). Con todo plegado `.page.right` mide 1277 px frente a 596 a 1280×720. La línea plegada de cada postura (unos 59 px) debe caber en la línea de su pregunta o ser más compacta.
 - Etiqueta «Qué pensé de Brennan» (`QUESTIONS.br_suspect.title`): no se muestra en ninguna parte; se decide en una fase posterior.

@@ -236,12 +236,13 @@ export function makeChapters() {
 
     // Buck's Row: the night's beats, and the only ten minutes when no one could see the gateway
     async beats(G) {
-      const sheet = () => G.doc(`<h3>DIVISIÓN H — RONDAS</h3>
+      const sheet = () => G.doc(`<h3>DIVISIÓN J (BETHNAL GREEN) — RONDAS · copia a la H</h3>
         <p class="small">Noche del 30 al 31 de agosto de 1888</p>
+        <p class="small">Remitida a Whitechapel: la H pide las rondas de la noche por lo de George Yard.</p>
         <p><b>PC 97J Neil.</b> Buck's Row, Brady Street, Baker's Row. Vuelta de media hora: pasa ante el portón del establo a las y cuarto y a menos cuarto.</p>
         <p><b>PC 96J Thain.</b> Brady Street. A las y media se detiene en la esquina de Buck's Row y alumbra la calle con la linterna.</p>
         <p><b>PC 55H Mizen.</b> Baker's Row y Hanbury Street. Desde su punto no se ve Buck's Row.</p>
-        <p class="hand">Declaraciones: Thain alumbró Buck's Row a las 3:30; no había nada en el suelo. Charles Cross, carretero, entró en la calle a las 3:40 y la encontró delante del portón.</p>
+        <p class="hand">Declaraciones: Thain alumbró Buck's Row a las 3:30; no había nada en el suelo. Charles Cross, carretero, entró en la calle hacia las 3:40 y la encontró delante del portón.</p>
         <p class="small" style="text-align:right">${G.two('Firmado: el inspector de guardia', 'Firmado: T. Ashgrove, inspector de guardia')}</p>`);
       if (knowsPuzzles(G)) {
         const k = await G.choice(['Ya lo sé: de 3:30 a 3:40.', 'Leer la hoja otra vez.']);
@@ -264,7 +265,7 @@ export function makeChapters() {
       (G.state.investigation ??= {}).evaluations ??= {};
       G.state.investigation.evaluations.beats = { misses };
       G.clue('ronda');
-      await G.think('De 3:30 a 3:40. Conocía esa ventana o tuvo mucha suerte.');
+      await G.think('De 3:30 a 3:40, si las horas son buenas.');
       if (G.second()) await G.think('Yo firmé estas rondas.');
     },
 

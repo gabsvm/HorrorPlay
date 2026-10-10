@@ -74,6 +74,20 @@ export const THEORIES = [
         rule: (n, s) => (s.flags.awake ? 'sostenida' : n.for >= 3 ? 'plausible' : 'sin evaluar') },
     ],
   },
+  {
+    id: 'rondas',
+    q: '¿Cuándo quedó el portón fuera de vista, y cómo se sabe?',
+    hyps: [
+      { id: 'firme', text: 'La ventana de las rondas es firme.',
+        for: [D('d_ronda', 'el hueco que dejan las horas declaradas')],
+        against: [],
+        rule: (n) => (n.for ? 'plausible' : 'sin evaluar') },
+      { id: 'compatible', text: 'La ventana es compatible, con margen.',
+        for: [C('ronda', 'la hoja da la ventana con margen')],
+        against: [],
+        rule: (n) => (n.for ? 'plausible' : 'sin evaluar') },
+    ],
+  },
 ];
 
 export function holds(s, e) {

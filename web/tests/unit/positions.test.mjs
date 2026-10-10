@@ -68,7 +68,7 @@ export const tests = [
     eq(readPosition(s, 'br_suspect'), null);
     eq(s.investigation.revisions, []);
   }],
-  ['una pregunta no visible no se escribe: buck_window nunca; carta sin la carta', () => {
+  ['una pregunta no visible no se escribe: buck_window sin la pista ronda; carta sin la carta', () => {
     const s = st({ clues: ['dedos'] });
     eq(QUESTIONS.buck_window.visible(s), false);
     eq(setPosition(s, 'buck_window', 'firme'), false);

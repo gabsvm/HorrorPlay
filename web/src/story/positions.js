@@ -16,8 +16,7 @@ const hasClue = (s, id) => s.clues.includes(id);
 const question = (q) => (Object.prototype.hasOwnProperty.call(QUESTIONS, q) ? QUESTIONS[q] : null);
 
 // The questions the notebook can ask. `theory` is the theory (theories.js) whose explanations are the
-// options; `visible` says when the question appears. buck_window is listed but never shown in F01
-// (F02 activates it).
+// options; `visible` says when the question appears. buck_window appears with the clue ronda (F02).
 export const QUESTIONS = {
   br_suspect: { theory: 'brennan', title: 'Qué pensé de Brennan',
     options: [['brennan', 'Pudo ser Brennan'], ['prensa', 'El barrio ya lo había elegido'], ['insuficiente', 'No hay bastante para decirlo']],
@@ -25,8 +24,8 @@ export const QUESTIONS = {
   letter_author: { theory: 'carta', title: '¿Quién escribió la carta?',
     options: [['greaves', 'Pudo escribirla Greaves'], ['cercano', 'Salió de mi cuarto'], ['insuficiente', 'No hay bastante para decirlo']],
     visible: (s) => hasClue(s, 'carta') },
-  buck_window: { theory: null, title: 'Ventana de las rondas', options: [['firme', 'Firme'], ['compatible', 'Compatible, con margen'], ['insuficiente', 'Insuficiente']],
-    visible: () => false },   // oculta en F01; la activa F02
+  buck_window: { theory: 'rondas', title: 'Ventana de las rondas', options: [['firme', 'Firme'], ['compatible', 'Compatible, con margen'], ['insuficiente', 'Insuficiente']],
+    visible: (s) => hasClue(s, 'ronda') },   // visible con la pista ronda (F02)
 };
 
 // What the closing of chapter one said about Brennan (flags.brennan_stance). The notebook shows it as

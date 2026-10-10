@@ -387,7 +387,7 @@ _Archivo: src/scenes/bucks_row.js_
 - _Si !hasClue('ronda'):_
   - **Neil:** Pasé a las tres y cuarto. La calle estaba despejada.
   - **Thomas:** ¿Y después?
-  - **Neil:** A las tres cuarenta y cinco, los carreteros me llamaron. Está todo en la hoja.
+  - **Neil:** A las tres cuarenta y cinco la encontré yo. Le hice señas a Thain con la linterna. Está todo en la hoja.
 - _Si no:_
   - **Neil:** Es mi ronda desde hace seis años. Anoche me costó entrar en esa calle.
 
@@ -1005,7 +1005,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
   - **Pike:** Prudente. El barrio no lo será. _(para "unsure")_
 
 ### `beats`
-- [Documento] DIVISIÓN H — RONDAS Noche del 30 al 31 de agosto de 1888 PC 97J Neil. Buck's Row, Brady Street, Baker's Row. Vuelta de media hora: pasa ante el portón del establo a las y cuarto y a menos cuarto. PC 96J Thain. Brady Street. A las y media se detiene en la esquina de Buck's Row y alumbra la calle con la linterna. PC 55H Mizen. Baker's Row y Hanbury Street. Desde su punto no se ve Buck's Row. Declaraciones: Thain alumbró Buck's Row a las 3:30; no había nada en el suelo. Charles Cross, carretero, entró en la calle a las 3:40 y la encontró delante del portón. {two('Firmado: el inspector de guardia', 'Firmado: T. Ashgrove, inspector de guardia')}
+- [Documento] DIVISIÓN J (BETHNAL GREEN) — RONDAS · copia a la H Noche del 30 al 31 de agosto de 1888 Remitida a Whitechapel: la H pide las rondas de la noche por lo de George Yard. PC 97J Neil. Buck's Row, Brady Street, Baker's Row. Vuelta de media hora: pasa ante el portón del establo a las y cuarto y a menos cuarto. PC 96J Thain. Brady Street. A las y media se detiene en la esquina de Buck's Row y alumbra la calle con la linterna. PC 55H Mizen. Baker's Row y Hanbury Street. Desde su punto no se ve Buck's Row. Declaraciones: Thain alumbró Buck's Row a las 3:30; no había nada en el suelo. Charles Cross, carretero, entró en la calle hacia las 3:40 y la encontró delante del portón. {two('Firmado: el inspector de guardia', 'Firmado: T. Ashgrove, inspector de guardia')}
 - _Si knowsPuzzles(G):_
   - > **Elección:** 1) Ya lo sé: de 3:30 a 3:40.  ·  2) Leer la hoja otra vez.
   - _Si k === 0:_
@@ -1020,7 +1020,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - _Si misses === perception.beatsHelpAfter(state.sanity):_
   - *Thomas (piensa):* Lo que importa son dos horas: cuándo alumbró Thain la calle vacía, y cuándo llegó Cross y la encontró.
 - [+ Pista al cuaderno: ronda]
-- *Thomas (piensa):* De 3:30 a 3:40. Conocía esa ventana o tuvo mucha suerte.
+- *Thomas (piensa):* De 3:30 a 3:40, si las horas son buenas.
 - _Si second():_
   - *Thomas (piensa):* Yo firmé estas rondas.
 
@@ -1397,7 +1397,7 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 
 **`ronda`**
 - Dónde: Buck's Row · la hoja de rondas
-- Texto: Entre las 3:30 y las 3:40 nadie podía ver el portón: Thain acababa de alumbrar la calle y Cross aún no había llegado. Diez minutos, y quien lo hizo lo sabía.
+- Texto: Según la hoja, Thain alumbró la calle hacia las 3:30 y Cross llegó hacia las 3:40. Son horas de testimonio, no de reloj: la ventana es aproximada.
 - Verdad (2ª lectura): La hoja de rondas la firmé yo.
 
 **`silencio`**
@@ -1560,7 +1560,7 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 **`d_ronda`**
 - Une las pistas: `ronda` + `silencio`
 - Rasgo del perfil: Conoce las rondas de la policía
-- Texto: Actuó dentro de un hueco de diez minutos. Tal vez conocía las rondas; la precisión del intervalo también admite el azar.
+- Texto: Las horas declaradas dejan un hueco de unos diez minutos. Tal vez conocía las rondas; la precisión también admite el azar.
 
 **`d_zurdo`**
 - Une las pistas: `zurdo` + `anatomia`
