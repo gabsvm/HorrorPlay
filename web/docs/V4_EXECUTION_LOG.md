@@ -1006,3 +1006,93 @@ autoría como hecho (Greaves/Brennan/prensa) ... 1 (src/story/theories.js:49: 'L
 - Fuente de H-13 (cartel posterior con facsímil) y de la circulación de copias (H-35): FUENTE PENDIENTE, primaria en F07/F17.
 
 **Cierre de V4-07 (decisiones del implementador revisadas):** se aceptan el documento del periódico con «escrita con tinta roja» (es la prensa en el mundo del juego), la hipótesis «La escribió Greaves.» (opción de hipótesis, no hecho) y el *test* de compatibilidad que comprueba `handwriting_assessment`. Se modaliza la deducción `d_rojo` a «Según el periódico, la carta fechada el 25 está escrita en rojo.» (un hecho de prensa, no del cuaderno). Ningún cambio de verdad canónica: `d_rojo.truth` y `carta.truth2` siguen atribuyendo la carta a Thomas.
+
+## V4-08 — implementación (pendiente de revisión)
+
+Implementado por el agente implementador (Haiku), sin commit ni push. Base `bb367df`. Revisión del observador pendiente.
+
+### Decisiones y textos
+
+- **Nombre del hotspot.** «Desagüe del Black Ditch» se mantiene (opción a). `intro.js` no se toca.
+- **Cabecera de `foreshore.js` (línea 1).** «Limehouse foreshore at low tide, where the culvert of the Black Ditch comes out at the Thames.» (solo comentario).
+- **Hotspot `outfall`, solo 1888, primera mirada** (`!G.state.seen?.['foreshore:outfall']`, la marca que el motor ya guarda; sin flag nuevo):
+  1. «Ladrillo viejo. El agua sale a borbotones de debajo de la calle.»
+  2. Si `perceptionBand(G.state.sanity) !== 'steady'`: «El ruido se calla al acercarme.» y una caída breve de los fondos con `G.audio.setBeds({}, 0.3)`, espera de 1200 ms y `G.audio.setBeds(bed, 1.5)` con el mapa anterior (`G.audio.wantBeds`). Sin destellos ni flags.
+  3. `outfall1888` sin cambios.
+- **`data.js`, `d_nat`:** «La voz del agua dice nombres en la orilla, donde sale el Ditch. Quien la oye y contesta, cambia.» (mismo ID, `a`, `b` y `profile`).
+- **Tests nuevos:** `tests/unit/ditch.test.mjs` (10 pruebas: lectura de `src`, cabecera, nombre, líneas una vez y dentro del hotspot, rama de 1866 limpia, marca `seen` sin flag, condición de cordura y efecto de audio, `outfall1888` intacto, bandas, `d_nat`) y `tests/scenarios/ditch.js` (escenario automático en `test-all`: 1888 con cordura 100, 50 y 20; voz solo con `canEnterFinale`; 1866; brillo; estado guardado idéntico entre bandas salvo la cordura).
+
+### Desviaciones y observaciones
+
+1. **La primera mirada de 1888 no aparece si el desagüe se miró en 1866 (decisión del observador).** El motor marca `seen['foreshore:outfall']` en 1866 y nada la borra al pasar a 1888. Comprobado con una sonda temporal (borrada): tras mirar en 1866, la mirada de 1888 no muestra «Ladrillo viejo…». Por eso la línea solo aparece a quien no miró el desagüe en 1866. Sigue la especificación al pie de la letra; las opciones están en `V4_STATE_SCHEMA.md` §12.
+2. **Ruta de la especificación.** La especificación cita `web/tests/scenarios/walkthrough.js:161`; el archivo real es `web/tests/walkthrough.js`, línea 161 (`act('outfall')`). `walk` sigue en PASS. Con la línea nueva, el recorrido hace dos líneas más (426→428 en primera lectura; 429→431 en segunda). El recorrido no mira el desagüe en 1866.
+3. **Efecto de audio aplicado** con `setBeds` (API existente). No hizo falta inventar método. En las pruebas headless no hay `AudioContext`, así que el escenario comprueba las llamadas a `setBeds` en lugar del sonido.
+4. **Línea de base.** La primera ejecución de `test-all` se paró porque leía `src` mientras editaba. La línea de base final se hizo sobre una copia de HEAD (`git archive bb367df web`): PASS completo, exit 0.
+5. **Finales de línea.** `foreshore.js` estaba en CRLF en el árbol de trabajo; se normalizó a LF (`sed -i 's/\r$//'`). `git diff` no lo registra por `.gitattributes`. `GUION.md` se regeneró y se normalizó a LF.
+6. **Comprobación en navegador.** No se hizo: el cambio es de texto y audio, y lo cubren los recorridos headless. No hay servidor de vista previa.
+
+### Deuda visual (F11)
+
+- **Escena:** `foreshore` (1888, variante noche).
+- **Capa:** `near` (`build`), `web/src/scenes/foreshore.js` líneas 146–149, «the ditch water running out over the mud»: una lámina de agua pintada desde el arco del desagüe (x≈200) hasta x=900 sobre el barro, con dos reflejos. Se lee como un curso abierto que corre por la orilla, no como una salida entubada. No se cambió (arte fuera de la lista). Anotada para F11.
+
+### Tabla de comportamiento (PASO 0)
+
+`web/docs/V4_F00_INVENTORY.md` §9, «Hotspots de foreshore.js (tabla de comportamiento, V4-08)»: `boat`, `jetty`, `outfall`, `stairs`, `water`. Añadida antes de editar `foreshore.js`.
+
+### Archivos tocados (git status)
+
+```
+ M web/GUION.md
+ M web/docs/V4_F00_INVENTORY.md
+ M web/docs/V4_HISTORICAL_LEDGER.md
+ M web/docs/V4_STATE_SCHEMA.md
+ M web/docs/V4_EXECUTION_LOG.md
+ M web/src/scenes/foreshore.js
+ M web/src/story/data.js
+?? web/tests/scenarios/ditch.js
+?? web/tests/unit/ditch.test.mjs
+```
+
+### Snapshot de `evaluate()` (11 fixtures, `normalizeState` antes, `evaluate()` y `statuses()`)
+
+Scripts y salidas en `scratchpad/v4-08/` (fuera del repositorio): `snap.mjs`, `snapshot-before.json`, `snapshot-after.json`.
+
+- `cmp snapshot-before.json snapshot-after.json` → sin diferencias (`SNAPSHOT IDENTICAL`). `d_nat` no es prueba de teoría.
+
+### Comandos y salidas reales
+
+```
+$ node tools/unit.mjs | tail -1
+141 pruebas bien, 0 mal                                  (exit 0)   [131 antes + 10 de ditch.test.mjs]
+
+$ node tools/walk.mjs
+{ "scenario": "walkthrough", "ok": true, "errors": [], "lines": 428, "deductions": 25, "scene": "bucks_row" }   (exit 0)
+  (antes: lines 426)
+
+$ node tools/walk.mjs second
+{ "scenario": "second", "ok": true, "errors": [], "lines": 431, "deductions": 25, "scene": "bucks_row" }   (exit 0)
+  (antes: lines 429)
+
+$ node tools/walk.mjs alt
+{ "scenario": "alt", "ok": true, "errors": [], "lines": 125, "deductions": 1, "scene": "seance" }          (exit 0)
+  (antes: lines 125)
+
+$ node tools/walk.mjs ditch
+{ "scenario": "ditch", "ok": true, "errors": [], "lines": 27, "deductions": 0, "scene": "foreshore" }      (exit 0)
+  Contra HEAD: falla («Primera mirada 1888 sin el ladrillo»), y unit da 5 FALLO.
+
+$ node tools/test-all.mjs   (salida en scratchpad/v4-08/testall-final.txt)
+PASS  unit   PASS  smoke   PASS  audio   PASS  scenario ditch   ... (todas los escenarios)  PASS  walk   PASS  walk second   PASS  walk alt
+(30 PASS, 0 FAIL, EXIT 0)
+
+$ node tools/script/export.mjs && git diff -- web/GUION.md   (solo cambian 2 bloques: el outfall 1888 con sus dos líneas condicionales, y `d_nat`)
+```
+
+### Preguntas abiertas para el observador
+
+- ¿Se acepta la limitación de la marca `seen` compartida (desviación 1), o se usa una clave `foreshore:outfall:1888` en `seen`? Lo segundo es un campo nuevo dentro de `seen`.
+- Deuda visual F11 (escena `foreshore`, capa `near`, líneas 146–149).
+- H-14 y H-36 siguen `[U]` con **FUENTE PENDIENTE** (LAMAS: PDF binario, ficha HTML 403).
+
+**Revisión de cierre (Opus, V4-08): APPROVED con una corrección aplicada.** La primera mirada de 1888 usa la clave `seen['foreshore:outfall:1888']`, no la marca compartida con 1866 (un test cubre el caso «mirar en 1866 primero»). Deuda visual para F11: la lámina de agua de foreshore.js (146–149) se lee como un cauce abierto; debe salir de la boca del colector. H-14 sigue [U] FUENTE PENDIENTE (PDF binario; ficha HTML 403).

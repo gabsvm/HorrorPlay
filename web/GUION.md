@@ -526,6 +526,11 @@ _Aparece si: is1866(G) && !flag('boat')_
 **Al interactuar:**
 - _Si is1866(G):_
   - *Thomas (piensa):* El agua está tibia. Nat decía que aquí vivía alguien.
+- _Si no:_
+  - _Si !state.seen?.['foreshore:outfall:1888']:_
+    - *Thomas (piensa):* Ladrillo viejo. El agua sale a borbotones de debajo de la calle.
+    - _Si perceptionBand(state.sanity) !== 'steady':_
+      - *Thomas (piensa):* El ruido se calla al acercarme.
 
 #### El embarcadero `jetty`
 **Al interactuar:**
@@ -1619,7 +1624,7 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 **`d_nat`**
 - Une las pistas: `nat_voz` + `regla`
 - Rasgo del perfil: Ronda el río
-- Texto: La voz del agua dice nombres en la orilla del Ditch. Quien la oye y contesta, cambia.
+- Texto: La voz del agua dice nombres en la orilla, donde sale el Ditch. Quien la oye y contesta, cambia.
 
 **`d_hospes`**
 - Une las pistas: `hospes` + `regla`

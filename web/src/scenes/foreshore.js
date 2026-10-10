@@ -1,7 +1,7 @@
-// Limehouse foreshore at low tide, where the Black Ditch empties into the Thames.
+// Limehouse foreshore at low tide, where the culvert of the Black Ditch comes out at the Thames.
 // Prologue (1866, dusk, Thomas as a boy) and climax (1888, night).
 import * as A from '../art/paint.js';
-import { perception } from '../story/perception.js';
+import { perception, perceptionBand } from '../story/perception.js';
 import { profileStairs } from '../art/props.js';
 import { P, shade } from '../art/palette.js';
 import { rng } from '../art/noise.js';
@@ -311,7 +311,23 @@ export default {
       act: async (G) => {
         if (is1866(G)) {
           await G.think('El agua está tibia. Nat decía que aquí vivía alguien.');
-        } else await G.game.chapterHooks.outfall1888(G);
+        } else {
+          // the first look in 1888 only, by the engine's own seen mark (no flag of its own): the brick, and
+          // when his hearing is already strained, the sound falls away for a moment. Never again after that.
+          if (!G.state.seen?.['foreshore:outfall:1888']) {
+            await G.think('Ladrillo viejo. El agua sale a borbotones de debajo de la calle.');
+            (G.state.seen ||= {})['foreshore:outfall:1888'] = true;
+            if (perceptionBand(G.state.sanity) !== 'steady') {
+              const bed = G.audio.wantBeds || {};
+              const said = G.think('El ruido se calla al acercarme.');
+              G.audio.setBeds({}, 0.3);
+              await G.wait(1200);
+              G.audio.setBeds(bed, 1.5);
+              await said;
+            }
+          }
+          await G.game.chapterHooks.outfall1888(G);
+        }
       },
     },
     {

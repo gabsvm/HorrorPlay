@@ -168,3 +168,19 @@ Fuente: `src/story/positions.js` (puro, sin DOM). Campos añadidos en `investiga
 - **Guardados antiguos con `handwriting_assessment`.** Cargan sin cambio de estado: `normalizeState` lo conserva para los tres valores (`tests/unit/carta.test.mjs`).
 - **Lo que no cambia:** `writeC3a` (fecha 25, 23:41 a 3:15, `tinta_vacia`, `woke_c3`), `truth2` de `carta`, `truth` de `d_rojo`, `FINAL_SOURCES`, los finales, `letter_author` (F01), la pista `letra`, `room.js` (`s2_draft`) y `canLeaveRoomC3b`.
 - **Lista de `flags` (§2).** No se ha regenerado: no hay flags nuevos.
+
+## 12. V4-08 — el desagüe del Black Ditch (primera mirada de 1888) y la línea de `d_nat`
+
+| Campo | Valor |
+|---|---|
+| Campos de estado nuevos | **Ninguno.** No hay flag, pista, deducción ni campo de `investigation` nuevos. Sin migración |
+| `seen['foreshore:outfall']` | **Sin cambio de forma.** Es la marca que el motor ya guarda tras cada `act`. V4-08 solo la lee, en 1888, para decidir si es la primera mirada (ver la advertencia de abajo) |
+| `sanity` | Solo se lee (`perceptionBand`: `strained` o `frayed` oyen el ruido). No se escribe |
+| Fondos sonoros (`audio.wantBeds`) | No es estado de partida. La caída breve (`setBeds({}, 0.3)`, espera de 1,2 s, `setBeds(bed, 1.5)`) los deja como estaban |
+| Teorías (`evaluate()`) | Sin cambio: la instantánea de `evaluate()` y `statuses()` sobre los 11 fixtures es idéntica antes y después (`V4_EXECUTION_LOG.md`, V4-08) |
+| Texto `d_nat` (`story/data.js`) | Solo cambia el texto. Mismo ID, mismos `a`, `b` y `profile` |
+
+- **Advertencia: `seen` no se reinicia entre variantes.** El motor marca `seen['foreshore:outfall']` en la primera visita de 1866, y nada la borra al pasar a 1888. Comprobado con una sonda temporal: un desagüe mirado en 1866 hace que la primera mirada de 1888 no muestre «Ladrillo viejo…». La línea ambiental solo aparece a quien no miró el desagüe en 1866. **Decisión del observador.** Opciones: (a) aceptar la especificación tal cual; (b) una clave propia en `seen` para 1888 (`foreshore:outfall:1888`), que sería un campo nuevo dentro de `seen` y cambiaría esta sección.
+- **Lo que no cambia:** `outfall1888` (`ditch_glow`, la comprobación de `canEnterFinale` y la voz), la luz `ditch`, `drawGlow`, el nombre del hotspot, `intro.js`, el epílogo, las huellas y la ficha.
+
+**§12.1 Corrección de V4-08 (aprobada por Opus):** la primera mirada de 1888 se decide por la clave `seen['foreshore:outfall:1888']`, que la escena escribe al terminar esa primera mirada. No usa `seen['foreshore:outfall']`, que se comparte con 1866. Clave reservada por V4 dentro de `seen`; sin migración; los guardados antiguos ven la línea una vez en su primera visita de 1888.
