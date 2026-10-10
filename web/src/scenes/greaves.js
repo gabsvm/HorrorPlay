@@ -7,6 +7,12 @@ import { rng } from '../art/noise.js';
 
 const WIDTH = 1500, GROUND = 664;
 
+// What the drawer holds once it is open: a note from Scotland Yard, copied to Greaves. It is found
+// with the key and it is still there every time the drawer is looked at again.
+const NOTA_SWANSON = `<h3>SCOTLAND YARD — NOTA DEL INSPECTOR JEFE D. S. SWANSON</h3>
+        <p class="small">19 de octubre de 1888 · Copia al Dr. L. Greaves, por consulta.</p>
+        <p class="hand">«Al principio el doctor creyó que las heridas las había causado una persona zurda; ahora lo duda.»</p>`;
+
 export default {
   id: 'greaves',
   width: WIDTH,
@@ -136,7 +142,7 @@ export default {
     {
       id: 'drawer', name: 'Cajón del escritorio', rect: [560, GROUND - 100, 300, 100], walk: 600, face: 1,
       act: async (G) => {
-        if (G.flag('drawer_open')) { G.audio.tick(); return; }   // open, and empty now
+        if (G.flag('drawer_open')) { await G.doc(NOTA_SWANSON); return; }   // open: the note is still in it
         await G.think('La cerradura es pequeña. Necesito algo fino.');
       },
       use: async (G, item) => {
@@ -147,6 +153,7 @@ export default {
         G.flag('drawer_open', true);
         await G.think('Ni siquiera tuve que probar dos veces.');
         G.give('llave');
+        await G.doc(NOTA_SWANSON);
         return true;
       },
     },

@@ -489,3 +489,9 @@ La maquetación del libro no se ha cambiado en esta fase; la solución compartid
 
 - Maquetación compartida del libro a 720p (todas las pestañas). **V4-02:** la pestaña Teorías tiene ahora **cinco preguntas** (intruso, brennan, carta, horas, rondas). Con todo plegado `.page.right` mide 1277 px frente a 596 a 1280×720. La línea plegada de cada postura (unos 59 px) debe caber en la línea de su pregunta o ser más compacta.
 - Etiqueta «Qué pensé de Brennan» (`QUESTIONS.br_suspect.title`): no se muestra en ninguna parte; se decide en una fase posterior.
+
+## Deudas registradas en V4-03
+
+1. **Vitrina de Greaves repetible (posible P1 de juego).** `readFile` no tiene guarda: abrir la vitrina con la llave otra vez vuelve a ejecutar la conversación con Greaves y baja la cordura (−10 y −15). Ya existía antes de F03. Comprobar en partida normal y corregir en F10 (pacing), con la tabla de `greaves.js` de `V4_F00_INVENTORY.md` §6.
+2. **Perfil antiguo en guardados.** `d_zurdo` cambia el rasgo del perfil a «Quizá zurdo, quizá con nociones de anatomía», pero los guardados antiguos conservan «Zurdo, con nociones de anatomía» en `state.profile` (7 fixtures). Opciones: sustitución exacta e idempotente en `normalizeState`, o aceptarlo. Decidir en F16 o F17.
+3. **Atribución y texto literal de la nota de Swanson.** Verificación con fuente primaria en F17 (H-07).

@@ -217,7 +217,7 @@ export default {
           const c = await G.choice(['¿Qué opina del corte?', 'Me alegro de verle, doctor.']);
           g.talking = true;
           if (c === 0) {
-            await G.say('Greaves', 'Es trabajo de alguien acostumbrado a la disección.');
+            await G.say('Greaves', 'Parece trabajo de alguien acostumbrado a la disección.');
             await G.say('Greaves', 'Tú tenías buena mano. No era un elogio que hiciera a menudo.');
           } else {
             await G.say('Greaves', 'Habría preferido verte descansado.');

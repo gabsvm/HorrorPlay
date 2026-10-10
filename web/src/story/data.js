@@ -117,8 +117,8 @@ export const CLUES = {
   ronda: { tag: "Buck's Row · la hoja de rondas", text: 'Según la hoja, Thain alumbró la calle hacia las 3:30 y Cross llegó hacia las 3:40. Son horas de testimonio, no de reloj: la ventana es aproximada.',
     truth2: 'La hoja de rondas la firmé yo.' },
   silencio: { tag: "Buck's Row", text: 'Nadie oyó nada. La señora Green dormía a tres metros, detrás de esa ventana.', truth2: 'No gritó. Un policía no da miedo.' },
-  zurdo: { tag: "Buck's Row · Dr. Llewellyn", text: 'Según el forense, los cortes van de izquierda a derecha: quien lo hizo es probablemente zurdo.', truth2: 'Escribo con la izquierda.' },
-  anatomia: { tag: "Buck's Row · Dr. Llewellyn", text: 'El forense dice que el asesino tenía "cierta noción de anatomía".', truth2: 'Cuatro años en la sala de disección.' },
+  zurdo: { tag: "Buck's Row · Dr. Llewellyn", text: 'Según el forense, los cortes van de izquierda a derecha y podrían ser obra de un zurdo.', truth2: 'Escribo con la izquierda.' },
+  anatomia: { tag: "Buck's Row · Dr. Llewellyn", text: 'El forense cree que el asesino tenía alguna noción, tosca, de anatomía.', truth2: 'Cuatro años en la sala de disección.' },
   huellas: { tag: "Buck's Row", text: 'Huellas de barro negro, barro de río, que se alejan hacia Winthrop Street.', truth2: 'Del Ditch a Buck\'s Row, y de Buck\'s Row a mi puerta.' },
   brennan_zurdo: { tag: 'Desolladero de Barber', text: 'Silas Brennan afila el cuchillo con la mano izquierda. Lleva delantal de cuero.', truth2: 'Era zurdo, como yo. Me bastó.' },
   bisturi: { tag: 'Wren', text: 'Wren encontró un bisturí en la alcantarilla de Buck\'s Row. Lleva el sello del London Hospital.', truth2: 'Es el que falta en mi estuche.' },
@@ -164,7 +164,7 @@ export const CLUES = {
 // a + b -> deduction. `profile` adds a trait to the killer profile.
 export const DEDUCTIONS = [
   { id: 'd_ronda', a: 'ronda', b: 'silencio', profile: 'Conoce las rondas de la policía', text: 'Las horas declaradas dejan un hueco de unos diez minutos. Tal vez conocía las rondas; la precisión también admite el azar.' },
-  { id: 'd_zurdo', a: 'zurdo', b: 'anatomia', profile: 'Zurdo, con nociones de anatomía', text: 'Un zurdo que sabe dónde cortar: un matarife, un carnicero... o un médico.' },
+  { id: 'd_zurdo', a: 'zurdo', b: 'anatomia', profile: 'Quizá zurdo, quizá con nociones de anatomía', text: 'Si el forense acierta, un zurdo que sabe dónde cortar: un matarife, un carnicero... o un médico. Técnica no es lo mismo que estudios.' },
   { id: 'd_barro', kind: 'hipotesis', a: 'botas', b: 'ventana', denial: true, text: 'Las botas estaban mojadas y la ventana abierta. ¿Alguien pasó por aquí durante la noche? ¿Cómo se explica el barro?', truth: 'Nadie entra. Salgo yo.' },
   { id: 'd_brennan', kind: 'hipotesis', a: 'brennan_zurdo', b: 'zurdo', flag: 'sospecha_brennan', text: 'Brennan coincide con la lateralidad atribuida al asesino y trabaja cerca. Su coartada requiere verificación. No es prueba de culpabilidad.' , truth: 'Brennan es zurdo. Yo también.' , denialLate: true },
   { id: 'd_bisturi', a: 'bisturi', b: 'anatomia', profile: 'Formación médica (London Hospital)', text: 'Un bisturí de la sala de disección del London Hospital. Quien lo perdió estudió allí.' },
@@ -185,7 +185,7 @@ export const DEDUCTIONS = [
   { id: 'd_firma', a: 'marcas', b: 'ordenados', profile: 'Firma su trabajo', text: 'Las cosas en fila, las marcas en la cara: quiere que se sepa que es el mismo, y que lo hace con calma.' },
   { id: 'd_guantes', kind: 'inferencia', a: 'guantes', b: 'rapido', denial: true, text: 'Los guantes se mancharon al tocar el cuerpo; el origen y la antigüedad de la sangre necesitan comprobarse.', truth: 'La sangre de mis guantes ya estaba seca cuando Watkins la encontró.' },
   // final: the profile meets the man
-  { id: 'f_zurdo', a: 'ficha', b: 'zurdo', flag: 'f1', text: 'Zurdo.', final: true },
+  { id: 'f_zurdo', a: 'ficha', b: 'zurdo', flag: 'f1', text: 'El forense creyó ver a un zurdo. Yo escribo con la izquierda.', final: true },
   { id: 'f_anat', a: 'ficha', b: 'bisturi', flag: 'f2', text: 'El bisturí del London Hospital es mío.', final: true },
   { id: 'f_testigo', a: 'ficha', b: 'testigo', flag: 'f3', text: 'Abrigo oscuro, bombín y linterna de policía. Ese soy yo.', final: true },
   { id: 'f_ronda', a: 'ficha', b: 'ronda', flag: 'f4', text: 'Conozco las rondas porque las firmo yo.', final: true },

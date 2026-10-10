@@ -358,7 +358,7 @@ _Archivo: src/scenes/bucks_row.js_
 - _Si c === 'book':_
   - **Pike:** ...Tome. No tengo nada que esconderle.
 - _Si c === 'doc':_
-  - **Pike:** Llewellyn cree que los cortes los hizo un zurdo.
+  - **Pike:** Llewellyn cree que los cortes podrían ser de un zurdo.
   - [+ Pista al cuaderno: zurdo]
   - **Pike:** Dice que conocía el cuerpo. No es una afirmación que haga a la ligera.
   - [+ Pista al cuaderno: anatomia]
@@ -578,7 +578,7 @@ _Archivo: src/scenes/hanbury.js_
   - **Greaves:** Phillips me pidió que viniera. Lo otro es una pregunta difícil.
   - > **Elección:** 1) ¿Qué opina del corte?  ·  2) Me alegro de verle, doctor.
   - _Si c === 0:_
-    - **Greaves:** Es trabajo de alguien acostumbrado a la disección.
+    - **Greaves:** Parece trabajo de alguien acostumbrado a la disección.
     - **Greaves:** Tú tenías buena mano. No era un elogio que hiciera a menudo.
   - _Si no:_
     - **Greaves:** Habría preferido verte descansado.
@@ -676,10 +676,13 @@ _Archivo: src/scenes/greaves.js_
 
 #### Cajón del escritorio `drawer`
 **Al interactuar:**
+- _Si flag('drawer_open'):_
+  - [Documento] SCOTLAND YARD — NOTA DEL INSPECTOR JEFE D. S. SWANSON 19 de octubre de 1888 · Copia al Dr. L. Greaves, por consulta. «Al principio el doctor creyó que las heridas las había causado una persona zurda; ahora lo duda.»
 - *Thomas (piensa):* La cerradura es pequeña. Necesito algo fino.
 **Al usar un objeto sobre ello:**
 - *Thomas (piensa):* Ni siquiera tuve que probar dos veces.
 - [+ Objeto: llave]
+- [Documento] SCOTLAND YARD — NOTA DEL INSPECTOR JEFE D. S. SWANSON 19 de octubre de 1888 · Copia al Dr. L. Greaves, por consulta. «Al principio el doctor creyó que las heridas las había causado una persona zurda; ahora lo duda.»
 
 #### Vitrina cerrada `cabinet`
 **Al interactuar:**
@@ -1407,12 +1410,12 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 
 **`zurdo`**
 - Dónde: Buck's Row · Dr. Llewellyn
-- Texto: Según el forense, los cortes van de izquierda a derecha: quien lo hizo es probablemente zurdo.
+- Texto: Según el forense, los cortes van de izquierda a derecha y podrían ser obra de un zurdo.
 - Verdad (2ª lectura): Escribo con la izquierda.
 
 **`anatomia`**
 - Dónde: Buck's Row · Dr. Llewellyn
-- Texto: El forense dice que el asesino tenía "cierta noción de anatomía".
+- Texto: El forense cree que el asesino tenía alguna noción, tosca, de anatomía.
 - Verdad (2ª lectura): Cuatro años en la sala de disección.
 
 **`huellas`**
@@ -1564,8 +1567,8 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 
 **`d_zurdo`**
 - Une las pistas: `zurdo` + `anatomia`
-- Rasgo del perfil: Zurdo, con nociones de anatomía
-- Texto: Un zurdo que sabe dónde cortar: un matarife, un carnicero... o un médico.
+- Rasgo del perfil: Quizá zurdo, quizá con nociones de anatomía
+- Texto: Si el forense acierta, un zurdo que sabe dónde cortar: un matarife, un carnicero... o un médico. Técnica no es lo mismo que estudios.
 
 **`d_barro`**
 - Une las pistas: `botas` + `ventana`
@@ -1664,7 +1667,7 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 
 **`f_zurdo`**
 - Une las pistas: `ficha` + `zurdo`
-- Texto: Zurdo.
+- Texto: El forense creyó ver a un zurdo. Yo escribo con la izquierda.
 
 **`f_anat`**
 - Une las pistas: `ficha` + `bisturi`

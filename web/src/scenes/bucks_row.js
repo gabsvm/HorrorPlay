@@ -178,7 +178,7 @@ export default {
         if (c === 'book') { pike.talking = true; await G.say('Pike', '...Tome. No tengo nada que esconderle.'); pike.talking = false; await G.game.chapterHooks.pikeBook(G); return; }
         pike.talking = true;
         if (c === 'doc') {
-          await G.say('Pike', 'Llewellyn cree que los cortes los hizo un zurdo.');
+          await G.say('Pike', 'Llewellyn cree que los cortes podrían ser de un zurdo.');
           G.clue('zurdo');
           await G.say('Pike', 'Dice que conocía el cuerpo. No es una afirmación que haga a la ligera.');
           G.clue('anatomia');
