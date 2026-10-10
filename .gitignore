@@ -27,3 +27,5 @@ __pycache__/
 node_modules/
 web/tools/voices/.refs/
 web/tools/voices/.retake.txt
+unity/HorrorPlay/Assets/ThirdPartyRaw/
+unity/HorrorPlay/Assets/ThirdPartyRaw.meta
