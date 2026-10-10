@@ -349,6 +349,7 @@ export default {
       id: 'bollard', name: 'Poste de piedra', rect: [1590, GROUND - 66, 46, 66], walk: 1660, face: -1,
       act: async (G) => {
         if (G.flag('wren_paid') && !G.has('bisturi') && !G.flag('bisturi_taken')) { await G.game.chapterHooks.takeScalpel(G); return; }
+        G.audio.tick();   // a hitching post worn by the ropes: Wren's counter, nothing more
       },
       use: async (G, item) => {
         if (item !== 'penique' || !G.flag('wren_met') || G.flag('wren_paid')) return false;

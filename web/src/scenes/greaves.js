@@ -136,7 +136,7 @@ export default {
     {
       id: 'drawer', name: 'Cajón del escritorio', rect: [560, GROUND - 100, 300, 100], walk: 600, face: 1,
       act: async (G) => {
-        if (G.flag('drawer_open')) {  return; }
+        if (G.flag('drawer_open')) { G.audio.tick(); return; }   // open, and empty now
         await G.think('La cerradura es pequeña. Necesito algo fino.');
       },
       use: async (G, item) => {

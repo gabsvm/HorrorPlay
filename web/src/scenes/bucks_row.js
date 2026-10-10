@@ -266,7 +266,7 @@ export default {
             { id: 'cara', x: 375, y: 279, r: 60, name: 'La cara', act: async (G) => {
               await G.think('Le sujetaron la mandíbula con la derecha.');
             } },
-            { id: 'cuello', x: 474, y: 280, r: 42, name: 'El cuello', act: async (G) => {
+            { id: 'cuello', key: true, x: 474, y: 280, r: 42, name: 'El cuello', act: async (G) => {
               await G.think('Dos cortes. El primero para acallarla.');
               await G.think('Sin señales de defensa.');
               G.clue('cuello');
@@ -289,6 +289,7 @@ export default {
         G.player.pose = null;
         await G.think('Mi talla. Eso no significa nada.');
       },
+      again: 'Barro de río, hacia Winthrop Street.',
     },
     {
       id: 'window', name: 'Ventana de la señora Green', rect: [1150, 160, 95, 160], walk: 1190,
@@ -301,10 +302,6 @@ export default {
         G.flag('polly_taken', true);
         await G.goto('knackers', { x: 1960, facing: -1 });
       },
-    },
-    {
-      id: 'east', name: 'Hacia Baker\'s Row', cursor: 'exit', rect: [2470, GROUND - 420, 130, 440], walk: 2460, face: 1,
-      act: async (G) => {  },
     },
   ],
 };

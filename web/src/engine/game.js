@@ -187,6 +187,8 @@ export class Game {
     if (this.selectedItem) return `Usar ${this.itemDefs[this.selectedItem].name.toLowerCase()} con`;
     if (h.cursor === 'talk') return 'Hablar con';
     if (h.cursor === 'exit') return 'Ir';
+    // what has been looked at once says so: the second look is never the full first one again
+    if (this.state.seen?.[this.seenKey(h)] && !h.verb) return 'Volver a mirar';
     return h.verb || 'Examinar';
   }
 
@@ -246,16 +248,31 @@ export class Game {
           const handled = await h.use(G, item);
           if (handled !== false) { settle(); return; }
         }
-        await G.think(this.itemDefs[item].wrong || 'No. Eso no sirve ahí.');
+        await G.think(this.itemDefs[item].wrong || this.wrongUse(h));
         settle();
         return;
       }
       try {
-      if (look && h.look) await h.look(G);
-      else if (h.act) await h.act(G);
-      else if (h.look) await h.look(G);
+        // something already examined answers with its short second look (`again`), not the first again
+        const seenBefore = this.state.seen?.[this.seenKey(h)];
+        if (seenBefore && h.again && !(h.againWhen && !h.againWhen(G))) {
+          if (typeof h.again === 'function') await h.again(G);
+          else await G.think(h.again);
+        } else if (look && h.look) await h.look(G);
+        else if (h.act) await h.act(G);
+        else if (h.look) await h.look(G);
       } finally { settle(); (this.state.seen ||= {})[this.seenKey(h)] = true; }
     });
+  }
+
+  // An item offered where it does nothing: a few short answers by what it was offered to, in turn,
+  // so the same sentence does not come back every time.
+  wrongUse(h) {
+    const lines = h.cursor === 'talk' ? ['No es momento de enseñarle esto.', 'No. A esta persona no.', 'Me guardo esto.']
+      : h.cursor === 'exit' ? ['No.', 'Eso no me abre camino.']
+      : ['No. Eso no sirve ahí.', 'No tiene nada que ver.', 'Ahí no.'];
+    this._wrongN = (this._wrongN || 0) + 1;
+    return lines[this._wrongN % lines.length];
   }
 
   // Which body language fits a hotspot: talk to people, raise the lantern at things in front,
@@ -758,9 +775,10 @@ export class Game {
       stairs: (x, y, opts) => game.player.climb(x, y, opts),
       face: (dir) => { game.player.facing = dir; },
       fade: (v, ms = 800) => game.fadeTo(v, ms),
-      flash: (v = 1) => { game.r.fx.flash = v; game.punch = 1; },
-      red: (v = 0.8) => { game.r.fx.red = v; game.punch = 1; },
-      shake: (v = 10) => { game.r.cam.shake = v; game.punch = Math.max(game.punch || 0, 0.6); if (v >= 6) buzz(Math.min(90, v * 5)); },
+      // with reduced motion the shocks stay, softened: a dimmer flash, a small jolt instead of a shake
+      flash: (v = 1) => { game.r.fx.flash = prefs.reduceMotion ? v * 0.35 : v; game.punch = prefs.reduceMotion ? 0.3 : 1; },
+      red: (v = 0.8) => { game.r.fx.red = prefs.reduceMotion ? v * 0.6 : v; game.punch = prefs.reduceMotion ? 0.3 : 1; },
+      shake: (v = 10) => { game.r.cam.shake = prefs.reduceMotion ? Math.min(3, v * 0.25) : v; game.punch = Math.max(game.punch || 0, prefs.reduceMotion ? 0.2 : 0.6); if (v >= 6) buzz(Math.min(90, v * 5)); },
       // Kneel over a body and examine it close up. `points`: [{ id, x, y, r, name, act(G) }] in 1280x720.
       inspect: async (id, { title, body, points }) => {
         const seen = ((game.state.seen ||= {})[`insp:${id}`] ||= {});
@@ -774,6 +792,8 @@ export class Game {
           await G.fade(1, 450);
           await game.ui.inspect({ title, paint: (ctx, w, h) => paintBody(ctx, w, h, body), points, seen, fx: () => ({ red: game.r.fx.red, shake: game.r.cam.shake }) }, (pt) => pt.act(G));
           await G.fade(0, 600);
+          // closing early is allowed; a word says that something that matters was left unexamined
+          if (points.some((pt) => pt.key && !seen[pt.id])) game.ui.toast('Quedan detalles del cuerpo sin examinar.', 3200);
         }
         p.pose = null;
       },

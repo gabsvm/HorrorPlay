@@ -19,7 +19,7 @@ node web/tools/unit.mjs                # solo la lógica pura (web/tests/unit/)
 |---|---|---|---|---|---|---|
 | 0 · Baseline | CODE_COMPLETE | Línea base registrada; harness de escenarios con elecciones por texto; instantáneas de guardado por capítulo (ambas lecturas) y un guardado anterior a la V3; pruebas de compatibilidad, integridad y unitarias; `test-all.mjs` | ver historial | ver abajo | — | Sin comprobación visual (la fase no cambia nada visible) |
 | 1 · Progresión y teorías | CODE_COMPLETE | `story/progression.js` (condiciones puras `canFinishC1`, `canLeaveHanbury`, `canStartSeance`, `canLeaveMitre`, `canLeaveRoomC3b`, `canEnterFinale` con fuentes independientes, `currentGate`, `normalizeState`); `story/theories.js` (4 preguntas del caso con hipótesis y estado derivado de las pruebas); cuaderno con pestañas Conclusiones / Teorías / Perfil; ayuda en dos niveles que dice qué falta; estados guardados en `state.investigation`; errores de guion visibles solo en desarrollo | ver historial | unit 21/21, notebook, compat, walks | El cierre explícito del capítulo I llega en la Fase 3 (por ahora sigue siendo automático, pero ya no exige `d_brennan`) | Navegador: pestañas y ayuda comprobadas en Hanbury con un estado preparado |
-| 2 · Feedback y ritmo | TODO | | | | | |
+| 2 · Feedback y ritmo | CODE_COMPLETE | Ninguna interacción muda (inventario abajo); `again` para la segunda mirada corta; «Volver a mirar» en lo ya examinado; respuestas variadas por familia al usar mal un objeto; salidas bloqueadas que dicen lo que falta (Hanbury, Mitre, cuarto en c3); aviso al cerrar un primer plano con detalles clave sin ver; tarjetas que se cortan con clic/toque/tecla; opción «Lo ya leído: Al instante»; protección de 280 ms contra elegir con el clic que terminó la línea; opción «Movimiento: Reducido» (respeta `prefers-reduced-motion`) | ver historial | feedback + suite | Duraciones de tarjetas y esperas se revisan en la Fase 10 | Navegador: tarjeta cortada con clic (1,8 s en vez de 7), elección protegida, menú de opciones |
 | 3 · Capítulo I | TODO | | | | | |
 | 4 · Hanbury y peine | TODO | | | | | |
 | 5 · Sesión | TODO | | | | | |
@@ -102,3 +102,35 @@ PASS  walk alt                     0.7s
 ```
 
 Navegador (localhost:5317, Hanbury con un estado preparado): las pestañas Conclusiones / Teorías / Perfil cambian; la pestaña Teorías muestra dos preguntas con estados `plausible`, `sin evaluar` y `no demostrada` y sus pruebas; «¿Qué hago ahora?» responde con el objetivo y «me falta mirar lo que hay junto a la valla, a los pies de Annie». Sin errores en consola.
+
+### Fase 2
+
+Inventario de interacciones que no respondían y qué se hizo:
+
+| Escena · objeto | Antes | Ahora |
+|---|---|---|
+| Buck's Row · «Hacia Baker's Row» | salida activa sin función | quitada |
+| Buck's Row · rastro | repetía todo | segunda vez: una línea (`again`) |
+| Cuarto · puerta en c3a | nada | cerrojo y aviso («Primero, los informes» / «Cerrada por dentro») |
+| Cuarto · puerta en c3b sin periódico | nada | «Hay un periódico bajo la puerta.» |
+| Cuarto · escritorio en c1, espejo, mapa, láudano agotado | nada | sonido de papel / susurro / «Ya no queda.» |
+| Desolladero · poste | nada sin Wren | sonido (ambientación deliberada) |
+| Hanbury · ventana tras el reflejo | nada | susurro |
+| Hanbury · pasillo | mencionaba el peine antes de verlo | dice lo primero que falta según `canLeaveHanbury` |
+| Mitre · cuerpo y Morris sin placa | nada | aviso «Watkins no me deja acercarme sin ver la placa.» |
+| Mitre · salida al este | nada | «Todavía no. Me falta…» según `canLeaveMitre` |
+| Mitre · placa enseñada dos veces | nada | «Ya la ha visto.» |
+| Consulta · cajón abierto | nada | sonido |
+
+```
+PASS  unit                         0.1s
+PASS  smoke                        2.9s
+PASS  audio                        0.1s
+PASS  scenario compat              0.4s
+PASS  scenario feedback            0.6s
+PASS  scenario integrity           0.3s
+PASS  scenario notebook            0.3s
+PASS  walk                         3.5s
+PASS  walk second                  3.4s
+PASS  walk alt                     0.6s
+```

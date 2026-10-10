@@ -192,8 +192,11 @@ export default {
             G.clue('llave_pike');
             return;
           }
+          // the middle of the night: there is nowhere to go, and the door says so with its lock
+          G.audio.latch();
+          G.toast(G.flag('woke_c3') ? 'Cerrada por dentro. Es de madrugada.' : 'Primero, los informes.');
         } else if (p === 'c3b') {
-          if (!G.flag('paper_read')) {  return; }
+          if (!G.flag('paper_read')) { await G.think('Hay un periódico bajo la puerta.'); return; }
           await G.game.chapterHooks.leaveRoomC3b(G);
         }
       },
@@ -238,7 +241,8 @@ export default {
         const n = (G.state.flags.mirror_n || 0) + 1; G.state.flags.mirror_n = n;
         // once, a thought; after that the sheet stays where it is and only the room answers
         if (n === 1) await G.think('La sábana no tiene por qué estar aquí.');
-        else if (n >= 3) { G.audio.whisper(1.4, 0.1); G.sanity(-2); }
+        else if (n === 2) G.audio.whisper(0.7, 0.04);
+        else { G.audio.whisper(1.4, 0.1); G.sanity(-2); }
       },
     },
     {
@@ -292,9 +296,11 @@ export default {
       act: async (G) => {
         const p = phase(G);
         if (p === 'c1') {
-          if (!G.has('penique') && !G.flag('penique_given')) G.give('penique');
+          const had = G.has('penique') || G.flag('penique_given');
+          if (!had) G.give('penique');
           if (!G.has('placa')) G.give('placa');
           G.flag('saw_red_ink', true);
+          if (had) G.audio.paper();   // the reports, the two inkwells: nothing new on the desk
         } else if (p === 'c3a') {
           if (!G.flag('woke_c3')) await G.game.chapterHooks.writeC3a(G);
           else await G.think(G.two('Es mi letra. Las últimas dos páginas no son mías... ¿o sí?',
@@ -311,7 +317,7 @@ export default {
         else if (!G.flag('drank')) {
           const c = await G.choice(['Un trago. Solo uno.', 'Dejarlo.']);
           if (c === 0) { G.flag('drank', true); G.sanity(+8); G.audio.drip(); }
-        }
+        } else await G.think('Ya no queda.');
       },
     },
     {
@@ -325,6 +331,7 @@ export default {
       id: 'map', name: 'Mapa de Whitechapel', rect: [1200, GROUND - 526, 140, 106], walk: 1260,
       act: async (G) => {
         if (G.state.chapter === 'c3' || G.state.chapter === 'c4') await G.think('Todo ocurrió a diez minutos de mi puerta.');
+        else G.audio.paper();   // the division map: pins, nothing yet to read in them
       },
     },
   ],

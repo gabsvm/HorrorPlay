@@ -7,7 +7,10 @@ export const SPEEDS = [[1, 'Normal'], [0.5, 'Rápido'], [0, 'Instantáneo'], [1.
 export const QUALITIES = [['auto', 'Auto'], ['alta', 'Alta'], ['baja', 'Baja']];
 export const TOGGLES = [[true, 'Sí'], [false, 'No']];
 
-export const prefs = { volume: 1, text: 1, quality: 'auto', vibrate: true };
+// seenFast: a line already read once (in any game) comes up whole instead of being typed again
+// reduceMotion starts as the system asks (prefers-reduced-motion): shakes and flashes softened
+const systemCalm = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+export const prefs = { volume: 1, text: 1, quality: 'auto', vibrate: true, seenFast: true, reduceMotion: systemCalm };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch { /* storage unavailable */ }
 
 export function savePrefs() {

@@ -3,6 +3,7 @@ import * as A from '../art/paint.js';
 import { nightBackdrop, facade, warehouse } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
+import { canLeaveMitre } from '../story/progression.js';
 import { Smoke, Drip, Rat, Crow, Moths, Paper, Ripples } from '../engine/life.js';
 import { drawCorpse, groundLantern } from './corpse.js';
 
@@ -162,7 +163,7 @@ export default {
       },
       use: async (G, item) => {
         if (item !== 'placa') return false;
-        if (G.flag('mitre_badge')) {  return true; }
+        if (G.flag('mitre_badge')) { await G.think('Ya la ha visto.'); return true; }
         G.flag('mitre_badge', true);
         const w = G.actor('Watkins'); w.talking = true;
         await G.say('Agente Watkins', 'División H. Adelante. Y tenga las manos donde pueda verlas.');
@@ -181,13 +182,13 @@ export default {
     {
       id: 'corner', name: 'El cuerpo, en la esquina más oscura', verb: 'Examinar', rect: [700, GROUND - 30, 260, 90], walk: 690, face: 1, gesture: false,
       act: async (G) => {
-        if (!G.flag('mitre_badge')) {  return; }
+        if (!G.flag('mitre_badge')) { G.toast('Watkins no me deja acercarme sin ver la placa.'); return; }
         await G.think('Aquí nadie podía verlo trabajar.');
         // the points sit on the painted close-up (assets/closeups/eddowes.jpg)
         await G.inspect('kate', {
           title: 'Catherine Eddowes', body: 'eddowes',
           points: [
-            { id: 'cara', x: 253, y: 306, r: 60, name: 'La cara', act: async (G) => {
+            { id: 'cara', key: true, x: 253, y: 306, r: 60, name: 'La cara', act: async (G) => {
               G.red(0.4); G.audio.sting(0.18);
               await G.think('Las marcas no la mataron. Las hizo después.');
               await G.think('Tenía menos de quince minutos para hacerlas.');
@@ -208,7 +209,7 @@ export default {
               G.clue('trozo');
           mitreObjective(G);
             } },
-            { id: 'pulso', x: 903, y: 100, r: 55, name: 'La muñeca', act: async (G) => {
+            { id: 'pulso', key: true, x: 903, y: 100, r: 55, name: 'La muñeca', act: async (G) => {
               G.audio.play('leather', { vol: 0.5, rate: 0.8 });   // the glove coming away from her skin
               if (G.second()) {
                 await G.vision('hands');
@@ -236,7 +237,7 @@ export default {
     {
       id: 'morris', name: 'Morris, el vigilante', cursor: 'talk', rect: [1200, GROUND - 172, 80, 172], walk: 1140, face: 1,
       act: async (G) => {
-        if (!G.flag('mitre_badge')) {  return; }
+        if (!G.flag('mitre_badge')) { G.toast('Watkins no me deja acercarme sin ver la placa.'); return; }
         const m = G.actor('Morris'); m.talking = true;
         await G.say('Morris', 'Tenía la puerta entornada. No oí ni una palabra.');
         await G.say('Morris', 'Fui agente veinte años. No me acostumbro a esto.');
@@ -246,7 +247,8 @@ export default {
     {
       id: 'east', name: 'Hacia Goulston Street', cursor: 'exit', rect: [2160, GROUND - 420, 140, 440], walk: 2150, face: 1,
       act: async (G) => {
-        if (!G.hasClue('trozo') || !G.hasClue('testigo')) {  return; }
+        const gate = canLeaveMitre(G.state);
+        if (!gate.ok) { await G.think(`Todavía no. Me falta ${gate.missing[0]}.`); return; }
         await G.think('Hacia el este. El trozo de delantal no habrá llegado muy lejos.');
         await G.game.chapterHooks.toGoulston(G);
       },

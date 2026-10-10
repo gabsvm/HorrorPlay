@@ -8,6 +8,32 @@ import { evaluate as theories } from '../story/theories.js';
 const $ = (id) => document.getElementById(id);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Every line ever read, by a short hash, so a replay (or the second reading) shows what was already
+// read whole. Kept apart from the save; at most a few thousand entries.
+const SEEN_KEY = 'elhuesped.seenLines';
+const seenLines = (() => { try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || '[]')); } catch { return new Set(); } })();
+let seenDirty = 0;
+function lineHash(t) { let h = 2166136261; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h.toString(36); }
+function markSeen(h) {
+  if (seenLines.has(h)) return;
+  seenLines.add(h);
+  clearTimeout(seenDirty);
+  seenDirty = setTimeout(() => { try { localStorage.setItem(SEEN_KEY, JSON.stringify([...seenLines].slice(-4000))); } catch { /* storage unavailable */ } }, 1500);
+}
+
+// A wait the player can cut short with a click, a tap or a key (cards and title screens)
+function skippableWait(ms, min = 500) {
+  return new Promise((res) => {
+    let done = false;
+    const t0 = performance.now();
+    const finish = () => { if (done) return; done = true; clearTimeout(timer); window.removeEventListener('pointerdown', onSkip, true); window.removeEventListener('keydown', onSkip, true); res(); };
+    const onSkip = (e) => { if (performance.now() - t0 < min) return; if (e.type === 'keydown' && ![' ', 'Enter', 'Escape'].includes(e.key)) return; finish(); };
+    const timer = setTimeout(finish, ms);
+    window.addEventListener('pointerdown', onSkip, true);
+    window.addEventListener('keydown', onSkip, true);
+  });
+}
+
 export class UI {
   constructor() {
     this.el = {
@@ -74,6 +100,9 @@ export class UI {
     this._advance = () => { skip = true; };
     const speed = (style === 'voice' ? 55 : 22) * prefs.text;
     if (!speed) skip = true;
+    const h = lineHash(`${speaker}|${plain}`);
+    if (prefs.seenFast && seenLines.has(h)) skip = true;
+    markSeen(h);
     for (let i = 1; i <= plain.length && !skip; i++) {
       dlgText.textContent = plain.slice(0, i);
       const ch = plain[i - 1];
@@ -108,6 +137,7 @@ export class UI {
     const box = this.el.choices;
     box.innerHTML = '';
     box.classList.remove('hidden');
+    const shown = performance.now();
     return new Promise((res) => {
       let timer = null;
       if (timeout) {
@@ -124,6 +154,7 @@ export class UI {
         b.addEventListener('pointerdown', (e) => e.stopPropagation());
         b.addEventListener('click', (e) => {
           e.stopPropagation();
+          if (performance.now() - shown < 280) return;   // the click that ended the last line, landing here
           if (timer) clearTimeout(timer);
           audio.click();
           box.classList.add('hidden');
@@ -137,6 +168,7 @@ export class UI {
   }
 
   toast(text, ms = 2600) {
+    if (window.FAST) (window.LOG ||= []).push(`[aviso] ${text}`);
     const t = this.el.toast;
     t.textContent = text;
     t.classList.add('show');
@@ -203,9 +235,9 @@ export class UI {
     c.classList.remove('hidden');
     await wait(50);
     c.classList.add('show');
-    await wait(ms);
+    await skippableWait(ms);
     c.classList.remove('show');
-    await wait(1400);
+    await wait(prefs.reduceMotion ? 300 : 900);
     c.classList.add('hidden');
   }
 

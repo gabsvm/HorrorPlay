@@ -38,6 +38,8 @@ function optionsMenu(back) {
     { label: `Volumen: ${labelOf(VOLUMES, prefs.volume)}`, action: () => { prefs.volume = cycle(VOLUMES, prefs.volume); audio.setVolume(prefs.volume); savePrefs(); render(); } },
     { label: `Texto: ${labelOf(SPEEDS, prefs.text)}`, action: () => { prefs.text = cycle(SPEEDS, prefs.text); savePrefs(); render(); } },
     { label: `Calidad: ${labelOf(QUALITIES, prefs.quality)}`, action: () => { prefs.quality = cycle(QUALITIES, prefs.quality); savePrefs(); render(); } },
+    { label: `Lo ya leído: ${prefs.seenFast ? 'Al instante' : 'Normal'}`, action: () => { prefs.seenFast = !prefs.seenFast; savePrefs(); render(); } },
+    { label: `Movimiento: ${prefs.reduceMotion ? 'Reducido' : 'Normal'}`, action: () => { prefs.reduceMotion = !prefs.reduceMotion; savePrefs(); render(); } },
     { label: `Vibración: ${labelOf(TOGGLES, prefs.vibrate)}`, action: () => { prefs.vibrate = cycle(TOGGLES, prefs.vibrate); savePrefs(); render(); if (prefs.vibrate && navigator.vibrate) navigator.vibrate(40); } },
     { label: 'Volver', action: back },
   ]);

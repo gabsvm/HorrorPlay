@@ -4,6 +4,7 @@ import { doorSteps, leatherApron } from '../art/props.js';
 import { facade } from '../art/build.js';
 import { P, shade } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
+import { canLeaveHanbury } from '../story/progression.js';
 import { rng } from '../art/noise.js';
 import { Smoke, Drip, Crow, Cat } from '../engine/life.js';
 import { drawCorpse } from './corpse.js';
@@ -272,7 +273,7 @@ export default {
     {
       id: 'window', name: 'Ventana trasera', rect: [334, 414, 92, 150], walk: 300, face: 1,
       act: async (G) => {
-        if (G.hasClue('reflejo')) {  return; }
+        if (G.hasClue('reflejo')) { G.audio.whisper(0.6, 0.04); return; }   // only the yard in the glass now
         G.red(0.4); G.audio.sting(0.18); G.shake(6);
         G.face(1);
         await G.wait(600);
@@ -307,11 +308,11 @@ export default {
               G.sanity(-5);
               await G.think('Lo vi en la sala de disección. No quiero volver a verlo.');
             } },
-            { id: 'saco', x: 1034, y: 322, r: 100, name: 'Bajo el saco', act: async (G) => {
+            { id: 'saco', key: true, x: 1034, y: 322, r: 100, name: 'Bajo el saco', act: async (G) => {
               await G.think('Extrajo un órgano entero. Sabía cómo separarlo.');
               G.clue('falta');
             } },
-            { id: 'mano', x: 819, y: 536, r: 50, name: 'La mano', act: async (G) => {
+            { id: 'mano', key: true, x: 819, y: 536, r: 50, name: 'La mano', act: async (G) => {
               await G.think('Quedan marcas de dos anillos arrancados.');
               await G.think('Latón barato. No se los llevó por dinero.');
               G.clue('anillos');
@@ -326,8 +327,13 @@ export default {
     {
       id: 'passage', name: 'Pasillo a Hanbury Street', cursor: 'exit', rect: [30, GROUND - 250, 130, 250], walk: 190, face: -1,
       act: async (G) => {
-        if (!G.hasClue('delantal') || !G.flag('greaves_met')) { await G.think('No me deja irme sin que mire el peine.'); return; }
-        if (!G.flag('peine_taken')) { await G.think('A los pies de Annie, junto a la valla, hay algo que los de Phillips no han recogido. Antes de irme quiero verlo.'); G.objective('Mirar lo que hay junto a la valla, a los pies de Annie.'); return; }
+        // what the yard still asks, in the order it is natural to get it (story/progression.js)
+        const gate = canLeaveHanbury(G.state);
+        if (!gate.ok) {
+          await G.think(`Antes de irme: ${gate.missing[0]}.`);
+          G.objective(`${gate.missing.join('; ').replace(/^./, (m) => m.toUpperCase())}. Luego salir por el pasillo.`);
+          return;
+        }
         G.flag('annie_taken', true);
         await G.game.chapterHooks.leaveHanbury(G);
       },
