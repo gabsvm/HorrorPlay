@@ -58,12 +58,30 @@ globalThis.AudioContext = undefined;
 
 await import('../src/main.js');
 await new Promise((r) => setTimeout(r, 50)); // let the menu backdrop finish loading
-const t = await import(process.argv[2] === 'alt' ? '../tests/walkthrough-alt.js' : '../tests/walkthrough.js');
-// `node tools/walk.mjs second` plays the whole game again as the second reading
-const res = await t.run({ log: false, second: process.argv[2] === 'second' });
-console.log(JSON.stringify({ ok: res.ok, errors: res.errors, lines: res.lines, deductions: res.deductions, scene: res.scene }, null, 1));
+
+// node tools/walk.mjs [scenario] [--snapshots DIR]
+//   no scenario: tests/walkthrough.js (first reading); `second`: the same as the second reading;
+//   `alt`: tests/walkthrough-alt.js; any other name: tests/scenarios/<name>.js
+//   --snapshots DIR writes each chapter's checkpoint (the state saved when it starts) as DIR/<id>.json
+const args = process.argv.slice(2);
+const snapAt = args.indexOf('--snapshots');
+const snapDir = snapAt >= 0 ? args[snapAt + 1] : null;
+const name = args.find((a, i) => !a.startsWith('--') && (snapAt < 0 || i !== snapAt + 1)) || 'walkthrough';
+const file = name === 'second' || name === 'walkthrough' ? '../tests/walkthrough.js' : name === 'alt' ? '../tests/walkthrough-alt.js' : `../tests/scenarios/${name}.js`;
+const t = await import(file);
+const res = await t.run({ log: false, second: name === 'second', store });
+console.log(JSON.stringify({ scenario: name, ok: res.ok, errors: res.errors, lines: res.lines, deductions: res.deductions, scene: res.scene, ...(res.extra || {}) }, null, 1));
+if (snapDir) {
+  const { mkdirSync, writeFileSync } = await import('node:fs');
+  mkdirSync(snapDir, { recursive: true });
+  for (const [k, v] of store) {
+    const m = /^elhuesped\.save\.v1\.ch\.(.+)$/.exec(k);
+    if (m) writeFileSync(`${snapDir}/${m[1]}.json`, JSON.stringify(JSON.parse(v), null, 1));
+  }
+}
 if (!res.ok) {
   console.log('\nÚltimas líneas:');
-  for (const l of window.LOG.slice(-12)) console.log('  ' + l);
+  for (const l of window.LOG.slice(-14)) console.log('  ' + l);
   process.exit(1);
 }
+process.exit(0);

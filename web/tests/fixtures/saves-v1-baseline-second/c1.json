@@ -1,0 +1,28 @@
+{
+ "chapter": "c1",
+ "scene": "foreshore",
+ "flags": {
+  "second": true,
+  "signature": "Thomas Ashgrove",
+  "intro_signature_confirmed": true,
+  "fs_1888": false,
+  "boat": true,
+  "water_light": false,
+  "answered1866": false,
+  "entry_year": 1879
+ },
+ "items": [],
+ "clues": [],
+ "deductions": [],
+ "profile": [],
+ "sanity": 100,
+ "date": "",
+ "clock": "",
+ "objective": "Acercarse al río.",
+ "tips": {
+  "controls": true
+ },
+ "seen": {
+  "foreshore:boat": true
+ }
+}

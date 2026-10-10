@@ -90,7 +90,18 @@ export class UI {
   hideDialogue() { this.el.dlg.classList.add('hidden'); this._speaker = null; }
 
   async choice(options, { timeout = 0, def = 0 } = {}) {
-    if (window.FAST) { const k = (window.PICKS || []).length ? window.PICKS.shift() : 0; (window.LOG ||= []).push(`  > ${options[Math.min(k, options.length - 1)]}`); return Math.min(k, options.length - 1); }
+    if (window.FAST) {
+      // tests pick by position or, preferably, by a piece of the option's text
+      let k = (window.PICKS || []).length ? window.PICKS.shift() : 0;
+      if (typeof k === 'string') {
+        const want = k;
+        k = options.findIndex((o) => String(o).toLowerCase().includes(want.toLowerCase()));
+        if (k < 0) throw new Error(`Opción no disponible: «${want}» entre ${options.map((o) => `«${o}»`).join(', ')}`);
+      }
+      k = Math.min(k, options.length - 1);
+      (window.LOG ||= []).push(`  > ${options[k]}`);
+      return k;
+    }
     const box = this.el.choices;
     box.innerHTML = '';
     box.classList.remove('hidden');
