@@ -422,6 +422,16 @@ export class Game {
     scene.built = built;
   }
 
+  // Thomas's clothes follow where he is, never a stored state: in the room of chapter one, after the chase
+  // (room_phase 'c3b'), the coat, the bowler and the lantern hang on the pegs and he has none of them on;
+  // everywhere else, and in every other phase, he is dressed as before.
+  dressFor(id) {
+    const undressed = id === 'room' && this.state.flags.room_phase === 'c3b';
+    this.player.coat = undressed ? '#3a3a34' : '#23262b';
+    this.player.hat = undressed ? 'none' : 'bowler';
+    this.player.lantern = !undressed;
+  }
+
   async goto(id, { x, facing, fade = true, noEnter = false } = {}) {
     const scene = this.scenes[id];
     if (!scene) throw new Error(`Escena desconocida: ${id}`);
@@ -441,6 +451,7 @@ export class Game {
     this.sceneScale = scene.scale ?? (scene.indoor ? 1.12 : 0.84);
     this.player.h = Math.round((scene.playerH || 206) * this.sceneScale);
     this.player.lanternOn = !!scene.lantern;
+    this.dressFor(id);
     this.player.pose = null;
     this.player.alpha = 1;
     this.player.speed = scene.playerSpeed || (this.player.h < 140 ? 120 : 150);

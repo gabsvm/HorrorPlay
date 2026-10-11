@@ -6,7 +6,7 @@ import { scenario, fixture } from './harness.js';
 
 const RUNS = [
   // [junction picks, expected outcome, the handwriting answer, what Greaves then says, what Pike says]
-  [[0, 1, 1], 'clean', 'La muestra no basta', /No acusaste a nadie por una letra/, /Nadie te vio en Wentworth Street/],
+  [[0, 1, 1], 'clean', 'La muestra no basta', /No acusaste a nadie por una letra/, /Nadie te vio esta noche/],
   [[1, 1, 1], 'spotted', 'Greaves: se parece', /Pensaste que la carta era mía/, /te vio la cara/],
   [[1, 0, 0], 'injured', 'La muestra no basta', /esa mano/, /mano cosida/],
 ];

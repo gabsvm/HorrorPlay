@@ -1,0 +1,26 @@
+// Thomas's clothes after the chase (V4-13): in the room of chapter one after the run (room_phase 'c3b')
+// the coat, the bowler and the lantern hang on the pegs and he has none of them on. Any other place,
+// and any other phase, he is dressed as before. Nothing is stored: the clothes follow the place.
+//   node web/tools/walk.mjs chase13
+import { scenario } from './harness.js';
+
+export async function run(opts) {
+  return scenario(async ({ game, need }) => {
+    const p = game.player;
+    game.state.flags.room_phase = 'c3b';
+    game.dressFor('room');
+    need(p.hat === 'none' && p.lantern === false, 'en c3b Thomas no lleva bombín ni linterna');
+    need(p.coat !== '#23262b', 'en c3b no lleva el abrigo puesto');
+    game.dressFor('foreshore');
+    need(p.hat === 'bowler' && p.lantern === true && p.coat === '#23262b', 'fuera de la habitación vuelve a vestirse');
+    game.state.flags.room_phase = 'c3a';
+    game.dressFor('room');
+    need(p.hat === 'bowler' && p.lantern === true, 'en otra fase de la habitación va vestido');
+    game.state.flags.room_phase = 'c3b';
+    game.dressFor('room');
+    game.state.flags.room_phase = 'c4';
+    game.dressFor('room');
+    need(p.hat === 'bowler', 'al pasar a c4 la ropa vuelve al actor');
+    return {};
+  }, opts);
+}

@@ -148,8 +148,8 @@ export default {
     ctx.strokeStyle = '#8a7444'; ctx.beginPath(); ctx.moveTo(cx, cy + 24); ctx.lineTo(cx + sw, cy + 52); ctx.stroke();
     ctx.fillStyle = '#9a8350'; ctx.beginPath(); ctx.arc(cx + sw, cy + 54, 5, 0, Math.PI * 2); ctx.fill();
     // coat, bowler and lantern on the hooks
-    if (!G?.flag('coat_on')) { coatOnPeg(ctx, 260, GROUND - 314); bowlerOnPeg(ctx, 318, GROUND - 312); }
-    if (!G?.flag('lantern_taken')) { ctx.fillStyle = '#6b5a3a'; ctx.fillRect(330, GROUND - 300, 4, 8); bullseyeLantern(ctx, 332, GROUND - 288); }
+    if (!G?.flag('coat_on') || (G && phase(G) === 'c3b')) { coatOnPeg(ctx, 260, GROUND - 314); bowlerOnPeg(ctx, 318, GROUND - 312); }
+    if (!G?.flag('lantern_taken') || (G && phase(G) === 'c3b')) { ctx.fillStyle = '#6b5a3a'; ctx.fillRect(330, GROUND - 300, 4, 8); bullseyeLantern(ctx, 332, GROUND - 288); }
     // boots by the door, wet and black, leaking a puddle of river mud
     if (p === 'c1' && !G?.flag('boots_on')) bootsPair(ctx, 212, GROUND);
     if (p === 'c3b' && !G?.flag('paper_read')) newspaper(ctx, 196, GROUND + 14, -0.1);

@@ -33,6 +33,8 @@ async function lostTime(G, from, to, { date = null } = {}) {
 
 // Only a player who has finished the game once, reading it the second time, gets the shortcuts
 // through puzzles they have already solved (never a new player, never by accident).
+// where the chase went wrong first (alleys.js): the street the city names
+const chaseStreet = (flags) => ({ flower_dean: 'Flower and Dean Street', thrawl: 'Thrawl Street' })[flags.chase_seen_at] || 'Wentworth Street';
 const knowsPuzzles = (G) => G.second() && !!(G.game.constructor.read && G.game.constructor.read());
 
 export function makeChapters() {
@@ -616,8 +618,8 @@ export function makeChapters() {
         <p>Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con <b>tinta roja</b>, menciona al «Leather Apron» y reivindica los crímenes:</p>
         <p class="red">"I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..."</p>
         <p class="red" style="text-align:right">Yours truly<br>Jack the Ripper</p>
-        ${{ spotted: '<p class="small">Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. Asegura que podría reconocerlo.</p>',
-          injured: '<p class="small">Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.</p>' }[G.state.flags.chase_outcome] || ''}`);
+        ${{ spotted: '<p class="small">Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(G.state.flags) + '. Asegura que podría reconocerlo.</p>',
+          injured: '<p class="small">Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(G.state.flags) + '. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.</p>' }[G.state.flags.chase_outcome] || ''}`);
       G.flag('paper_read', true);
       G.clue('carta');
       hooks.c3bObjective(G);
@@ -737,9 +739,9 @@ export function makeChapters() {
       await G.wait(900);
       await G.say('Pike', 'Thomas. Soy Pike. No voy a entrar sin avisarte.');
       await G.wait(700);
-      await G.say('Pike', { clean: 'Nadie te vio en Wentworth Street. Eso es lo que más me asusta.',
-        spotted: 'El agente Long dice que te vio la cara en Wentworth Street. No le he contestado.',
-        injured: 'Long encontró sangre en la tapia de Wentworth Street. Y tú llevas la mano cosida.' }[G.state.flags.chase_outcome || 'clean']);
+      await G.say('Pike', { clean: 'Nadie te vio esta noche. Eso es lo que más me asusta.',
+        spotted: 'El agente Long dice que te vio la cara en ' + chaseStreet(G.state.flags) + '. No le he contestado.',
+        injured: 'Long encontró sangre en una tapia de ' + chaseStreet(G.state.flags) + '. Y tú llevas la mano cosida.' }[G.state.flags.chase_outcome || 'clean']);
       await G.say('Pike', 'Traigo tus rondas. Tu firma. No sé aún cuánto hiciste, pero no puedo dejarte marchar.');
       const last = await G.choice(['«Deténgame, Pike».', '«Proteja a Wren. La niña del río».', '(Romper el folio del expediente que me señala)']);
       if (last === 0) {

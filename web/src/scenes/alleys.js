@@ -125,9 +125,9 @@ export default {
     this.gap = 520;
     G.player.speed = 260;
     const junctions = [
-      { x: 1100, q: '¿Por dónde?', opts: ['Seguir recto, hacia la luz.', 'Meterse por Wentworth Street.'], good: 0 },
-      { x: 2200, q: 'Un silbato delante. Me están cortando el paso.', opts: ['Agacharse detrás de los barriles.', 'Seguir corriendo.'], good: 1 },
-      { x: 3300, q: 'Thrawl Street. Mi casa está ahí.', opts: ['Ir a casa.', 'Seguir hacia el río.'], good: 1 },
+      { x: 1100, at: 'wentworth', q: '¿Por dónde?', opts: ['Seguir recto, hacia la luz.', 'Meterse por Wentworth Street.'], good: 0 },
+      { x: 2200, at: 'flower_dean', q: 'Un silbato delante. Me están cortando el paso.', opts: ['Agacharse detrás de los barriles.', 'Seguir corriendo.'], good: 1 },
+      { x: 3300, at: 'thrawl', q: 'Thrawl Street. Mi casa está ahí.', opts: ['Ir a casa.', 'Seguir hacia el río.'], good: 1 },
     ];
     G.objective('Alcanzar al abrigo oscuro.');
     // every wrong turn is kept: 0 clean, 1-2 spotted (a constable saw his face), 3 injured (a wall)
@@ -139,6 +139,7 @@ export default {
       const c = await G.choice(j.opts, { timeout: touch ? 5600 : 4600, def: 1 - j.good });
       if (c !== j.good) {
         mistakes++;
+        if (!G.state.flags.chase_seen_at) G.state.flags.chase_seen_at = j.at;   // where the first error happened
         this.gap -= 140;
         G.shake(8); G.sanity(-3);
         G.audio.whistle(0.16);   // a dead end, a lantern, a constable at the door: the whistles close in

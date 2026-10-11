@@ -1241,3 +1241,16 @@ Pendiente de F13, aprobado por Opus pero no implementado:
 - Objeto visual en `room` c3b (abrigo, bombín y linterna colgados), con quitar la ropa al jugador en c3b y devolvérsela al salir (puntos 3 a-e). No está hecho: toca el personaje y la maquetación.
 - Lugar del primer error (`chase_seen_at`) para el periódico y Pike (punto 4).
 - Pruebas de reanudación en c3b, salida a c4 y venda en c4 (punto 6).
+
+## F13 — cierre de implementación, 2026-10-11
+
+Hecho:
+- Vestuario según lugar y fase: `Game.dressFor` (game.js), llamado en cada cambio de escena. En `room` con `room_phase='c3b'` Thomas no lleva bombín ni linterna y el abrigo es el de camisa; en cualquier otro sitio vuelve a vestirse. No se guarda nada: se deriva de la escena y de `room_phase`.
+- En c3b, el abrigo, el bombín y la linterna cuelgan de las perchas (room.js), aunque `coat_on` y `lantern_taken` sean verdaderos. Hotspot `coat` no reutilizado.
+- Lugar del primer error: `flags.chase_seen_at` = `wentworth` | `flower_dean` | `thrawl` (alleys.js), y el periódico y las respuestas de Pike lo nombran (chapters.js, `chaseStreet`). La ruta limpia no nombra calle.
+- Pruebas: `tests/scenarios/chase13.js` (vestuario en c3b, fuera, otras fases y c4); `chapter3` actualizado a la frase nueva de Pike en ruta limpia. `unit` 154/0; `test-all` 32 PASS.
+- Verificación en navegador: se cargó la habitación en c3b con el estado de juego (`hat: none`, `lantern: false`) y el abrigo cuelga de su percha. La figura de Thomas es demasiado pequeña en la captura para confirmar a simple vista la ausencia del bombín: **VISUAL_PARTIAL**.
+
+Pendiente de F13 (no implementado):
+- Venda visible en la mano en c4 para la ruta herida (`chase_outcome='injured'`). La línea de Greaves y la de Pike ya la mencionan; falta el dibujo.
+- Reanudación desde c3b por guardado: `dressFor` se aplica al cambiar de escena, y `resume` pasa por `goto`; no se ha probado con un guardado real en navegador.
