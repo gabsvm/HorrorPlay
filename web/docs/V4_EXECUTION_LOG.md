@@ -1301,3 +1301,12 @@ Pendiente de F14 (no implementado todavía):
 - **F13:** reanudar en c3b devuelve a Thomas sin bombín ni linterna; reanudar tras la habitación lo devuelve vestido (`chase13.js`). **Venda** para la ruta herida: se dibuja en la mano (actor.js) y el personaje herido se dibuja de forma procedural. Prueba: venda solo tras ruta herida. Pendiente: captura del vendaje en navegador.
 - **F12:** `tools/walk.mjs` imprime ahora la curva de cordura por cambio de escena (`sanityCurve`, `sanityAtZeroScenes`, `sanityEnd`). Partida automática: la cordura baja de 100 a 33 en Goulston y llega a 0 tras la confrontación con Greaves en c4 (tres cambios de escena a cero). **Sin rebalanceo**: el plan exige revisión antes de tocar porcentajes o efectos; queda como propuesta pendiente de revisión.
 - Suite: `test-all` sin fallos (ver salida en el commit).
+
+## F14 — ocasión de postura antes del expediente, 2026-10-11
+
+Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus hallazgos):
+- Al usar la llave sobre la vitrina, en la primera lectura, antes de despertar y con la carta en el cuaderno, Thomas elige una lectura de la carta: «Todavía no sé quién la escribió.» (primera, por defecto), «La carta pudo escribirla Greaves.», «Alguien que entra en mi cuarto.». Escribe `investigation.positions.letter_author` mediante `G.game.setPosition`. Sin flag, pista, cordura, cambio de escena ni gate.
+- Sin frase de «puedo cambiarlo más tarde» (no era cierta: la secuencia va sin pausa hasta despertar).
+- Greaves no dice «No acusaste a nadie por una letra» cuando la postura elegida es Greaves.
+- Pruebas: las seis que responden a la vitrina añaden la nueva respuesta; `letter14.js` comprueba que la postura se guarda una vez, que la intención final no cambia, y que despierto no se ofrece.
+- Pendiente: la validación en móvil de que el cuadro de opciones no tapa el sprite (sin dispositivo).

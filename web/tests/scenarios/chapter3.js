@@ -37,7 +37,7 @@ export async function run(opts) {
       expectScene('greaves');
       await act('drawer', 'bisturi');
       const n = window.LOG.length;
-      await act('cabinet', 'llave', ['acusando', 'Deténgame']);
+      await act('cabinet', 'llave', ['Todavía no sé quién la escribió.', 'acusando', 'Deténgame']);
       const log = window.LOG.slice(n).join('\n');
       need(greavesSays.test(log), `Greaves debería aludir a la letra / la mano (${outcome})`);
       need(pikeSays.test(log), `Pike debería saber cómo fue la persecución (${outcome})`);

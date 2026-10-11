@@ -1,5 +1,6 @@
 // Chapter 4 — Dr Greaves's study at the London Hospital, Whitechapel Road, 8 November 1888, night.
 import * as A from '../art/paint.js';
+import { QUESTIONS } from '../story/positions.js';
 import { wallpaper, wainscot, floorboards, interiorWindow, desk, chair, rug, frame } from '../art/build.js';
 import { Moths } from '../engine/life.js';
 import { P } from '../art/palette.js';
@@ -168,6 +169,13 @@ export default {
         G.take('llave');
         G.flag('cabinet_open', true);
         G.audio.door();
+        // before he shows the file: Thomas's own reading of the letter, a posture (positions.js), no flag and no gate
+        const Q = QUESTIONS.letter_author;
+        if (!G.second() && !G.flag('awake') && Q.visible(G.state)) {
+          const c = await G.choice(['Todavía no sé quién la escribió.', 'La carta pudo escribirla Greaves.', 'Alguien que entra en mi cuarto.']);
+          const value = ['insuficiente', 'greaves', 'cercano'][c];
+          G.game.setPosition('letter_author', value);
+        }
         await G.game.chapterHooks.readFile(G);
         return true;
       },

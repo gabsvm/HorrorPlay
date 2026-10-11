@@ -44,7 +44,7 @@ export async function run(opts) {
       need(!docs.some((d) => d.includes('EXPEDIENTE CLÍNICO')), 'Mirar la vitrina sin llave no lee el expediente');
 
       // the cabinet with the key: the file is read as before, and the note is not in it
-      await act('cabinet', 'llave', ['acusando', 'Deténgame']);
+      await act('cabinet', 'llave', ['Todavía no sé quién la escribió.', 'acusando', 'Deténgame']);
       await waitScene('foreshore');
       expectScene('foreshore');
       const files = docs.filter((d) => d.includes('EXPEDIENTE CLÍNICO'));

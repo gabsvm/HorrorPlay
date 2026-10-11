@@ -27,7 +27,7 @@ export async function run(opts) {
       const c4 = await fixture('saves-v1-baseline/c4.json');
       await start('c4', c4);
       await act('drawer', 'bisturi');
-      await act('cabinet', 'llave', ['acusando', 'Romper el folio']);
+      await act('cabinet', 'llave', ['Todavía no sé quién la escribió.', 'acusando', 'Romper el folio']);
       await waitScene('foreshore');
       for (const c of ['zurdo', 'bisturi', 'testigo']) await deduce('ficha', c);
       game.state.sanity = level;

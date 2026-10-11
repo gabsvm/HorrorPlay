@@ -704,7 +704,7 @@ export function makeChapters() {
       await G.say('Greaves', 'La encontraste.');
       const hand = G.state.flags.handwriting_assessment;
       if (hand === 'greaves_like') await G.say('Greaves', 'Pensaste que la carta era mía. Te enseñé a escribir así; no a firmar eso.');
-      else if (hand === 'inconclusive') await G.say('Greaves', 'No acusaste a nadie por una letra. Siempre fuiste prudente con las pruebas. Con las tuyas también.');
+      else if (hand === 'inconclusive' && G.state.investigation?.positions?.letter_author !== 'greaves') await G.say('Greaves', 'No acusaste a nadie por una letra. Siempre fuiste prudente con las pruebas. Con las tuyas también.');
       else if (hand === 'self_recognition') await G.say('Greaves', 'Reconociste tu letra. Yo la reconocí en marzo de 1879.');
       if (G.state.flags.chase_outcome === 'injured') await G.say('Greaves', 'Y esa mano. ¿Quién te la ha cosido?');
       if (perception.othersNotice(G.state.sanity)) await G.say('Greaves', 'No duermes. Se te ve en los ojos, Thomas.');

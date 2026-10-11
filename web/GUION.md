@@ -691,7 +691,8 @@ _Archivo: src/scenes/greaves.js_
 **Al interactuar:**
 - *Thomas (piensa):* Expedientes por año. El de 1879 está apartado.
 **Al usar un objeto sobre ello:**
-- _(sin texto)_
+- _Si !second() && !flag('awake') && Q.visible(state):_
+  - > **Elección:** 1) Todavía no sé quién la escribió.  ·  2) La carta pudo escribirla Greaves.  ·  3) Alguien que entra en mi cuarto.
 
 #### Frascos de especímenes `jars`
 **Al interactuar:**
@@ -1238,7 +1239,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - _Si hand === 'greaves_like':_
   - **Greaves:** Pensaste que la carta era mía. Te enseñé a escribir así; no a firmar eso.
 - _Si no:_
-  - _Si hand === 'inconclusive':_
+  - _Si hand === 'inconclusive' && state.investigation?.positions?.letter_author !== 'greaves':_
     - **Greaves:** No acusaste a nadie por una letra. Siempre fuiste prudente con las pruebas. Con las tuyas también.
   - _Si no:_
     - _Si hand === 'self_recognition':_

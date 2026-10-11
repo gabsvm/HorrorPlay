@@ -59,7 +59,7 @@ export async function run(opts) {
     await start('c4', await fixture('saves-v1-baseline/c4.json'));
     log = await resume();
     need(!/Vine por una respuesta|Si Greaves me miente/.test(log), 'La consulta no repite su entrada');
-    await act('drawer', 'bisturi'); await act('cabinet', 'llave', ['acusando', 'Proteja']);
+    await act('drawer', 'bisturi'); await act('cabinet', 'llave', ['Todavía no sé quién la escribió.', 'acusando', 'Proteja']);
     await waitScene('foreshore');
     const intent = flag('final_intent');
     log = await resume();

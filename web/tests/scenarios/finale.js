@@ -23,7 +23,7 @@ export async function run(opts) {
       expectScene('greaves');
       await act('drawer', 'bisturi');
       let n = window.LOG.length;
-      await act('cabinet', 'llave', ['acusando', pick]);
+      await act('cabinet', 'llave', ['Todavía no sé quién la escribió.', 'acusando', pick]);
       await waitScene('foreshore');
       expectScene('foreshore');
       let log = window.LOG.slice(n).join('\n');
