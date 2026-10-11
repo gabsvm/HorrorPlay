@@ -1340,7 +1340,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - _Si flag('wren_paid'):_
   - **Wren:** Su penique. Se ha puesto frío. No lo quiero.
 - _Si second():_
-  - **Wren:** Lo de la mujer de Buck's Row salió en el periódico: dijo a una compañera de la casa de huéspedes que volvería pronto.
+  - **Wren:** Lo de la mujer de Buck's Row salió en el periódico: dijo a una conocida que volvería pronto.
 - **Wren:** Dígame su nombre, señor. El que le puso su madre.
 - **Wren:** {lead} {what}
 - [Rótulo] Yours truly, Jack the Ripper — Don't mind me giving the trade name.

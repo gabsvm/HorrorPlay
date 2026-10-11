@@ -1368,9 +1368,9 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 
 ## F15 — recuerdo de víctima: prensa de la época, 2026-10-11
 
-- La línea de Wren (segunda lectura, epílogo) se retiró antes porque su atribución a la prensa no estaba comprobada. Ahora se ha comprobado la frase principal: la *Eastern Argus* del 8-IX-1888 (texto leído en la transcripción de Casebook) recoge que Nichols dijo a la testigo Emily Holland que no tardaría en volver. La línea vuelve con esa atribución: «dijo a una compañera de la casa de huéspedes que volvería pronto». Sin cuatro peniques ni encargada, que no aparecen en esa prensa.
+- La línea de Wren (segunda lectura, epílogo) se retiró antes porque su atribución no estaba comprobada. Ahora la frase principal sí: la *Eastern Argus* del 8-IX-1888 recoge que Nichols dijo a la testigo Emily Holland que no tardaría en volver. El texto se leyó con una herramienta de lectura de páginas sobre la transcripción de Casebook, no sobre el original; conviene comprobarlo en la fuente. La línea vuelve con esa atribución: «dijo a una conocida que volvería pronto». Sin cuatro peniques ni encargada: el artículo leído no los contiene (ver H-38).
 - Es lo publicado, no un recuerdo de Wren ni de Thomas. La deuda «recuerdo concreto en primera persona» sigue siendo una decisión de autor: el juego no inventa memorias de víctimas reales.
-- Pendiente: el recorte de septiembre (capítulo II) pone a la encargada lo que la prensa atribuye a Holland. No se cambia sin decisión.
+- Pendiente: el recorte de septiembre (capítulo II) atribuye a la encargada la promesa que la *Eastern Argus* atribuye a Holland. No se ha comprobado si otra prensa recoge un diálogo con quien llevaba el hospedaje. No se cambia el recorte sin decisión.
 - `walk` no dice la línea; `walk second` sí. `test-all`: 38 PASS, 0 FAIL.
 
 
