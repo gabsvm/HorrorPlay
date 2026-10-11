@@ -168,8 +168,8 @@ export default {
     G.date('8 de septiembre de 1888', '6:20');
     await G.walk(560);
     const pike = G.actor('Pike'); pike.facing = -1;
-    await G.say('Pike', 'Annie Chapman. Los de la casa la llamaban Dark Annie.');
-    await G.say('Pike', 'Hacía labores de ganchillo y vendía flores, cuando la salud la dejaba.');
+    await G.say('Pike', 'Dicen en la casa que es Annie, de Dorset Street. Hay que confirmarlo.');
+    await G.say('Pike', 'Dicen que hacía ganchillo y vendía flores, cuando la salud la dejaba.');
     await G.say('Pike', 'La encontró Davis, antes de las seis. Phillips espera que la vea antes de moverla.');
     G.objective('Examinar el cuerpo y el patio. Hablar con Pike, con el médico y con la casera.');
   },
@@ -301,11 +301,11 @@ export default {
       },
     },
     {
-      id: 'annie', name: 'El cuerpo de Annie Chapman', verb: 'Examinar', when: (G) => !G.flag('annie_taken'), rect: [690, GROUND - 30, 170, 60], walk: 640, face: 1, gesture: false,
+      id: 'annie', name: 'El cuerpo de la mujer del patio', verb: 'Examinar', when: (G) => !G.flag('annie_taken'), rect: [690, GROUND - 30, 170, 60], walk: 640, face: 1, gesture: false,
       act: async (G) => {
         // the points sit on the painted close-up (assets/closeups/chapman.jpg)
         await G.inspect('annie', {
-          title: 'Annie Chapman', body: 'chapman',
+          title: 'La mujer del patio de Hanbury Street', body: 'chapman',
           points: [
             { id: 'cara', x: 360, y: 283, r: 60, name: 'La cara', act: async (G) => {
               await G.think('La estrangularon antes de usar el cuchillo.');

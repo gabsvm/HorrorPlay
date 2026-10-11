@@ -82,6 +82,8 @@ export function makeChapters() {
       G.sanity(+20);
       G.hud(true);
       G.game.r.fx.fade = 1;
+      await G.doc(`<h3>RECORTE DE PRENSA — SEPTIEMBRE DE 1888</h3>
+        <p>El 31 de agosto, una compañera del asilo de Lambeth reconoció a la mujer de Buck's Row: Mary Ann Nichols, a quien llamaban «Polly». Tenía cinco hijos. La noche del crimen no reunió los cuatro peniques de la cama; dijo a la encargada que volvería pronto con el dinero, y que se fijaran en su sombrero nuevo.</p>`);
       await G.card('Capítulo II', 'El delantal de cuero', '29 Hanbury Street, 8 de septiembre de 1888', 4200);
       await G.goto('hanbury', { x: 240, facing: 1, fade: false });
       await G.fade(0, 1500);
@@ -110,7 +112,7 @@ export function makeChapters() {
       await G.card('', '', 'Duermo de día. De noche camino. Pike ya no me saluda.', 3400);
       await G.doc(`<h3>RECORTE DE PRENSA — OCTUBRE DE 1888</h3>
         <p>En la investigación de Berner Street, una compañera de pensión reconoció a la víctima: Elizabeth Stride, a quien llamaban «Long Liz», nacida cerca de Gotemburgo. Antes, otra mujer había jurado que era su hermana; se demostró que se equivocaba.</p>
-        <p>En el caso de Mitre Square, John Kelly reconoció a su compañera, Catherine Eddowes. Esa noche, al salir de la comisaría de Bishopsgate, ella había dado el nombre de Mary Ann Kelly.</p>`);
+        <p>En el caso de Mitre Square, John Kelly reconoció a su compañera, Catherine Eddowes. Había vuelto días antes de la recogida del lúpulo en Kent. Esa noche, al salir de la comisaría de Bishopsgate, ella había dado el nombre de Mary Ann Kelly.</p>`);
       await G.card('Capítulo IV', 'Huésped', 'London Hospital, 8 de noviembre de 1888', 4200);
       G.objective(G.two('Encontrar pruebas contra Greaves en su consulta: el cajón, la vitrina.', 'Encontrar lo que Greaves sabe de mí: el cajón, la vitrina.'));
       await G.goto('greaves', { x: 230, facing: 1, fade: false });
@@ -448,7 +450,7 @@ export function makeChapters() {
       G.flag('pike_book_read', true);
       await G.doc(`<h3>Libreta del sargento A. Pike</h3>
         <p class="hand">7 ago. — Tabram, George Yard. Avisado el inspector a las 3:10. Llega a las 3:20. Botas mojadas.</p>
-        <p class="hand">31 ago. — Nichols, Buck's Row. Avisado a las 4:00. Llega a las 4:12. Botas mojadas. Barro negro.</p>
+        <p class="hand">31 ago. — Buck's Row. Avisado a las 4:00. Llega a las 4:12. Botas mojadas. Barro negro.</p>
         <p class="hand">Llega siempre antes de lo que tarda en venir desde Thrawl Street.</p>`);
       await G.think('Doce minutos. Diez. No venía de mi cuarto.');
     },

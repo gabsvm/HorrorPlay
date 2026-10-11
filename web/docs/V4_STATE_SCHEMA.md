@@ -184,3 +184,17 @@ Fuente: `src/story/positions.js` (puro, sin DOM). Campos añadidos en `investiga
 - **Lo que no cambia:** `outfall1888` (`ditch_glow`, la comprobación de `canEnterFinale` y la voz), la luz `ditch`, `drawGlow`, el nombre del hotspot, `intro.js`, el epílogo, las huellas y la ficha.
 
 **§12.1 Corrección de V4-08 (aprobada por Opus):** la primera mirada de 1888 se decide por la clave `seen['foreshore:outfall:1888']`, que la escena escribe al terminar esa primera mirada. No usa `seen['foreshore:outfall']`, que se comparte con 1866. Clave reservada por V4 dentro de `seen`; sin migración; los guardados antiguos ven la línea una vez en su primera visita de 1888.
+
+## 13. V4-09 — las víctimas: nombres fuera de la escena, recorte de septiembre y línea del lúpulo
+
+| Campo | Valor |
+|---|---|
+| Campos de estado nuevos | **Ninguno.** No hay flag, pista, deducción ni campo de `investigation` nuevos. Sin migración |
+| Claves de `flags` | **Intactas:** `pike_polly`, `pike_notes`, `pike_book_read`, `polly_taken`, `polly_seen`, `annie_taken`, `hb_intro`, `br_intro`. Los ids de hotspot (`polly`, `annie`) no cambian |
+| Recorte de septiembre (`chapters.js`, `c2`) | **Sin flag.** Se muestra al empezar el capítulo II, antes de su tarjeta. El patrón es el del recorte de octubre (`c4`), que tampoco guarda flag. Un guardado que reanuda dentro del capítulo II no lo repite, porque reanudar entra por `goto` y no vuelve a ejecutar `c2` |
+| Línea del lúpulo (recorte de octubre) | Solo texto. Sin flag |
+| Libreta de Pike (`pikeBook`) | Solo cambia el texto de la anotación de Nichols. Sin flag nuevo |
+| Teorías (`evaluate()`) | Sin cambio: la instantánea sobre los 11 fixtures es idéntica antes y después (`V4_EXECUTION_LOG.md`, V4-09) |
+| Textos | Líneas de Pike en `bucks_row.js` y `hanbury.js`, nombres de hotspot e inspects, la opción «¿Quién era ella?» (una línea), la libreta y los dos recortes |
+
+- **Repetición al replay de un capítulo.** Si el jugador repite el capítulo II desde su instantánea (`ch.c2`), el recorte aparece otra vez, igual que su tarjeta. No es un guardado nuevo; el arranque del capítulo es el mismo.

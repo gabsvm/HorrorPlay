@@ -1,6 +1,6 @@
 # El Huésped — guion completo
 
-_Generado desde el código del juego (2026-10-10) con `node web/tools/script/export.mjs`. Es todo lo que el jugador puede leer: diálogos, pensamientos de Thomas, elecciones, documentos, objetivos y el cuaderno._
+_Generado desde el código del juego (2026-10-11) con `node web/tools/script/export.mjs`. Es todo lo que el jugador puede leer: diálogos, pensamientos de Thomas, elecciones, documentos, objetivos y el cuaderno._
 
 ## Cómo está hecho el juego (para reescribirlo)
 
@@ -337,7 +337,7 @@ _Archivo: src/scenes/bucks_row.js_
 
 ### Al entrar en la escena
 - **Pike:** Inspector. No pise junto al portón.
-- **Pike:** Nichols. Mary Ann. Aquí la llamaban Polly.
+- **Pike:** No lleva papeles. Hasta que el forense la vea, no hay nombre.
 - **Thomas:** ¿Quién la vio primero?
 - **Pike:** Dos carreteros, sobre las tres cuarenta. Neil llegó detrás. Aún discuten cuál la encontró.
 - [Objetivo] Examinar el cuerpo. Hablar con Pike, con Neil y con el chico.
@@ -364,9 +364,7 @@ _Archivo: src/scenes/bucks_row.js_
   - [+ Pista al cuaderno: anatomia]
 - _Si no:_
   - _Si c === 'polly':_
-    - **Pike:** Tenía cinco hijos. Ayer no reunió los cuatro peniques de la cama.
-    - **Pike:** Le prometió a la encargada que volvía en un rato.
-    - **Pike:** Se había comprado un sombrero. Quería que la vieran bien arreglada.
+    - **Pike:** Lleva un sombrero de paja negro; parece nuevo. Alguien lo eligió con cuidado.
   - _Si no:_
     - _Si c === 'notes':_
       - **Pike:** Quién entra. Quién sale. A qué hora.
@@ -401,7 +399,7 @@ _Archivo: src/scenes/bucks_row.js_
 - _Si no:_
   - **Chico:** Ese barro de sus botas... aquí no hay de ese color.
 
-#### El cuerpo de Polly Nichols `polly`
+#### El cuerpo de la mujer de Buck's Row `polly`
 _Aparece si: !flag('polly_taken')_
 **Al interactuar:**
 - _Si first:_
@@ -550,8 +548,8 @@ _Aparece si: is1866(G) && !flag('boat')_
 _Archivo: src/scenes/hanbury.js_
 
 ### Al entrar en la escena
-- **Pike:** Annie Chapman. Los de la casa la llamaban Dark Annie.
-- **Pike:** Hacía labores de ganchillo y vendía flores, cuando la salud la dejaba.
+- **Pike:** Dicen en la casa que es Annie, de Dorset Street. Hay que confirmarlo.
+- **Pike:** Dicen que hacía ganchillo y vendía flores, cuando la salud la dejaba.
 - **Pike:** La encontró Davis, antes de las seis. Phillips espera que la vea antes de moverla.
 - [Objetivo] Examinar el cuerpo y el patio. Hablar con Pike, con el médico y con la casera.
 
@@ -626,7 +624,7 @@ _Aparece si: !flag('peine_taken')_
 **Al interactuar:**
 - *Thomas (piensa):* La tierra removida, y serrín encima. Alguien ya ha empezado a limpiar.
 
-#### El cuerpo de Annie Chapman `annie`
+#### El cuerpo de la mujer del patio `annie`
 _Aparece si: !flag('annie_taken')_
 **Al interactuar:**
 
@@ -951,6 +949,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - [Objetivo] Coger el abrigo, las botas y la linterna, y salir hacia Buck's Row.
 
 ### `c2`
+- [Documento] RECORTE DE PRENSA — SEPTIEMBRE DE 1888 El 31 de agosto, una compañera del asilo de Lambeth reconoció a la mujer de Buck's Row: Mary Ann Nichols, a quien llamaban «Polly». Tenía cinco hijos. La noche del crimen no reunió los cuatro peniques de la cama; dijo a la encargada que volvería pronto con el dinero, y que se fijaran en su sombrero nuevo.
 - [Rótulo] El delantal de cuero — 29 Hanbury Street, 8 de septiembre de 1888
 - [→ Escena: hanbury]
 
@@ -963,7 +962,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 ### `c4`
 - [Rótulo] Octubre — Ningún nuevo crimen con la misma firma. Los rumores, en cambio, no descansan.
 - [Rótulo] Duermo de día. De noche camino. Pike ya no me saluda.
-- [Documento] RECORTE DE PRENSA — OCTUBRE DE 1888 En la investigación de Berner Street, una compañera de pensión reconoció a la víctima: Elizabeth Stride, a quien llamaban «Long Liz», nacida cerca de Gotemburgo. Antes, otra mujer había jurado que era su hermana; se demostró que se equivocaba. En el caso de Mitre Square, John Kelly reconoció a su compañera, Catherine Eddowes. Esa noche, al salir de la comisaría de Bishopsgate, ella había dado el nombre de Mary Ann Kelly.
+- [Documento] RECORTE DE PRENSA — OCTUBRE DE 1888 En la investigación de Berner Street, una compañera de pensión reconoció a la víctima: Elizabeth Stride, a quien llamaban «Long Liz», nacida cerca de Gotemburgo. Antes, otra mujer había jurado que era su hermana; se demostró que se equivocaba. En el caso de Mitre Square, John Kelly reconoció a su compañera, Catherine Eddowes. Había vuelto días antes de la recogida del lúpulo en Kent. Esa noche, al salir de la comisaría de Bishopsgate, ella había dado el nombre de Mary Ann Kelly.
 - [Rótulo] Huésped — London Hospital, 8 de noviembre de 1888
 - [Objetivo] Encontrar pruebas contra Greaves en su consulta: el cajón, la vitrina. | Encontrar lo que Greaves sabe de mí: el cajón, la vitrina.
 - [→ Escena: greaves]
@@ -1112,7 +1111,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
   - [Objetivo] Salir a Fournier Street.
 
 ### `pikeBook`
-- [Documento] Libreta del sargento A. Pike 7 ago. — Tabram, George Yard. Avisado el inspector a las 3:10. Llega a las 3:20. Botas mojadas. 31 ago. — Nichols, Buck's Row. Avisado a las 4:00. Llega a las 4:12. Botas mojadas. Barro negro. Llega siempre antes de lo que tarda en venir desde Thrawl Street.
+- [Documento] Libreta del sargento A. Pike 7 ago. — Tabram, George Yard. Avisado el inspector a las 3:10. Llega a las 3:20. Botas mojadas. 31 ago. — Buck's Row. Avisado a las 4:00. Llega a las 4:12. Botas mojadas. Barro negro. Llega siempre antes de lo que tarda en venir desde Thrawl Street.
 - *Thomas (piensa):* Doce minutos. Diez. No venía de mi cuarto.
 
 ### `leaveSeance`

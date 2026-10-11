@@ -1096,3 +1096,100 @@ $ node tools/script/export.mjs && git diff -- web/GUION.md   (solo cambian 2 blo
 - H-14 y H-36 siguen `[U]` con **FUENTE PENDIENTE** (LAMAS: PDF binario, ficha HTML 403).
 
 **Revisión de cierre (Opus, V4-08): APPROVED con una corrección aplicada.** La primera mirada de 1888 usa la clave `seen['foreshore:outfall:1888']`, no la marca compartida con 1866 (un test cubre el caso «mirar en 1866 primero»). Deuda visual para F11: la lámina de agua de foreshore.js (146–149) se lee como un cauce abierto; debe salir de la boca del colector. H-14 sigue [U] FUENTE PENDIENTE (PDF binario; ficha HTML 403).
+
+## V4-09 — implementación (pendiente de revisión)
+
+Implementado por el agente implementador (Haiku), sin commit ni push. Base `1209c85`. Revisión del observador pendiente.
+
+### Decisiones y textos
+
+- **Línea de llegada de Pike en Buck's Row (A).** No cambia (`scenes/bucks_row.js:151`). El texto que hay es otro: ver la desviación 1.
+- **Opción «¿Quién era ella?» (B).** Una sola línea de Pike, con el mismo flag `pike_polly` (`scenes/bucks_row.js:188`): «Lleva un sombrero de paja negro; parece nuevo. Alguien lo eligió con cuidado.» La opción «¿Qué apunta en esa libreta, Pike?» sigue igual y exige `pike_polly`.
+- **Hotspot y inspect de Buck's Row (C).** Hotspot: «El cuerpo de la mujer de Buck's Row». Inspect: «La mujer de Buck's Row». Ids sin cambio (`polly`, `polly_taken`, `polly_seen`, `pike_polly`, `nichols`).
+- **Libreta de Pike (D)** (`story/chapters.js`, `pikeBook`): «31 ago. — Buck's Row. Avisado a las 4:00. Llega a las 4:12. Botas mojadas. Barro negro.» La línea de Tabram no cambia.
+- **Recorte de septiembre (E)** (`story/chapters.js`, `c2`, línea 85): un solo `G.doc`, cabecera «RECORTE DE PRENSA — SEPTIEMBRE DE 1888» y el cuerpo aprobado, sin flag ni pista. Ver la desviación 3.
+- **Hanbury Street (F)** (`scenes/hanbury.js`): líneas de Pike 171–172: «Dicen en la casa que es Annie, de Dorset Street. Hay que confirmarlo.» y «Dicen que hacía ganchillo y vendía flores, cuando la salud la dejaba.» Hotspot `annie`: «El cuerpo de la mujer del patio». Inspect: «La mujer del patio de Hanbury Street». Ids sin cambio (`annie`, `annie_taken`, `chapman`). «Dark Annie» y «Annie Chapman» han salido del texto visible (queda el comentario de código de la línea 142, que no cuenta).
+- **Recorte de octubre (G)** (`story/chapters.js`, `c4`): tras «…John Kelly reconoció a su compañera, Catherine Eddowes.» se añade «Había vuelto días antes de la recogida del lúpulo en Kent.» Ningún otro cambio en el recorte.
+- **Tests nuevos:** `tests/unit/victims.test.mjs` (11 pruebas: lectura de `bucks_row.js` y de `pikeBook`, la opción, la libreta, hotspot e inspect, Hanbury, hora de identificación, recorte de septiembre, recorte de octubre) y `tests/scenarios/victims.js` (escenario automático en `test-all`: recorte una vez y antes de la tarjeta, no al reanudar ni en `c3`; la línea del sombrero, la libreta después y «¿Quién era ella?» no se repite; la línea de la casa en Hanbury; el lúpulo una vez en `c4`).
+- **Documentación:** `V4_HISTORICAL_LEDGER.md` (H-19 a cita secundaria; H-04 actualizada por la línea del lúpulo; filas nuevas H-37 a H-44; fuentes y notas V4-09), `V4_STATE_SCHEMA.md` §13, y esta sección. `V4_F00_INVENTORY.md` no se toca (solo texto).
+
+### Desviaciones y observaciones
+
+1. **Línea de llegada de Pike (A): el texto que hay no es el aprobado.** `scenes/bucks_row.js:151` dice «Nichols. Mary Ann. Aquí la llamaban Polly.». La especificación dice que no cambia y que se reporte si dice otra cosa; «No lleva papeles. Hasta que el forense la vea, no hay nombre.» no aparece en ningún archivo del repositorio. Por la regla, no se cambió. Consecuencia: el test `victims.test.mjs` «bucks_row.js no dice en texto visible el nombre ni los datos de vida de la mujer» **falla** («aparece «Nichols»»). Es el único fallo de `unit`. Decisión del observador: cambiar la línea 151 por el texto de A (el test pasa) o eximirla de forma explícita. Nada más de esta escena depende de esa línea.
+2. **Test existente de Mitre ajustado (fuera de la lista).** `tests/unit/mitre.test.mjs`: (a) el conteo de «RECORTE DE PRENSA» sobre todo `chapters.js` pasa a contar el de octubre (ahora hay dos, y el de septiembre también empieza así); (b) el párrafo de Kelly que el test fija incluye la frase del lúpulo. Sin estos dos cambios el test falla por diseño, no por regresión. Los escenarios no lo necesitan.
+3. **Recorte de septiembre: dónde queda.** Antes de la tarjeta «Capítulo II», dentro de `c2`, después de `G.game.r.fx.fade = 1;` (`chapters.js:85`). No fue necesario el orden alternativo. Sin flag. Patrón equivalente: el recorte de octubre de `c4` tampoco guarda flag. Un replay del capítulo II desde su instantánea lo muestra otra vez, igual que la tarjeta (ver `V4_STATE_SCHEMA.md` §13).
+4. **Línea del lúpulo: posición.** «a continuación de la frase de Kelly» se leyó como la primera frase del párrafo («…Catherine Eddowes.»), porque «Había vuelto» habla de Eddowes. La segunda frase («Esa noche…») queda detrás. Si el observador la quiere al final del párrafo, es un cambio de posición.
+5. **`GUION.md`: fecha de cabecera.** `export.mjs` estampó «2026-10-11» (antes «2026-10-10»). Es la fecha que escribe el script, no un cambio de contenido. El resto del diff es el previsto.
+6. **Finales de línea.** `bucks_row.js`, `hanbury.js`, `chapters.js`, `mitre.test.mjs` y los documentos ya estaban en LF (comprobado con `node`; `git status` estaba limpio). No hubo normalización que revertir.
+7. **«Annie» visible fuera de la lista (no cambiado).** Quedan en texto visible: el objeto «Peine de Annie» (`story/data.js:52`) y el objetivo «Poner el peine de Annie sobre la mesa.» (`chapters.js:442`; `scenes/seance.js:195`). La especificación pide no tocar objetos. Decisión para el observador.
+8. **Escenarios `compat.js` y `resume.js`.** Tienen regex negativas sobre el texto antiguo de Hanbury («Annie Chapman. Los de la casa», «Dark Annie»). Siguen pasando sin cambio.
+9. **Recorrido: líneas.** `walk` 428 → 427 (comparado línea a línea con la base `1209c85`: el sombrero quita 2 líneas de Pike, el recorte de septiembre añade una entrada `[documento]`, y Hanbury cambia dos líneas por dos). `second` 431 → 430 y `alt` 125 → 124, con el mismo efecto (no comparado línea a línea).
+10. **Verificación en navegador.** No se hizo: el cambio es de texto y lo cubren los recorridos headless. No se arrancó servidor de vista previa.
+
+### Recompensa emocional (J)
+
+**No hay ningún recuerdo concreto de una víctima en boca de Thomas ni de Wren**, ni en el epílogo (`story/chapters.js`, `epilogue`, líneas 887–950) ni en la segunda lectura. En el epílogo, Thomas responde con «Era Thomas.» (línea 914) y «Puede acordarse.» (línea 917), que no son recuerdos de nadie. La cita más cercana es un pensamiento de Thomas sobre la sala de disección, no sobre la mujer: `scenes/hanbury.js:321` «Lo vi en la sala de disección. No quiero volver a verlo.». No se añadió texto. Queda como **deuda F15: recuerdo concreto de una víctima en boca de Thomas o de Wren (pendiente)**.
+
+### Snapshot de `evaluate()` (11 fixtures, `normalizeState` antes de `evaluate`)
+
+Script y salidas en `scratchpad/v4-09/` (fuera del repositorio): `snapshot.mjs`, `snapshot-before.json` (antes de editar), `snapshot-after.json` (al final).
+
+- `cmp snapshot-before.json snapshot-after.json` → sin diferencias (exit 0), 20531 bytes cada uno.
+- Las teorías que aparecen en los fixtures son `intruso`, `brennan`, `carta`, `horas` y `rondas`. `doble` no aparece en ninguno de los 11 fixtures.
+
+### Archivos tocados
+
+```
+ M web/GUION.md
+ M web/src/scenes/bucks_row.js
+ M web/src/scenes/hanbury.js
+ M web/src/story/chapters.js
+ M web/tests/unit/mitre.test.mjs
+ M web/docs/V4_HISTORICAL_LEDGER.md
+ M web/docs/V4_STATE_SCHEMA.md
+ M web/docs/V4_EXECUTION_LOG.md
+?? web/tests/scenarios/victims.js
+?? web/tests/unit/victims.test.mjs
+```
+
+### Comandos y salidas reales
+
+```
+$ node tools/unit.mjs | tail -1
+151 pruebas bien, 1 mal                                  (exit 1)
+FALLO victims.test.mjs › bucks_row.js no dice en texto visible el nombre ni los datos de vida de la mujer
+  aparece «Nichols»                                      (desviación 1)
+
+$ node tools/walk.mjs
+{ "scenario": "walkthrough", "ok": true, "errors": [], "lines": 427, "deductions": 25, "scene": "bucks_row" }   (exit 0)
+  (base 1209c85: lines 428)
+
+$ node tools/walk.mjs second
+{ "scenario": "second", "ok": true, "errors": [], "lines": 430, "deductions": 25, "scene": "bucks_row" }   (exit 0)
+  (antes: lines 431)
+
+$ node tools/walk.mjs alt
+{ "scenario": "alt", "ok": true, "errors": [], "lines": 124, "deductions": 1, "scene": "seance" }          (exit 0)
+  (antes: lines 125)
+
+$ node tools/walk.mjs victims
+{ "scenario": "victims", "ok": true, "errors": [], "lines": 48, "deductions": 21, "scene": "greaves", "seen": { ... } }   (exit 0)
+
+$ node tools/test-all.mjs   (salida en scratchpad/v4-09/testall.txt)
+FAIL  unit                         (1 prueba: desviación 1)
+PASS  smoke, audio, 25 escenarios (incluido «scenario victims»), walk, walk second, walk alt
+EXIT=1
+
+$ node tools/script/export.mjs
+C:\Dev\HorrorPlay\web\GUION.md: 1523 lines, 357 spoken or thought
+$ git diff -- web/GUION.md   (solo cambian: las dos líneas de Pike de Buck's Row, la de la opción, el nombre y el título del hotspot, las dos líneas de Pike de Hanbury, el nombre del hotspot de la mujer del patio, el recorte de septiembre en c2, la línea del lúpulo, la anotación de la libreta, y la fecha de cabecera)
+```
+
+### Preguntas abiertas para el observador
+
+- **A (línea 151 de `bucks_row.js`).** Decidir si se cambia por el texto aprobado, y el test de «Nichols» pasa. Es el único FAIL.
+- **«Peine de Annie».** Objeto y objetivos de la sesión: ¿cambian en una fase posterior?
+- **Posición de la línea del lúpulo** (desviación 4).
+- **Deuda F15** (recuerdo concreto de una víctima en boca de Thomas o de Wren).
+
+**Cierre de V4-09 (decisiones):** la línea de Pike al llegar (bucks_row.js:151) decía «Nichols. Mary Ann. Aquí la llamaban Polly.»; se cambia por el texto aprobado «No lleva papeles. Hasta que el forense la vea, no hay nombre.» (el anacronismo de las 4:12). El recorte de octubre pone la frase del lúpulo justo después de «…John Kelly reconoció a su compañera, Catherine Eddowes.». El nombre «Peine de Annie» (objeto) se mantiene: el objeto no afirma identidad. Recompensa emocional (punto 6 del plan): no hay recuerdo concreto de una víctima en boca de Thomas ni de Wren; queda como deuda para F15.

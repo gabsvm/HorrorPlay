@@ -148,7 +148,7 @@ export default {
     const pike = G.actor('Pike');
     pike.facing = 1;
     await G.say('Pike', 'Inspector. No pise junto al portón.');
-    await G.say('Pike', 'Nichols. Mary Ann. Aquí la llamaban Polly.');
+    await G.say('Pike', 'No lleva papeles. Hasta que el forense la vea, no hay nombre.');
     await G.say('Ashgrove', '¿Quién la vio primero?');
     await G.say('Pike', 'Dos carreteros, sobre las tres cuarenta. Neil llegó detrás. Aún discuten cuál la encontró.');
     G.objective('Examinar el cuerpo. Hablar con Pike, con Neil y con el chico.');
@@ -185,9 +185,7 @@ export default {
           pike.talking = false;
         } else if (c === 'polly') {
           G.flag('pike_polly', true);
-          await G.say('Pike', 'Tenía cinco hijos. Ayer no reunió los cuatro peniques de la cama.');
-          await G.say('Pike', 'Le prometió a la encargada que volvía en un rato.');
-          await G.say('Pike', 'Se había comprado un sombrero. Quería que la vieran bien arreglada.');
+          await G.say('Pike', 'Lleva un sombrero de paja negro; parece nuevo. Alguien lo eligió con cuidado.');
           pike.talking = false;
         } else if (c === 'notes') {
           G.flag('pike_notes', true);
@@ -252,7 +250,7 @@ export default {
       },
     },
     {
-      id: 'polly', name: 'El cuerpo de Polly Nichols', verb: 'Examinar', when: (G) => !G.flag('polly_taken'), rect: [690, GROUND - 30, 200, 70], walk: 930, face: -1, gesture: false,
+      id: 'polly', name: 'El cuerpo de la mujer de Buck\'s Row', verb: 'Examinar', when: (G) => !G.flag('polly_taken'), rect: [690, GROUND - 30, 200, 70], walk: 930, face: -1, gesture: false,
       act: async (G) => {
         const first = !G.flag('polly_seen');
         G.flag('polly_seen', true);
@@ -263,7 +261,7 @@ export default {
         }
         // the points sit on the painted close-up (assets/closeups/nichols.jpg)
         await G.inspect('polly', {
-          title: 'Mary Ann "Polly" Nichols', body: 'nichols',
+          title: 'La mujer de Buck\'s Row', body: 'nichols',
           points: [
             { id: 'cara', x: 375, y: 279, r: 60, name: 'La cara', act: async (G) => {
               await G.think('Le sujetaron la mandíbula con la derecha.');

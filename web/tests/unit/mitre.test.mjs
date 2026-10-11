@@ -62,10 +62,11 @@ export const tests = [
   }],
   ['el recorte de octubre lleva el texto aprobado, una sola vez', () => {
     const C = src('story/chapters.js');
-    eq(C.split('RECORTE DE PRENSA').length - 1, 1, 'recortes');
+    // V4-09 adds the September clipping at the start of chapter two: this test counts the October one only
+    eq(C.split('RECORTE DE PRENSA — OCTUBRE DE 1888').length - 1, 1, 'recortes de octubre');
     ok(C.includes('<h3>RECORTE DE PRENSA — OCTUBRE DE 1888</h3>'), 'cabecera');
     ok(C.includes('<p>En la investigación de Berner Street, una compañera de pensión reconoció a la víctima: Elizabeth Stride, a quien llamaban «Long Liz», nacida cerca de Gotemburgo. Antes, otra mujer había jurado que era su hermana; se demostró que se equivocaba.</p>'), 'párrafo de Stride');
-    ok(C.includes('<p>En el caso de Mitre Square, John Kelly reconoció a su compañera, Catherine Eddowes. Esa noche, al salir de la comisaría de Bishopsgate, ella había dado el nombre de Mary Ann Kelly.</p>'), 'párrafo de Kelly');
+    ok(C.includes('<p>En el caso de Mitre Square, John Kelly reconoció a su compañera, Catherine Eddowes. Había vuelto días antes de la recogida del lúpulo en Kent. Esa noche, al salir de la comisaría de Bishopsgate, ella había dado el nombre de Mary Ann Kelly.</p>'), 'párrafo de Kelly');
   }],
   ['las frases de Watkins son las aprobadas', () => {
     const M = src('scenes/mitre.js');
