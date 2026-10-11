@@ -1366,12 +1366,13 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - Pendiente de decisión (F17, o una decisión tuya): la duración del intro para quien no pulsa. Con 8 s de espera, el registro cae a unos 19,6 s de aparecer: un lector a 17 caracteres por segundo se queda unos 2 s corto, y lo cierra la pulsación.
 - `test-all`: 38 PASS, 0 FAIL (ver la sección de F15 de este registro para la última ejecución).
 
-## F15 — recuerdo de víctima: línea retirada tras revisar las fuentes, 2026-10-11
+## F15 — recuerdo de víctima: prensa de la época, 2026-10-11
 
-- Añadida y después retirada la línea de Wren en el epílogo de la segunda lectura («dijo que volvería pronto con el dinero de la cama»). Motivo: al buscar la fuente, la noche de la cama de cuatro peniques se sitúa en una casa de huéspedes de Thrawl Street, y la frase «volvería pronto» aparece en el recuerdo posterior de Ellen Holland, no en un informe de la prensa comprobado. (El recorte de septiembre no sitúa la cama en Lambeth; ver la ficha H-38.) Una línea que dijera «lo publicó el periódico» afirmaba algo no comprobado. Queda fuera del juego; el texto del recorte de septiembre (capítulo II) no se ha cambiado.
-- Lo confirmado por fuentes secundarias: los cinco hijos y la identificación por Mary Anne Monk, compañera del asilo de Lambeth. Lo no confirmado: el diálogo que el recorte pone en boca de la encargada. Ver la ficha H-38 en `V4_HISTORICAL_LEDGER.md`.
-- La deuda «recuerdo concreto de una víctima» queda abierta. Para cerrarla hace falta una de estas dos cosas: una fuente primaria (el informe del juicio o la prensa de la época, leídos) o una decisión de diseño sobre cómo tratar a las víctimas reales en primera persona. Ninguna de las dos está hecha.
-- `walk` y `walk second` pasan sin la línea. `test-all`: 38 PASS, 0 FAIL, con todos los cambios de este lote, incluido el ajuste de la pulsación en el registro (ver F10).
+- La línea de Wren (segunda lectura, epílogo) se retiró antes porque su atribución a la prensa no estaba comprobada. Ahora se ha comprobado la frase principal: la *Eastern Argus* del 8-IX-1888 (texto leído en la transcripción de Casebook) recoge que Nichols dijo a la testigo Emily Holland que no tardaría en volver. La línea vuelve con esa atribución: «dijo a una compañera de la casa de huéspedes que volvería pronto». Sin cuatro peniques ni encargada, que no aparecen en esa prensa.
+- Es lo publicado, no un recuerdo de Wren ni de Thomas. La deuda «recuerdo concreto en primera persona» sigue siendo una decisión de autor: el juego no inventa memorias de víctimas reales.
+- Pendiente: el recorte de septiembre (capítulo II) pone a la encargada lo que la prensa atribuye a Holland. No se cambia sin decisión.
+- `walk` no dice la línea; `walk second` sí. `test-all`: 38 PASS, 0 FAIL.
+
 
 ## F16 — objetivos táctiles en el cuaderno y la barra, 2026-10-11
 

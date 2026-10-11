@@ -909,6 +909,8 @@ export function makeChapters() {
       else if (intent === 'surrender') await G.say('Wren', 'Lleva una esposa puesta. Pike va por ahí con la otra, abierta, colgando del cinturón.');
       else if (intent === 'destroy_page') await G.say('Wren', 'Lleva un papel roto en la manga. Pike tiene la otra mitad.');
       if (G.flag('wren_paid')) await G.say('Wren', 'Su penique. Se ha puesto frío. No lo quiero.');
+      // the second reading only: what the Eastern Argus printed on 8 September 1888, from the witness Emily Holland (V4-15)
+      if (G.second()) await G.say('Wren', 'Lo de la mujer de Buck\'s Row salió en el periódico: dijo a una compañera de la casa de huéspedes que volvería pronto.');
       await G.say('Wren', 'Dígame su nombre, señor. El que le puso su madre.');
       w.talking = false;
       G.game.ui.hideDialogue();
