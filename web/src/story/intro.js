@@ -58,12 +58,12 @@ export async function playIntro(G) {
     await w(700);
     const rows = doc.children;
     for (let i = 0; i < RECORD.length && !skipped; i++) {
-      await type(rows[i], RECORD[i][1], RECORD[i][0] === 'p' ? 26 : 34, () => audio.tick());
+      await type(rows[i], RECORD[i][1], RECORD[i][0] === 'p' ? 20 : 26, () => audio.tick());
       await w(RECORD[i][0] === 'p' ? 500 : 250);
     }
-    await w(2200);
+    await w(1500);
     show(doc, false);
-    await w(900);
+    await w(600);
 
     // 2. Whitechapel in the rain, three lines
     if (!skipped) {
@@ -85,7 +85,7 @@ export async function playIntro(G) {
         if (skipped) break;
         line.textContent = text;
         show(line, true);
-        await w(text.length > 20 ? 2900 : 2200);
+        await w(text.length > 20 ? 2400 : 2200);
         show(line, false);
         await w(900);
       }
@@ -102,10 +102,10 @@ export async function playIntro(G) {
       page.querySelector('.sig').classList.remove('on');
       show(page, true);
       await w(900);
-      await type(page.querySelector('.text'), PAGE, 55, () => audio.pen());
+      await type(page.querySelector('.text'), PAGE, 42, () => audio.pen());
       await w(500);
       page.querySelector('.sig').classList.add('on');
-      await w(1800);
+      await w(1300);
       show(page, false);
       await w(900);
     }

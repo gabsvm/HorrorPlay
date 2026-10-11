@@ -1354,3 +1354,13 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - Los atajos se comprueban en el recorrido: `walk second` exige «Ya lo sé» y «Ya sé lo que dicen: HOSPES» en el registro, y `walk` exige que no aparezcan.
 - No hecho: una interacción distinta por capítulo que reinterprete un hecho anterior (requisito 2) y la recompensa emocional de las víctimas (deuda de F09). Son decisiones de contenido y de canon que requieren revisión del observador antes de escribirse.
 - `test-all`: 38 PASS, 0 FAIL.
+
+## F10 — ritmo de apertura medido con un banco, 2026-10-11
+
+- `web/tools/pacing-bench.mjs`: partida nueva en Chrome headless (1280×720), sin saltar el intro, con un lector modelo (40 ms por carácter para una línea, 25 para un documento, 1,5 s para la firma, 1,2 s para una elección, que toma la primera opción). Los tiempos de lectura son un modelo, no una medida de un lector real.
+- Antes del ajuste (3 partidas): control del jugador a 52,5 s, 52,7 s y 52,8 s (mediana 52,7 s). El intro ocupa 36,4 s; la firma aparece a 36,4 s; la tarjeta «Limehouse» a 38,4 s.
+- Ajuste en `story/intro.js`: registro a 20 ms por carácter en los párrafos (26 en encabezados), espera tras el registro de 2200 a 1500 ms, línea de la calle a 2400 ms, página a 42 ms por carácter, espera tras la página de 1800 a 1300 ms. Sin cambio de texto ni de secuencia.
+- Después (3 partidas): control a 47,6 s, 47,6 s y 47,7 s (mediana 47,6 s). El intro ocupa 31,4 s. Ahorro: unos 5 s (10 %).
+- No medido: la primera deducción (está en el capítulo I, después de varias escenas que exigen acciones del jugador; el banco no las recorre). El banco no salta ni explora; el primer control no es un inicio de juego para un lector real.
+- Pendiente de decisión: el intro sigue siendo el 66 % del tiempo hasta el control. Comprimirlo más cambia la atmósfera; la decisión necesita jugadores (F17).
+- `test-all`: 38 PASS, 0 FAIL.
