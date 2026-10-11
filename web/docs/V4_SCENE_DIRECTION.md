@@ -1,6 +1,6 @@
 # V4 — Dirección de escena (F11)
 
-Estado: **lista de planos escrita; ningún plano implementado todavía.** Los cambios de cámara y arte necesitan revisión visual en navegador (1280×720 y móvil), y eso no está hecho. Este documento fija qué debe mostrar cada toma y qué modo reducido le corresponde. La implementación queda para una fase aparte con esa revisión.
+Estado: **solo la deuda de la orilla está implementada** (la boca del colector, ver abajo, verificada en 1280×720 y 1920×1080). Ninguna toma de cámara de la tabla está implementada: no hay encuadres nuevos, ni duraciones máximas aplicadas, ni modos reducidos por toma. La tabla fija qué debe mostrar cada toma y qué modo reducido le corresponde.
 
 ## Convenciones
 
@@ -27,7 +27,7 @@ Estado: **lista de planos escrita; ningún plano implementado todavía.** Los ca
 
 ## Deudas visuales ya registradas
 
-- Lámina de agua de `foreshore.js` (146–149): se lee como un cauce abierto. Debe salir de la boca del colector (V4-08).
+- Lámina de agua de `foreshore.js`: **implementada (F11).** Estaba pintada antes del suelo de barro, así que quedaba tapada; ahora sale de la boca del colector como una poza bajo el arco que se adelgaza en una lengua de unos 330 px y se pierde en el barro (x 150–480). Comparada con la versión anterior en 1280×720 (recorte a 3×) y en 1920×1080.
 - Pestaña de teorías a 720p: el panel se desplaza con cinco preguntas (V4-02, F16).
 
 ## Qué no cambia

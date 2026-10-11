@@ -143,14 +143,16 @@ export default {
       ctx.fillStyle = '#060707'; ctx.fillRect(226, 470, 44, GROUND - 474);
       A.stain(ctx, 140, 330, 220, GROUND - 330, { seed: 7, alpha: 0.6, tint: 'rgba(40,60,40,0.4)' });
       for (let i = 0; i < 9; i++) { ctx.fillStyle = 'rgba(40,70,46,0.7)'; ctx.fillRect(160 + i * 20, 430 + (i % 3) * 6, 5, 40 + (i % 4) * 18); }
-      // the ditch water running out over the mud
-      ctx.fillStyle = dusk ? '#221d18' : '#0b1210';
-      ctx.beginPath(); ctx.moveTo(200, GROUND); ctx.quadraticCurveTo(420, GROUND + 40, 900, GROUND + 70); ctx.lineTo(900, GROUND + 92); ctx.quadraticCurveTo(400, GROUND + 70, 160, GROUND + 6); ctx.fill();
-      ctx.fillStyle = dusk ? 'rgba(220,150,100,0.15)' : 'rgba(80,140,120,0.15)'; ctx.fillRect(260, GROUND + 22, 220, 2); ctx.fillRect(520, GROUND + 50, 200, 2);
       // mud flat
       const mudTop = GROUND - 8;
       A.vgrad(ctx, 0, mudTop, WIDTH, 720 - mudTop, [[0, '#2e271f'], [0.4, '#1f1a15'], [1, '#110f0c']]);
       A.stain(ctx, 0, mudTop, WIDTH, 720 - mudTop, { seed: 5, alpha: 0.6, scale: 12 });
+      // the ditch water is painted over the mud (V4-11): it comes out of the culvert mouth, a pool under the arch that thins into a tongue
+      ctx.fillStyle = dusk ? '#221d18' : '#0b1210';
+      ctx.beginPath(); ctx.moveTo(150, GROUND - 2); ctx.quadraticCurveTo(230, GROUND + 28, 340, GROUND + 22);
+      ctx.quadraticCurveTo(410, GROUND + 18, 480, GROUND + 30); ctx.quadraticCurveTo(410, GROUND + 36, 330, GROUND + 36);
+      ctx.quadraticCurveTo(230, GROUND + 42, 150, GROUND + 8); ctx.fill();
+      ctx.fillStyle = dusk ? 'rgba(220,150,100,0.15)' : 'rgba(80,140,120,0.15)'; ctx.fillRect(190, GROUND + 16, 110, 2); ctx.fillRect(300, GROUND + 28, 90, 2);
       const r = rng(23);
       for (let i = 0; i < 110; i++) { // stones, bones, bottle glass, clay pipe stems
         const x = r.range(0, WIDTH), y = r.range(mudTop + 10, 720), s = r.range(2, 8);

@@ -1337,3 +1337,9 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - Doce objetos restaban cordura en cada vistazo (una segunda pasada: unos 45 puntos). Ahora `G.sanityOnce(clave, delta)` cobra la primera vez y deja la marca en `flags.cost_<clave>`; la reacción sigue. Sitios: frascos, falda (Bucks Row), hombro (Hanbury), cara, vientre y muñeca (Mitre), estuche y fotografía (habitación), espejo desde la tercera mirada, reloj, carta astral y despedida de Wexley (sesión).
 - Curva del recorrido principal medida y sin cambios por el cambio: 0 a partir de la confrontación de Greaves. Recomendación sobre los costes guionizados en `docs/V4_SANITY_CURVE.md`, sin aplicar: requiere revisión del observador y playtest.
 - Pruebas: `cost14.js`; `test-all` 38 PASS, 0 FAIL.
+
+## F11 — dirección visual: la boca del colector, 2026-10-11
+
+- La lámina de agua de la orilla se pintaba antes del suelo de barro, que la tapaba entera. Ahora se pinta encima: una poza bajo el arco, una lengua que se adelgaza hasta x≈480 y dos reflejos en la boca. Verificado con capturas de Chrome headless (`1280×720` completo, recorte 3× antes/después, `1920×1080`).
+- No implementado: los demás planos de `V4_SCENE_DIRECTION.md` (encuadres, duraciones máximas, modos reducidos por toma). Requieren revisión visual de cada escena; quedan como pendientes.
+- `test-all`: 38 PASS, 0 FAIL.

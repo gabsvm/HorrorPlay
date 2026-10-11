@@ -17,7 +17,7 @@ Estados: `CODE_COMPLETE` (código y pruebas automáticas, con revisión del obse
 | F08 Black Ditch | CODE_COMPLETE | commit `1209c85`; fuente de la canalización NO verificada (PDF y ficha UCL no legibles) |
 | F09 víctimas | CODE_COMPLETE | commit `f25ec50`; recompensa emocional pendiente (F15) |
 | F10 ritmo | PENDING | medición de primer control sin resultado válido; requiere jugador o script que elija opciones |
-| F11 dirección visual | PENDING | planos escritos en `V4_SCENE_DIRECTION.md`; sin implementar; requiere capturas |
+| F11 dirección visual | PARTIAL | la boca del colector (`foreshore.js`) implementada y verificada en 1280×720 y 1920×1080; los demás planos de `V4_SCENE_DIRECTION.md` sin implementar (encuadres, duraciones, modos reducidos por toma) |
 | F12 cordura | CODE_COMPLETE (equilibrio pendiente) | costes de repetición pagados una vez (`cost14.js`); curva medida en `V4_SANITY_CURVE.md`; recomendación sobre costes guionizados sin aplicar: falta revisión del observador y playtest |
 | F13 persecución | CODE_COMPLETE, VISUAL_PARTIAL | `7c33f4f`, `6a9a26f`, `1c6a76c`; `chase14.js` (calle del primer error en la etiqueta, la herida y Pike); `chase13.js` (c3b y reanudación). Sin captura comparada de la venda en 1280×720 ni en móvil |
 | F14 cuarto capítulo y final | CODE_COMPLETE, DEVICE_PENDING | postura antes del expediente (`ae2210b`); reanudación de la confrontación sin doble cargo de cordura y sin guardados a mitad de guion (`greaves_resume14.js`, auditoría 05c15bd P0); matriz `finale14.js` (18 rutas por pares). Pendiente: teclado y móvil, y pausa real de Android |
