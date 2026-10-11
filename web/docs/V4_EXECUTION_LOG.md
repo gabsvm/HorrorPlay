@@ -1324,3 +1324,10 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 **Pruebas.** `test-all`: 37 PASS, 0 FAIL, exit 0 (incluye `greaves_resume14`, `chase14`, `letter14`, `expediente14`, `finale14`).
 
 **Pendiente, no ejecutado:** prueba de pausa real de Android a mitad de la confrontación; capturas de la venda y la ropa de c3b en 1280×720 y móvil; validación de la postura en teclado y móvil.
+
+**Revisión del observador sobre be81e32:** APPROVE, sin P0 ni P1 introducidos. Cambios posteriores de pruebas (sin tocar el juego): `greaves_resume14` prueba también la primera lectura (−10 y −25 en total, dos pistas, primer pensamiento) y `window.__appPause()` a mitad de guion; `chase14` comprueba el texto del periódico y la frase de Pike para cada calle.
+
+**Residuales abiertos (no los introduce este lote):**
+- Guardados escritos por la versión anterior justo después del corte repiten el corte (−15) al reanudar. No hay marcador que los distinga.
+- Guardados antiguos tomados en `foreshore` durante las escaleras o `finaleIntro` tienen `greaves_done` pero no `awake` ni la pista de la ficha: nada vuelve a lanzar `finaleIntro`. Reparar exige decidir qué estado se les da; no se toca sin esa decisión.
+- Sin probar: la pausa real de Android a mitad de la confrontación, y la pintura de la etiqueta de la pista en el cuaderno (el test llama a la función de la etiqueta, no al render).

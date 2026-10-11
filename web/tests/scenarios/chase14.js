@@ -5,16 +5,16 @@
 import { scenario, fixture } from './harness.js';
 
 const RUNS = [
-  // [junction picks, chase_seen_at, the street Pike names]
-  [[1, 1, 1], 'wentworth', /te vio la cara en Wentworth Street/],
-  [[0, 0, 1], 'flower_dean', /te vio la cara en Flower and Dean Street/],
-  [[0, 1, 0], 'thrawl', /te vio la cara en Thrawl Street/],
+  // [junction picks, chase_seen_at, the street the paper and Pike name]
+  [[1, 1, 1], 'wentworth', 'Wentworth Street'],
+  [[0, 0, 1], 'flower_dean', 'Flower and Dean Street'],
+  [[0, 1, 0], 'thrawl', 'Thrawl Street'],
 ];
 
 export async function run(opts) {
   return scenario(async ({ game, start, act, need, expectScene, waitScene, flag, settle }) => {
     const snap = await fixture('saves-v1-baseline/c3.json');
-    for (const [junctions, at, pikeSays] of RUNS) {
+    for (const [junctions, at, street] of RUNS) {
       await start('c3', snap);
       await act('desk'); await act('door'); await act('bed');
       await act('watkins', 'placa', ['Aldgate']);
@@ -28,7 +28,13 @@ export async function run(opts) {
       need(flag('chase_seen_at') === at, `El primer error queda en ${at}, no en ${flag('chase_seen_at')} (${junctions})`);
       // the notebook's tag for the blood names the same street, whatever the first wrong turn was
       need(game.clues.chase_blood.tag(game.state) === { wentworth: 'Wentworth Street', flower_dean: 'Flower and Dean Street', thrawl: 'Thrawl Street' }[at], `La etiqueta de la sangre no sigue la calle (${at})`);
+      // the paper's note on the chase, read from the document call (as forense.js does)
+      const realDoc = game.ui.doc;
+      let paper = '';
+      game.ui.doc = async (html) => { paper += html; };
       await act('paper');
+      game.ui.doc = realDoc;
+      need(paper.includes('por ' + street + '. Asegura'), `El periódico no nombra la calle del primer error (${at})`);
       await act('desk', null, ['La muestra no basta']);
       await act('bed');
       await act('door');
@@ -40,7 +46,7 @@ export async function run(opts) {
       await waitScene('foreshore');
       expectScene('foreshore');
       const log = window.LOG.slice(n).join('\n');
-      need(pikeSays.test(log), `Pike no nombra la calle del primer error (${at})`);
+      need(log.includes('te vio la cara en ' + street), `Pike no nombra la calle del primer error (${at})`);
     }
     await settle();
     return { runs: RUNS.length };
