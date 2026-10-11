@@ -1217,3 +1217,9 @@ $ git diff -- web/GUION.md   (solo cambian: las dos líneas de Pike de Buck's Ro
 - **F17 (métricas y playtest):** el protocolo está escrito; no hay sesiones de jugadores, así que ninguna fase pasa de `CODE_COMPLETE` a `TESTED`.
 
 **Fuentes:** la mayoría de datos históricos siguen apoyados en fuentes secundarias (ver `V4_HISTORICAL_LEDGER.md`). La verificación con fuente primaria queda para F17.
+
+## F12 (cordura) — pruebas añadidas, 2026-10-11
+
+- `tests/unit/perception.test.mjs`: extremos (0 desgastado, 100 firme; el azar de sonido en 0 es 0,35 y en 100 es 0), y ausencia de cierre por cordura en todo `src/` (búsqueda de «game over» y de una comprobación que cierre con cordura 0).
+- Sin cambio de umbrales ni de efectos. La instrumentación de la cordura en la partida automática y la curva por escena siguen pendientes.
+- F13 (persecución), F14 (cuarto capítulo y final) y F15 (segunda lectura): no empezadas en esta tanda; cada una pide propuesta, revisión del observador, implementación y pruebas.
