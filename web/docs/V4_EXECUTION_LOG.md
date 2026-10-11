@@ -1193,3 +1193,9 @@ $ git diff -- web/GUION.md   (solo cambian: las dos líneas de Pike de Buck's Ro
 - **Deuda F15** (recuerdo concreto de una víctima en boca de Thomas o de Wren).
 
 **Cierre de V4-09 (decisiones):** la línea de Pike al llegar (bucks_row.js:151) decía «Nichols. Mary Ann. Aquí la llamaban Polly.»; se cambia por el texto aprobado «No lleva papeles. Hasta que el forense la vea, no hay nombre.» (el anacronismo de las 4:12). El recorte de octubre pone la frase del lúpulo justo después de «…John Kelly reconoció a su compañera, Catherine Eddowes.». El nombre «Peine de Annie» (objeto) se mantiene: el objeto no afirma identidad. Recompensa emocional (punto 6 del plan): no hay recuerdo concreto de una víctima en boca de Thomas ni de Wren; queda como deuda para F15.
+
+## F10 — medición de ritmo (bloqueada, sin resultado)
+
+- Intento 1 y 2 (CDP, 1280×720, menú → «Nueva partida», velocidad normal): el juego arranca, la introducción termina a los 36 s y la partida queda en `running = 1` sin diálogo visible; el script no elige las opciones, así que no hay «primer control» medible.
+- `?metrics` (src/engine/metrics.js) mide `primerControlMs` solo con la primera entrada del jugador. Necesita un jugador real para dar un valor fiable.
+- Consecuencia: F10 no puede cerrarse con cifras de tiempo. Pendiente: medición con un jugador humano (protocolo de F17), o un script que elija opciones y espere el ritmo real, aprobado aparte.
