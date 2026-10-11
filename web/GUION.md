@@ -1179,7 +1179,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - **La voz (la voz):** _Bien, Tommy._
 - _Si outcome === 'injured':_
   - [+ Pista al cuaderno: chase_blood]
-  - *Thomas (piensa):* Me he abierto la mano en la tapia de Wentworth Street. No sé cuándo.
+  - *Thomas (piensa):* Me he abierto la mano en la tapia de {chaseStreet(state.flags)}. No sé cuándo.
 - _Si no:_
   - _Si outcome === 'spotted':_
     - *Thomas (piensa):* El agente de la linterna me vio la cara. Un momento. Bastó.
@@ -1230,11 +1230,12 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 
 ### `readFile`
 - [Documento] LONDON HOSPITAL — EXPEDIENTE CLÍNICO Paciente: T. A., estudiante de cuarto año. 14 de marzo de 1879. Dr. L. Greaves. Hallado a las cuatro de la mañana en la sala de disección, con un bisturí en la mano izquierda. Ausencia de recuerdos sobre su llegada. El cadáver de la mesa 3 presenta incisiones ajenas al programa de prácticas. La enfermera M. Bell declaró que, esa noche, junto al lavadero, oyó al estudiante responder claramente: «Aquí estoy». El paciente recuerda haber oído agua y niega haber hablado con nadie. Su hermano menor falleció en Limehouse en 1866; el paciente tenía doce años. Impresión clínica: episodios de amnesia y desorientación; vigilar recurrencias. Anotación agregada, 1888: El cuadro se asemeja a las descripciones posteriores de fuga disociativa (Tissié, 1887). El 1 de septiembre, el sargento Pike preguntó si era posible actuar durante una laguna de memoria. Respondí que sí.
-- [+ Pista al cuaderno: expediente]
-- [+ Pista al cuaderno: respuesta1879]
-- *Thomas (piensa):* «T. A.» No puedo seguir llamándolo una coincidencia.
-- *Thomas (piensa):* En 1866 ya me oyó el agua. Esto volvió a ocurrir. _(si flag('answered1866'))_
-- *Thomas (piensa):* En 1866 callé. En el hospital no. _(si no)_
+- _Si !flag('file_read'):_
+  - [+ Pista al cuaderno: expediente]
+  - [+ Pista al cuaderno: respuesta1879]
+  - *Thomas (piensa):* «T. A.» No puedo seguir llamándolo una coincidencia.
+  - *Thomas (piensa):* En 1866 ya me oyó el agua. Esto volvió a ocurrir. _(si flag('answered1866'))_
+  - *Thomas (piensa):* En 1866 callé. En el hospital no. _(si no)_
 - **Greaves:** La encontraste.
 - _Si hand === 'greaves_like':_
   - **Greaves:** Pensaste que la carta era mía. Te enseñé a escribir así; no a firmar eso.
@@ -1522,7 +1523,6 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 - Verdad (2ª lectura): Llegué antes porque no me había ido.
 
 **`chase_blood`**
-- Dónde: Wentworth Street
 - Texto: Un corte en la palma, con polvo de ladrillo dentro.
 
 **`trozo`**

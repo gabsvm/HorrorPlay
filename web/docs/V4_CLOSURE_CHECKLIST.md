@@ -18,9 +18,9 @@ Estados: `CODE_COMPLETE` (código y pruebas automáticas, con revisión del obse
 | F09 víctimas | CODE_COMPLETE | commit `f25ec50`; recompensa emocional pendiente (F15) |
 | F10 ritmo | PENDING | medición de primer control sin resultado válido; requiere jugador o script que elija opciones |
 | F11 dirección visual | PENDING | planos escritos en `V4_SCENE_DIRECTION.md`; sin implementar; requiere capturas |
-| F12 cordura | PENDING | pruebas de extremos (commit `8c36a91`); falta instrumentación por escena y curva |
-| F13 persecución | PENDING (parcial) | `7c33f4f`: ruta limpia y pista de herida; falta objeto visual en c3b, ropa del actor, `chase_seen_at` y reanudación |
-| F14 cuarto capítulo y final | PENDING | no empezada |
+| F12 cordura | CODE_COMPLETE (equilibrio pendiente) | pruebas de extremos (`8c36a91`); curva por escena en `walk` (`1c6a76c`): llega a 0 en c4 tras Greaves; no reequilibrada, falta revisión del observador |
+| F13 persecución | CODE_COMPLETE, VISUAL_PARTIAL | `7c33f4f`, `6a9a26f`, `1c6a76c`; `chase14.js` (calle del primer error en la etiqueta, la herida y Pike); `chase13.js` (c3b y reanudación). Sin captura comparada de la venda en 1280×720 ni en móvil |
+| F14 cuarto capítulo y final | CODE_COMPLETE, DEVICE_PENDING | postura antes del expediente (`ae2210b`); reanudación de la confrontación sin doble cargo de cordura y sin guardados a mitad de guion (`greaves_resume14.js`, auditoría 05c15bd P0); matriz `finale14.js` (18 rutas por pares). Pendiente: teclado y móvil, y pausa real de Android |
 | F15 segunda lectura | PENDING (parcial) | atajos y momentos verificados; duración sin reducir; recompensa emocional de víctimas pendiente |
 | F16 interfaz y packaging | PENDING (parcial) | build de Windows corregido y verificado; maquetación a 720p provisional; Android sin dispositivo |
 | F17 playtest | BLOCKED | necesita jugadores y dispositivo; protocolo escrito (`V4_PLAYTEST_PROTOCOL.md`) |

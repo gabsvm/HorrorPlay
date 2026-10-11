@@ -501,7 +501,9 @@ export class UI {
       // a clue may read differently in the second reading (text2), and carries a note in the other
       // hand there (truth2); text may depend on the story so far
       const txt = second && c.text2 ? c.text2 : typeof c.text === 'function' ? c.text(st) : c.text;
-      li.innerHTML = `<span class="tag">${c.tag || ''}</span>${txt}${second && c.truth2 ? `<span class="second">${c.truth2}</span>` : ''}`;
+      // a tag may depend on the story so far too (the street where the chase went wrong, data.js)
+      const tag = typeof c.tag === 'function' ? c.tag(st) : c.tag;
+      li.innerHTML = `<span class="tag">${tag || ''}</span>${txt}${second && c.truth2 ? `<span class="second">${c.truth2}</span>` : ''}`;
       if (this.selectedClues.includes(id)) li.classList.add('sel');
       if (g.clueExhausted(id)) li.classList.add('used');
       li.addEventListener('click', () => this.pickClue(id));

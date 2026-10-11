@@ -7,6 +7,7 @@ import { Actor } from '../engine/actor.js';
 import { playIntro } from './intro.js';
 import { canFinishC1, canEnterFinale } from './progression.js';
 import { perception, perceptionBand } from './perception.js';
+import { chaseStreet } from './data.js';
 
 const LOOKS = {
   child: { hat: 'cap', coat: '#3a342c', coatLen: 0.62, flare: 1.05, build: 0.9, speed: 120, lantern: false, collarUp: false, patches: true, scarf: '#5a2a22', sideburns: false, hair: '#2a1e16', gloves: null, stubble: null },
@@ -33,8 +34,6 @@ async function lostTime(G, from, to, { date = null } = {}) {
 
 // Only a player who has finished the game once, reading it the second time, gets the shortcuts
 // through puzzles they have already solved (never a new player, never by accident).
-// where the chase went wrong first (alleys.js): the street the city names
-const chaseStreet = (flags) => ({ flower_dean: 'Flower and Dean Street', thrawl: 'Thrawl Street' })[flags.chase_seen_at] || 'Wentworth Street';
 const knowsPuzzles = (G) => G.second() && !!(G.game.constructor.read && G.game.constructor.read());
 
 export function makeChapters() {
@@ -598,7 +597,7 @@ export function makeChapters() {
       await G.voice('Bien, Tommy.');
       // what the run cost: nothing, a face seen, or a hand opened on a wall (chase_outcome)
       const outcome = G.state.flags.chase_outcome || 'clean';
-      if (outcome === 'injured') { G.red(0.7); G.audio.thud(); G.clue('chase_blood'); await G.think('Me he abierto la mano en la tapia de Wentworth Street. No sé cuándo.'); }
+      if (outcome === 'injured') { G.red(0.7); G.audio.thud(); G.clue('chase_blood'); await G.think(`Me he abierto la mano en la tapia de ${chaseStreet(G.state.flags)}. No sé cuándo.`); }
       else if (outcome === 'spotted') { G.audio.whistle(0.12, true); await G.think('El agente de la linterna me vio la cara. Un momento. Bastó.'); }
       else await G.think('Nadie me vio. Aún.');
       G.player.speed = 150;
@@ -689,12 +688,15 @@ export function makeChapters() {
         <p class="small" style="text-align:right">Anotación agregada, 1888: <i>El cuadro se asemeja a las descripciones posteriores de fuga disociativa (Tissié, 1887). El 1 de septiembre, el sargento Pike preguntó si era posible actuar durante una laguna de memoria. Respondí que sí.</i></p>`);
       // the file is read once: a second look (from the cabinet) only shows the page again
       if (G.flag('greaves_done')) return;   // the confrontation is finished: the page only
-      G.flag('file_read', true);
-      G.clue('expediente');
-      G.clue('respuesta1879');
-      G.sanity(-10);
-      await G.think('«T. A.» No puedo seguir llamándolo una coincidencia.');
-      await G.think(G.flag('answered1866') ? 'En 1866 ya me oyó el agua. Esto volvió a ocurrir.' : 'En 1866 callé. En el hospital no.');
+      // the discovery and its cost come once; a file read before an interrupted confrontation goes straight on to it
+      if (!G.flag('file_read')) {
+        G.flag('file_read', true);
+        G.clue('expediente');
+        G.clue('respuesta1879');
+        G.sanity(-10);
+        await G.think('«T. A.» No puedo seguir llamándolo una coincidencia.');
+        await G.think(G.flag('answered1866') ? 'En 1866 ya me oyó el agua. Esto volvió a ocurrir.' : 'En 1866 callé. En el hospital no.');
+      }
       G.audio.door();
       G.cinema(true);
       const gr = G.addActor(new Actor('Greaves', { x: 120, y: G.scene.groundY, h: 214, hat: 'top', coat: '#1d1b1c', coatLen: 0.95, cane: true, beard: '#7a7a74', hair: '#8a8a84', facing: 1, flare: 1.05, tails: true, chain: true, waistcoat: '#3a2a20', buttons: 'double' }));

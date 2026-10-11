@@ -1310,3 +1310,17 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - Greaves no dice «No acusaste a nadie por una letra» cuando la postura elegida es Greaves.
 - Pruebas: las seis que responden a la vitrina añaden la nueva respuesta; `letter14.js` comprueba que la postura se guarda una vez, que la intención final no cambia, y que despierto no se ofrece.
 - Pendiente: la validación en móvil de que el cuadro de opciones no tapa el sprite (sin dispositivo).
+
+## Auditoría 05c15bd — P0 Greaves y pruebas reales de F13, 2026-10-11
+
+**P0, reanudación de la confrontación.** Reproducido antes del cambio con `greaves_resume14.js`:
+- Un guardado tomado mientras corre un guion (p. ej. al minimizar la app a mitad de la confrontación) se escribía igual. Ahora `autosave()` no escribe mientras `game.running` (igual que ya hacía `onPause`); el guardado al terminar el guion cubre el punto.
+- Al reanudar con el expediente ya leído, `readFile` volvía a cobrar el descubrimiento: 60 → 35 de cordura (−10 del expediente y −15 del corte). Ahora el descubrimiento (pistas, −10 y los dos pensamientos) solo ocurre en la primera lectura; una lectura posterior, con la confrontación sin terminar, sigue directamente con la confrontación (−15 solo). Verificado: 60 → 45.
+- Residual sin verificar: un guardado de una versión anterior, tomado justo después del corte, repetiría el corte una vez. No es detectable sin un marcador nuevo; se deja así hasta prueba en dispositivo.
+- Pérdida asumida: si la app se cierra durante un guion largo, la reanudación vuelve al último final de guion (no al instante exacto).
+
+**F13, calle del primer error.** `chaseStreet` pasa a `data.js` (una sola fuente). La etiqueta de la pista de la sangre (`chase_blood`) sigue la calle del primer error, igual que el periódico y Pike; antes estaba fija en «Wentworth Street». `chase14.js` recorre tres primeros errores (Wentworth, Flower and Dean, Thrawl) y comprueba `chase_seen_at`, la etiqueta y la frase de Pike. Nota: la ruta herida necesita los tres cruces mal, así que su primer error siempre es Wentworth; el cambio de la línea de la herida es defensivo.
+
+**Pruebas.** `test-all`: 37 PASS, 0 FAIL, exit 0 (incluye `greaves_resume14`, `chase14`, `letter14`, `expediente14`, `finale14`).
+
+**Pendiente, no ejecutado:** prueba de pausa real de Android a mitad de la confrontación; capturas de la venda y la ropa de c3b en 1280×720 y móvil; validación de la postura en teclado y móvil.

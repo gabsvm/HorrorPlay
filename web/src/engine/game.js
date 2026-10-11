@@ -694,10 +694,11 @@ export class Game {
   static clearSave() { try { localStorage.removeItem(SAVE_KEY); localStorage.removeItem(`${SAVE_KEY}.resume`); } catch { /* ignore */ } }
 
   // A resume point: the whole state plus where Ashgrove stands. Written every time a script ends
-  // and the player gets control back, except in scenes that are one continuous script.
+  // and the player gets control back, except in scenes that are one continuous script. A script in
+  // flight is never a resume point (its state is half-written): the save from its end covers it.
   autosave() {
     const sc = this.scene;
-    if (!sc || this.inMenu || window.FAST || !this.state.chapter || !this.player.visible) return;
+    if (this.running || !sc || this.inMenu || window.FAST || !this.state.chapter || !this.player.visible) return;
     if (sc.noSave || (sc.canSave && !sc.canSave(this.G))) return;
     try { localStorage.setItem(`${SAVE_KEY}.resume`, JSON.stringify({ state: this.state, x: Math.round(this.player.x), facing: this.player.facing, at: Date.now() })); } catch { /* storage unavailable */ }
   }
