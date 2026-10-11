@@ -1223,3 +1223,9 @@ $ git diff -- web/GUION.md   (solo cambian: las dos líneas de Pike de Buck's Ro
 - `tests/unit/perception.test.mjs`: extremos (0 desgastado, 100 firme; el azar de sonido en 0 es 0,35 y en 100 es 0), y ausencia de cierre por cordura en todo `src/` (búsqueda de «game over» y de una comprobación que cierre con cordura 0).
 - Sin cambio de umbrales ni de efectos. La instrumentación de la cordura en la partida automática y la curva por escena siguen pendientes.
 - F13 (persecución), F14 (cuarto capítulo y final) y F15 (segunda lectura): no empezadas en esta tanda; cada una pide propuesta, revisión del observador, implementación y pruebas.
+
+## F15 (segunda lectura) — verificación, 2026-10-11
+
+- Atajos: solo con segunda lectura y marca de juego terminado (`chapters.js:36`, `knowsPuzzles`). Verificado por `tests/scenarios/second-reading.js`: sin terminar no hay atajo.
+- Una interacción nueva por capítulo: prólogo (barco y hombre con bombín), I (libreta de Pike), II (Wexley), III (borrador de la carta), IV (esqueleto de 1879). Verificado en el mismo escenario.
+- Brecha: la segunda lectura NO es más corta. Partida automática: primera 428 líneas; segunda 430. Acortarla exige cortar texto, es decisión de diseño y queda pendiente de revisión del observador.
