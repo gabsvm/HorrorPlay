@@ -61,8 +61,9 @@ export async function playIntro(G) {
       await type(rows[i], RECORD[i][1], RECORD[i][0] === 'p' ? 20 : 26, () => audio.tick());
       await w(RECORD[i][0] === 'p' ? 500 : 250);
     }
-    // the record stays long enough for a reader to finish its last row (V4-10: it was 1.5 s, too short)
-    await w(5000);
+    // the record stays long enough for a reader to finish its last row: the rows are typed faster than they are read,
+    // so the last one needs about 8 s after it is typed (V4-10; it was 1.5 s, then 5 s, both too short)
+    await w(8000);
     show(doc, false);
     await w(600);
 
