@@ -149,8 +149,9 @@ export default {
       A.stain(ctx, 0, mudTop, WIDTH, 720 - mudTop, { seed: 5, alpha: 0.6, scale: 12 });
       // the ditch water is painted over the mud (V4-11): it comes out of the culvert mouth, a pool under the arch that thins into a tongue
       ctx.fillStyle = dusk ? '#221d18' : '#0b1210';
-      ctx.beginPath(); ctx.moveTo(150, GROUND - 2); ctx.quadraticCurveTo(230, GROUND + 28, 340, GROUND + 22);
-      ctx.quadraticCurveTo(410, GROUND + 18, 480, GROUND + 30); ctx.quadraticCurveTo(410, GROUND + 36, 330, GROUND + 36);
+      // its back edge runs along the foot of the arch, where the drips from the vault fall (Drip, below)
+      ctx.beginPath(); ctx.moveTo(150, GROUND - 2); ctx.lineTo(350, GROUND - 2);
+      ctx.quadraticCurveTo(410, GROUND + 14, 480, GROUND + 30); ctx.quadraticCurveTo(410, GROUND + 36, 330, GROUND + 36);
       ctx.quadraticCurveTo(230, GROUND + 42, 150, GROUND + 8); ctx.fill();
       ctx.fillStyle = dusk ? 'rgba(220,150,100,0.15)' : 'rgba(80,140,120,0.15)'; ctx.fillRect(190, GROUND + 16, 110, 2); ctx.fillRect(300, GROUND + 28, 90, 2);
       const r = rng(23);

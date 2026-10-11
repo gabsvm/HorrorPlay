@@ -6,7 +6,7 @@ Medido con `node tools/walk.mjs` (recorrido principal, cada escena una vez). Ban
 
 foreshore 100 · room 100 · bucks_row 95 · knackers 86 · hanbury 92 · seance 75 · room 69 · knackers 69 · mitre 61 · goulston 33 · room 19 · alleys 19 · greaves 7 · **foreshore 0** · bucks_row 0 · millers 0
 
-El suelo a 0 se alcanza al terminar la confrontación de Greaves, no antes. Desde ahí no hay más efecto mecánico.
+El suelo a 0 se alcanza al leer el expediente, dentro de la confrontación de Greaves (7 − 10), no al terminarla. Desde ahí no hay más efecto mecánico.
 
 ## Cambio aplicado: costes que se pagan una vez
 

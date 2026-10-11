@@ -25,7 +25,6 @@ export async function run(opts) {
     need(game.state.sanity === afterFirst, 'el segundo vistazo a los frascos no cobra');
 
     // and in the room of chapter three: the photograph, once
-    f.sanity = 60;
     await start('c3', await fixture('saves-v1-baseline/c3.json'));
     await settle();
     expectScene('room');
@@ -33,7 +32,7 @@ export async function run(opts) {
     const p0 = game.state.sanity;
     await act('photo');
     const p1 = game.state.sanity;
-    need(p1 < p0, 'la fotografía cobra la primera vez');
+    need(p0 - p1 === 4, `la fotografía cobra 4 la primera vez (hay ${p0 - p1})`);
     await act('photo');
     need(game.state.sanity === p1, 'la fotografía no cobra la segunda vez');
     return { jars: afterFirst, photo: [p0, p1] };

@@ -63,6 +63,8 @@ export async function run({ log = true, second = false } = {}) {
     need(!game.G.hasClue('ronda'), 'La ronda debería salir de la hoja, no de Neil');
     await act('pike', null, [2, 0, 4, 2]);   // the beat sheet: a wrong window, look again, the right one
     need(game.G.hasClue('ronda'), 'Falta la pista de la ronda (hoja de rondas)');
+    // the known puzzle shortens only in a second reading, and only through its own choice (chapters.js knowsPuzzles)
+    need(window.LOG.includes('  > Ya lo sé: de 3:30 a 3:40.') === second, second ? 'La segunda lectura debería acortar la ronda' : 'La primera lectura no debe acortar la ronda');
     await deduce('ronda', 'silencio');
     await deduce('zurdo', 'anatomia');
     await deduce('botas', 'ventana');
@@ -103,6 +105,7 @@ export async function run({ log = true, second = false } = {}) {
     need(game.state.flags.raps_heard, 'La mesa debería golpear antes de la sesión');
     await act('table');                       // read with the board on the wall
     need(game.G.hasClue('hospes'), 'Faltan los golpes (HOSPES)');
+    need(window.LOG.includes('  > Ya sé lo que dicen: HOSPES.') === second, second ? 'La segunda lectura debería acortar los golpes' : 'La primera lectura no debe acortar los golpes');
     await act('table', 'peine');
     need(game.state.flags.seance_done, 'La sesión no terminó');
     await deduce('hospes', 'regla');

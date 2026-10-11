@@ -1337,6 +1337,7 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - Doce objetos restaban cordura en cada vistazo (una segunda pasada: unos 45 puntos). Ahora `G.sanityOnce(clave, delta)` cobra la primera vez y deja la marca en `flags.cost_<clave>`; la reacción sigue. Sitios: frascos, falda (Bucks Row), hombro (Hanbury), cara, vientre y muñeca (Mitre), estuche y fotografía (habitación), espejo desde la tercera mirada, reloj, carta astral y despedida de Wexley (sesión).
 - Curva del recorrido principal medida y sin cambios por el cambio: 0 a partir de la confrontación de Greaves. Recomendación sobre los costes guionizados en `docs/V4_SANITY_CURVE.md`, sin aplicar: requiere revisión del observador y playtest.
 - Pruebas: `cost14.js`; `test-all` 38 PASS, 0 FAIL.
+- Sin prueba: diez de los doce sitios (los puntos de inspección de Mitre, Hanbury y Bucks Row, y la sesión). El cambio se ha revisado por lectura de código y el observador no ha ejecutado esas escenas.
 
 ## F11 — dirección visual: la boca del colector, 2026-10-11
 
@@ -1349,5 +1350,7 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - El recorrido de segunda lectura (`walk second`) activaba `flags.second` pero no la marca `Game.markRead()`, así que los atajos de puzle (`knowsPuzzles`) nunca se ejercitaban ni se medían. Ahora la marca se pone con la segunda lectura, como en una partida terminada.
 - Medido con `WALK_LOG` y `read-count.mjs`: primera lectura 202 líneas, 9289 caracteres, 38 elecciones, 10 documentos. Segunda lectura: 200 líneas, 8947 caracteres, 36 elecciones, 8 documentos. Antes del cambio de marca, la segunda parecía igual de larga (205 líneas), porque no se aplicaban atajos.
 - Atajos existentes: la ronda de Pike (`chapters.js`, «Ya lo sé: de 3:30 a 3:40») y los golpes (`HOSPES`). No hay más.
+- Aclaración: las cifras 428/430 de las secciones anteriores son líneas totales del arnés (ver la nota de `walk` más arriba en este registro) y quedan superadas por `read-count`. Con `read-count`, la segunda lectura es un 1 % más corta en líneas y un 4 % en caracteres: la brecha de duración sigue abierta.
+- Los atajos se comprueban en el recorrido: `walk second` exige «Ya lo sé» y «Ya sé lo que dicen: HOSPES» en el registro, y `walk` exige que no aparezcan.
 - No hecho: una interacción distinta por capítulo que reinterprete un hecho anterior (requisito 2) y la recompensa emocional de las víctimas (deuda de F09). Son decisiones de contenido y de canon que requieren revisión del observador antes de escribirse.
 - `test-all`: 38 PASS, 0 FAIL.
