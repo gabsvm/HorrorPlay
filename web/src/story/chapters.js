@@ -687,6 +687,8 @@ export function makeChapters() {
         <p class="hand">La enfermera M. Bell declaró que, esa noche, junto al lavadero, oyó al estudiante responder claramente: <b>«Aquí estoy»</b>. El paciente recuerda haber oído agua y niega haber hablado con nadie.</p>
         <p class="hand">Su hermano menor falleció en Limehouse en 1866; el paciente tenía doce años. Impresión clínica: episodios de amnesia y desorientación; vigilar recurrencias.</p>
         <p class="small" style="text-align:right">Anotación agregada, 1888: <i>El cuadro se asemeja a las descripciones posteriores de fuga disociativa (Tissié, 1887). El 1 de septiembre, el sargento Pike preguntó si era posible actuar durante una laguna de memoria. Respondí que sí.</i></p>`);
+      // the file is read once: a second look (from the cabinet) only shows the page again
+      if (G.flag('file_read')) return;
       G.flag('file_read', true);
       G.clue('expediente');
       G.clue('respuesta1879');

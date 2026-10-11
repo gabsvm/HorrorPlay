@@ -1254,3 +1254,14 @@ Hecho:
 Pendiente de F13 (no implementado):
 - Venda visible en la mano en c4 para la ruta herida (`chase_outcome='injured'`). La línea de Greaves y la de Pike ya la mencionan; falta el dibujo.
 - Reanudación desde c3b por guardado: `dressFor` se aplica al cambiar de escena, y `resume` pasa por `goto`; no se ha probado con un guardado real en navegador.
+
+## F14 — cuarto capítulo y final, primera parte, 2026-10-11
+
+Hecho:
+- `readFile` es de una sola vez: el expediente se muestra siempre, pero la secuencia (cordura, Greaves, la transición final) solo corre la primera vez (`if (G.flag('file_read')) return;` en chapters.js). Antes, mirar la vitrina otra vez volvía a bajar la cordura y repetía la conversación. Prueba: `tests/scenarios/expediente14.js`.
+- `unit` 154/0; `test-all` 33 PASS, 0 FAIL.
+
+Pendiente de F14 (no implementado todavía):
+- Ocasión para sostener o revisar una interpretación antes de que Greaves exponga el expediente (usar `investigation.positions`).
+- Verificación de la firma `JACK` (entrada vacía, Unicode, teclado móvil, doble confirmación) y la matriz 1866/1879 × intenciones de Pike × actitudes del agua × bandas de cordura.
+- Gate de tres fuentes: revisar que el barro y las percepciones no cuenten doble.
