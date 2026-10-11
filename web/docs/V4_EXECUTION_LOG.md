@@ -1331,3 +1331,9 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - Guardados escritos por la versión anterior justo después del corte repiten el corte (−15) al reanudar. No hay marcador que los distinga.
 - Guardados antiguos tomados en `foreshore` durante las escaleras o `finaleIntro` tienen `greaves_done` pero no `awake` ni la pista de la ficha: nada vuelve a lanzar `finaleIntro`. Reparar exige decidir qué estado se les da; no se toca sin esa decisión.
 - Sin probar: la pausa real de Android a mitad de la confrontación, y la pintura de la etiqueta de la pista en el cuaderno (el test llama a la función de la etiqueta, no al render).
+
+## F12 — cordura: costes pagados una vez y curva medida, 2026-10-11
+
+- Doce objetos restaban cordura en cada vistazo (una segunda pasada: unos 45 puntos). Ahora `G.sanityOnce(clave, delta)` cobra la primera vez y deja la marca en `flags.cost_<clave>`; la reacción sigue. Sitios: frascos, falda (Bucks Row), hombro (Hanbury), cara, vientre y muñeca (Mitre), estuche y fotografía (habitación), espejo desde la tercera mirada, reloj, carta astral y despedida de Wexley (sesión).
+- Curva del recorrido principal medida y sin cambios por el cambio: 0 a partir de la confrontación de Greaves. Recomendación sobre los costes guionizados en `docs/V4_SANITY_CURVE.md`, sin aplicar: requiere revisión del observador y playtest.
+- Pruebas: `cost14.js`; `test-all` 38 PASS, 0 FAIL.

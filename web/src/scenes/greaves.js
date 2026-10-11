@@ -182,7 +182,7 @@ export default {
     },
     {
       id: 'jars', name: 'Frascos de especímenes', rect: [300, 80, 300, 380], walk: 450,
-      act: async (G) => { G.sanity(-4); G.audio.whisper(1, 0.07); G.red(0.25); },   // a label: Limehouse, 1866. Nothing said
+      act: async (G) => { G.sanityOnce('jars', -4); G.audio.whisper(1, 0.07); G.red(0.25); },   // a label: Limehouse, 1866. Nothing said
     },
     {
       id: 'chart', name: 'Lámina anatómica', rect: [660, 140, 150, 230], walk: 735,

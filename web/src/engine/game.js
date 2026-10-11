@@ -908,6 +908,14 @@ export class Game {
         game.ui.setSanity(game.state.sanity);
         if (delta < 0) { audio.heartbeat(Math.min(1, -delta / 10)); }
       },
+      // a cost paid once: looking at the same thing again shows it (the reaction) but takes no more (V4-12)
+      sanityOnce: (key, delta) => {
+        const k = `cost_${key}`;
+        if (game.state.flags[k]) return false;
+        game.state.flags[k] = true;
+        game.G.sanity(delta);
+        return true;
+      },
       chapter: (id) => game.startChapter(id),
       objective: (text) => { game.state.objective = text; game.ui.setObjective(text); },
       tip: (html, ms) => game.ui.tip(html, ms),

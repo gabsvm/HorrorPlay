@@ -229,7 +229,7 @@ export default {
           await G.say('Madame Wexley', 'Fuera, inspector. Ahora.');
           w.talking = false;
           const c = await G.choice(['¿El qué?', '(Salir sin decir nada)']);
-          if (c === 0) { w.talking = true; await G.say('Madame Wexley', 'No es el abrigo lo que debe quitarse.'); w.talking = false; G.sanity(-3); }
+          if (c === 0) { w.talking = true; await G.say('Madame Wexley', 'No es el abrigo lo que debe quitarse.'); w.talking = false; G.sanityOnce('wexley_done', -3); }
           return;
         }
         if (!G.flag('wex_q1')) {
@@ -272,7 +272,7 @@ export default {
       id: 'clock', name: 'Reloj de la repisa', rect: [430, GROUND - 210, 60, 56], walk: 460,
       act: async (G) => {
         await G.think('Tres y cuarto. La primera ronda de Neil.');
-        G.audio.tick(); G.sanity(-2);
+        G.audio.tick(); G.sanityOnce('clock', -2);
       },
     },
     {
@@ -284,7 +284,7 @@ export default {
           if (G.flag('raps_heard') && !G.hasClue('hospes')) G.objective('Leer los golpes con la tabla de letras de la pared (en la mesa).');
           await G.think('Dos grupos de golpes. Fila y columna. Como en las cárceles del zar.');
         }
-        G.sanity(-3);
+        G.sanityOnce('chart', -3);
       },
     },
     {

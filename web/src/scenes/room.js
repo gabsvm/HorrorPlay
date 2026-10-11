@@ -242,7 +242,7 @@ export default {
         // once, a thought; after that the sheet stays where it is and only the room answers
         if (n === 1) await G.think('La sábana no tiene por qué estar aquí.');
         else if (n === 2) G.audio.whisper(0.7, 0.04);
-        else { G.audio.whisper(1.4, 0.1); G.sanity(-2); }
+        else { G.audio.whisper(1.4, 0.1); G.sanityOnce('mirror', -2); }
       },
     },
     {
@@ -255,7 +255,7 @@ export default {
           await G.think('Falta el de ébano. Siempre guardaba seis.');
           G.player.pose = null;
           G.clue('estuche');
-          G.sanity(-4);
+          G.sanityOnce('estuche', -4);
           if (G.flag('paper_read')) G.game.chapterHooks.c3bObjective(G);
           return;
         }
@@ -271,7 +271,7 @@ export default {
           await G.think('Nat odiaba posar. Aquí se reía.');
         } else {
           await G.think('Han raspado mi cara. La de Nat está intacta.');
-          G.sanity(-4); G.audio.whisper(1.2, 0.08);
+          G.sanityOnce('photo', -4); G.audio.whisper(1.2, 0.08);
         }
       },
     },

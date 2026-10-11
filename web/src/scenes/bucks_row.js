@@ -274,7 +274,7 @@ export default {
             { id: 'vientre', x: 950, y: 290, r: 90, name: 'La falda', act: async (G) => {
               G.red(0.35); G.audio.sting(0.12);
               await G.think('Heridas posteriores. La ropa absorbió casi toda la sangre.');
-              G.sanity(-3);
+              G.sanityOnce('bucks_vientre', -3);
             } },
           ],
         });
