@@ -271,6 +271,8 @@ html.touch .choice { font-size: max(calc(24 * var(--u)), 15px); padding: max(cal
 html.touch #choices { width: calc(900 * var(--u)); }
 html.touch .inv-item { width: max(calc(68 * var(--u)), 46px); height: max(calc(68 * var(--u)), 46px); }
 html.touch .menu-btn { font-size: max(calc(26 * var(--u)), 17px); padding: max(calc(6 * var(--u)), 8px) calc(20 * var(--u)); }
+/* a finger needs about 44 px: the HUD buttons, the notebook tabs, its hint and close get that box (V4-16) */
+html.touch .hud-btn, html.touch #nb-tabs button, html.touch #nb-hint, html.touch #nb-close { min-height: 44px; min-width: 44px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; }
 html.touch .page li { font-size: max(calc(20 * var(--u)), 13px); }
 html.touch .page h2 { font-size: max(calc(26 * var(--u)), 15px); }
 html.touch .page .hint, html.touch #nb-feedback, html.touch #objective { font-size: max(calc(17 * var(--u)), 11px); }
