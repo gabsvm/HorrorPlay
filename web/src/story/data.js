@@ -143,6 +143,7 @@ export const CLUES = {
     text2: 'Me desperté sobre el escritorio a las 3:15, con los dedos de la mano izquierda manchados de rojo. El tintero de tinta roja estaba casi vacío.', truth2: 'La ventana la abrí yo, al volver.' },
   llave_pike: { tag: 'Mi cuarto · 25 sep', text: 'La puerta estaba cerrada con llave. Solo hay otra llave de este cuarto: la que guarda Pike, por si me necesitan de noche.', truth2: 'Pike nunca la usó.' },
   rapido: { tag: 'Mitre Square · 30 sep', text: 'El agente de la City me preguntó cómo había llegado tan rápido. Él la había encontrado hacía cuatro minutos.', truth2: 'Llegué antes porque no me había ido.' },
+  chase_blood: { tag: 'Wentworth Street', text: 'Un corte en la palma, con polvo de ladrillo dentro.' },
   trozo: { tag: 'Mitre Square', text: 'Falta un trozo del delantal de la víctima, cortado a cuchillo.', truth2: 'Lo corté para limpiarme las manos.' },
   marcas: { tag: 'Mitre Square · el cuerpo', text: 'Cortes en los párpados y una V en cada mejilla. No sirven para matar. Son una firma.', truth2: 'Las hice despacio.' },
   guantes: { tag: 'Mitre Square', text: 'Le busqué el pulso. Al levantarme, mis guantes estaban pegajosos de su sangre.',

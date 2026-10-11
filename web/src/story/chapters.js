@@ -596,8 +596,9 @@ export function makeChapters() {
       await G.voice('Bien, Tommy.');
       // what the run cost: nothing, a face seen, or a hand opened on a wall (chase_outcome)
       const outcome = G.state.flags.chase_outcome || 'clean';
-      if (outcome === 'injured') { G.red(0.7); G.audio.thud(); await G.think('Me he abierto la mano en la tapia de Wentworth Street. No sé cuándo.'); }
+      if (outcome === 'injured') { G.red(0.7); G.audio.thud(); G.clue('chase_blood'); await G.think('Me he abierto la mano en la tapia de Wentworth Street. No sé cuándo.'); }
       else if (outcome === 'spotted') { G.audio.whistle(0.12, true); await G.think('El agente de la linterna me vio la cara. Un momento. Bastó.'); }
+      else await G.think('Nadie me vio. Aún.');
       G.player.speed = 150;
       await lostTime(G, '3:20', '8:05', { date: '1 de octubre de 1888' });
       G.flag('room_phase', 'c3b');

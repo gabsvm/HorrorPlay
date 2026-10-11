@@ -1229,3 +1229,15 @@ $ git diff -- web/GUION.md   (solo cambian: las dos líneas de Pike de Buck's Ro
 - Atajos: solo con segunda lectura y marca de juego terminado (`chapters.js:36`, `knowsPuzzles`). Verificado por `tests/scenarios/second-reading.js`: sin terminar no hay atajo.
 - Una interacción nueva por capítulo: prólogo (barco y hombre con bombín), I (libreta de Pike), II (Wexley), III (borrador de la carta), IV (esqueleto de 1879). Verificado en el mismo escenario.
 - Brecha: la segunda lectura NO es más corta. Partida automática: primera 428 líneas; segunda 430. Acortarla exige cortar texto, es decisión de diseño y queda pendiente de revisión del observador.
+
+## F13 (persecución) — implementación parcial, 2026-10-11
+
+Hecho, con el plan revisado por Opus (puntos 2 y 5):
+- Ruta limpia: «Nadie me vio. Aún.» (rama `clean` de `endChase`, sale una sola vez).
+- Ruta herida: la pista `chase_blood` («Un corte en la palma, con polvo de ladrillo dentro.»), dada en `endChase` antes de volver a la habitación. No entra en FINAL_SOURCES.
+- Pruebas: `unit` 154/0; `test-all` 31 PASS.
+
+Pendiente de F13, aprobado por Opus pero no implementado:
+- Objeto visual en `room` c3b (abrigo, bombín y linterna colgados), con quitar la ropa al jugador en c3b y devolvérsela al salir (puntos 3 a-e). No está hecho: toca el personaje y la maquetación.
+- Lugar del primer error (`chase_seen_at`) para el periódico y Pike (punto 4).
+- Pruebas de reanudación en c3b, salida a c4 y venda en c4 (punto 6).
