@@ -1265,3 +1265,9 @@ Pendiente de F14 (no implementado todavía):
 - Ocasión para sostener o revisar una interpretación antes de que Greaves exponga el expediente (usar `investigation.positions`).
 - Verificación de la firma `JACK` (entrada vacía, Unicode, teclado móvil, doble confirmación) y la matriz 1866/1879 × intenciones de Pike × actitudes del agua × bandas de cordura.
 - Gate de tres fuentes: revisar que el barro y las percepciones no cuenten doble.
+
+## F14 — firma JACK, casos de prueba, 2026-10-11
+
+- Pruebas añadidas (`tests/unit/signature.test.mjs`): acentos, Unicode, emoji, espacios y texto muy largo acaban en `Jack`.
+- Doble confirmación: `ui.nameEntry` quita los oyentes de Enter y del botón antes de continuar, así que un segundo clic o tecla no registra la firma dos veces. Sin cambio de código; anotado.
+- Pendiente de F14: la ocasión de revisar una interpretación antes del expediente (narrativa: necesita propuesta para el observador) y la matriz 1866/1879 × intenciones × actitudes × bandas.

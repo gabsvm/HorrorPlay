@@ -16,4 +16,6 @@ export const tests = [
   }],
   ['ya escrito Jack: queda Jack', () => eq(last(morphFrames('Jack', 'Jack')), 'Jack')],
   ['un trazo por letra: la longitud de la animación es razonable', () => ok(morphFrames('x'.repeat(40), 'Jack').length <= 40 + 4)],
+  ['acentos, Unicode, emoji y espacios terminan en Jack', () => { for (const t of ['Ñoño ünïcode', '😀🙂', '   ', 'José María Ángel']) eq(last(morphFrames(t, 'Jack')), 'Jack', t); }],
+  ['un texto muy largo también acaba en Jack', () => eq(last(morphFrames('a'.repeat(80), 'Jack')), 'Jack')],
 ];
