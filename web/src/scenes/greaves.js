@@ -198,6 +198,8 @@ export default {
       id: 'door', name: 'Puerta', cursor: 'exit', rect: [70, GROUND - 290, 150, 290], walk: 230, face: -1,
       act: async (G) => {
         if (!G.flag('file_read')) { await G.think('Sin el expediente no salgo.'); return; }
+        if (!G.flag('greaves_done')) { await G.game.chapterHooks.readFile(G); return; }   // interrupted (e.g. by a save): resume the confrontation
+
       },
     },
   ],

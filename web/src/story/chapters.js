@@ -688,7 +688,7 @@ export function makeChapters() {
         <p class="hand">Su hermano menor falleció en Limehouse en 1866; el paciente tenía doce años. Impresión clínica: episodios de amnesia y desorientación; vigilar recurrencias.</p>
         <p class="small" style="text-align:right">Anotación agregada, 1888: <i>El cuadro se asemeja a las descripciones posteriores de fuga disociativa (Tissié, 1887). El 1 de septiembre, el sargento Pike preguntó si era posible actuar durante una laguna de memoria. Respondí que sí.</i></p>`);
       // the file is read once: a second look (from the cabinet) only shows the page again
-      if (G.flag('file_read')) return;
+      if (G.flag('greaves_done')) return;   // the confrontation is finished: the page only
       G.flag('file_read', true);
       G.clue('expediente');
       G.clue('respuesta1879');
@@ -778,6 +778,7 @@ export function makeChapters() {
       await G.card('', '9 de noviembre', 'Limehouse, 2:30 de la madrugada', 3400);
       G.flag('fs_1888', true);
       G.cinema(false);
+      G.flag('greaves_done', true);   // set before leaving: an interrupted confrontation resumes from the door
       // he comes down the stone stair from Narrow Street onto the foreshore
       await G.goto('foreshore', { x: 30, facing: 1, fade: false });
       G.player.y = G.scene.groundY - 282;

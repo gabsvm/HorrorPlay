@@ -1283,3 +1283,10 @@ Pendiente de F14 (no implementado todavía):
 
 - `tests/unit/gate14.test.mjs`: la percepción de Goulston (`aqui_estoy`, `d_aqui`), la pista histórica y la herida no son fuentes finales; las conclusiones de zurdera (`d_zurdo`, `d_bisturi`) no cuentan; el barro y dos fuentes no abren el final; tres fuentes distintas sí, con o sin forense. Sin cambio de código: el gate ya se comportaba así, ahora está comprobado.
 - Pendiente de F14: la ocasión de revisión de una interpretación antes del expediente (narrativa, necesita propuesta del observador).
+
+## Corrección tras la auditoría de 05c15bd, 2026-10-11
+
+- **Prólogo infantil (P1, regresión mía):** `dressFor` sobrescribía el aspecto del niño al cambiar de escena. Ahora no toca al personaje mientras el capítulo es `prologue`. Prueba añadida en `chase13.js`.
+- **Confrontación de Greaves interrumpida (P0, verificado por lectura):** `file_read` se marcaba al ver el expediente, pero la salida de la escena solo ocurría al final; si se guardaba a mitad, la puerta exigía `file_read` y quedaba sin salida. Ahora `greaves_done` se marca justo antes de salir al río, la vitrina muestra solo la página cuando ya está hecha, y la puerta reanuda la secuencia si no lo está. Pendiente: prueba automática de la reanudación real (exige elegir opciones del diálogo).
+- **Ropa de c3b en el atlas normal (P1):** no resuelto. El motor dibuja Thomas desde el atlas cuando hay frames del modelo, y `dressFor` solo cambia propiedades. Necesita verificación con capturas a 1280×720 y, probablemente, un atlas o un fallback para c3b.
+- Suite: `unit` 161/0; `test-all` 0 FAIL.

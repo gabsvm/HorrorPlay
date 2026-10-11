@@ -426,6 +426,7 @@ export class Game {
   // (room_phase 'c3b'), the coat, the bowler and the lantern hang on the pegs and he has none of them on;
   // everywhere else, and in every other phase, he is dressed as before.
   dressFor(id) {
+    if (this.state.chapter === 'prologue') return;   // the child's look belongs to the prologue (chapters.js LOOKS.child)
     const undressed = id === 'room' && this.state.flags.room_phase === 'c3b';
     this.player.coat = undressed ? '#3a3a34' : '#23262b';
     this.player.hat = undressed ? 'none' : 'bowler';

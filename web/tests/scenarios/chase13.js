@@ -21,6 +21,12 @@ export async function run(opts) {
     game.state.flags.room_phase = 'c4';
     game.dressFor('room');
     need(p.hat === 'bowler', 'al pasar a c4 la ropa vuelve al actor');
+    // the prologue's child keeps his own look when the scene changes (no adult clothes on him)
+    game.state.chapter = 'prologue';
+    p.hat = 'cap'; p.coat = '#3a342c'; p.lantern = false;
+    game.dressFor('foreshore');
+    need(p.hat === 'cap' && p.coat === '#3a342c' && p.lantern === false, 'el niño del prólogo pierde su aspecto al cambiar de escena');
+    game.state.chapter = 'c1';
     return {};
   }, opts);
 }

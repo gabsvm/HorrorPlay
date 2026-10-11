@@ -8,6 +8,7 @@ export async function run(opts) {
     await start('c4', await fixture('saves-v1-baseline/c4.json'));
     await settle();
     game.state.flags.file_read = true;
+    game.state.flags.greaves_done = true;   // the confrontation is finished: a second look is the page only
     const before = JSON.stringify({ sanity: game.state.sanity, flags: game.state.flags, clues: game.state.clues });
     await game.chapterHooks.readFile(game.G);
     await settle();
