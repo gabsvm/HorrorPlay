@@ -1271,3 +1271,10 @@ Pendiente de F14 (no implementado todavía):
 - Pruebas añadidas (`tests/unit/signature.test.mjs`): acentos, Unicode, emoji, espacios y texto muy largo acaban en `Jack`.
 - Doble confirmación: `ui.nameEntry` quita los oyentes de Enter y del botón antes de continuar, así que un segundo clic o tecla no registra la firma dos veces. Sin cambio de código; anotado.
 - Pendiente de F14: la ocasión de revisar una interpretación antes del expediente (narrativa: necesita propuesta para el observador) y la matriz 1866/1879 × intenciones × actitudes × bandas.
+
+## F14 — matriz del final, 2026-10-11
+
+- `tests/scenarios/finale14.js`: 18 recorridos completos desde el cuarto capítulo. Ambos caminos de 1866/1879 × las tres intenciones de Pike × las tres actitudes del agua × tres bandas de cordura (100, 50, 10). Las combinaciones se eligen con un arreglo ortogonal L9 para cada camino, de modo que todos los pares de factores aparecen.
+- Cada recorrido comprueba: intención, laguna, respeto a 1866, reconocimiento con tres pruebas, actitud ante el agua, sin entrada nueva en 1888, lo que Wren muestra, el epílogo, la firma `Jack` y la vuelta al menú.
+- Limitación: la cordura se fija al empezar cada recorrido; no se comprueba la banda en cada paso de la partida.
+- Pendiente de F14: la ocasión de revisión antes del expediente (narrativa, necesita propuesta del observador) y el gate de tres fuentes (revisar que el barro no cuente).
