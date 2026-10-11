@@ -1278,3 +1278,8 @@ Pendiente de F14 (no implementado todavía):
 - Cada recorrido comprueba: intención, laguna, respeto a 1866, reconocimiento con tres pruebas, actitud ante el agua, sin entrada nueva en 1888, lo que Wren muestra, el epílogo, la firma `Jack` y la vuelta al menú.
 - Limitación: la cordura se fija al empezar cada recorrido; no se comprueba la banda en cada paso de la partida.
 - Pendiente de F14: la ocasión de revisión antes del expediente (narrativa, necesita propuesta del observador) y el gate de tres fuentes (revisar que el barro no cuente).
+
+## F14 — gate de tres fuentes, 2026-10-11
+
+- `tests/unit/gate14.test.mjs`: la percepción de Goulston (`aqui_estoy`, `d_aqui`), la pista histórica y la herida no son fuentes finales; las conclusiones de zurdera (`d_zurdo`, `d_bisturi`) no cuentan; el barro y dos fuentes no abren el final; tres fuentes distintas sí, con o sin forense. Sin cambio de código: el gate ya se comportaba así, ahora está comprobado.
+- Pendiente de F14: la ocasión de revisión de una interpretación antes del expediente (narrativa, necesita propuesta del observador).
