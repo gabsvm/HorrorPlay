@@ -168,7 +168,7 @@ export async function run({ log = true, second = false } = {}) {
     for (let i = 0; i < 400 && !game.inMenu; i++) await new Promise((r) => setTimeout(r, 20));
     need(game.inMenu, 'El juego no volvió al menú al terminar');
     // the paper's words, said by Wren at the end, only in the second reading (chapters.js epilogue)
-    const paperLine = window.LOG.some((l) => l.startsWith('Wren: Está en el periódico de la mujer de Buck'));
+    const paperLine = window.LOG.some((l) => l.startsWith('Wren: Lo de la mujer de Buck\'s Row salió en el periódico'));
     need(paperLine === second, second ? 'La segunda lectura debería decir lo que publicó el periódico' : 'La primera lectura no debe repetir lo que publicó el periódico');
   } catch (e) {
     errors.push(`FALLO: ${e.message}`);

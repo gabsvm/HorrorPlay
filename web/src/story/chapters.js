@@ -909,9 +909,9 @@ export function makeChapters() {
       else if (intent === 'surrender') await G.say('Wren', 'Lleva una esposa puesta. Pike va por ahí con la otra, abierta, colgando del cinturón.');
       else if (intent === 'destroy_page') await G.say('Wren', 'Lleva un papel roto en la manga. Pike tiene la otra mitad.');
       if (G.flag('wren_paid')) await G.say('Wren', 'Su penique. Se ha puesto frío. No lo quiero.');
-      // the second reading only: what the paper printed of the first woman of Buck's Row, in the paper's own words (V4-15).
+      // the second reading only: the one promise the paper printed of the first woman of Buck's Row, in its own words (V4-15).
       // Wren repeats the printed facts; she invents no memory of a real victim (the ledger, H-38, is a secondary citation)
-      if (G.second()) await G.say('Wren', 'Está en el periódico de la mujer de Buck\'s Row: tenía cinco hijos. Esa noche no reunió los cuatro peniques de la cama, y dijo que volvería pronto.');
+      if (G.second()) await G.say('Wren', 'Lo de la mujer de Buck\'s Row salió en el periódico: dijo que volvería pronto con el dinero de la cama.');
       await G.say('Wren', 'Dígame su nombre, señor. El que le puso su madre.');
       w.talking = false;
       G.game.ui.hideDialogue();

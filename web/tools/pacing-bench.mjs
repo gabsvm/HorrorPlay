@@ -1,11 +1,13 @@
-// Pacing bench (V4-10): a new game in headless Chrome, played as a normal first run: no skipping, no key
-// presses, the intro left to run. It records when the player first has control of Thomas, and when the first
-// objective appears. Timings are the game's own waits, not a reader's: this is the floor of the opening, to be
-// compared with the reading time of the same text. Nothing is sent anywhere.
+// Pacing bench (V4-10): a new game in headless Chrome, played as a normal first run: the intro is not skipped,
+// and the player reads with a model of a reader (see the constants in oneRun): a line takes 700 ms plus 40 ms per
+// character once it is typed; a document 2000 ms plus 25 ms per character; the signature 1.5 s; a choice 1.2 s, and
+// the first option. It records when the player first has control of Thomas, and the stages on the way. The reader is
+// a model, not a measurement of a person: playtests (F17) are the measurement. Nothing is sent anywhere.
 //   node web/tools/pacing-bench.mjs [runs=1]        (needs Google Chrome; CHROME=path overrides the default)
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
+import { rmSync } from 'node:fs';
 import { join } from 'node:path';
 
 const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
@@ -91,6 +93,9 @@ async function oneRun(n) {
     return { run: n, controlMs, objectiveMs, objective, scene, at, reads, errors };
   } finally {
     ws.close(); chrome.kill();
+    // the profile is ours; Windows keeps Chrome's files locked for a moment after it exits, so the delete waits and retries
+    await sleep(1500);
+    try { rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 500 }); } catch { /* left for the temp folder's own cleanup */ }
   }
 }
 

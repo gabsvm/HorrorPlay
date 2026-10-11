@@ -1357,21 +1357,22 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 
 ## F10 — ritmo de apertura medido con un banco, 2026-10-11
 
-- `web/tools/pacing-bench.mjs`: partida nueva en Chrome headless (1280×720), sin saltar el intro, con un lector modelo (40 ms por carácter para una línea, 25 para un documento, 1,5 s para la firma, 1,2 s para una elección, que toma la primera opción). Los tiempos de lectura son un modelo, no una medida de un lector real.
-- Antes del ajuste (3 partidas): control del jugador a 52,5 s, 52,7 s y 52,8 s (mediana 52,7 s). El intro ocupa 36,4 s; la firma aparece a 36,4 s; la tarjeta «Limehouse» a 38,4 s.
-- Ajuste en `story/intro.js`: registro a 20 ms por carácter en los párrafos (26 en encabezados), espera tras el registro de 2200 a 1500 ms, línea de la calle a 2400 ms, página a 42 ms por carácter, espera tras la página de 1800 a 1300 ms. Sin cambio de texto ni de secuencia.
-- Después (3 partidas): control a 47,6 s, 47,6 s y 47,7 s (mediana 47,6 s). El intro ocupa 31,4 s. Ahorro: unos 5 s (10 %).
-- No medido: la primera deducción (está en el capítulo I, después de varias escenas que exigen acciones del jugador; el banco no las recorre). El banco no salta ni explora; el primer control no es un inicio de juego para un lector real.
-- Pendiente de decisión: el intro sigue siendo el 66 % del tiempo hasta el control. Comprimirlo más cambia la atmósfera; la decisión necesita jugadores (F17).
+- `web/tools/pacing-bench.mjs`: partida nueva en Chrome headless (1280×720), sin saltar el intro. Lector modelado: una línea espera 700 ms más 40 ms por carácter desde que termina de escribirse; un documento, 2000 ms más 25 ms por carácter; la firma, 1,5 s; una elección, 1,2 s y la primera opción. Es un modelo, no la medida de una persona: la medida es F17.
+- Antes del ajuste (3 partidas): control del jugador a 52,5, 52,7 y 52,8 s (mediana 52,7 s). El intro terminaba a 36,4 s.
+- Ajuste en `story/intro.js` (solo tiempos): registro a 20 ms por carácter en los párrafos (26 en encabezados); tras el registro, 5000 ms de espera (antes 2200, y después 1500, que era demasiado corto para leerlo: la última fila «dos caligrafías distintas» se iba antes de poder leerla); línea de la calle a 2400 ms; página a 42 ms por carácter; espera tras la página de 1300 ms.
+- Después (3 partidas, la misma versión): control a 51,0, 51,0 y 51,0 s (mediana 51,0 s). El intro termina a 34,8 s. Ahorro: 1,7 s (3 %). La espera del registro vuelve a ser la de lectura; la compresión que queda es pequeña a propósito.
+- No medido: la primera deducción (capítulo I, después de escenas que exigen acciones del jugador). El banco no las recorre.
+- Pendiente de decisión (F17): cuánto acortar el intro. Más compresión cambia la atmósfera o quita tiempo de lectura del registro.
 - `test-all`: 38 PASS, 0 FAIL.
 
-## F15 — recuerdo de una víctima, solo lo publicado, 2026-10-11
+## F15 — lo que publicó la prensa, en boca de Wren, 2026-10-11
 
-- Segunda lectura, al final: Wren dice lo que el recorte de septiembre ya contaba de la mujer de Buck's Row (cinco hijos; no reunió los cuatro peniques de la cama; dijo que volvería pronto). Es lo que publicó la prensa, no un recuerdo de Wren ni de Thomas: la ficha H-38 es una cita secundaria, y el juego no inventa una memoria de una víctima real. La deuda de «recuerdo concreto» queda cubierta solo en este sentido. Un recuerdo en primera persona exige fuente primaria o una decisión de diseño.
-- `walk` no dice la frase; `walk second` sí (`walkthrough.js`). `test-all`: 38 PASS, 0 FAIL.
+- Segunda lectura, al final: Wren dice la única promesa que el recorte de septiembre trae de la mujer de Buck's Row («dijo que volvería pronto con el dinero de la cama»), con las mismas palabras del recorte. Es lo publicado, no un recuerdo de Wren ni de Thomas: la ficha H-38 es una cita secundaria, y el juego no inventa una memoria de una víctima real. Por eso la línea repite un dato y no un recuerdo; la deuda de «recuerdo concreto» sigue abierta hasta que haya fuente primaria o una decisión de diseño.
+- La primera lectura no cambia; `walk second` exige la línea y `walk` la prohíbe (`walkthrough.js`). Ver también GUION.md, regenerado. `test-all`: 38 PASS, 0 FAIL.
 
 ## F16 — objetivos táctiles en el cuaderno y la barra, 2026-10-11
 
-- Medido en Chrome headless con la clase `touch` (la que pone el juego en un puntero grueso) a 1280×720, 640×360 y 800×360. Antes: los botones de la barra medían 35–41 px de alto y las pestañas del cuaderno 18 px en apaisado de teléfono; ningún desbordamiento horizontal.
-- Cambio en `styles.css` (modo táctil): caja mínima de 44 px para los botones de la barra, las pestañas del cuaderno, «¿Qué hago ahora?» y «Cerrar». Después: ningún objetivo por debajo de 44 px en las tres medidas; el cuaderno cabe en 640×360 (`nb-640x360.png`, revisado a ojo).
-- Pendiente, no hecho: la pulsación que arma y la segunda que ejecuta en un dispositivo real; el retorno con el botón atrás de Android; la legibilidad de las pruebas con la luz real; la instalación del APK. Requieren un teléfono.
+- Medido en Chrome headless con la clase `touch` (la que pone el juego en un puntero grueso; se añade desde el script de la prueba, no se emula el puntero) a 1280×720, 640×360 y 800×360. Antes: los botones de la barra medían 35–41 px de alto y las pestañas del cuaderno 18 px en apaisado de teléfono; ningún desbordamiento horizontal.
+- Cambio en `styles.css` (modo táctil): caja mínima de 44 px para los botones de la barra, las pestañas del cuaderno, «¿Qué hago ahora?» y «Cerrar». Después: ningún objetivo por debajo de 44 px en las tres medidas.
+- Con 640×360 y `touch`, «Cerrar» y «¿Qué hago ahora?» invaden unos 14 px del relleno inferior de la página (medido a ojo en la captura de trabajo, no versionada). No rompe nada: los botones quedan dentro de la pantalla.
+- Pendiente, no hecho: la pulsación que arma y la segunda que ejecuta en un dispositivo real; el retorno con el botón atrás de Android; la legibilidad con luz real; la instalación del APK. Requieren un teléfono.

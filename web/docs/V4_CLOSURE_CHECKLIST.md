@@ -16,7 +16,7 @@ Estados: `CODE_COMPLETE` (código y pruebas automáticas, con revisión del obse
 | F07 Dear Boss | CODE_COMPLETE | commit `bb367df` |
 | F08 Black Ditch | CODE_COMPLETE | commit `1209c85`; fuente de la canalización NO verificada (PDF y ficha UCL no legibles) |
 | F09 víctimas | CODE_COMPLETE | commit `f25ec50`; recompensa emocional pendiente (F15) |
-| F10 ritmo | PARTIAL | banco `tools/pacing-bench.mjs` (partida normal con lector modelo): control a 52,7 s → 47,6 s tras comprimir el intro (≈5 s); primera deducción no medida; decisión de compresión adicional pendiente de jugadores (F17) |
+| F10 ritmo | PARTIAL | banco `tools/pacing-bench.mjs` (partida normal con lector modelo): control a 52,7 s → 51,0 s (mediana de 3, tras restaurar la espera de lectura del registro); primera deducción no medida; decisión de compresión adicional pendiente de jugadores (F17) |
 | F11 dirección visual | PARTIAL | la boca del colector (`foreshore.js`) implementada y verificada en 1280×720 y 1920×1080; los demás planos de `V4_SCENE_DIRECTION.md` sin implementar (encuadres, duraciones, modos reducidos por toma) |
 | F12 cordura | CODE_COMPLETE (equilibrio pendiente) | costes de repetición pagados una vez (`cost14.js`); curva medida en `V4_SANITY_CURVE.md`; recomendación sobre costes guionizados sin aplicar: falta revisión del observador y playtest |
 | F13 persecución | CODE_COMPLETE, VISUAL_PARTIAL | `7c33f4f`, `6a9a26f`, `1c6a76c`; `chase14.js` (calle del primer error en la etiqueta, la herida y Pike); `chase13.js` (c3b y reanudación). Sin captura comparada de la venda en 1280×720 ni en móvil |
