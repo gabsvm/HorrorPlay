@@ -1364,3 +1364,14 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - No medido: la primera deducción (está en el capítulo I, después de varias escenas que exigen acciones del jugador; el banco no las recorre). El banco no salta ni explora; el primer control no es un inicio de juego para un lector real.
 - Pendiente de decisión: el intro sigue siendo el 66 % del tiempo hasta el control. Comprimirlo más cambia la atmósfera; la decisión necesita jugadores (F17).
 - `test-all`: 38 PASS, 0 FAIL.
+
+## F15 — recuerdo de una víctima, solo lo publicado, 2026-10-11
+
+- Segunda lectura, al final: Wren dice lo que el recorte de septiembre ya contaba de la mujer de Buck's Row (cinco hijos; no reunió los cuatro peniques de la cama; dijo que volvería pronto). Es lo que publicó la prensa, no un recuerdo de Wren ni de Thomas: la ficha H-38 es una cita secundaria, y el juego no inventa una memoria de una víctima real. La deuda de «recuerdo concreto» queda cubierta solo en este sentido. Un recuerdo en primera persona exige fuente primaria o una decisión de diseño.
+- `walk` no dice la frase; `walk second` sí (`walkthrough.js`). `test-all`: 38 PASS, 0 FAIL.
+
+## F16 — objetivos táctiles en el cuaderno y la barra, 2026-10-11
+
+- Medido en Chrome headless con la clase `touch` (la que pone el juego en un puntero grueso) a 1280×720, 640×360 y 800×360. Antes: los botones de la barra medían 35–41 px de alto y las pestañas del cuaderno 18 px en apaisado de teléfono; ningún desbordamiento horizontal.
+- Cambio en `styles.css` (modo táctil): caja mínima de 44 px para los botones de la barra, las pestañas del cuaderno, «¿Qué hago ahora?» y «Cerrar». Después: ningún objetivo por debajo de 44 px en las tres medidas; el cuaderno cabe en 640×360 (`nb-640x360.png`, revisado a ojo).
+- Pendiente, no hecho: la pulsación que arma y la segunda que ejecuta en un dispositivo real; el retorno con el botón atrás de Android; la legibilidad de las pruebas con la luz real; la instalación del APK. Requieren un teléfono.
