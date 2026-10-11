@@ -37,7 +37,8 @@ export async function run({ log = true, second = false } = {}) {
     game.inMenu = false;
     game.ui.hideMenu();
     game.state = (await import('../src/engine/game.js')).freshState();
-    if (second) game.state.flags.second = true;
+    // a second reading is one that follows a finished game: the marker is what lets the known puzzles shorten (chapters.js knowsPuzzles)
+    if (second) { game.state.flags.second = true; game.constructor.markRead(); }
     await game.startChapter('prologue');
     await settle();
     expectScene('foreshore');

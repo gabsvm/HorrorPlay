@@ -1343,3 +1343,11 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - La lámina de agua de la orilla se pintaba antes del suelo de barro, que la tapaba entera. Ahora se pinta encima: una poza bajo el arco, una lengua que se adelgaza hasta x≈480 y dos reflejos en la boca. Verificado con capturas de Chrome headless (`1280×720` completo, recorte 3× antes/después, `1920×1080`).
 - No implementado: los demás planos de `V4_SCENE_DIRECTION.md` (encuadres, duraciones máximas, modos reducidos por toma). Requieren revisión visual de cada escena; quedan como pendientes.
 - `test-all`: 38 PASS, 0 FAIL.
+
+## F15 — segunda lectura medida con su marca, 2026-10-11
+
+- El recorrido de segunda lectura (`walk second`) activaba `flags.second` pero no la marca `Game.markRead()`, así que los atajos de puzle (`knowsPuzzles`) nunca se ejercitaban ni se medían. Ahora la marca se pone con la segunda lectura, como en una partida terminada.
+- Medido con `WALK_LOG` y `read-count.mjs`: primera lectura 202 líneas, 9289 caracteres, 38 elecciones, 10 documentos. Segunda lectura: 200 líneas, 8947 caracteres, 36 elecciones, 8 documentos. Antes del cambio de marca, la segunda parecía igual de larga (205 líneas), porque no se aplicaban atajos.
+- Atajos existentes: la ronda de Pike (`chapters.js`, «Ya lo sé: de 3:30 a 3:40») y los golpes (`HOSPES`). No hay más.
+- No hecho: una interacción distinta por capítulo que reinterprete un hecho anterior (requisito 2) y la recompensa emocional de las víctimas (deuda de F09). Son decisiones de contenido y de canon que requieren revisión del observador antes de escribirse.
+- `test-all`: 38 PASS, 0 FAIL.
