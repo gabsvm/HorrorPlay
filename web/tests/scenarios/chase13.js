@@ -5,7 +5,7 @@
 import { scenario } from './harness.js';
 
 export async function run(opts) {
-  return scenario(async ({ game, need }) => {
+  return scenario(async ({ game, need, settle }) => {
     const p = game.player;
     game.state.flags.room_phase = 'c3b';
     game.dressFor('room');
@@ -27,6 +27,25 @@ export async function run(opts) {
     game.dressFor('foreshore');
     need(p.hat === 'cap' && p.coat === '#3a342c' && p.lantern === false, 'el niño del prólogo pierde su aspecto al cambiar de escena');
     game.state.chapter = 'c1';
+    // the bandage: only after the injured run
+    game.state.flags.chase_outcome = 'injured';
+    game.dressFor('foreshore');
+    need(p.bandaged === true && p.model === null, 'la venda no aparece tras la ruta herida');
+    game.state.flags.chase_outcome = 'clean';
+    game.dressFor('foreshore');
+    need(p.bandaged === false, 'la venda aparece tras una ruta limpia');
+    game.state.flags.chase_outcome = undefined;
+    // a save made in the room after the chase: resuming there, he has nothing on; resuming after the room, he is dressed
+    const st = JSON.parse(JSON.stringify(game.state));
+    st.chapter = 'c3'; st.scene = 'room'; st.flags.room_phase = 'c3b';
+    await game.resume({ state: st, x: 700, facing: -1 });
+    await settle();
+    need(p.hat === 'none' && p.lantern === false, 'reanudar en c3b devuelve al personaje sin bombín ni linterna');
+    const st2 = JSON.parse(JSON.stringify(game.state));
+    st2.chapter = 'c4'; st2.scene = 'foreshore'; st2.flags.room_phase = 'c4';
+    await game.resume({ state: st2, x: 300, facing: 1 });
+    await settle();
+    need(p.hat === 'bowler' && p.lantern === true, 'reanudar después de la habitación devuelve la ropa');
     return {};
   }, opts);
 }

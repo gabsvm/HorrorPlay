@@ -1177,15 +1177,18 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 ### `endChase`
 - **La voz (la voz):** _Bien, Tommy._
 - _Si outcome === 'injured':_
+  - [+ Pista al cuaderno: chase_blood]
   - *Thomas (piensa):* Me he abierto la mano en la tapia de Wentworth Street. No sé cuándo.
 - _Si no:_
   - _Si outcome === 'spotted':_
     - *Thomas (piensa):* El agente de la linterna me vio la cara. Un momento. Bastó.
+  - _Si no:_
+    - *Thomas (piensa):* Nadie me vio. Aún.
 - [→ Escena: room]
 - [Objetivo] Leer el periódico. Mirar debajo de la cama.
 
 ### `readPaper`
-- [Documento] THE DAILY NEWS — 1 de octubre de 1888 LOS CRÍMENES DEL EAST END. LA CARTA FIRMADA «JACK THE RIPPER». Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con tinta roja, menciona al «Leather Apron» y reivindica los crímenes: "I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..." Yours truly / Jack the Ripper {{ spotted: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. Asegura que podría reconocerlo.', injured: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por Wentworth Street. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.' }[state.flags.chase_outcome] || ''}
+- [Documento] THE DAILY NEWS — 1 de octubre de 1888 LOS CRÍMENES DEL EAST END. LA CARTA FIRMADA «JACK THE RIPPER». Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con tinta roja, menciona al «Leather Apron» y reivindica los crímenes: "I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..." Yours truly / Jack the Ripper {{ spotted: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(state.flags) + '. Asegura que podría reconocerlo.', injured: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(state.flags) + '. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.' }[state.flags.chase_outcome] || ''}
 - [+ Pista al cuaderno: carta]
 - *Thomas (piensa):* Fechada el 25. La noche que perdí. _(1ª lectura)_
 - *Thomas (piensa):* Fechada el 25. Faltaban tres pliegos en mi mesa. _(2ª lectura)_
@@ -1258,9 +1261,9 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - [Visión: hands]
 - **Greaves:** Thomas... mírame. Por favor.
 - **Pike:** Thomas. Soy Pike. No voy a entrar sin avisarte.
-- **Pike:** Nadie te vio en Wentworth Street. Eso es lo que más me asusta. _(para "clean")_
-- **Pike:** El agente Long dice que te vio la cara en Wentworth Street. No le he contestado. _(para "spotted")_
-- **Pike:** Long encontró sangre en la tapia de Wentworth Street. Y tú llevas la mano cosida. _(para "injured")_
+- **Pike:** Nadie te vio esta noche. Eso es lo que más me asusta. _(para "clean")_
+- **Pike:** {'El agente Long dice que te vio la cara en ' + chaseStreet(state.flags) + '. No le he contestado.'} _(para "spotted")_
+- **Pike:** {'Long encontró sangre en una tapia de ' + chaseStreet(state.flags) + '. Y tú llevas la mano cosida.'} _(para "injured")_
 - **Pike:** Traigo tus rondas. Tu firma. No sé aún cuánto hiciste, pero no puedo dejarte marchar.
 - > **Elección:** 1) «Deténgame, Pike».  ·  2) «Proteja a Wren. La niña del río».  ·  3) (Romper el folio del expediente que me señala)
 - _Si last === 0:_
@@ -1516,6 +1519,10 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 - Dónde: Mitre Square · 30 sep
 - Texto: El agente de la City me preguntó cómo había llegado tan rápido. Él la había encontrado hacía cuatro minutos.
 - Verdad (2ª lectura): Llegué antes porque no me había ido.
+
+**`chase_blood`**
+- Dónde: Wentworth Street
+- Texto: Un corte en la palma, con polvo de ladrillo dentro.
 
 **`trozo`**
 - Dónde: Mitre Square

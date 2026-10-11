@@ -829,6 +829,7 @@ export class Actor {
       limb(ctx, side * (armX + 2), shoulderY + 44, hx, hy - 4, 12, 10);
       ctx.fillStyle = this.gloves || this.skin;
       ctx.beginPath(); ctx.ellipse(hx, hy, 5.5, 7, 0, 0, TAU); ctx.fill();
+      if (side === dir && this.bandaged) { ctx.fillStyle = '#e6dcc4'; ctx.fillRect(hx - 6, hy - 2, 12, 4); ctx.fillStyle = '#9a2a22'; ctx.fillRect(hx - 2, hy - 2, 4, 2); }
       if (side === dir && this.lantern && this.lanternOn) {
         ctx.strokeStyle = '#3a3026'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(hx, hy + 6, 6, Math.PI, 0); ctx.stroke();
         ctx.fillStyle = '#1e1a16'; ctx.fillRect(hx - 10, hy + 8, 20, 24); ctx.fillRect(hx - 6, hy + 4, 12, 5);

@@ -1295,3 +1295,9 @@ Pendiente de F14 (no implementado todavía):
 
 - Causa: el atlas del modelo dibuja a Thomas vestido aunque las propiedades cambien. Solución: en `dressFor`, en c3b el personaje no usa el modelo (se dibuja procedural, sin sombrero ni linterna); en cualquier otro sitio se restaura el modelo.
 - Verificación en navegador (Chrome, 1280×720, zoom sobre la figura): vestido, abrigo oscuro y bombín con el atlas; en c3b, figura procedural sin bombín, camisa visible. Diferencia comprobada. Pendiente: captura guardada y prueba de reanudación desde c3b.
+
+## Lote 2026-10-11: F13 completo en lo automatizable, F12 instrumentación
+
+- **F13:** reanudar en c3b devuelve a Thomas sin bombín ni linterna; reanudar tras la habitación lo devuelve vestido (`chase13.js`). **Venda** para la ruta herida: se dibuja en la mano (actor.js) y el personaje herido se dibuja de forma procedural. Prueba: venda solo tras ruta herida. Pendiente: captura del vendaje en navegador.
+- **F12:** `tools/walk.mjs` imprime ahora la curva de cordura por cambio de escena (`sanityCurve`, `sanityAtZeroScenes`, `sanityEnd`). Partida automática: la cordura baja de 100 a 33 en Goulston y llega a 0 tras la confrontación con Greaves en c4 (tres cambios de escena a cero). **Sin rebalanceo**: el plan exige revisión antes de tocar porcentajes o efectos; queda como propuesta pendiente de revisión.
+- Suite: `test-all` sin fallos (ver salida en el commit).

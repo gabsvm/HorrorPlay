@@ -69,8 +69,14 @@ const snapDir = snapAt >= 0 ? args[snapAt + 1] : null;
 const name = args.find((a, i) => !a.startsWith('--') && (snapAt < 0 || i !== snapAt + 1)) || 'walkthrough';
 const file = name === 'second' || name === 'walkthrough' ? '../tests/walkthrough.js' : name === 'alt' ? '../tests/walkthrough-alt.js' : `../tests/scenarios/${name}.js`;
 const t = await import(file);
+// sanity curve (V4-12): the sanity each time the game changes scene, and how often it sits at zero
+const curve = [];
+const g = window.game;
+const goto0 = g.goto.bind(g);
+g.goto = async (id, o) => { const r = await goto0(id, o); curve.push({ scene: id, sanity: g.state.sanity }); return r; };
 const res = await t.run({ log: false, second: name === 'second', store });
-console.log(JSON.stringify({ scenario: name, ok: res.ok, errors: res.errors, lines: res.lines, deductions: res.deductions, scene: res.scene, ...(res.extra || {}) }, null, 1));
+const atZero = curve.filter((c) => c.sanity === 0).length;
+console.log(JSON.stringify({ scenario: name, ok: res.ok, errors: res.errors, lines: res.lines, deductions: res.deductions, scene: res.scene, sanityEnd: g.state.sanity, sanityScenes: curve.length, sanityAtZeroScenes: atZero, sanityCurve: curve, ...(res.extra || {}) }, null, 1));
 // WALK_LOG=file writes every line of the run (to count what a player reads, compare readings...)
 if (process.env.WALK_LOG) (await import('node:fs')).writeFileSync(process.env.WALK_LOG, window.LOG.join('\n'));
 if (snapDir) {

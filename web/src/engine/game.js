@@ -433,7 +433,10 @@ export class Game {
     this.player.lantern = !undressed;
     // the modelled atlas shows him dressed: undressed, he is drawn procedurally, where the clothes are the ones above
     this._thomasModel ??= this.player.model;
-    this.player.model = undressed ? null : this._thomasModel;
+    // a wounded hand (the chase, injured) is drawn procedurally too: the bandage is part of that drawing
+    const bandaged = this.state.flags.chase_outcome === 'injured';
+    this.player.bandaged = bandaged;
+    this.player.model = undressed || bandaged ? null : this._thomasModel;
   }
 
   async goto(id, { x, facing, fade = true, noEnter = false } = {}) {
