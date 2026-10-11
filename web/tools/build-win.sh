@@ -5,7 +5,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 VERSION="${VERSION:-1.0-rc}"
-NUM="$(echo "$VERSION" | grep -o '^[0-9.]*')"; RC="$(echo "$VERSION" | grep -o '[0-9]*$' || echo 0)"
+NUM="$(echo "$VERSION" | grep -o '^[0-9.]*')"; RC="$(echo "$VERSION" | grep -o '[0-9]*$' || true)"; RC="${RC:-0}"
 CSC="/c/Windows/Microsoft.NET/Framework64/v4.0.30319/csc.exe"
 OUT=dist/win
 rm -rf "$OUT"; mkdir -p "$OUT"

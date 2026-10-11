@@ -1199,3 +1199,21 @@ $ git diff -- web/GUION.md   (solo cambian: las dos líneas de Pike de Buck's Ro
 - Intento 1 y 2 (CDP, 1280×720, menú → «Nueva partida», velocidad normal): el juego arranca, la introducción termina a los 36 s y la partida queda en `running = 1` sin diálogo visible; el script no elige las opciones, así que no hay «primer control» medible.
 - `?metrics` (src/engine/metrics.js) mide `primerControlMs` solo con la primera entrada del jugador. Necesita un jugador real para dar un valor fiable.
 - Consecuencia: F10 no puede cerrarse con cifras de tiempo. Pendiente: medición con un jugador humano (protocolo de F17), o un script que elija opciones y espere el ritmo real, aprobado aparte.
+
+## Tanda final (2026-10-11): qué se hizo, qué falta y por qué
+
+**Hecho en esta tanda**
+- `tools/build-win.sh`: con la versión por defecto (`1.0-rc`) el número de revisión quedaba vacío y el `AssemblyVersion` salía inválido. Corregido; el build por defecto ya termina con `dist/ElHuesped.exe` (verificado).
+- `docs/V4_PLAYTEST_PROTOCOL.md` (F17): protocolo, perfiles, consentimiento, hoja de observación, checklists de escritorio, táctil y Android, criterios de aprobación y estados posibles. Ninguna sesión de playtest realizada.
+- `docs/V4_SCENE_DIRECTION.md` (F11): planos por escena con foco, silencio, duración máxima y modo reducido. Ningún plano implementado.
+
+**Pendiente, y por qué**
+- **F10 (ritmo):** la medición de tiempo hasta el primer control no tiene resultado válido. Necesita un jugador real o un script que elija opciones y espere el ritmo real (ver la entrada F10 más arriba).
+- **F11 (dirección visual):** los planos están escritos, pero su implementación necesita revisión visual en navegador a 1280×720 y móvil.
+- **F12 (cordura):** falta instrumentar la cordura en la partida automática (la salida de `walk` no la expone) antes de probar los umbrales.
+- **F13 (persecución) y F14 (cuarto capítulo y final):** cambios de guion y de estado; cada uno pide propuesta, revisión del observador, implementación y pruebas. No empezados en esta tanda.
+- **F15 (segunda lectura):** pendiente; hereda la recompensa emocional de las víctimas (deuda de F09).
+- **F16 (interfaz, accesibilidad, Windows y Android):** el build de Windows está arreglado; la pestaña de teorías sigue desbordando a 720p (desviación aceptada); Android no se puede probar sin dispositivo.
+- **F17 (métricas y playtest):** el protocolo está escrito; no hay sesiones de jugadores, así que ninguna fase pasa de `CODE_COMPLETE` a `TESTED`.
+
+**Fuentes:** la mayoría de datos históricos siguen apoyados en fuentes secundarias (ver `V4_HISTORICAL_LEDGER.md`). La verificación con fuente primaria queda para F17.
