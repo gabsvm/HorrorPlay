@@ -21,8 +21,11 @@ const runs = Math.max(1, Number(process.argv[2]) || 1);
 // one server for every run; it serves the game files the page loads. It is killed on any exit, and on Ctrl+C
 // (Node does not run 'exit' on SIGINT, so the signal is handled here; Chrome is killed by its run's finally)
 const server = spawn('python', ['tools/serve.py', String(PORT)], { cwd: root, stdio: 'ignore' });
-let liveChrome = null;   // the run's Chrome, so an exit (even Ctrl+C) does not leave it behind
-process.on('exit', () => { server.kill(); liveChrome?.kill(); });
+let liveChrome = null, liveProfile = null;   // the run's Chrome and profile, so an exit (even Ctrl+C) does not leave them behind
+process.on('exit', () => {
+  server.kill(); liveChrome?.kill();
+  if (liveProfile) { try { rmSync(liveProfile, { recursive: true, force: true }); } catch { /* the temp folder's own cleanup */ } }
+});
 process.on('SIGINT', () => process.exit(130));
 for (let i = 0; i < 50; i++) { try { await fetch(`http://127.0.0.1:${PORT}/`); break; } catch { await sleep(200); } }
 
@@ -30,14 +33,14 @@ async function oneRun(n) {
   const profile = join(tmpdir(), `elh-bench-${Date.now()}-${n}`);
   const chrome = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${DEBUG}`, `--user-data-dir=${profile}`, '--window-size=1280,720', '--no-first-run', 'about:blank'], { stdio: 'ignore' });
   chrome.on('error', (e) => console.error(`Chrome: ${e.message}`));
-  liveChrome = chrome;
+  liveChrome = chrome; liveProfile = profile;
   let ws = null;
   try {
     let target;
     for (let i = 0; i < 50 && !target; i++) { try { target = await (await fetch(`http://127.0.0.1:${DEBUG}/json/new?about:blank`, { method: 'PUT' })).json(); } catch { await sleep(200); } }
     if (!target) throw new Error(`Chrome no abrió la depuración en el puerto ${DEBUG}`);
     ws = new WebSocket(target.webSocketDebuggerUrl);
-    await new Promise((r) => ws.addEventListener('open', r));
+    await new Promise((r, j) => { ws.addEventListener('open', r); ws.addEventListener('error', () => j(new Error('el WebSocket de Chrome no abrió'))); });
     let id = 0; const pend = new Map();
     ws.addEventListener('message', (e) => { const m = JSON.parse(e.data); if (m.id && pend.has(m.id)) { pend.get(m.id).res(m); pend.delete(m.id); } });
     // if Chrome drops the connection, every call waiting on it fails at once instead of hanging the run

@@ -24,14 +24,17 @@ export async function playIntro(G) {
   const game = G.game, audio = G.audio;
   const box = document.getElementById('intro');
   const doc = box.querySelector('.intro-doc'), line = box.querySelector('.intro-line'), page = box.querySelector('.intro-page');
-  let skipped = false, onSkip, holdEnd = null;
+  let skipped = false, onSkip, holdEnd = null, closedAt = 0;
   const skipP = new Promise((r) => { onSkip = r; });
   const w = (ms) => Promise.race([wait(ms), skipP]);
   const skip = (e) => {
     if (e.type === 'keydown' && ![' ', 'Enter', 'Escape'].includes(e.key)) return;
     e.preventDefault(); e.stopPropagation();
+    if (e.repeat) return;   // a held key is one press
     // while the record is held on screen, a press only closes it: the rest of the intro is not skipped
-    if (holdEnd) { holdEnd(); return; }
+    if (holdEnd) { holdEnd(); closedAt = performance.now(); return; }
+    // a second press just after the record closed (a double click, a double tap) is not a skip of the whole intro
+    if (performance.now() - closedAt < 600) return;
     skipped = true; onSkip();
   };
   window.addEventListener('pointerdown', skip, true);
