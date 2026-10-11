@@ -18,15 +18,19 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const runs = Math.max(1, Number(process.argv[2]) || 1);
 
-// one server for every run; it serves the game files the page loads. It is killed on any exit.
+// one server for every run; it serves the game files the page loads. It is killed on any exit, and on Ctrl+C
+// (Node does not run 'exit' on SIGINT, so the signal is handled here; Chrome is killed by its run's finally)
 const server = spawn('python', ['tools/serve.py', String(PORT)], { cwd: root, stdio: 'ignore' });
-process.on('exit', () => server.kill());
+let liveChrome = null;   // the run's Chrome, so an exit (even Ctrl+C) does not leave it behind
+process.on('exit', () => { server.kill(); liveChrome?.kill(); });
+process.on('SIGINT', () => process.exit(130));
 for (let i = 0; i < 50; i++) { try { await fetch(`http://127.0.0.1:${PORT}/`); break; } catch { await sleep(200); } }
 
 async function oneRun(n) {
   const profile = join(tmpdir(), `elh-bench-${Date.now()}-${n}`);
   const chrome = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${DEBUG}`, `--user-data-dir=${profile}`, '--window-size=1280,720', '--no-first-run', 'about:blank'], { stdio: 'ignore' });
   chrome.on('error', (e) => console.error(`Chrome: ${e.message}`));
+  liveChrome = chrome;
   let ws = null;
   try {
     let target;
@@ -35,8 +39,13 @@ async function oneRun(n) {
     ws = new WebSocket(target.webSocketDebuggerUrl);
     await new Promise((r) => ws.addEventListener('open', r));
     let id = 0; const pend = new Map();
-    ws.addEventListener('message', (e) => { const m = JSON.parse(e.data); if (m.id && pend.has(m.id)) { pend.get(m.id)(m); pend.delete(m.id); } });
-    const send = (method, params = {}) => new Promise((r) => { const i = ++id; pend.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
+    ws.addEventListener('message', (e) => { const m = JSON.parse(e.data); if (m.id && pend.has(m.id)) { pend.get(m.id).res(m); pend.delete(m.id); } });
+    // if Chrome drops the connection, every call waiting on it fails at once instead of hanging the run
+    ws.addEventListener('close', () => { for (const p of pend.values()) p.rej(new Error('Chrome cerró la conexión')); pend.clear(); });
+    const send = (method, params = {}) => new Promise((res, rej) => {
+      if (ws.readyState !== 1) return rej(new Error('Chrome cerró la conexión'));
+      const i = ++id; pend.set(i, { res, rej }); ws.send(JSON.stringify({ id: i, method, params }));
+    });
     const ev = async (expr) => (await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true })).result?.result?.value;
 
     await send('Runtime.enable'); await send('Page.enable');

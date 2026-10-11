@@ -24,12 +24,14 @@ export async function playIntro(G) {
   const game = G.game, audio = G.audio;
   const box = document.getElementById('intro');
   const doc = box.querySelector('.intro-doc'), line = box.querySelector('.intro-line'), page = box.querySelector('.intro-page');
-  let skipped = false, onSkip;
+  let skipped = false, onSkip, holdEnd = null;
   const skipP = new Promise((r) => { onSkip = r; });
   const w = (ms) => Promise.race([wait(ms), skipP]);
   const skip = (e) => {
     if (e.type === 'keydown' && ![' ', 'Enter', 'Escape'].includes(e.key)) return;
     e.preventDefault(); e.stopPropagation();
+    // while the record is held on screen, a press only closes it: the rest of the intro is not skipped
+    if (holdEnd) { holdEnd(); return; }
     skipped = true; onSkip();
   };
   window.addEventListener('pointerdown', skip, true);
@@ -62,8 +64,9 @@ export async function playIntro(G) {
       await w(RECORD[i][0] === 'p' ? 500 : 250);
     }
     // the record stays long enough for a reader to finish its last row: the rows are typed faster than they are read,
-    // so the last one needs about 8 s after it is typed (V4-10; it was 1.5 s, then 5 s, both too short)
-    await w(8000);
+    // so the last one needs about 8 s after it is typed (V4-10). A press closes the record sooner, and only that
+    if (!skipped) await new Promise((r) => { holdEnd = r; wait(8000).then(r); });
+    holdEnd = null;
     show(doc, false);
     await w(600);
 
