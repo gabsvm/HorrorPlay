@@ -1290,3 +1290,8 @@ Pendiente de F14 (no implementado todavía):
 - **Confrontación de Greaves interrumpida (P0, verificado por lectura):** `file_read` se marcaba al ver el expediente, pero la salida de la escena solo ocurría al final; si se guardaba a mitad, la puerta exigía `file_read` y quedaba sin salida. Ahora `greaves_done` se marca justo antes de salir al río, la vitrina muestra solo la página cuando ya está hecha, y la puerta reanuda la secuencia si no lo está. Pendiente: prueba automática de la reanudación real (exige elegir opciones del diálogo).
 - **Ropa de c3b en el atlas normal (P1):** no resuelto. El motor dibuja Thomas desde el atlas cuando hay frames del modelo, y `dressFor` solo cambia propiedades. Necesita verificación con capturas a 1280×720 y, probablemente, un atlas o un fallback para c3b.
 - Suite: `unit` 161/0; `test-all` 0 FAIL.
+
+## Ropa de c3b en el dibujo real, 2026-10-11
+
+- Causa: el atlas del modelo dibuja a Thomas vestido aunque las propiedades cambien. Solución: en `dressFor`, en c3b el personaje no usa el modelo (se dibuja procedural, sin sombrero ni linterna); en cualquier otro sitio se restaura el modelo.
+- Verificación en navegador (Chrome, 1280×720, zoom sobre la figura): vestido, abrigo oscuro y bombín con el atlas; en c3b, figura procedural sin bombín, camisa visible. Diferencia comprobada. Pendiente: captura guardada y prueba de reanudación desde c3b.

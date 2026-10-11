@@ -431,6 +431,9 @@ export class Game {
     this.player.coat = undressed ? '#3a3a34' : '#23262b';
     this.player.hat = undressed ? 'none' : 'bowler';
     this.player.lantern = !undressed;
+    // the modelled atlas shows him dressed: undressed, he is drawn procedurally, where the clothes are the ones above
+    this._thomasModel ??= this.player.model;
+    this.player.model = undressed ? null : this._thomasModel;
   }
 
   async goto(id, { x, facing, fade = true, noEnter = false } = {}) {
