@@ -19,7 +19,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const runs = Math.max(1, Number(process.argv[2]) || 1);
 
 // one server for every run; it serves the game files the page loads. It is killed on any exit, and on Ctrl+C
-// (Node does not run 'exit' on SIGINT, so the signal is handled here; Chrome is killed by its run's finally)
+// (Node does not run 'exit' on SIGINT, so the signal is handled here; Chrome and the profile are killed or removed by the exit handler, and by each run's finally)
 const server = spawn('python', ['tools/serve.py', String(PORT)], { cwd: root, stdio: 'ignore' });
 let liveChrome = null, liveProfile = null;   // the run's Chrome and profile, so an exit (even Ctrl+C) does not leave them behind
 process.on('exit', () => {
