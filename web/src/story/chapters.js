@@ -84,7 +84,8 @@ export function makeChapters() {
       G.hud(true);
       G.game.r.fx.fade = 1;
       await G.doc(`<h3>RECORTE DE PRENSA — SEPTIEMBRE DE 1888</h3>
-        <p>El 31 de agosto, una compañera del asilo de Lambeth reconoció a la mujer de Buck's Row: Mary Ann Nichols, a quien llamaban «Polly». Tenía cinco hijos. La noche del crimen no reunió los cuatro peniques de la cama; dijo a la encargada que volvería pronto con el dinero, y que se fijaran en su sombrero nuevo.</p>`);
+        <p>El 31 de agosto, una compañera del asilo de Lambeth reconoció a la mujer de Buck's Row: Mary Ann Nichols, a quien llamaban «Polly». Tenía cinco hijos. La noche del crimen el encargado del alojamiento le negó la cama: no tenía los cuatro peniques. Ella dijo que conseguiría el dinero, y mencionó su sombrero nuevo.</p>
+        <p>Emily Holland, con quien se cruzó en Osborne Street, declaró que no tardaría en regresar.</p>`);
       await G.card('Capítulo II', 'El delantal de cuero', '29 Hanbury Street, 8 de septiembre de 1888', 4200);
       await G.goto('hanbury', { x: 240, facing: 1, fade: false });
       await G.fade(0, 1500);
@@ -909,8 +910,6 @@ export function makeChapters() {
       else if (intent === 'surrender') await G.say('Wren', 'Lleva una esposa puesta. Pike va por ahí con la otra, abierta, colgando del cinturón.');
       else if (intent === 'destroy_page') await G.say('Wren', 'Lleva un papel roto en la manga. Pike tiene la otra mitad.');
       if (G.flag('wren_paid')) await G.say('Wren', 'Su penique. Se ha puesto frío. No lo quiero.');
-      // the second reading only: what the Eastern Argus printed on 8 September 1888, from the witness Emily Holland (V4-15)
-      if (G.second()) await G.say('Wren', 'Lo de la mujer de Buck\'s Row salió en el periódico: dijo a una conocida que volvería pronto.');
       await G.say('Wren', 'Dígame su nombre, señor. El que le puso su madre.');
       w.talking = false;
       G.game.ui.hideDialogue();

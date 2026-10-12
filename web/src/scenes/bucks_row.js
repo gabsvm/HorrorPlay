@@ -259,6 +259,11 @@ export default {
           await G.say('Neil', 'La tapé yo. No tenían por qué verla todos.');
           neil.talking = false;
         }
+        // the second reading only: Thomas's own memory of the morning, not a line of anyone else (V4-15)
+        if (G.second() && !G.flag('s2_polly')) {
+          G.flag('s2_polly', true);
+          await G.think('Recuerdo el sombrero junto a su cuerpo. Recuerdo mejor el sombrero que su rostro. Se llamaba Polly.');
+        }
         // the points sit on the painted close-up (assets/closeups/nichols.jpg)
         await G.inspect('polly', {
           title: 'La mujer de Buck\'s Row', body: 'nichols',

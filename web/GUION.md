@@ -1,6 +1,6 @@
 # El Huésped — guion completo
 
-_Generado desde el código del juego (2026-10-11) con `node web/tools/script/export.mjs`. Es todo lo que el jugador puede leer: diálogos, pensamientos de Thomas, elecciones, documentos, objetivos y el cuaderno._
+_Generado desde el código del juego (2026-10-12) con `node web/tools/script/export.mjs`. Es todo lo que el jugador puede leer: diálogos, pensamientos de Thomas, elecciones, documentos, objetivos y el cuaderno._
 
 ## Cómo está hecho el juego (para reescribirlo)
 
@@ -404,6 +404,8 @@ _Aparece si: !flag('polly_taken')_
 **Al interactuar:**
 - _Si first:_
   - **Neil:** La tapé yo. No tenían por qué verla todos.
+- _Si second() && !flag('s2_polly'):_
+  - *Thomas (piensa):* Recuerdo el sombrero junto a su cuerpo. Recuerdo mejor el sombrero que su rostro. Se llamaba Polly.
 
 #### La cara `cara`
 **Al interactuar:**
@@ -950,7 +952,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - [Objetivo] Coger el abrigo, las botas y la linterna, y salir hacia Buck's Row.
 
 ### `c2`
-- [Documento] RECORTE DE PRENSA — SEPTIEMBRE DE 1888 El 31 de agosto, una compañera del asilo de Lambeth reconoció a la mujer de Buck's Row: Mary Ann Nichols, a quien llamaban «Polly». Tenía cinco hijos. La noche del crimen no reunió los cuatro peniques de la cama; dijo a la encargada que volvería pronto con el dinero, y que se fijaran en su sombrero nuevo.
+- [Documento] RECORTE DE PRENSA — SEPTIEMBRE DE 1888 El 31 de agosto, una compañera del asilo de Lambeth reconoció a la mujer de Buck's Row: Mary Ann Nichols, a quien llamaban «Polly». Tenía cinco hijos. La noche del crimen el encargado del alojamiento le negó la cama: no tenía los cuatro peniques. Ella dijo que conseguiría el dinero, y mencionó su sombrero nuevo. Emily Holland, con quien se cruzó en Osborne Street, declaró que no tardaría en regresar.
 - [Rótulo] El delantal de cuero — 29 Hanbury Street, 8 de septiembre de 1888
 - [→ Escena: hanbury]
 
@@ -1339,8 +1341,6 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
       - **Wren:** Lleva un papel roto en la manga. Pike tiene la otra mitad.
 - _Si flag('wren_paid'):_
   - **Wren:** Su penique. Se ha puesto frío. No lo quiero.
-- _Si second():_
-  - **Wren:** Lo de la mujer de Buck's Row salió en el periódico: dijo a una conocida que volvería pronto.
 - **Wren:** Dígame su nombre, señor. El que le puso su madre.
 - **Wren:** {lead} {what}
 - [Rótulo] Yours truly, Jack the Ripper — Don't mind me giving the trade name.

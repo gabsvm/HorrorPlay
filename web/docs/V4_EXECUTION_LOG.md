@@ -1366,12 +1366,13 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - Pendiente de decisión (F17, o una decisión tuya): la duración del intro para quien no pulsa. Con 8 s de espera, el registro cae a unos 19,6 s de aparecer: un lector a 17 caracteres por segundo se queda unos 2 s corto, y lo cierra la pulsación.
 - `test-all`: 38 PASS, 0 FAIL (ver la sección de F15 de este registro para la última ejecución).
 
-## F15 — recuerdo de víctima: prensa de la época, 2026-10-11
+## F15 — recuerdo personal de Thomas y recorte corregido, 2026-10-11
 
-- La línea de Wren (segunda lectura, epílogo) se retiró antes porque su atribución no estaba comprobada. Ahora la frase principal sí: la *Eastern Argus* del 8-IX-1888 recoge que Nichols dijo a la testigo Emily Holland que no tardaría en volver. El texto se leyó con una herramienta de lectura de páginas sobre la transcripción de Casebook, no sobre el original; conviene comprobarlo en la fuente. La línea vuelve con esa atribución: «dijo a una conocida que volvería pronto». Sin cuatro peniques ni encargada: el artículo leído no los contiene (ver H-38).
-- Es lo publicado, no un recuerdo de Wren ni de Thomas. La deuda «recuerdo concreto en primera persona» sigue siendo una decisión de autor: el juego no inventa memorias de víctimas reales.
-- Pendiente: el recorte de septiembre (capítulo II) atribuye a la encargada la promesa que la *Eastern Argus* atribuye a Holland. No se ha comprobado si otra prensa recoge un diálogo con quien llevaba el hospedaje. No se cambia el recorte sin decisión.
-- `walk` no dice la línea; `walk second` sí. `test-all`: 38 PASS, 0 FAIL.
+- **Decisión del autor (aprobada para implementación):** la línea de Wren se retira del epílogo. En su lugar, en la segunda lectura, al examinar por primera vez el cuerpo de Buck's Row, Thomas piensa: «Recuerdo el sombrero junto a su cuerpo. Recuerdo mejor el sombrero que su rostro. Se llamaba Polly.» (`scenes/bucks_row.js`, hotspot `polly`; una vez, marca `s2_polly`). Es un recuerdo de Thomas, basado en lo que vio, no palabras atribuidas a la víctima. El sombrero ya está dibujado junto al cuerpo (la franja oscura de `drawNear`).
+- **Recorte del capítulo II (`story/chapters.js`):** corregido para separar las conversaciones. (a) El encargado del alojamiento niega la cama por los cuatro peniques; la víctima dice que conseguiría el dinero y menciona su sombrero nuevo (*The Times*, 1-IX-1888, que en el original dice *bonnet*). (b) Emily Holland, con quien se cruzó en Osborne Street, declara que no tardaría en regresar (*Eastern Argus*, 8-IX-1888). Ya no se atribuyen a una misma persona las palabras de las dos.
+- **Fuentes:** solo las leídas, en H-38. *Pall Mall Gazette* y *Daily Telegraph* no se han consultado en texto por esta revisión. Son transcripciones digitales de Casebook, no facsímiles cotejados.
+- Walkthrough: el recuerdo sale en la segunda lectura y no en la primera. `test-all`: 38 PASS, 0 FAIL (unidad: 161 bien, 0 mal).
+- No inventado: ninguna memoria de Wren ni palabras atribuidas históricamente a Polly en primera persona.
 
 
 ## F16 — objetivos táctiles en el cuaderno y la barra, 2026-10-11
