@@ -149,7 +149,8 @@ export default {
     pike.facing = 1;
     // the finding: a middle framing on the body, the lamp, Pike and Thomas, in silence while Pike speaks (F11, «Hallazgo de Polly»)
     G.zoom(1.2, 920, G.scene.groundY - 110, 0.8);
-    G.audio.setBeds({}, 0.5);
+    // the rain that is seen stays faintly heard; what is not the street falls away
+    G.audio.setBeds({ rain: 0.12 }, 0.5);
     G.audio.playMusic(null, 0.5);
     await G.say('Pike', 'Inspector. No pise junto al portón.');
     await G.say('Pike', 'No lleva papeles. Hasta que el forense la vea, no hay nombre.');

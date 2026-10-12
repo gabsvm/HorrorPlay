@@ -310,7 +310,7 @@ export default {
           await G.walk(1640);
           // the first meeting: a middle framing on the girl on the boxes, in silence (F11, «Primer encuentro con Wren»)
           G.zoom(1.25, 1560, G.scene.groundY - 150, 0.8);
-          G.audio.setBeds({}, 0.5);
+          G.audio.setBeds({ rain: 0.08 }, 0.5);   // the rain that is seen stays faintly heard
           G.audio.playMusic(null, 0.5);
           await G.say('Niña', 'No se acerque.');
           w.talking = false;

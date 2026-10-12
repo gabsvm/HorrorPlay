@@ -304,8 +304,9 @@ export default {
       id: 'annie', name: 'El cuerpo de la mujer del patio', verb: 'Examinar', when: (G) => !G.flag('annie_taken'), rect: [690, GROUND - 30, 170, 60], walk: 640, face: 1, gesture: false,
       act: async (G) => {
         // the examination in silence: the close-up is the painted one (F11, «Examen de Annie»)
-        G.audio.setBeds({}, 0.5);
-        G.audio.playMusic(null, 0.5);
+        const firstLook = !G.flag('annie_examined');   // only the first examination is silent (the track is not restarted each time)
+        G.flag('annie_examined', true);
+        if (firstLook) { G.audio.setBeds({}, 0.5); G.audio.playMusic(null, 0.5); }
         // the points sit on the painted close-up (assets/closeups/chapman.jpg)
         await G.inspect('annie', {
           title: 'La mujer del patio de Hanbury Street', body: 'chapman',
@@ -337,8 +338,7 @@ export default {
             } },
           ],
         });
-        { const beds = G.scene.beds; G.audio.setBeds((typeof beds === 'function' ? beds(G) : beds) || {}, 1.5); }
-        G.audio.playMusic(G.scene.music || null);
+        if (firstLook) { const beds = G.scene.beds; G.audio.setBeds((typeof beds === 'function' ? beds(G) : beds) || {}, 1.5); G.audio.playMusic(G.scene.music || null); }
       },
     },
     {
