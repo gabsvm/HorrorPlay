@@ -151,10 +151,13 @@ export default {
         await G.think(G.two('En el ladrillo mojado, junto a la jamba, creo leer HERE I AM. Parpadeo y es solo agua.', 'En el ladrillo mojado, letra inclinada. Reconozco la A antes de leer la frase.'));
         // the close framing of the jamb and the silence of the apparition (F11, shot 2): with reduced motion the frame stays still
         if (!prefs.reduceMotion) G.zoom(1.6, 950, G.scene.groundY - 150, 0.6);
-        // the beds and the dread track are both silent through the apparition (the track fades out and starts again after)
+        // silence first: the beds fall in 0.8 s and the dread track in 0.6 s; the apparition comes once they have fallen,
+        // and the silence holds for a moment after it, in both readings (F11, shot 2)
         G.audio.setBeds({ rain: 0, wind: 0, drone: 0 }, 0.8);
-        G.audio.playMusic(null);
+        G.audio.playMusic(null, 0.6);
+        await G.wait(900);
         await G.vision('chalk');
+        await G.wait(1500);
         if (!G.second()) await G.think(G.flag('answered1866') ? 'Lo dije yo. Hace veintidós años.' : '¿Lo he leído o lo he oído?');
         G.zoom(1);
         const beds = G.scene.beds;

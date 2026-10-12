@@ -246,7 +246,8 @@ class AudioEngine {
   //   dread  : bowed strings moving through Am - F - Dm - E, with a glassy harmonic now and then
   //   memory : an out-of-tune music box playing Nat's tune, slowing down like a spring running out
   //   chase  : a pulse, ticking metal and string stabs a semitone apart
-  playMusic(mood) {
+  // fade: seconds for the old track to go out (2.5 by default, for a change of scene; a moment can ask for less)
+  playMusic(mood, fade = 2.5) {
     this.wantMusic = mood;
     if (!this.ctx) return;
     const ctx = this.ctx;
@@ -255,8 +256,8 @@ class AudioEngine {
       const old = this.music.bus;
       old.gain.cancelScheduledValues(ctx.currentTime);
       old.gain.setValueAtTime(old.gain.value, ctx.currentTime);
-      old.gain.linearRampToValueAtTime(0, ctx.currentTime + 2.5);
-      setTimeout(() => old.disconnect(), 3000);
+      old.gain.linearRampToValueAtTime(0, ctx.currentTime + fade);
+      setTimeout(() => old.disconnect(), fade * 1000 + 500);
       this.music = null;
     }
     if (!mood) return;
