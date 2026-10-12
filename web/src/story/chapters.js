@@ -927,8 +927,13 @@ export function makeChapters() {
       G.zoom(1.2, (G.player.x + w.x) / 2, G.scene.groundY - G.player.h * 0.65, 0.3);
       // the signature page from the start of the game: he writes what the player writes, and the hand
       // finishes the strokes into four letters
+      // the signature in silence: the beds (and the track, if the place has one) fall before he writes, and come back with the sting (F11, shot 5)
+      G.audio.setBeds({}, 0.6);
+      if (G.scene.music) G.audio.playMusic(null, 0.6);
       await G.nameEntry('¿Cómo se llama usted?', 'Jack', G.state.flags.signature || 'Thomas Ashgrove');
       G.audio.sting(0.3);
+      { const beds = G.scene.beds; G.audio.setBeds((typeof beds === 'function' ? beds(G) : beds) || {}, 1.5); }
+      if (G.scene.music) G.audio.playMusic(G.scene.music);
       w.talking = true;
       // her last line answers what he did, and how much of him is left to hear it
       const lead = perceptionBand(G.state.sanity) === 'frayed' ? 'No era este. Antes tenía otro.' : 'Era Thomas.';

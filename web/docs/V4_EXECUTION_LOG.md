@@ -1450,3 +1450,10 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - `story/chapters.js` (`readFile`): la página del expediente ya es el primer plano (el documento ocupa la pantalla). Al abrirla, la sala se corta en 0,2 s (corte, no fundido) y queda en silencio mientras se lee; al cerrarla, vuelven los fondos de la escena en 1,2 s, con la misma forma que `game.js`. Greaves no tiene música (`music: null`).
 - La confrontación ya usaba `cinema` y su visión; no se cambia. Pendiente: captura del expediente y de la confrontación en 1280×720 y 1920×1080; no escuchado con sonido.
 - `test-all`: 39 PASS.
+
+## F11 (plano 5, la firma que se convierte en JACK), 2026-10-12
+
+- `story/chapters.js` (epílogo): la firma se escribe en silencio. Los fondos (y la pista, si el lugar la tiene) bajan en 0,6 s antes de escribir y vuelven con el golpe de sonido final. La transformación (`ui.nameEntry`, `signature.js`) no cambia: el campo se desenfoca antes de empezar (sin teclado superpuesto en móvil) y las letras cambian despacio.
+- Comprobado en Chrome headless llamando a la pantalla de la firma con «Thomas Ashgrove»: a 1280×720 y 1920×1080, a mitad de la transformación se lee «Thom» y termina en «Jack» unos 5,6 s después de pulsar «Firmar» (el plano pide 10 s como máximo). Capturas no versionadas.
+- Movimiento reducido: el acercamiento del epílogo ya no actúa (`G.zoom`, desde f45bdf7); la transformación es un cambio de letras, sin movimiento de cámara.
+- No comprobado: el epílogo completo en el navegador y el silencio al oído. `test-all`: 39 PASS.
