@@ -843,7 +843,9 @@ export class Game {
       // a subliminal flash: 'hands' or a body close-up
       vision: (kind = 'hands') => { game.punch = prefs.reduceMotion ? 0 : 1; return game.ui.vision((ctx, w, h) => paintVision(ctx, w, h, kind)); },
       // a held camera move for a scripted moment; G.zoom(1) lets go
+      // with reduced motion no scripted push-in happens anywhere (F11): only the reset to 1 goes through
       zoom: (z = 1.15, x, y, speed = 0.8) => {
+        if (prefs.reduceMotion && z !== 1) return;
         game.zoomTarget = z === 1 ? null : { z, x: x ?? game.player.x, y: y ?? game.scene.groundY - game.player.h * 0.6, speed, hold: true };
       },
       mad: (v) => { game.madTarget = v; },

@@ -8,7 +8,6 @@ import { playIntro } from './intro.js';
 import { canFinishC1, canEnterFinale } from './progression.js';
 import { perception, perceptionBand } from './perception.js';
 import { chaseStreet } from './data.js';
-import { prefs } from '../engine/prefs.js';
 
 const LOOKS = {
   child: { hat: 'cap', coat: '#3a342c', coatLen: 0.62, flare: 1.05, build: 0.9, speed: 120, lantern: false, collarUp: false, patches: true, scarf: '#5a2a22', sideburns: false, hair: '#2a1e16', gloves: null, stubble: null },
@@ -342,9 +341,9 @@ export function makeChapters() {
       }
       // before the session: the framing comes to the table and the room falls silent for a breath, before Wexley speaks
       // (F11, shot 3); with reduced motion the frame stays where it is
-      if (!prefs.reduceMotion) G.zoom(1.25, s.tableX ?? 760, s.groundY - 120, 0.9);
+      G.zoom(1.25, s.tableX ?? 760, s.groundY - 120, 0.9);
       G.audio.setBeds({ room: 0, drone: 0 }, 0.8);
-      await G.wait(1200);
+      await G.wait(1800);
       w.talking = true;
       await G.say('Madame Wexley', 'Pongan las manos en la mesa. No suelten a nadie.');
       w.talking = false;
@@ -690,12 +689,15 @@ export function makeChapters() {
 
     // ------------------------------------------------------------ chapter 4
     async readFile(G) {
+      // the page in close-up, and silence while it is read: the room is cut, not faded (F11, shot 4)
+      G.audio.setBeds({ room: 0, rain: 0, drone: 0 }, 0.2);
       await G.doc(`<h3>LONDON HOSPITAL — EXPEDIENTE CLÍNICO</h3>
         <p class="small">Paciente: T. A., estudiante de cuarto año. 14 de marzo de 1879. Dr. L. Greaves.</p>
         <p class="hand">Hallado a las cuatro de la mañana en la sala de disección, con un bisturí en la mano izquierda. Ausencia de recuerdos sobre su llegada. El cadáver de la mesa 3 presenta incisiones ajenas al programa de prácticas.</p>
         <p class="hand">La enfermera M. Bell declaró que, esa noche, junto al lavadero, oyó al estudiante responder claramente: <b>«Aquí estoy»</b>. El paciente recuerda haber oído agua y niega haber hablado con nadie.</p>
         <p class="hand">Su hermano menor falleció en Limehouse en 1866; el paciente tenía doce años. Impresión clínica: episodios de amnesia y desorientación; vigilar recurrencias.</p>
         <p class="small" style="text-align:right">Anotación agregada, 1888: <i>El cuadro se asemeja a las descripciones posteriores de fuga disociativa (Tissié, 1887). El 1 de septiembre, el sargento Pike preguntó si era posible actuar durante una laguna de memoria. Respondí que sí.</i></p>`);
+      { const beds = G.scene.beds; G.audio.setBeds((typeof beds === 'function' ? beds(G) : beds) || {}, 1.2); }
       // the file is read once: a second look (from the cabinet) only shows the page again
       if (G.flag('greaves_done')) return;   // the confrontation is finished: the page only
       // the discovery and its cost come once; a file read before an interrupted confrontation goes straight on to it

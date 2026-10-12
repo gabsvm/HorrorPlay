@@ -5,7 +5,6 @@ import { nightBackdrop, facade } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
 import { Smoke, Drip, Rat, Cat, Moths, Ripples } from '../engine/life.js';
-import { prefs } from '../engine/prefs.js';
 
 const WIDTH = 1900, GROUND = 628;
 
@@ -150,7 +149,7 @@ export default {
         G.mad(0.5);
         await G.think(G.two('En el ladrillo mojado, junto a la jamba, creo leer HERE I AM. Parpadeo y es solo agua.', 'En el ladrillo mojado, letra inclinada. Reconozco la A antes de leer la frase.'));
         // the close framing of the jamb and the silence of the apparition (F11, shot 2): with reduced motion the frame stays still
-        if (!prefs.reduceMotion) G.zoom(1.6, 950, G.scene.groundY - 150, 0.6);
+        G.zoom(1.6, 950, G.scene.groundY - 150, 0.6);
         // silence first: the beds fall in 0.8 s and the dread track in 0.6 s; the apparition comes once they have fallen,
         // and the silence holds for a moment after it, in both readings (F11, shot 2)
         G.audio.setBeds({ rain: 0, wind: 0, drone: 0 }, 0.8);

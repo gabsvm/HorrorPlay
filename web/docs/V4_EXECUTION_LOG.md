@@ -1442,3 +1442,11 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - Movimiento reducido: sin zoom. Además, `frameDialogue` (`engine/game.js`), el acercamiento suave que el juego hacía en cualquier diálogo, ya no actúa con movimiento reducido en ninguna escena.
 - Comprobado en Chrome headless, en la primera línea de Wexley: zoom 1,25 con movimiento normal (capturas a 1280×720 y 1920×1080, no versionadas); zoom 0 con movimiento reducido. El encuadre no tapa la mesa, los personajes ni el subtítulo.
 - `walk`, `walk second` y `test-all` (39 PASS). No escuchado en un navegador con sonido.
+
+- Revisión del observador sobre 6870ae9 (por lectura): APPROVE. Atendidos sus dos puntos: el respiro antes de Wexley pasa de 1,2 a 1,8 s; y `G.zoom` (`engine/game.js`) no acerca la cámara con movimiento reducido en ningún sitio (solo deja pasar el regreso a 1). Así quedan cubiertos también los acercamientos del epílogo y de la firma, que antes se escapaban; se quitan las comprobaciones sueltas de Goulston y de la sesión. Vuelto a comprobar en el navegador: sesión con zoom 1,25 (normal) y 0 (reducido).
+
+## F11 (plano 4, expediente de Greaves), 2026-10-11
+
+- `story/chapters.js` (`readFile`): la página del expediente ya es el primer plano (el documento ocupa la pantalla). Al abrirla, la sala se corta en 0,2 s (corte, no fundido) y queda en silencio mientras se lee; al cerrarla, vuelven los fondos de la escena en 1,2 s, con la misma forma que `game.js`. Greaves no tiene música (`music: null`).
+- La confrontación ya usaba `cinema` y su visión; no se cambia. Pendiente: captura del expediente y de la confrontación en 1280×720 y 1920×1080; no escuchado con sonido.
+- `test-all`: 39 PASS.
