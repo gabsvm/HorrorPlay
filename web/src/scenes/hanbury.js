@@ -317,7 +317,7 @@ export default {
             { id: 'hombro', x: 398, y: 398, r: 60, name: 'Sobre el hombro', act: async (G) => {
               G.red(0.5); G.audio.sting(0.2); G.shake(4);
               await G.think('Han colocado lo que extrajeron. Con precisión deliberada.');
-              G.sanityOnce('hanbury_hombro', -5);
+              G.sanityOnce('hanbury_hombro', -3);
               await G.think('Lo vi en la sala de disección. No quiero volver a verlo.');
             } },
             { id: 'saco', key: true, x: 1034, y: 322, r: 100, name: 'Bajo el saco', act: async (G) => {

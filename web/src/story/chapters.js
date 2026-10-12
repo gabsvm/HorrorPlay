@@ -207,7 +207,7 @@ export function makeChapters() {
       else await G.say('Wren', 'Si prefiere no creerme, tampoco voy a cobrarle por eso.');
       w.talking = false;
       G.clue('regla');
-      G.sanity(-5);
+      G.sanity(-3);
       hooks.c1Objective(G);
       await G.think('Un bisturí del London Hospital, a dos pasos de ella.');
     },
@@ -386,7 +386,7 @@ export function makeChapters() {
       await G.say('Madame Wexley', 'No voy a volver a abrir la boca con usted aquí.');
       w.talking = false;
       G.clue('alguien_detras');
-      G.sanity(-10);
+      G.sanity(-6);
       G.flag('seance_done', true);
       G.cinema(false);
       await G.think('Había alguien detrás de mí. O lo vio Wexley. O quiso que yo lo creyera.');
@@ -550,7 +550,7 @@ export function makeChapters() {
       await G.fade(0, 1500);
       G.clue('dedos');
       await G.think(G.two('Faltan tres pliegos de papel.', 'Faltan tres pliegos. Los usé yo.'));
-      G.sanity(-8);
+      G.sanity(-5);
       G.player.pose = null;
       G.objective('Acostarse.');
     },
@@ -628,7 +628,7 @@ export function makeChapters() {
       G.audio.whisper(2, 0.14);
       if (G.second()) await G.voice('Jack.');
       await G.think('Esa letra la he visto antes. En el escritorio tengo letras de todos.');
-      G.sanity(-6);
+      G.sanity(-4);
       const bo = G.state.flags.brennan_outcome;
       if (bo === 'severe') await G.think('Brennan sigue sin poder trabajar. No he rectificado la acusación.');
       else if (bo === 'injured') await G.think('Brennan perdió su trabajo. Nadie lo ha rectificado. Yo tampoco.');

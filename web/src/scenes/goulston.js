@@ -155,7 +155,7 @@ export default {
         // 4. the cost
         G.flag('chalk_seen', true);
         G.audio.sting(0.22);
-        G.sanity(-8);
+        G.sanity(-5);
         G.mad(0);
         G.player.pose = null;
         // 5. the chase, once

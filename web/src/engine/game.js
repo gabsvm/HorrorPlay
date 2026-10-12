@@ -385,7 +385,7 @@ export class Game {
     this.state.deductions.push(d.id);
     if (d.profile && !this.state.profile.includes(d.profile)) this.state.profile.push(d.profile);
     if (d.flag) this.state.flags[d.flag] = true;
-    if (d.denial) { this.state.sanity = Math.max(0, this.state.sanity - 6); this.ui.setSanity(this.state.sanity); audio.heartbeat(0.7); }
+    if (d.denial) { this.state.sanity = Math.max(0, this.state.sanity - 4); this.ui.setSanity(this.state.sanity); audio.heartbeat(0.7); }
     if (d.final && canEnterFinale(this.state).ok) { this.state.objective = 'Ir al agua.'; this.ui.setObjective(this.state.objective); }
     this.updateInvestigation();
     if (d.final) { audio.whisper(1.4, 0.1); this.state.sanity = Math.max(0, this.state.sanity - 4); this.ui.setSanity(this.state.sanity); }

@@ -194,7 +194,7 @@ export default {
       await G.think('El peine. No se lo he mostrado.');
       G.objective('Poner el peine de Annie sobre la mesa.');
     }
-    G.sanity(-3);
+    G.sanity(-2);
   },
 
   hotspots: [
@@ -284,7 +284,7 @@ export default {
           if (G.flag('raps_heard') && !G.hasClue('hospes')) G.objective('Leer los golpes con la tabla de letras de la pared (en la mesa).');
           await G.think('Dos grupos de golpes. Fila y columna. Como en las cárceles del zar.');
         }
-        G.sanityOnce('chart', -3);
+        G.sanityOnce('chart', -2);
       },
     },
     {

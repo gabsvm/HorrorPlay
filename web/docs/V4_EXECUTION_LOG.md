@@ -1381,3 +1381,12 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - Cambio en `styles.css` (modo táctil): caja mínima de 44 px para los botones de la barra, las pestañas del cuaderno, «¿Qué hago ahora?» y «Cerrar». Después: ningún objetivo por debajo de 44 px en las tres medidas.
 - Con 640×360 y `touch`, «Cerrar» y «¿Qué hago ahora?» invaden unos 14 px del relleno inferior de la página (medido a ojo en la captura de trabajo, no versionada). No rompe nada: los botones quedan dentro de la pantalla.
 - Pendiente, no hecho: la pulsación que arma y la segunda que ejecuta en un dispositivo real; el retorno con el botón atrás de Android; la legibilidad con luz real; la instalación del APK. Requieren un teléfono.
+
+## F12 — opción A (decisión del autor), 2026-10-11
+
+- Objetivo del autor: la ruta principal llega a Greaves con 25–35 de cordura; el −10 del expediente y el −15 del corte se conservan; 65/35 sin cambios; Goulston conserva su momento.
+- Medido con un rastro temporal del recorrido principal (retirado): sin suelo, los costes previos a Greaves eran 142 y las ganancias 45; la cordura tocaba cero en la habitación del capítulo III y lo perdido en el suelo no contaba.
+- Cambio: once costes bajan (cuatro deducciones erróneas de −6 a −4; Wexley −10 a −6; dedos −8 a −5; letra −6 a −4; Wren −5 a −3; Goulston −8 a −5; Mitre −4/−5/−6 a −3/−3/−4; Hanbury −5 a −3; séance −3 a −2 en dos sitios). Ningún coste nuevo.
+- Resultado: llegada a Greaves en la ruta principal 10 → 34; persecución limpia 30 → 43; un error 27 → 40; tres errores 21 → 34. Tras la confrontación, la ruta principal queda en 2.
+- Comprobado: `tests/scenarios/sanity14.js` (las tres persecuciones entre 25 y 45; un segundo vistazo a los frascos no cuesta; un guardado antiguo carga como antes).
+- Revisión del observador: pendiente de esta entrada (ver el commit). `test-all`: 39 PASS, 0 FAIL.
