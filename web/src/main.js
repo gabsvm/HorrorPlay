@@ -3,6 +3,7 @@ import { Game, freshState } from './engine/game.js';
 import { audio } from './engine/audio.js';
 import { ITEMS, CLUES, DEDUCTIONS } from './story/data.js';
 import { makeChapters } from './story/chapters.js';
+import { recordHtml } from './story/intro.js';
 import room from './scenes/room.js';
 import bucks_row from './scenes/bucks_row.js';
 import knackers from './scenes/knackers.js';
@@ -19,6 +20,8 @@ const scenes = { room, bucks_row, knackers, foreshore, hanbury, seance, mitre, g
 const { chapters, hooks } = makeChapters();
 
 const game = new Game({ scenes, chapters, items: ITEMS, clues: CLUES, deductions: DEDUCTIONS });
+// the notebook's police record (intro.js recordHtml): a document of 1888, not an item of the boy's inventory
+const readRecord = () => game.ui.doc(recordHtml());
 game.chapterHooks = hooks;
 window.game = game;
 
@@ -81,6 +84,7 @@ function mainMenu() {
   // once the game has been finished: the same story again, read the way it happened
   if (Game.read()) items.push({ label: 'Segunda lectura', action: () => { Game.clearSave(); game.introNext = true; const st = freshState(); st.flags.second = true; begin('prologue', st); } });
   if (unlocked.length > 1) items.push({ label: 'Capítulos', action: () => chapterMenu() });
+  items.push({ label: 'Registro de efectos', action: () => readRecord() });
   items.push({ label: 'Opciones', action: () => optionsMenu(() => mainMenu()) });
   items.push({ label: 'Créditos', action: () => credits() });
   game.ui.menu(items);
@@ -118,6 +122,7 @@ game.onPause = () => {
   game.ui.hover(null);
   const pauseMenu = () => game.ui.menu([
     { label: 'Continuar', action: () => { game.paused = false; game.inMenu = false; game.ui.hideMenu(); } },
+    { label: 'Registro de efectos', action: () => readRecord() },
     { label: 'Opciones', action: () => optionsMenu(pauseMenu) },
     { label: 'Volver al menú', action: () => { game.paused = false; game.ui.hideMenu(); mainMenu(); } },
   ]);

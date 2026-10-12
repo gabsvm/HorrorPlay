@@ -153,6 +153,8 @@ export async function run({ log = true, second = false } = {}) {
 
     // Chapter 4
     expectScene('greaves');
+    // the main route reaches the cabinet with 25 to 35 of sanity, after the entry cost (V4-12, option A)
+    need(game.state.sanity >= 25 && game.state.sanity <= 35, `llegada a Greaves con cordura ${game.state.sanity}, fuera de 25–35`);
     await act('jars'); await act('chart');
     await act('drawer', 'bisturi');
     await act('cabinet', 'llave', [1]);
@@ -168,7 +170,7 @@ export async function run({ log = true, second = false } = {}) {
     for (let i = 0; i < 400 && !game.inMenu; i++) await new Promise((r) => setTimeout(r, 20));
     need(game.inMenu, 'El juego no volvió al menú al terminar');
     // Thomas's memory of the body, only in the second reading (bucks_row.js, the polly hotspot)
-    const memory = window.LOG.some((l) => l.includes('Se llamaba Polly.'));
+    const memory = window.LOG.some((l) => l.includes('La llamaban Polly.'));
     need(memory === second, second ? 'La segunda lectura debería traer el recuerdo de Thomas' : 'La primera lectura no debe traer el recuerdo de la segunda');
   } catch (e) {
     errors.push(`FALLO: ${e.message}`);

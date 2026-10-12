@@ -205,11 +205,7 @@ El canon sigue igual: la entrada exige una respuesta voluntaria (en 1866 o, si e
 
 ## Introducción (antes del prólogo)
 _Archivo: src/story/intro.js. Ficha policial del cuaderno, tres líneas sobre Whitechapel y la primera página._
-- POLICÍA METROPOLITANA · DIVISIÓN H
-- Registro de efectos. Objeto n.º 214.
-- Cuaderno de tapas de hule, muy deteriorado por el agua. Hallado en la boca del desagüe del Black Ditch, en Limehouse, el 10 de noviembre de 1888.
-- Propiedad del inspector T. Ashgrove, de esta División, en paradero desconocido.
-- Las anotaciones están escritas con dos caligrafías distintas.
+- Hallado en el desagüe del Black Ditch. Dos caligrafías.
 - Otoño de 1888. Alguien está matando mujeres en Whitechapel.
 - Para entender lo que pasó este otoño tengo que empezar por el río. Por Nat.
 
@@ -364,7 +360,7 @@ _Archivo: src/scenes/bucks_row.js_
   - [+ Pista al cuaderno: anatomia]
 - _Si no:_
   - _Si c === 'polly':_
-    - **Pike:** Lleva un sombrero de paja negro; parece nuevo. Alguien lo eligió con cuidado.
+    - **Pike:** Tiene al lado un sombrero de paja negro; parece nuevo. Alguien lo eligió con cuidado.
   - _Si no:_
     - _Si c === 'notes':_
       - **Pike:** Quién entra. Quién sale. A qué hora.
@@ -405,7 +401,7 @@ _Aparece si: !flag('polly_taken')_
 - _Si first:_
   - **Neil:** La tapé yo. No tenían por qué verla todos.
 - _Si second() && !flag('s2_polly'):_
-  - *Thomas (piensa):* Recuerdo el sombrero junto a su cuerpo. Recuerdo mejor el sombrero que su rostro. Se llamaba Polly.
+  - *Thomas (piensa):* Recuerdo el sombrero junto a su cuerpo. Recuerdo mejor el sombrero que su rostro. La llamaban Polly.
 
 #### La cara `cara`
 **Al interactuar:**
@@ -952,7 +948,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - [Objetivo] Coger el abrigo, las botas y la linterna, y salir hacia Buck's Row.
 
 ### `c2`
-- [Documento] RECORTE DE PRENSA — SEPTIEMBRE DE 1888 El 31 de agosto, una compañera del asilo de Lambeth reconoció a la mujer de Buck's Row: Mary Ann Nichols, a quien llamaban «Polly». Tenía cinco hijos. La noche del crimen el encargado del alojamiento le negó la cama: no tenía los cuatro peniques. Ella dijo que conseguiría el dinero, y mencionó su sombrero nuevo. Emily Holland, con quien se cruzó en Osborne Street, declaró que no tardaría en regresar.
+- [Documento] RECORTE DE PRENSA — SEPTIEMBRE DE 1888 El 31 de agosto, una compañera del asilo de Lambeth reconoció a la mujer de Buck's Row: Mary Ann Nichols, a quien llamaban «Polly». Tenía cinco hijos. La noche del crimen el encargado del alojamiento le negó la cama: no tenía los cuatro peniques. Ella dijo que conseguiría el dinero, y mencionó su sombrero nuevo. Emily Holland, con quien se cruzó en Osborne Street, declaró que la víctima le dijo que no tardaría en regresar.
 - [Rótulo] El delantal de cuero — 29 Hanbury Street, 8 de septiembre de 1888
 - [→ Escena: hanbury]
 

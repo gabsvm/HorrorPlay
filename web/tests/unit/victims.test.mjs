@@ -22,12 +22,12 @@ const chapters = read('story/chapters.js');
 
 const SEPT = '<h3>RECORTE DE PRENSA — SEPTIEMBRE DE 1888</h3>';
 const OCT = '<h3>RECORTE DE PRENSA — OCTUBRE DE 1888</h3>';
-const HAT = 'Lleva un sombrero de paja negro; parece nuevo. Alguien lo eligió con cuidado.';
+const HAT = 'Tiene al lado un sombrero de paja negro; parece nuevo. Alguien lo eligió con cuidado.';
 
 export const tests = [
   ['bucks_row.js no dice en texto visible el nombre ni los datos de vida de la mujer', () => {
     const v = visible(bucks);
-    const MEMORY = 'Recuerdo el sombrero junto a su cuerpo. Recuerdo mejor el sombrero que su rostro. Se llamaba Polly.';
+    const MEMORY = 'Recuerdo el sombrero junto a su cuerpo. Recuerdo mejor el sombrero que su rostro. La llamaban Polly.';
     ok(bucks.includes(MEMORY) && bucks.includes("if (G.second() && !G.flag('s2_polly')) {"), 'el recuerdo de Thomas debe ir detrás de la segunda lectura');
     const rest = v.split(MEMORY).join('');
     for (const t of ['Nichols', 'Polly', 'cinco hijos', 'peniques', 'encargada']) ok(!rest.includes(t), `aparece «${t}»`);
@@ -79,7 +79,7 @@ export const tests = [
     ok(doc > 0 && card > doc, 'el recorte no va antes de la tarjeta del capítulo II');
     ok(!/flag/.test(c2.slice(0, card)), 'el recorte no lleva flag ni condición');
     ok(c2.includes("El 31 de agosto, una compañera del asilo de Lambeth reconoció a la mujer de Buck's Row: Mary Ann Nichols, a quien llamaban «Polly». Tenía cinco hijos. La noche del crimen el encargado del alojamiento le negó la cama: no tenía los cuatro peniques. Ella dijo que conseguiría el dinero, y mencionó su sombrero nuevo.</p>"), 'el texto del recorte cambió');
-    ok(c2.includes('Emily Holland, con quien se cruzó en Osborne Street, declaró que no tardaría en regresar.'), 'falta la declaración de Holland, separada');
+    ok(c2.includes('Emily Holland, con quien se cruzó en Osborne Street, declaró que la víctima le dijo que no tardaría en regresar.'), 'falta la declaración de Holland, separada');
   }],
   ['el recorte de octubre lleva la línea del lúpulo una vez, en el párrafo de Mitre Square', () => {
     eq(count(chapters, 'recogida del lúpulo'), 1, 'línea del lúpulo');

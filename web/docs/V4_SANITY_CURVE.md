@@ -1,24 +1,50 @@
 # V4 — Curva de cordura (F12)
 
-Medido con `node tools/walk.mjs` (recorrido principal, cada escena una vez). Bandas sin cambios: 65 / 35 (`story/perception.js`).
+Medido con `node tools/walk.mjs` (recorrido principal, cada escena una vez) y con `tests/scenarios/sanity14.js` (persecuciones). Umbrales sin cambios: 65 y 35 (`story/perception.js`). Los valores de la curva son la cordura al **cambiar de escena**, ya con el coste de entrada de esa escena.
 
-## Curva del recorrido principal
+## Curva del recorrido principal: antes y ahora
 
-foreshore 100 · room 100 · bucks_row 95 · knackers 86 · hanbury 92 · seance 75 · room 69 · knackers 69 · mitre 61 · goulston 33 · room 19 · alleys 19 · greaves 7 · **foreshore 0** · bucks_row 0 · millers 0
+| Escena | Antes (HEAD) | Ahora | Banda antes → ahora |
+|---|---|---|---|
+| foreshore | 100 | 100 | steady |
+| room | 100 | 100 | steady |
+| bucks_row | 95 | 95 | steady |
+| knackers | 86 | 88 | steady |
+| hanbury | 92 | 96 | steady |
+| seance | 75 | 82 | steady |
+| room (2.ª visita) | 69 | 81 | strained → **steady** |
+| knackers (2.ª) | 69 | 81 | strained → **steady** |
+| mitre | 61 | 76 | strained → **steady** |
+| goulston | 33 | 52 | frayed → **strained** |
+| room (c3b) | 19 | 41 | frayed → **strained** |
+| alleys | 19 | 41 | frayed → **strained** |
+| greaves (llegada, tras el coste de entrada) | 7 | 28 | frayed → frayed |
+| foreshore (tras la confrontación) | 0 | 0 | frayed |
 
-El suelo a 0 se alcanza al leer el expediente, dentro de la confrontación de Greaves (7 − 10), no al terminarla. Desde ahí no hay más efecto mecánico.
+Antes, la ruta principal tocaba cero antes de la confrontación de Greaves y lo perdido en el suelo no contaba; ahora no lo toca antes.
 
-## Cambio aplicado: costes que se pagan una vez
+## Bandas: qué cambia para el jugador
 
-Antes, doce objetos restaban cordura en cada vistazo. Una segunda pasada completa costaba unos 45 puntos (frascos 4, falda 3, hombro 5, cara 4, vientre 5, muñeca 6, estuche 4, fotografía 4, espejo 2 desde la tercera mirada, reloj 2, carta astral 3, Wexley 3). Ahora usan `G.sanityOnce(clave, delta)` (`engine/game.js`), que guarda la marca en `flags.cost_<clave>`: la reacción (rojo, sonido, línea) sigue en cada vistazo; el coste, no. El recorrido principal no cambia, porque visita cada objeto una vez (medido: misma curva).
+Por `story/perception.js` y su uso (no hay ninguna regla de progreso que lea la cordura: `progression.js` solo la acota):
 
-Pruebas: `cost14.js` (el helper; frascos y fotografía, dos vistazos cada uno).
+- **steady (≥ 65)**: en los cuerpos se marcan con más claridad los puntos clave (`forensicMarks`, `game.js`); en el cuaderno, una pregunta mal contestada se señala tras una sola falta, no tras dos (`beatsHelpAfter`); no hay susurros.
+- **strained (36–64)**: susurros con probabilidad 0,15.
+- **frayed (≤ 35)**: susurros con probabilidad 0,35; los golpes se leen de entrada (`knockHelpStart`); el resplandor verde del agua; la duda de las teorías (`doubtTheories`, `ui.js`); la gente lo nota (`othersNotice`: Watkins, Greaves, el final).
 
-## Opción A — distribución aplicada (decisión de diseño del autor, 2026-10-11)
+Cambios que resultan de la nueva curva en la ruta principal:
+- **Mitre pasa a steady**: se marcan los puntos clave del cuerpo y desaparecen los susurros de la escena. Esto hace Mitre más fácil de leer. Se revirtieron sus dos costes (cara −4 y vientre −5, como antes); no basta para devolverla a strained, porque la rebaja de las escenas anteriores ya la sube sobre 65.
+- **Goulston, la habitación c3b y la persecución pasan a strained**: desaparecen la duda de las teorías y la mención de «la gente lo nota» en esas escenas; los susurros bajan de 0,35 a 0,15.
+- **Greaves sigue en frayed** (28): la mención de Greaves («No duermes») y la lectura del final no cambian.
 
-**Objetivo (del autor):** la ruta principal llega a Greaves con 25–35 de cordura; la confrontación conserva su −10 (expediente) y su −15 (corte); los umbrales 65/35 no cambian; los momentos de tensión de Goulston se conservan. Son objetivos de diseño, no cifras que se fuerzan si producen regresiones.
+## Costes que se pagan una vez (F12, previo a la opción A)
 
-**Diagnóstico (medido con un rastro temporal del recorrido principal, que se retiró después):** antes del cambio, la cordura tocaba cero en la habitación del capítulo III, y lo que se perdía en el suelo no contaba. Costes previos a Greaves sin suelo: 142 puntos (incluidos cuatro deducciones erróneas de −6 cada una, en `game.js`), con ganancias de 45 (dos descansos en el desolladero y uno en la habitación). Llegada real a Greaves: 10 (la cuenta sin suelo daba 3 antes de la ganancia de 10).
+Antes, doce objetos restaban cordura en cada vistazo. Una segunda pasada completa costaba unos 45 puntos (frascos 4, falda 3, hombro 5, cara 4, vientre 5, muñeca 6, estuche 4, fotografía 4, espejo 2 desde la tercera mirada, reloj 2, carta astral 3, Wexley 3). Ahora usan `G.sanityOnce(clave, delta)` (`engine/game.js`), que guarda la marca en `flags.cost_<clave>`: la reacción (rojo, sonido, línea) sigue en cada vistazo; el coste, no. Pruebas: `cost14.js`.
+
+## Distribución aplicada (decisión de diseño del autor, 2026-10-11)
+
+**Objetivo (del autor):** la ruta principal llega a Greaves con 25–35 de cordura; la confrontación conserva su −10 (expediente) y su −15 (corte); 65/35 sin cambios; Goulston conserva su momento de tensión.
+
+**Diagnóstico (rastro temporal del recorrido principal, retirado):** antes, sin suelo, los costes previos a Greaves sumaban 142 y las ganancias 45. Cuatro deducciones erróneas costaban 6 cada una (24 puntos).
 
 **Cambios (solo bajan costes; no se añade ninguna penalización):**
 
@@ -30,35 +56,32 @@ Pruebas: `cost14.js` (el helper; frascos y fotografía, dos vistazos cada uno).
 | Carta, letra (habitación) | −6 | −4 | `story/chapters.js` |
 | Desolladero, Wren («la regla») | −5 | −3 | `story/chapters.js` |
 | Goulston, la tiza (el momento se conserva) | −8 | −5 | `scenes/goulston.js` |
-| Mitre, cara | −4 | −3 | `scenes/mitre.js` |
-| Mitre, vientre | −5 | −3 | `scenes/mitre.js` |
 | Mitre, muñeca | −6 | −4 | `scenes/mitre.js` |
 | Hanbury, hombro | −5 | −3 | `scenes/hanbury.js` |
 | Séance, el peine | −3 | −2 | `scenes/seance.js` |
 | Séance, carta astral | −3 | −2 | `scenes/seance.js` |
 
-**No cambia:** el −10 del expediente y el −15 del corte (`story/chapters.js`, `readFile`); los umbrales 65 y 35; el coste de la persecución (−3 por error); el coste del desolladero por el trough (una vez); la pérdida de −3 por entrar en Greaves y el −4 de los frascos (una vez). Los costes de una sola vez y la regla de «mirar otra vez no cobra» de F12 siguen igual.
+**Sin cambio:** el −10 del expediente y el −15 del corte (`story/chapters.js`, `readFile`); los umbrales 65 y 35; el −3 por error de persecución; el −3 por entrar en Greaves; los costes de una sola vez (frascos, trough, reflejo, Watkins).
 
-**Resultados medidos (los mismos recorridos, antes y ahora):**
+**Llegada a Greaves (medida):**
 
-| Recorrido | Llegada a Greaves, antes | Ahora |
-|---|---|---|
-| Principal (`walk`, con sus dos errores de persecución) | 10 (ruta con suelo) | 34 |
-| Persecución limpia (sin errores) | 30 | 43 |
-| Un error (se la ve la cara) | 27 | 40 |
-| Tres errores (herida) | 21 | 34 |
+| Recorrido | Antes del coste de entrada | Tras la entrada (−3), antes | Antes de F12 (tras entrada) | Diferencia |
+|---|---|---|---|---|
+| Principal (`walk`) | 31 | 28 | 7 | +21 |
+| Persecución limpia (`sanity14`) | — | 40 | 30 | +10 |
+| Un error (la cara vista) | — | 37 | 27 | +10 |
+| Tres errores (herida) | — | 31 | 21 | +10 |
 
-La mejora es mayor en la ruta principal que en las de persecución porque, antes, la ruta principal tocaba cero y perdía puntos que no contaban; ahora no toca cero antes de la confrontación. Tras la confrontación, la cordura queda en 2 en la ruta principal (−10 y −15 aplicados por completo).
+La ruta principal gana más (+21) que las persecuciones (+10) porque antes tocaba cero y perdía puntos.
 
-**Rutas y guardados comprobados** (`tests/scenarios/sanity14.js`):
-- Las tres persecuciones llegan a Greaves entre 25 y 45 (43, 40 y 34).
-- Un segundo vistazo a los frascos no cuesta: el primero cobra 4 y el segundo 0 (coste pagado una vez).
-- Un guardado antiguo con 33 carga con 40: igual que antes del cambio (la entrada al capítulo IV suma 7; ya existía). Ningún guardado se recalcula al cargar: los valores guardados se conservan.
-- Ninguna regla de progreso lee la cordura para bloquear nada: solo ajusta pistas de ayuda (beats, golpes), la mención de Watkins y Greaves, y la intensidad de visión. No hay softlock posible por este cambio.
+**Comprobado** (`walkthrough.js` y `sanity14.js`):
+- La ruta principal llega a Greaves entre 25 y 35 tras la entrada (28).
+- Las tres persecuciones llegan entre 25 y 45 (40, 37, 31).
+- Un segundo vistazo a los frascos no cuesta: el primero, 4; el segundo, 0.
+- Un guardado antiguo con 33 carga con 40, igual que en HEAD: +10 por la entrada al capítulo IV y −3 por la entrada a Greaves. Los guardados no se recalculan al cargar.
+- No hay softlock posible: ninguna regla de progreso lee la cordura.
 
-**Lo que no se ha medido:** una partida de exploración completa con errores de deducción variados; el efecto sobre la experiencia real (eso es F17). Un jugador que haga más deducciones erróneas perderá 4 por cada una (antes 6): la distribución es más generosa con esas ramas, y se debe revisar con jugadores.
-
-**Revisión:** pendiente del revisor independiente (Opus 5.5). Si la revisión pide otra distribución, se ajusta y se vuelve a medir con `sanity14.js`.
+**No medido:** una partida exploratoria completa con errores de deducción variados (los errores cuestan 4 cada uno, y son la rama que más varía); el efecto real de las bandas en un jugador (eso es F17).
 
 ## Opción B — no aplicada
 

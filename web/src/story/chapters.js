@@ -50,9 +50,11 @@ export function makeChapters() {
       G.flag('fs_1888', false);
       look(G, 'child');
       G.game.r.fx.fade = 1;
-      await G.card('', 'Limehouse', 'Octubre de 1866', 3000);
+      // the title card and the fade into the shore run together: the first control comes sooner, and nothing is cut
+      const card = G.card('', 'Limehouse', 'Octubre de 1866', 2600);
       await G.goto('foreshore', { x: 480, facing: 1, fade: false });
       await G.fade(0, 1800);
+      await card;
       await G.narrate('Nat no llegó a cumplir diez años.');
       await G.think('Si el río puede devolver un barco, puede devolver algo más.');
       G.objective('Buscar el barquito de Nat en el barro, junto al embarcadero.');
@@ -85,7 +87,7 @@ export function makeChapters() {
       G.game.r.fx.fade = 1;
       await G.doc(`<h3>RECORTE DE PRENSA — SEPTIEMBRE DE 1888</h3>
         <p>El 31 de agosto, una compañera del asilo de Lambeth reconoció a la mujer de Buck's Row: Mary Ann Nichols, a quien llamaban «Polly». Tenía cinco hijos. La noche del crimen el encargado del alojamiento le negó la cama: no tenía los cuatro peniques. Ella dijo que conseguiría el dinero, y mencionó su sombrero nuevo.</p>
-        <p>Emily Holland, con quien se cruzó en Osborne Street, declaró que no tardaría en regresar.</p>`);
+        <p>Emily Holland, con quien se cruzó en Osborne Street, declaró que la víctima le dijo que no tardaría en regresar.</p>`);
       await G.card('Capítulo II', 'El delantal de cuero', '29 Hanbury Street, 8 de septiembre de 1888', 4200);
       await G.goto('hanbury', { x: 240, facing: 1, fade: false });
       await G.fade(0, 1500);

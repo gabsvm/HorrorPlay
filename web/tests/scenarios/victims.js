@@ -54,7 +54,7 @@ export async function run(opts) {
     let m = MENUS.length;
     await act('pike', null, ['Quién era ella']);
     need(game.state.flags.pike_polly === true, 'La opción deja pike_polly');
-    need(says(/Lleva un sombrero de paja negro; parece nuevo\. Alguien lo eligió con cuidado\./), 'La línea del sombrero se dice');
+    need(says(/Tiene al lado un sombrero de paja negro; parece nuevo\. Alguien lo eligió con cuidado\./), 'La línea del sombrero se dice');
     need(!says(/cinco hijos|peniques|encargada/), 'Ningún dato de vida en la escena');
     // the menu again, closed with «Nada más»: the notebook is offered, the woman's question is not
     m = MENUS.length;

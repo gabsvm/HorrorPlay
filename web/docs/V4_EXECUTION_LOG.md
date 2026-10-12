@@ -1390,3 +1390,35 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - Resultado: llegada a Greaves en la ruta principal 10 → 34; persecución limpia 30 → 43; un error 27 → 40; tres errores 21 → 34. Tras la confrontación, la ruta principal queda en 2.
 - Comprobado: `tests/scenarios/sanity14.js` (las tres persecuciones entre 25 y 45; un segundo vistazo a los frascos no cuesta; un guardado antiguo carga como antes).
 - Revisión del observador: pendiente de esta entrada (ver el commit). `test-all`: 39 PASS, 0 FAIL.
+
+## F10 y F11 (plano 1, introducción) — apertura de unos 13 segundos, 2026-10-11
+
+- **Decisión del autor:** primer control en 30 s o menos en la reproducción automatizada normal, sin saltar la introducción; apertura cinematográfica de unos 10–15 s; conservar el cuaderno hallado, las dos caligrafías y la firma; el registro completo, fuera de la apertura.
+- `story/intro.js`: la apertura son tres planos. (1) «Hallado en el desagüe del Black Ditch. Dos caligrafías.» (2) Una línea sobre Whitechapel bajo la lluvia, con el encuadre que se desplaza despacio. (3) La primera página en su mano y la firma. Silencio antes de la página. Unos 13 s en total.
+- El registro policial completo sale del intro y queda en el menú (`Registro de efectos`, título y pausa), como documento de 1888 y no como objeto de Thomas (`recordHtml`).
+- Movimiento reducido: el encuadre de la calle se mantiene fijo (medido en el navegador: con movimiento normal el foco pasa de 2018 a 1718; con movimiento reducido, se queda en 2100). Para que sea verdad, la intro quita el balanceo del menú (`menuPan`) al empezar.
+- `story/chapters.js` (prólogo): la tarjeta «Limehouse» y el fundido a la orilla se solapan (la tarjeta dura 2,6 s); el control llega antes sin cortar ninguna línea.
+- **Medido con `pacing-bench.mjs` (3 partidas):** primer control 29,4 s (mediana; 29,1 a 29,8 s). La apertura termina a 15,5 s. Antes de F10 era 52,7 s.
+- **Pulsar para avanzar:** en la apertura no hay decisiones. Una pulsación la salta; una segunda pulsación en 600 ms no la salta. Los escuchadores de la apertura se retiran antes de la firma y de cualquier decisión (`finally`).
+- **Capturas:** 1280×720 (hallado, calle, página) y 1920×1080 (calle; `intro-1920x1080-street.png`), en el directorio de trabajo, no versionadas.
+- **Pendiente:** la captura de 1920×1080 de la página y la verificación en un dispositivo táctil.
+
+## F12 — correcciones tras la revisión del observador, 2026-10-11
+
+- Mitre: la cara (−4) y el vientre (−5) vuelven a sus valores anteriores. La rebaja no devuelve Mitre a strained: ya sube sobre 65 por las rebajas anteriores (medido: Mitre 61 → 76). Se documenta el cambio de banda.
+- La curva de `V4_SANITY_CURVE.md` se ha vuelto a medir con `walk` y con `sanity14`; se incluyen las bandas de cada escena y sus efectos en la percepción. Las cifras antiguas (llegada 34 y «+7») se corrigen: la llegada a Greaves, tras el coste de entrada, es 28 en la ruta principal; antes del coste de entrada, 31.
+- `walkthrough.js` exige que la ruta principal llegue a Greaves con 25–35 tras la entrada (medido: 28).
+- `sanity14.js`: las persecuciones llegan a Greaves con 40, 37 y 31 tras la entrada (antes 30, 27 y 21).
+
+## F15 — correcciones tras la revisión del observador, 2026-10-11
+
+- Pike (`bucks_row.js`): «Tiene al lado un sombrero de paja negro…» (antes «Lleva…»), para que coincida con el dibujo y con el recuerdo de Thomas. Corrección de palabra, no de hecho (ver H-39).
+- Recuerdo de Thomas: «La llamaban Polly.» (antes «Se llamaba Polly.»), misma idea, sin afirmar un nombre de pila que la prensa no da en esa forma.
+- Epílogo: no hay cambio. El recorte del capítulo II (`chapters.js`): «Emily Holland, con quien se cruzó en Osborne Street, declaró que la víctima le dijo que no tardaría en regresar.» (antes, el sujeto podía leerse como Holland).
+- Los cuatro peniques: no aparecen en *The Times* ni en la *Eastern Argus* leídas; quedan como **decisión del autor** sobre una fuente secundaria (ver H-38).
+- Grafías y «bonnet»: `Osborne` es la grafía de la prensa leída; `bonnet` se traduce como «sombrero» (decisión, H-38).
+
+## Estado de revisión
+
+- Las correcciones de F12 y F15 se han enviado a la revisión del observador (ver el mensaje de revisión; pendiente de veredicto en el momento de este commit).
+- `test-all`: 39 PASS, 0 FAIL.

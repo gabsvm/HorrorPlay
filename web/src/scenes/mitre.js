@@ -202,7 +202,7 @@ export default {
               await G.think('Las marcas no la mataron. Las hizo después.');
               await G.think('Tenía menos de quince minutos para hacerlas.');
               G.clue('marcas');
-              G.sanityOnce('mitre_cara', -3);
+              G.sanityOnce('mitre_cara', -4);
             } },
             { id: 'cuello', x: 360, y: 337, r: 45, name: 'El cuello', act: async (G) => {
               await G.think('Otra vez de izquierda a derecha.');
@@ -211,7 +211,7 @@ export default {
               G.red(0.5); G.shake(4);
               await G.think('Repite el orden de Hanbury.');
               await G.think('Falta un riñón... ¿Por qué ya lo sabía?');
-              G.sanityOnce('mitre_vientre', -3);
+              G.sanityOnce('mitre_vientre', -5);
             } },
             { id: 'delantal', x: 1110, y: 536, r: 70, name: 'El delantal', act: async (G) => {
               await G.think('Falta una esquina; el corte es limpio.');

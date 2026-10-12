@@ -185,7 +185,7 @@ export default {
           pike.talking = false;
         } else if (c === 'polly') {
           G.flag('pike_polly', true);
-          await G.say('Pike', 'Lleva un sombrero de paja negro; parece nuevo. Alguien lo eligió con cuidado.');
+          await G.say('Pike', 'Tiene al lado un sombrero de paja negro; parece nuevo. Alguien lo eligió con cuidado.');
           pike.talking = false;
         } else if (c === 'notes') {
           G.flag('pike_notes', true);
@@ -262,7 +262,7 @@ export default {
         // the second reading only: Thomas's own memory of the morning, not a line of anyone else (V4-15)
         if (G.second() && !G.flag('s2_polly')) {
           G.flag('s2_polly', true);
-          await G.think('Recuerdo el sombrero junto a su cuerpo. Recuerdo mejor el sombrero que su rostro. Se llamaba Polly.');
+          await G.think('Recuerdo el sombrero junto a su cuerpo. Recuerdo mejor el sombrero que su rostro. La llamaban Polly.');
         }
         // the points sit on the painted close-up (assets/closeups/nichols.jpg)
         await G.inspect('polly', {
