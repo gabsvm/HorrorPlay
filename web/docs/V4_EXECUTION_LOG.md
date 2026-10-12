@@ -1429,3 +1429,5 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - Comprobado: sintaxis, `walk` y `walk second` en PASS; `test-all` en PASS.
 - **No comprobado:** la captura de la aparición en el navegador. Un salto directo a la puerta (`?scene=goulston`) llega primero a la persecución de Agente Long, así que no se consiguió el momento de la tiza; la captura de prueba se descartó. Pendiente: capturar la visión en 1280×720 y 1920×1080 y verificar el modo reducido.
 - Plano 3 (mesa de Wexley y sesión), plano 4 (expediente y confrontación) y plano 5 (firma en JACK): pendientes.
+
+- Revisión del observador sobre d375728 (por lectura): APPROVE del encuadre y el silencio. Dos puntos atendidos después: (1) la música «dread» de la escena no se apagaba con `setBeds`; ahora la apertura de la visión la detiene (`playMusic(null)`, se apaga en unos 2,5 s) y la vuelve a poner al terminar; (2) el regreso de los fondos usa la misma forma que `game.js` (objeto o función). Comprobado con `walk`, `walk second` y `test-all` (39 PASS), no en audio real. Pendiente: escucharlo en un navegador con sonido.

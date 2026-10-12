@@ -151,11 +151,15 @@ export default {
         await G.think(G.two('En el ladrillo mojado, junto a la jamba, creo leer HERE I AM. Parpadeo y es solo agua.', 'En el ladrillo mojado, letra inclinada. Reconozco la A antes de leer la frase.'));
         // the close framing of the jamb and the silence of the apparition (F11, shot 2): with reduced motion the frame stays still
         if (!prefs.reduceMotion) G.zoom(1.6, 950, G.scene.groundY - 150, 0.6);
+        // the beds and the dread track are both silent through the apparition (the track fades out and starts again after)
         G.audio.setBeds({ rain: 0, wind: 0, drone: 0 }, 0.8);
+        G.audio.playMusic(null);
         await G.vision('chalk');
         if (!G.second()) await G.think(G.flag('answered1866') ? 'Lo dije yo. Hace veintidós años.' : '¿Lo he leído o lo he oído?');
         G.zoom(1);
-        G.audio.setBeds(G.scene.beds, 1.5);
+        const beds = G.scene.beds;
+        G.audio.setBeds((typeof beds === 'function' ? beds(G) : beds) || {}, 1.5);
+        G.audio.playMusic(G.scene.music || null);
         // 3. the clue that names what he read
         G.clue('aqui_estoy');
         // 4. the cost
