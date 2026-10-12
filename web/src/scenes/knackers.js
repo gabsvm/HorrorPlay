@@ -308,6 +308,10 @@ export default {
         if (!G.flag('wren_met')) {
           G.flag('wren_met', true);
           await G.walk(1640);
+          // the first meeting: a middle framing on the girl on the boxes, in silence (F11, «Primer encuentro con Wren»)
+          G.zoom(1.25, 1560, G.scene.groundY - 150, 0.8);
+          G.audio.setBeds({}, 0.5);
+          G.audio.playMusic(null, 0.5);
           await G.say('Niña', 'No se acerque.');
           w.talking = false;
           await G.walk(1760);
@@ -317,6 +321,9 @@ export default {
           await G.say('Niña', 'Ya. Por eso.');
           await G.say('Wren', 'Wren. Lo que encuentro en el fango se paga.');
           w.talking = false;
+          G.zoom(1);
+          { const beds = G.scene.beds; G.audio.setBeds((typeof beds === 'function' ? beds(G) : beds) || {}, 1.5); }
+          G.audio.playMusic(G.scene.music || null);
           if (G.has('penique')) {
             const c = await G.choice(['Dejarle el penique en el poste.', 'Ahora no.']);
             if (c === 0) { await payWren(G); return; }

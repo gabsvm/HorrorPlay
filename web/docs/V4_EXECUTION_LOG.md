@@ -1457,3 +1457,12 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - Comprobado en Chrome headless llamando a la pantalla de la firma con «Thomas Ashgrove»: a 1280×720 y 1920×1080, a mitad de la transformación se lee «Thom» y termina en «Jack» unos 5,6 s después de pulsar «Firmar» (el plano pide 10 s como máximo). Capturas no versionadas.
 - Movimiento reducido: el acercamiento del epílogo ya no actúa (`G.zoom`, desde f45bdf7); la transformación es un cambio de letras, sin movimiento de cámara.
 - No comprobado: el epílogo completo en el navegador y el silencio al oído. `test-all`: 39 PASS.
+
+- Revisión del observador sobre f45bdf7 y e297124 (por lectura): APPROVE, sin P0, P1 ni P2. Anotado: el paneo de la intro mantiene su propia comprobación de movimiento reducido porque mueve `camFocus`, no `G.zoom`; el silencio de la firma dura lo que tarde el jugador en escribir (vigilar en F17).
+
+## F11 (planos de Polly, Wren y Annie), 2026-10-12
+
+- **Hallazgo de Polly** (`scenes/bucks_row.js`, entrada): mientras habla Pike, encuadre medio (zoom 1,2) que abarca el cuerpo, la lámpara, a Pike, a Neil y a Thomas, con los fondos y la música «dread» en silencio; vuelven con el objetivo. Capturas a 1280×720 y 1920×1080; con movimiento reducido, sin zoom.
+- **Primer encuentro con Wren** (`scenes/knackers.js`): desde «No se acerque.» hasta su nombre, encuadre medio (zoom 1,25) sobre la niña en las cajas y silencio; después vuelven el encuadre y el sonido. Capturas a 1280×720 y 1920×1080; con movimiento reducido, sin zoom.
+- **Examen de Annie** (`scenes/hanbury.js`): el primer plano ya es el pintado de la inspección; se añade silencio (fondos y música) mientras dura y la vuelta del sonido al cerrarlo. Sin captura.
+- Ningún encuadre tapa pruebas, personajes ni subtítulos en las capturas. Nada escuchado con sonido. `test-all`: 39 PASS.

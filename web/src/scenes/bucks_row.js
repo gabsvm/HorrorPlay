@@ -147,10 +147,17 @@ export default {
     await G.walk(1180);
     const pike = G.actor('Pike');
     pike.facing = 1;
+    // the finding: a middle framing on the body, the lamp, Pike and Thomas, in silence while Pike speaks (F11, «Hallazgo de Polly»)
+    G.zoom(1.2, 920, G.scene.groundY - 110, 0.8);
+    G.audio.setBeds({}, 0.5);
+    G.audio.playMusic(null, 0.5);
     await G.say('Pike', 'Inspector. No pise junto al portón.');
     await G.say('Pike', 'No lleva papeles. Hasta que el forense la vea, no hay nombre.');
     await G.say('Ashgrove', '¿Quién la vio primero?');
     await G.say('Pike', 'Dos carreteros, sobre las tres cuarenta. Neil llegó detrás. Aún discuten cuál la encontró.');
+    G.zoom(1);
+    G.audio.playMusic(G.scene.music || null);
+    { const beds = G.scene.beds; G.audio.setBeds((typeof beds === 'function' ? beds(G) : beds) || {}, 1.5); }
     G.objective('Examinar el cuerpo. Hablar con Pike, con Neil y con el chico.');
   },
 
