@@ -8,6 +8,7 @@ import { playIntro } from './intro.js';
 import { canFinishC1, canEnterFinale } from './progression.js';
 import { perception, perceptionBand } from './perception.js';
 import { chaseStreet } from './data.js';
+import { prefs } from '../engine/prefs.js';
 
 const LOOKS = {
   child: { hat: 'cap', coat: '#3a342c', coatLen: 0.62, flare: 1.05, build: 0.9, speed: 120, lantern: false, collarUp: false, patches: true, scarf: '#5a2a22', sideburns: false, hair: '#2a1e16', gloves: null, stubble: null },
@@ -339,6 +340,11 @@ export function makeChapters() {
         w.talking = false;
         await G.say('Ashgrove', 'Un peine de bolsillo. Dos púas rotas. Estaba apartado de sus otras cosas.');
       }
+      // before the session: the framing comes to the table and the room falls silent for a breath, before Wexley speaks
+      // (F11, shot 3); with reduced motion the frame stays where it is
+      if (!prefs.reduceMotion) G.zoom(1.25, s.tableX ?? 760, s.groundY - 120, 0.9);
+      G.audio.setBeds({ room: 0, drone: 0 }, 0.8);
+      await G.wait(1200);
       w.talking = true;
       await G.say('Madame Wexley', 'Pongan las manos en la mesa. No suelten a nadie.');
       w.talking = false;
@@ -390,6 +396,7 @@ export function makeChapters() {
       G.clue('alguien_detras');
       G.sanity(-6);
       G.flag('seance_done', true);
+      G.zoom(1);   // the framing of the session ends with it
       G.cinema(false);
       await G.think('Había alguien detrás de mí. O lo vio Wexley. O quiso que yo lo creyera.');
       G.objective(G.hasClue('hospes') ? 'Salir a Fournier Street.' : 'Leer los golpes de la mesa. En la pared había una tabla de letras.');

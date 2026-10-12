@@ -115,7 +115,8 @@ export class Game {
 
   // Frame a dialogue: push in a little on the speaker, or between the two people talking.
   frameDialogue(npc, z = 1.08) {
-    if (this.zoomTarget?.hold || !this.player.visible || window.FAST) return;
+    // with reduced motion the camera does not push in on a conversation (F11: no frame changes in that mode)
+    if (this.zoomTarget?.hold || !this.player.visible || window.FAST || prefs.reduceMotion) return;
     const p = this.player, x = npc ? (npc.x + p.x) / 2 : p.x;
     this.zoomTarget = { z, x, y: this.scene.groundY - p.h * 0.6, speed: 1.2 };
   }

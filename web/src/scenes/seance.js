@@ -18,6 +18,7 @@ export default {
   spawn: 240,
   surface: 'wood',
   space: 'parlour',
+  tableX: TABLE_X,   // where the session's table stands: the framing of the séance centres on it (F11, shot 3)
   // (the mantel clock stopped at a quarter past three: no ticking here)
   indoor: true,
   reflectY: GROUND + 6,

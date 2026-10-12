@@ -1435,3 +1435,10 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - Revisión del observador sobre 5035df1 (por lectura): REQUEST_CHANGES por tiempos. Corregido: primero se silencian los fondos (0,8 s) y la música (`playMusic(null, 0.6)`, nueva duración de fundido; el valor por defecto de 2,5 s sigue para los cambios de escena); después 0,9 s de espera; luego la visión; y 1,5 s de silencio tras ella, en las dos lecturas. Solo entonces vuelven los fondos y la pista de la escena. Con movimiento reducido el silencio llega igual. Al volver, la pista de la escena empieza de nuevo con su entrada de 3 s (anotado, como indicó el observador). Pendiente: escucharlo en un navegador con sonido.
 
 - Revisión del observador sobre 219af8d (por lectura): APPROVE del orden. Comprobado: la escena de Goulston no tiene emisores de escena (no define `sounds`). Pendiente de escuchar: la capa de ciudad (`setSpace`) y los sonidos de los objetos vivos de la escena (Drip, Rat, Cat) siguen sonando durante el silencio si suenan; si se quiere silencio total, hay que decidirlo al oído.
+
+## F11 (plano 3, mesa de Wexley y sesión), 2026-10-11
+
+- `story/chapters.js` (`seance`): antes de que Wexley pida las manos, el encuadre va a la mesa a media distancia (zoom 1,25 centrado en `tableX`, nuevo dato de la escena en `scenes/seance.js`) y la sala calla un momento (fondos a cero en 0,8 s, 1,2 s de espera). Los fondos de la sesión vuelven con su línea siguiente, como antes. Al terminar la sesión el encuadre vuelve a 1.
+- Movimiento reducido: sin zoom. Además, `frameDialogue` (`engine/game.js`), el acercamiento suave que el juego hacía en cualquier diálogo, ya no actúa con movimiento reducido en ninguna escena.
+- Comprobado en Chrome headless, en la primera línea de Wexley: zoom 1,25 con movimiento normal (capturas a 1280×720 y 1920×1080, no versionadas); zoom 0 con movimiento reducido. El encuadre no tapa la mesa, los personajes ni el subtítulo.
+- `walk`, `walk second` y `test-all` (39 PASS). No escuchado en un navegador con sonido.
