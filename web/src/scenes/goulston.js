@@ -5,6 +5,7 @@ import { nightBackdrop, facade } from '../art/build.js';
 import { P } from '../art/palette.js';
 import { Actor } from '../engine/actor.js';
 import { Smoke, Drip, Rat, Cat, Moths, Ripples } from '../engine/life.js';
+import { prefs } from '../engine/prefs.js';
 
 const WIDTH = 1900, GROUND = 628;
 
@@ -148,8 +149,13 @@ export default {
         // 2. what Thomas thinks he reads, then the flash of it. The tension holds through the reading.
         G.mad(0.5);
         await G.think(G.two('En el ladrillo mojado, junto a la jamba, creo leer HERE I AM. Parpadeo y es solo agua.', 'En el ladrillo mojado, letra inclinada. Reconozco la A antes de leer la frase.'));
+        // the close framing of the jamb and the silence of the apparition (F11, shot 2): with reduced motion the frame stays still
+        if (!prefs.reduceMotion) G.zoom(1.6, 950, G.scene.groundY - 150, 0.6);
+        G.audio.setBeds({ rain: 0, wind: 0, drone: 0 }, 0.8);
         await G.vision('chalk');
         if (!G.second()) await G.think(G.flag('answered1866') ? 'Lo dije yo. Hace veintidós años.' : '¿Lo he leído o lo he oído?');
+        G.zoom(1);
+        G.audio.setBeds(G.scene.beds, 1.5);
         // 3. the clue that names what he read
         G.clue('aqui_estoy');
         // 4. the cost

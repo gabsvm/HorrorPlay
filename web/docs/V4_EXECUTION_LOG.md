@@ -1422,3 +1422,10 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 
 - Las correcciones de F12 y F15 se han enviado a la revisión del observador (ver el mensaje de revisión; pendiente de veredicto en el momento de este commit).
 - `test-all`: 39 PASS, 0 FAIL.
+
+## F11 (plano 2, Goulston y la aparición de HERE I AM), 2026-10-11
+
+- Implementado en `scenes/goulston.js`: antes de la visión de la tiza, un encuadre cercano a la jamba (zoom 1,6 hacia el portal) y silencio de los fondos; después, el encuadre vuelve a 1 y los fondos de la escena regresan. Con movimiento reducido no hay zoom: el encuadre queda fijo.
+- Comprobado: sintaxis, `walk` y `walk second` en PASS; `test-all` en PASS.
+- **No comprobado:** la captura de la aparición en el navegador. Un salto directo a la puerta (`?scene=goulston`) llega primero a la persecución de Agente Long, así que no se consiguió el momento de la tiza; la captura de prueba se descartó. Pendiente: capturar la visión en 1280×720 y 1920×1080 y verificar el modo reducido.
+- Plano 3 (mesa de Wexley y sesión), plano 4 (expediente y confrontación) y plano 5 (firma en JACK): pendientes.

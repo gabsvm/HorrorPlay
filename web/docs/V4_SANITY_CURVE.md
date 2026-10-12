@@ -27,13 +27,13 @@ Antes, la ruta principal tocaba cero antes de la confrontación de Greaves y lo 
 
 Por `story/perception.js` y su uso (no hay ninguna regla de progreso que lea la cordura: `progression.js` solo la acota):
 
-- **steady (≥ 65)**: en los cuerpos se marcan con más claridad los puntos clave (`forensicMarks`, `game.js`); en el cuaderno, una pregunta mal contestada se señala tras una sola falta, no tras dos (`beatsHelpAfter`); no hay susurros.
+- **steady (≥ 65)**: en los cuerpos se marcan con más claridad los puntos clave (`forensicMarks`, `game.js`); en la hoja de rondas de Pike, la ayuda llega tras una sola falta, no tras dos (`beatsHelpAfter`, `chapters.js`); no hay susurros.
 - **strained (36–64)**: susurros con probabilidad 0,15.
-- **frayed (≤ 35)**: susurros con probabilidad 0,35; los golpes se leen de entrada (`knockHelpStart`); el resplandor verde del agua; la duda de las teorías (`doubtTheories`, `ui.js`); la gente lo nota (`othersNotice`: Watkins, Greaves, el final).
+- **frayed (≤ 35)**: susurros con probabilidad 0,35; los golpes se leen de entrada (`knockHelpStart`); el resplandor verde del agua; la duda de las teorías (`doubtTheories`, `ui.js`); la gente lo nota (`othersNotice`: Watkins en Mitre, Greaves); en frayed y strained, el silencio del desagüe (`foreshore.js`) y la última frase de Wren.
 
 Cambios que resultan de la nueva curva en la ruta principal:
 - **Mitre pasa a steady**: se marcan los puntos clave del cuerpo y desaparecen los susurros de la escena. Esto hace Mitre más fácil de leer. Se revirtieron sus dos costes (cara −4 y vientre −5, como antes); no basta para devolverla a strained, porque la rebaja de las escenas anteriores ya la sube sobre 65.
-- **Goulston, la habitación c3b y la persecución pasan a strained**: desaparecen la duda de las teorías y la mención de «la gente lo nota» en esas escenas; los susurros bajan de 0,35 a 0,15.
+- **Goulston, la habitación c3b y la persecución pasan a strained**: desaparecen la duda de las teorías en esas escenas; los susurros bajan de 0,35 a 0,15.
 - **Greaves sigue en frayed** (28): la mención de Greaves («No duermes») y la lectura del final no cambian.
 
 ## Costes que se pagan una vez (F12, previo a la opción A)
@@ -65,7 +65,7 @@ Antes, doce objetos restaban cordura en cada vistazo. Una segunda pasada complet
 
 **Llegada a Greaves (medida):**
 
-| Recorrido | Antes del coste de entrada | Tras la entrada (−3), antes | Antes de F12 (tras entrada) | Diferencia |
+| Recorrido | Antes del coste de entrada | Tras la entrada (−3), ahora | Antes de la opción A (tras la entrada) | Diferencia |
 |---|---|---|---|---|
 | Principal (`walk`) | 31 | 28 | 7 | +21 |
 | Persecución limpia (`sanity14`) | — | 40 | 30 | +10 |
