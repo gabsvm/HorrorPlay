@@ -116,10 +116,14 @@ function call(n, depth) {
   if (f === 'choice' && a[0]) {
     // the options, or every list of options the argument can be (one per junction of a chase, say)
     let lists = [a[0]];
+    let prompts = [];   // the question over each list, when the choice is given one (a chase junction's q)
     if (a[0].type === 'Identifier') lists = [resolve(a[0]) || a[0]];
     if (a[0].type === 'MemberExpression' && !a[0].computed) {
       const o = a[0].object.type === 'Identifier' ? resolve(a[0].object) : null;
-      if (o && o.type === 'ArrayExpression') lists = o.elements.map((e) => prop(e, a[0].property.name)?.value).filter(Boolean);
+      if (o && o.type === 'ArrayExpression') {
+        lists = o.elements.map((e) => prop(e, a[0].property.name)?.value).filter(Boolean);
+        prompts = o.elements.map((e) => { const q = prop(e, 'q')?.value; return q ? str(q) : null; });
+      }
     }
     // both readings, or both arms of a condition, are two separate menus
     lists = lists.flatMap((l) => (l.type === 'ConditionalExpression' ? [l.consequent, l.alternate]
@@ -137,7 +141,8 @@ function call(n, depth) {
         return true;
       }
     }
-    for (const l of lists) {
+    for (const [i, l] of lists.entries()) {
+      if (prompts[i]) put(depth, `> **Pregunta:** ${clean(prompts[i])}`);
       const opts = l.type === 'ArrayExpression' ? l.elements.map((e, i) => `${i + 1}) ${variants(e).map(([, t]) => clean(t)).join(' | ')}`) : [`(se arman en el momento: ${src(l)})`];
       put(depth, `> **Elección:** ${opts.join('  ·  ')}`);
     }

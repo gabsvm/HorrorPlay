@@ -163,6 +163,7 @@ export class UI {
         if (k < 0) throw new Error(`Opción no disponible: «${want}» entre ${options.map((o) => `«${o}»`).join(', ')}`);
       }
       k = Math.min(k, options.length - 1);
+      if (prompt) (window.LOG ||= []).push(`  ? ${prompt}`);   // the question, so the script export carries it
       (window.LOG ||= []).push(`  > ${options[k]}`);
       return k;
     }

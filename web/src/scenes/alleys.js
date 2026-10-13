@@ -126,7 +126,7 @@ export default {
     this.gap = 520;
     G.player.speed = 260;
     const junctions = [
-      { x: 1100, at: 'wentworth', q: '¿Por dónde? En Wentworth Street se mueve una linterna de policía.', opts: ['Seguir recto, hacia la luz.', 'Meterse por Wentworth Street.'], good: 0 },
+      { x: 1100, at: 'wentworth', q: '¿Por dónde? En Wentworth Street se mueve una linterna de policía.', opts: ['Seguir recto, hacia las farolas.', 'Meterse por Wentworth Street.'], good: 0 },
       { x: 2200, at: 'flower_dean', q: 'Un silbato delante. Me están cortando el paso. Si me paro, me alcanzan.', opts: ['Agacharse detrás de los barriles.', 'Seguir corriendo.'], good: 1 },
       { x: 3300, at: 'thrawl', q: 'Thrawl Street. Mi casa está ahí. Si entro, sabrán dónde vivo.', opts: ['Ir a casa.', 'Seguir hacia el río.'], good: 1 },
     ];
@@ -138,7 +138,7 @@ export default {
       await G.walk(j.x - 80, { speed: 300 });
       G.audio.whistle(0.12);
       // the question is shown, and the clock leaves time to read it (more with slower text): the base is the shot table's 4.6 s (5.6 s on touch)
-      const time = Math.round(((touch ? 5600 : 4600) + 45 * j.q.length) * Math.max(1, prefs.text));
+      const time = Math.round(((touch ? 5600 : 4600) + 45 * (j.q.length + j.opts.join('').length)) * Math.max(1, prefs.text));
       const c = await G.choice(j.opts, { timeout: time, def: 1 - j.good, prompt: j.q });
       if (c !== j.good) {
         mistakes++;

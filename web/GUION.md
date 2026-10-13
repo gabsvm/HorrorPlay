@@ -926,8 +926,11 @@ _Archivo: src/scenes/alleys.js_
 
 ### Al entrar en la escena
 - [Objetivo] Alcanzar al abrigo oscuro.
-- > **Elección:** 1) Seguir recto, hacia la luz.  ·  2) Meterse por Wentworth Street.
+- > **Pregunta:** ¿Por dónde? En Wentworth Street se mueve una linterna de policía.
+- > **Elección:** 1) Seguir recto, hacia las farolas.  ·  2) Meterse por Wentworth Street.
+- > **Pregunta:** Un silbato delante. Me están cortando el paso. Si me paro, me alcanzan.
 - > **Elección:** 1) Agacharse detrás de los barriles.  ·  2) Seguir corriendo.
+- > **Pregunta:** Thrawl Street. Mi casa está ahí. Si entro, sabrán dónde vivo.
 - > **Elección:** 1) Ir a casa.  ·  2) Seguir hacia el río.
 
 ## Secuencias de la historia (capítulos, transiciones, final)
