@@ -50,7 +50,7 @@ export async function run(opts) {
     game.openInventory();
     const saved = JSON.stringify(game.state);
     ui._invClose();
-    need(!/inv-modal|inventoryOpen/.test(saved), 'el estado no debe guardar el inventario abierto');
+    need(!/inv-modal|inventoryOpen|selectedItem/.test(saved), 'el estado no debe guardar el inventario abierto ni el objeto en la mano');
 
     // using an object still works through a hotspot: the scalpel opens the drawer
     await act('drawer', 'bisturi');

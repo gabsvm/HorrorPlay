@@ -1499,3 +1499,41 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - **UX-03, Atrás de Android** (`main.js`): orden fijo — vista del objeto → inventario → documento (también en mitad de una escena) → inspección → cuaderno → menú de conversación cancelable → (una elección que no sea de conversación espera al jugador) → avance de diálogo → pausa. Escape también cierra documentos e inventario en el ordenador (`game.js`). Una decisión cronometrada congela su reloj si la app pasa a segundo plano (`ui.pauseClock`/`resumeClock`, `__appPause`/`__appResume`).
 - **Inventario modal** (`index.html`, `ui.js`, `game.js`, `styles.css`): se quita la barra inferior. El HUD muestra «Inventario (n)» (botón, o tecla I). El maletín es un diálogo modal (`role=dialog`, `aria-modal`, foco atrapado con Tab, Escape/Atrás cierran) con ranuras (icono y nombre) y un panel con Examinar, Usar y Cerrar: sin doble toque oculto. Examinar lee las palabras del objeto **dentro** del maletín (ejecuta su `examine` con un `G` que recoge las líneas, sin efectos). Usar cierra el maletín y deja el objeto en la mano, con un indicador pequeño y «Cancelar». Al recibir un objeto: aviso «Obtienes: X» y el botón responde; ya no vuela un icono a una barra. El estado abierto no se guarda; el HUD se rehace desde `state.items`. No se abre con un guion en marcha, en menú, con el cuaderno, en cinemática ni en la firma.
 - Comprobado en Chrome headless a 640×360 y 800×360 (táctil), 1280×720 y 1920×1080: el maletín cabe sin desplazamiento horizontal; objetivos de al menos 48 px; Examinar muestra el texto del bisturí; Atrás cierra; Usar + cajón abre el cajón y limpia la selección. Prueba nueva `inventory14.js`. `test-all`: 40 PASS.
+
+### Revisión de Opus de los bloques 1 y 2 (a56be40), y lo que se corrigió
+
+Veredicto: REQUEST_CHANGES, sin P0 ni P1. Se corrige:
+- Atrás ya no avanza una línea de diálogo (no se puede volver a leer).
+- Se quita la rama muerta `_itemDetailClose`. `_talkCancel` existe ahora de verdad: es el menú de conversación del bloque 3.
+- Con un objeto en la mano, Atrás lo suelta primero, igual que Escape.
+- Espacio no lanza «Revelar» detrás del maletín abierto.
+- Objetivos táctiles de 48 px en Inventario, Cuaderno y Cancelar.
+- `describeItem` anula toda escritura (pistas, objetos, cordura, flags, documentos, elecciones...), así que la pureza ya no depende de lo que hagan hoy los `examine`.
+- La prueba comprueba que `selectedItem` no se guarda.
+
+Quedan anotados P3 sin cambio: flechas en el listbox; nombres de ranura a 11–12 px; reloj pausado justo a 0.
+
+## Bloque 3: conversaciones con varios temas, 2026-10-13
+
+- **`G.talk(npc, topics)`** (`game.js`): el menú vuelve después de cada tema hasta «Nada más.», o hasta Atrás/Escape (`ui._talkCancel`, solo en estos menús, nunca en una elección cronometrada).
+- Cada tema tiene un id estable. Un tema ya oído se marca con «✓» y puede volver a oírse:
+  - `repeat` repite las palabras sin sus efectos (objetivo, pensamiento, cordura).
+  - Si no hay `repeat`, se repite `run`, cuyos efectos son idempotentes (pistas y flags).
+- Las acciones (hoja de rondas, libreta, cerrar la noche) cierran la conversación y no llevan marca.
+- **Guardado:**
+  - `state.conversationSeen["escena:personaje"]` guarda la lista de ids.
+  - `normalizeState` añade el registro y lo limpia; la migración es idempotente.
+  - En una partida antigua, `done(G)` reconoce como oído lo que sus flags o pistas dicen que se oyó.
+- **Aplicado a:**
+  - Pike en Buck's Row (médico, la mujer, la libreta, el desolladero, más las acciones) y Brennan (coartada y luego «¿No oyeron nada?»; mirar cómo trabaja).
+  - Watkins en Mitre Square.
+  - En Hanbury: Pike, Greaves y la Sra. Richardson, después de sus escenas de guion, que no cambian.
+  - Madame Wexley antes de la sesión.
+- **No se aplica a:** elecciones cronometradas, irreversibles o de escena (pregunta de Pike en Hanbury, primer encuentro con Greaves, Wexley después de la sesión).
+- **Pruebas:**
+  - Nuevo escenario `dialogue-topics`: médico → la mujer → médico otra vez → nada más; sin pista ni anotación duplicadas; el desolladero oído otra vez no devuelve el objetivo; la hoja de rondas solo tras Neil; las marcas sobreviven a reanudar; Brennan desbloquea por orden; migración de una partida antigua.
+  - Las pruebas que daban por hecho que un tema oído desaparecía se cambian a «se ofrece con ✓».
+  - Los recorridos eligen por texto, no por posición.
+- **Exportador del guion:** muestra cada conversación con sus temas, condiciones, palabras y «Oído otra vez».
+- **Comprobado en Chrome headless** a 640×360 (táctil) y 1280×720: menú con ✓, el tema nuevo se desbloquea, Atrás cierra sin dejar un guion colgado.
+- **Resultado:** `test-all` 41 PASS.

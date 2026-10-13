@@ -273,31 +273,30 @@ export default {
       id: 'brennan', name: 'Silas Brennan', cursor: 'talk', when: (G) => !isMob(G), rect: [1130, GROUND - 198, 110, 198], walk: 1330, face: -1,
       act: async (G) => {
         const b = G.actor('Brennan');
-        const opts = [];
-        if (!G.flag('br_alibi')) opts.push(['¿Dónde estaba a las tres y media?', 'alibi']);
-        if (!G.flag('br_heard') && G.flag('br_alibi')) opts.push(['¿No oyeron nada?', 'heard']);
-        if (!G.hasClue('brennan_zurdo')) opts.push(['(Mirar cómo trabaja)', 'look']);
-        if (canFinishC1(G.state).ok && !G.flag('c1_done')) opts.push(['Esto es todo por esta noche.', 'close']);
-        opts.push(['Nada más.', 'bye']);
-        const c = opts[await G.choice(opts.map((o) => o[0]))][1];
-        if (c === 'bye') return;
-        if (c === 'close') { await G.game.chapterHooks.closeC1(G, 'brennan'); return; }
-        if (c === 'look') {
-          G.clue('brennan_zurdo');
-          G.game.chapterHooks.c1Objective(G);
-          return;
-        }
-        b.talking = true; b.pose = null; b.facing = 1;
-        if (c === 'alibi') {
-          G.flag('br_alibi', true);
-          await G.say('Brennan', 'Aquí. Con tres hombres. Puede preguntarles. Ya lo hicieron sus agentes.');
-          await G.say('Brennan', 'Seis caballos, inspector. Un caballo no se despieza solo.');
-        } else if (c === 'heard') {
-          G.flag('br_heard', true);
-          await G.say('Brennan', 'Aquí dentro ni los gritos de los caballos dejan oír la calle.');
-          await G.say('Brennan', 'Pregúntele a la cría de las cajas. Ella ve lo que ustedes pasan por alto.');
-        }
-        b.talking = false;
+        // a conversation that stays open: what was heard is marked and can be heard again (G.talk)
+        await G.talk('brennan', [
+          { id: 'alibi', label: '¿Dónde estaba a las tres y media?', done: (G) => G.flag('br_alibi'), run: async (G) => {
+            G.flag('br_alibi', true);
+            b.talking = true; b.pose = null; b.facing = 1;
+            await G.say('Brennan', 'Aquí. Con tres hombres. Puede preguntarles. Ya lo hicieron sus agentes.');
+            await G.say('Brennan', 'Seis caballos, inspector. Un caballo no se despieza solo.');
+            b.talking = false;
+          } },
+          { id: 'heard', label: '¿No oyeron nada?', available: (G) => G.flag('br_alibi'), done: (G) => G.flag('br_heard'), run: async (G) => {
+            G.flag('br_heard', true);
+            b.talking = true; b.pose = null; b.facing = 1;
+            await G.say('Brennan', 'Aquí dentro ni los gritos de los caballos dejan oír la calle.');
+            await G.say('Brennan', 'Pregúntele a la cría de las cajas. Ella ve lo que ustedes pasan por alto.');
+            b.talking = false;
+          } },
+          // an observation, not a question: once made, there is nothing new to watch
+          { id: 'look', label: '(Mirar cómo trabaja)', available: (G) => !G.hasClue('brennan_zurdo'), run: async (G) => {
+            G.clue('brennan_zurdo');
+            G.game.chapterHooks.c1Objective(G);
+          } },
+          { id: 'close', label: 'Esto es todo por esta noche.', ends: true, available: (G) => canFinishC1(G.state).ok && !G.flag('c1_done'),
+            run: (G) => G.game.chapterHooks.closeC1(G, 'brennan') },
+        ]);
       },
     },
     {

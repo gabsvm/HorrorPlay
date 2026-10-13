@@ -160,6 +160,7 @@ export class Game {
       if (e.key === 'Escape') {
         if (this.ui._docClose) this.ui._docClose();
         else if (this.ui.notebookOpen) this.ui.closeNotebook();
+        else if (this.ui._talkCancel) this.ui._talkCancel();
         else if (this.selectedItem) this.selectItem(null);
         else if (this.onPause) this.onPause();
       }
@@ -167,7 +168,7 @@ export class Game {
     document.getElementById('btn-notebook').addEventListener('click', () => this.toggleNotebook());
     document.getElementById('btn-inv').addEventListener('click', (e) => { e?.stopPropagation?.(); this.openInventory(); });
     document.getElementById('btn-reveal').addEventListener('click', () => this.reveal());
-    window.addEventListener('keydown', (e) => { if (e.key === ' ' && !this.ui._advance && !this.running) { e.preventDefault(); this.reveal(); } });
+    window.addEventListener('keydown', (e) => { if (e.key === ' ' && !this.ui._advance && !this.running && !this.ui.inventoryOpen) { e.preventDefault(); this.reveal(); } });
   }
 
   reveal() {
@@ -349,7 +350,13 @@ export class Game {
     if (!def || !def.examine) return [];
     const lines = [];
     const plain = (t) => String(t ?? '').replace(/<[^>]+>/g, '');
+    // a reading only: whatever an examine might write (now or in a later version) goes nowhere
     const G2 = Object.create(this.G);
+    const nothing = () => false;
+    for (const k of ['clue', 'give', 'take', 'sanity', 'sanityOnce', 'doc', 'card', 'toast', 'objective', 'deduce', 'profile', 'walk', 'zoom', 'shake', 'flash', 'red', 'inspect', 'tipOnce']) G2[k] = nothing;
+    G2.choice = async () => 0;
+    G2.voice = async (t) => { lines.push(plain(t)); };
+    G2.flag = (k, v) => (v === undefined ? this.G.flag(k) : v);
     G2.think = async (t) => { lines.push(plain(t)); };
     G2.narrate = G2.think;
     G2.say = async (n, t) => { lines.push(plain(t)); };
@@ -826,6 +833,32 @@ export class Game {
       voice: (text, opts = {}) => { audio.whisper(2.2, 0.16); return game.ui.say(opts.name ?? '', text, { style: 'voice', ...opts }); },
       narrate: (text) => game.ui.say('', text, { style: 'thought' }),
       choice: (opts, o) => { game.ui.hideDialogue(); return game.ui.choice(opts, o); },
+      // An exploratory conversation (UX audit 675df9f): the menu comes back after each topic until the player
+      // says «Nada más» (or presses Back). topics: [{ id, label, available(G), done(G), run(G), repeat(G), ends }].
+      // A topic already heard is marked ✓ and can be heard again: `repeat` (or `run`, when its effects are
+      // idempotent) replays it without new effects. `done` recognises topics heard in a save from before the
+      // marks were kept. `ends` closes the conversation after the topic (a puzzle, closing the night).
+      // The marks are kept in state.conversationSeen["scene:npc"]. Never for a timed or irreversible choice.
+      talk: async (npc, topics, { exit = 'Nada más.' } = {}) => {
+        const key = `${game.scene.id}:${npc}`;
+        const marks = () => (game.state.conversationSeen[key] ||= []);
+        const heard = (t) => marks().includes(t.id) || !!t.done?.(G);
+        let asked = 0;
+        for (;;) {
+          // headless tests: once their picks run out after a topic, they leave the conversation
+          if (window.FAST && asked && !(window.PICKS || []).length) return null;
+          const open = topics.filter((t) => !t.available || t.available(G));
+          const labels = [...open.map((t) => (!t.ends && heard(t) ? '✓ ' : '') + t.label), exit];
+          game.ui.hideDialogue();
+          const k = await game.ui.choice(labels, { cancel: labels.length - 1 });
+          if (k >= open.length) return null;
+          const t = open[k], again = heard(t);
+          asked++;
+          await (again && t.repeat ? t.repeat(G) : t.run(G));
+          if (!marks().includes(t.id)) marks().push(t.id);
+          if (t.ends) return t.id;
+        }
+      },
       doc: (html) => game.ui.doc(html),
       card: (k, t, s, ms) => game.ui.card(k, t, s, ms),
       toast: (t) => game.ui.toast(t),

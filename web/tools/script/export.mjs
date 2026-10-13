@@ -148,6 +148,20 @@ function call(n, depth) {
     }
     return true;
   }
+  if (f === 'talk' && a[1] && a[1].type === 'ArrayExpression') {
+    // a conversation that stays open (G.talk): each topic with when it appears, what it says, and what it
+    // says when heard again
+    const exit = prop(a[2], 'exit');
+    put(depth, `> **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «${exit ? clean(str(exit.value)) : 'Nada más.'}»):`);
+    for (const t of a[1].elements) {
+      const label = prop(t, 'label'), avail = prop(t, 'available'), ends = prop(t, 'ends'), run = prop(t, 'run'), rep = prop(t, 'repeat');
+      const cond = avail ? ` _(si ${src(avail.value.body || avail.value).replace(/\bG\.(game\.)?/g, '')})_` : '';
+      put(depth + 1, `**${clean(str(label?.value) ?? '?')}**${cond}${ends ? ' _(cierra la conversación)_' : ''}`);
+      if (run) walk(run.value, depth + 2);
+      if (rep) { put(depth + 2, '_Oído otra vez:_'); walk(rep.value, depth + 3); }
+    }
+    return true;
+  }
   if (f === 'doc' && a[0]) { put(depth, `[Documento] ${variants(a[0]).map(([, t]) => clean(t)).join(' | ')}`); return true; }
   if (f === 'card') { put(depth, `[Rótulo] ${a.slice(1, 3).map((x) => variants(x).map(([, t]) => clean(t)).join(' | ')).filter(Boolean).join(' — ')}`); return true; }
   if (f === 'objective' && a[0]) { put(depth, `[Objetivo] ${variants(a[0]).map(([, t]) => clean(t)).join(' | ')}`); return true; }

@@ -342,39 +342,32 @@ _Archivo: src/scenes/bucks_row.js_
 
 #### Sargento Pike `pike`
 **Al interactuar:**
-- > **Menú de conversación** (las opciones que aparecen según lo ya hecho):
-  - ¿Qué dijo el médico? _(si !hasClue('zurdo'))_
-  - ¿Quién era ella? _(si !flag('pike_polly'))_
-  - ¿Qué apunta en esa libreta, Pike? _(si !flag('pike_notes') && flag('pike_polly'))_
-  - ¿Quién trabaja de noche por aquí? _(si hasClue('zurdo') && !flag('knackers_lead'))_
-  - La hoja de rondas de esta noche. _(si flag('neil_times') && !hasClue('ronda'))_
-  - Déjeme ver su libreta, Pike. _(si second() && flag('pike_notes') && !flag('pike_book_read'))_
-  - Cerramos por esta noche, Pike. _(si canFinishC1(state).ok && !flag('c1_done'))_
-  - Nada más.
-- _Si c === 'book':_
-  - **Pike:** ...Tome. No tengo nada que esconderle.
-- _Si c === 'doc':_
-  - **Pike:** Llewellyn cree que los cortes podrían ser de un zurdo.
-  - [+ Pista al cuaderno: zurdo]
-  - **Pike:** Dice que conocía el cuerpo. No es una afirmación que haga a la ligera.
-  - [+ Pista al cuaderno: anatomia]
-- _Si no:_
-  - _Si c === 'polly':_
+- > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
+  - **¿Qué dijo el médico?**
+    - **Pike:** Llewellyn cree que los cortes podrían ser de un zurdo.
+    - [+ Pista al cuaderno: zurdo]
+    - **Pike:** Dice que conocía el cuerpo. No es una afirmación que haga a la ligera.
+    - [+ Pista al cuaderno: anatomia]
+  - **¿Quién era ella?**
     - **Pike:** Tiene al lado un sombrero de paja negro; parece nuevo. Alguien lo eligió con cuidado.
-  - _Si no:_
-    - _Si c === 'notes':_
-      - **Pike:** Quién entra. Quién sale. A qué hora.
-      - **Thomas:** ¿También apunta cuándo llego yo?
-      - **Pike:** Cuatro y doce. Lo mandé llamar a las cuatro.
-    - _Si no:_
-      - _Si c === 'beats':_
-        - **Pike:** Aquí la tiene, señor. Las horas de todos, y lo que declaran.
-      - _Si no:_
-        - _Si c === 'lead':_
-          - [Objetivo] Ir al desolladero de Winthrop Street, hacia el oeste.
-          - **Pike:** Barber tiene un desolladero en Winthrop Street. No cierra de noche.
-          - **Thomas:** ¿Armas?
-          - **Pike:** Allí hasta el aprendiz lleva cuchillo.
+  - **¿Qué apunta en esa libreta, Pike?** _(si flag('pike_polly'))_
+    - **Pike:** Quién entra. Quién sale. A qué hora.
+    - **Thomas:** ¿También apunta cuándo llego yo?
+    - **Pike:** Cuatro y doce. Lo mandé llamar a las cuatro.
+  - **¿Quién trabaja de noche por aquí?** _(si hasClue('zurdo'))_
+    - [Objetivo] Ir al desolladero de Winthrop Street, hacia el oeste.
+    - **Pike:** Barber tiene un desolladero en Winthrop Street. No cierra de noche.
+    - **Thomas:** ¿Armas?
+    - **Pike:** Allí hasta el aprendiz lleva cuchillo.
+    - _Oído otra vez:_
+      - **Pike:** Barber tiene un desolladero en Winthrop Street. No cierra de noche.
+      - **Thomas:** ¿Armas?
+      - **Pike:** Allí hasta el aprendiz lleva cuchillo.
+  - **La hoja de rondas de esta noche.** _(si flag('neil_times') && !hasClue('ronda'))_ _(cierra la conversación)_
+    - **Pike:** Aquí la tiene, señor. Las horas de todos, y lo que declaran.
+  - **Déjeme ver su libreta, Pike.** _(si second() && flag('pike_notes') && !flag('pike_book_read'))_ _(cierra la conversación)_
+    - **Pike:** ...Tome. No tengo nada que esconderle.
+  - **Cerramos por esta noche, Pike.** _(si canFinishC1(state).ok && !flag('c1_done'))_ _(cierra la conversación)_
 
 #### Agente Neil `neil`
 **Al interactuar:**
@@ -444,21 +437,16 @@ _Archivo: src/scenes/knackers.js_
 #### Silas Brennan `brennan`
 _Aparece si: !isMob(G)_
 **Al interactuar:**
-- > **Menú de conversación** (las opciones que aparecen según lo ya hecho):
-  - ¿Dónde estaba a las tres y media? _(si !flag('br_alibi'))_
-  - ¿No oyeron nada? _(si !flag('br_heard') && flag('br_alibi'))_
-  - (Mirar cómo trabaja) _(si !hasClue('brennan_zurdo'))_
-  - Esto es todo por esta noche. _(si canFinishC1(state).ok && !flag('c1_done'))_
-  - Nada más.
-- _Si c === 'look':_
-  - [+ Pista al cuaderno: brennan_zurdo]
-- _Si c === 'alibi':_
-  - **Brennan:** Aquí. Con tres hombres. Puede preguntarles. Ya lo hicieron sus agentes.
-  - **Brennan:** Seis caballos, inspector. Un caballo no se despieza solo.
-- _Si no:_
-  - _Si c === 'heard':_
+- > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
+  - **¿Dónde estaba a las tres y media?**
+    - **Brennan:** Aquí. Con tres hombres. Puede preguntarles. Ya lo hicieron sus agentes.
+    - **Brennan:** Seis caballos, inspector. Un caballo no se despieza solo.
+  - **¿No oyeron nada?** _(si flag('br_alibi'))_
     - **Brennan:** Aquí dentro ni los gritos de los caballos dejan oír la calle.
     - **Brennan:** Pregúntele a la cría de las cajas. Ella ve lo que ustedes pasan por alto.
+  - **(Mirar cómo trabaja)** _(si !hasClue('brennan_zurdo'))_
+    - [+ Pista al cuaderno: brennan_zurdo]
+  - **Esto es todo por esta noche.** _(si canFinishC1(state).ok && !flag('c1_done'))_ _(cierra la conversación)_
 
 #### Niña sobre las cajas `wren`
 _Aparece si: !isMob(G)_
@@ -569,7 +557,13 @@ _Archivo: src/scenes/hanbury.js_
     - _Si no:_
       - **Pike:** No lo haría si no necesitara una respuesta.
   - _Si no:_
-    - **Pike:** Ya han decidido que fue «Leather Apron». Los diarios. No los testigos.
+    - > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
+      - **¿Qué calcula Phillips?**
+        - **Pike:** Phillips calcula entre las cuatro y media y las cinco y media.
+        - **Thomas:** ¿Y por qué no han recogido sus cosas?
+        - **Pike:** Porque alguien las colocó en fila. Quería que las viéramos así.
+      - **¿Qué dicen los diarios?**
+        - **Pike:** Ya han decidido que fue «Leather Apron». Los diarios. No los testigos.
 
 #### Dr. Lionel Greaves `greaves`
 **Al interactuar:**
@@ -587,7 +581,12 @@ _Archivo: src/scenes/hanbury.js_
   - [+ Pista al cuaderno: greaves_sabe]
   - *Thomas (piensa):* Nunca le he contado a nadie lo del láudano. ¿Cómo lo sabe?
 - _Si no:_
-  - **Greaves:** Sabes dónde encontrarme. Y aún conservo tu vieja ficha.
+  - > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
+    - **¿Qué opina del corte?**
+      - **Greaves:** Parece trabajo de alguien acostumbrado a la disección.
+      - **Greaves:** Tú tenías buena mano. No era un elogio que hiciera a menudo.
+    - **¿Dónde puedo encontrarle?**
+      - **Greaves:** Sabes dónde encontrarme. Y aún conservo tu vieja ficha.
 
 #### Sra. Richardson, la casera `amelia`
 **Al interactuar:**
@@ -596,7 +595,11 @@ _Archivo: src/scenes/hanbury.js_
   - **Sra. Richardson:** Ese delantal lo lavé yo. Es de mi hijo John. ¿Va a escribirlo o va a preguntar otra vez?
   - *Thomas (piensa):* Del hijo de la casera. Pero estaba a dos pasos del cuerpo.
 - _Si no:_
-  - **Sra. Richardson:** Los de la ventana cobran por mirar. Yo vivo aquí y nadie me deja cerrar la puerta.
+  - > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
+    - **El delantal.**
+      - **Sra. Richardson:** Ese delantal lo lavé yo. Es de mi hijo John. ¿Va a escribirlo o va a preguntar otra vez?
+    - **¿Y la gente de las ventanas?**
+      - **Sra. Richardson:** Los de la ventana cobran por mirar. Yo vivo aquí y nadie me deja cerrar la puerta.
 
 #### Delantal de cuero `apron`
 **Al interactuar:**
@@ -754,8 +757,12 @@ _Archivo: src/scenes/seance.js_
   - **Madame Wexley:** A un policía le cobraría el doble. A usted no le cobraré nada.
   - **Madame Wexley:** Aquí tapamos los espejos cuando alguien muere. Yo no lo hice. Creí que era más valiente.
 - _Si no:_
-  - **Madame Wexley:** Siéntese cuando quiera. Ella ya está aquí. _(si state.flags.comb_custody === 'pike')_
-  - **Madame Wexley:** El peine. No estoy fingiendo que no lo veo. _(si no)_
+  - > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
+    - **Los espejos.**
+      - **Madame Wexley:** Aquí tapamos los espejos cuando alguien muere. Yo no lo hice. Creí que era más valiente.
+    - **¿Empezamos, madame?**
+      - **Madame Wexley:** Siéntese cuando quiera. Ella ya está aquí. _(si state.flags.comb_custody === 'pike')_
+      - **Madame Wexley:** El peine. No estoy fingiendo que no lo veo. _(si no)_
 
 #### Espejo `mirror`
 **Al interactuar:**
@@ -805,33 +812,27 @@ _Archivo: src/scenes/mitre.js_
 **Al interactuar:**
 - _Si !flag('mitre_badge'):_
   - **Agente Watkins:** Sin placa, ni un paso más. Esto no es Whitechapel.
-- > **Menú de conversación** (las opciones que aparecen según lo ya hecho):
-  - ¿Qué ha encontrado? _(si !hasClue('trozo'))_
-  - ¿Alguien vio algo? _(si !hasClue('testigo'))_
-  - ¿Sabemos quién era? _(si !flag('watkins_name'))_
-  - ¿Hay novedades de otras calles? _(si hasClue('trozo') && !hasClue('berner_aviso'))_
-  - ¿Quién lleva el caso? _(si !flag('mitre_city'))_
-  - Nada más.
-- _Si c === 'found':_
-  - **Agente Watkins:** Paso aquí cada cuarto de hora. A la una y media, nada. A la una y cuarenta y cuatro, la vi.
-  - **Agente Watkins:** Falta una pieza del delantal. Se la llevó quien lo hizo.
-  - [+ Pista al cuaderno: trozo]
-- _Si no:_
-  - _Si c === 'witness':_
+- > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
+  - **¿Qué ha encontrado?**
+    - **Agente Watkins:** Paso aquí cada cuarto de hora. A la una y media, nada. A la una y cuarenta y cuatro, la vi.
+    - **Agente Watkins:** Falta una pieza del delantal. Se la llevó quien lo hizo.
+    - [+ Pista al cuaderno: trozo]
+  - **¿Alguien vio algo?**
     - **Agente Watkins:** Un vecino de Church Passage dice que, hacia la una y media, vio a una pareja a la entrada del pasaje. Él, abrigo oscuro y bombín. Y una linterna, dice. No está seguro.
     - [+ Pista al cuaderno: testigo]
     - *Thomas (piensa):* Así viste Pike. Así vestimos todos. _(1ª lectura)_
     - *Thomas (piensa):* Así visto yo. _(2ª lectura)_
-  - _Si no:_
-    - _Si c === 'name':_
+    - _Oído otra vez:_
+      - **Agente Watkins:** Un vecino de Church Passage dice que, hacia la una y media, vio a una pareja a la entrada del pasaje. Él, abrigo oscuro y bombín. Y una linterna, dice. No está seguro.
+  - **¿Sabemos quién era?**
+    - **Agente Watkins:** No. Aquí nadie la conoce.
+    - _Oído otra vez:_
       - **Agente Watkins:** No. Aquí nadie la conoce.
-    - _Si no:_
-      - _Si c === 'berner':_
-        - **Agente Watkins:** Aviso de la Metropolitana: Berner Street, hacia la una. Una mujer en el patio de un club, con la garganta cortada. Sin nombre todavía.
-        - [+ Pista al cuaderno: berner_aviso]
-      - _Si no:_
-        - _Si c === 'city':_
-          - **Agente Watkins:** Aquí manda la City, inspector. Lo de Berner Street es de ustedes. Usted está aquí de favor.
+  - **¿Hay novedades de otras calles?** _(si hasClue('trozo'))_
+    - **Agente Watkins:** Aviso de la Metropolitana: Berner Street, hacia la una. Una mujer en el patio de un club, con la garganta cortada. Sin nombre todavía.
+    - [+ Pista al cuaderno: berner_aviso]
+  - **¿Quién lleva el caso?**
+    - **Agente Watkins:** Aquí manda la City, inspector. Lo de Berner Street es de ustedes. Usted está aquí de favor.
 **Al usar un objeto sobre ello:**
 - _Si flag('mitre_badge'):_
   - *Thomas (piensa):* Ya la ha visto.

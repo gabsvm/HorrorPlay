@@ -56,25 +56,25 @@ export async function run({ log = true, second = false } = {}) {
     need(game.G.hasClue('ventana'), 'Falta la pista de la ventana');
     await act('door');
     expectScene('bucks_row');
-    await act('pike', null, [0]);            // doctor -> zurdo, anatomia
+    await act('pike', null, ['médico']);      // doctor -> zurdo, anatomia
     await act('neil'); await act('boy'); await act('tracks'); await act('polly');
     need(game.G.hasClue('cuello'), 'Falta la pista del cuerpo (cuello)');
     await deduce('cuello', 'silencio');
     need(!game.G.hasClue('ronda'), 'La ronda debería salir de la hoja, no de Neil');
-    await act('pike', null, [2, 0, 4, 2]);   // the beat sheet: a wrong window, look again, the right one
+    await act('pike', null, ['hoja de rondas', 0, 4, 2]);   // the beat sheet: a wrong window, look again, the right one
     need(game.G.hasClue('ronda'), 'Falta la pista de la ronda (hoja de rondas)');
     // the known puzzle shortens only in a second reading, and only through its own choice (chapters.js knowsPuzzles)
     need(window.LOG.includes('  > Ya lo sé: de 3:30 a 3:40.') === second, second ? 'La segunda lectura debería acortar la ronda' : 'La primera lectura no debe acortar la ronda');
     await deduce('ronda', 'silencio');
     await deduce('zurdo', 'anatomia');
     await deduce('botas', 'ventana');
-    await act('pike', null, [0]);            // polly
-    await act('pike', null, [1]);            // lead (after polly, notes is index 0)
+    await act('pike', null, ['quién era']);   // polly
+    await act('pike', null, ['trabaja de noche']);   // lead
     if (!game.state.flags.knackers_lead) await act('pike', null, [0]);
     need(game.state.flags.knackers_lead, 'No se obtuvo la pista del desolladero');
     await act('west');
     expectScene('knackers');
-    await act('brennan', null, [2]);          // look -> brennan_zurdo
+    await act('brennan', null, ['Mirar cómo']);   // look -> brennan_zurdo
     if (!game.G.hasClue('brennan_zurdo')) await act('brennan', null, [1]);
     need(game.G.hasClue('brennan_zurdo'), 'Falta brennan_zurdo');
     await act('wren', null, [0, 0]);        // she asks a penny; he leaves it on the post and takes what she leaves
@@ -124,7 +124,7 @@ export async function run({ log = true, second = false } = {}) {
     await act('bed');
     expectScene('mitre');
     await act('watkins', 'placa', [0]);
-    await act('watkins', null, [0]); await act('watkins', null, [0]); await act('watkins', null, [0]);
+    await act('watkins', null, ['encontrado']); await act('watkins', null, ['vio algo']); await act('watkins', null, ['quién era']);
     await act('corner'); await act('morris');
     need(game.G.hasClue('guantes') && game.G.hasClue('marcas'), 'Faltan las pistas del cuerpo de Kate');
     await deduce('guantes', 'rapido'); await deduce('marcas', 'ordenados');

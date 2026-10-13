@@ -61,7 +61,7 @@ export async function run(opts) {
     await act('pike', null, ['Nada más']);
     const offered = menuAt(m);
     need(offered.some((t) => /libreta/.test(t)), `La libreta sigue ofreciéndose tras el sombrero: ${offered}`);
-    need(!offered.some((t) => /Quién era ella/.test(t)), '«¿Quién era ella?» no se ofrece dos veces');
+    need(offered.some((t) => /^✓ ¿Quién era ella/.test(t)), '«¿Quién era ella?» se ofrece marcada como oída');
     await act('pike', null, ['libreta']);
     need(game.state.flags.pike_notes === true, 'La libreta deja pike_notes');
     need(says(/Quién entra\. Quién sale\. A qué hora\./), 'Pike contesta sobre la libreta');

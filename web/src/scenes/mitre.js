@@ -133,40 +133,58 @@ export default {
         const w = G.actor('Watkins'); w.facing = -1; w.talking = true;
         if (!G.flag('mitre_badge')) { await G.say('Agente Watkins', 'Sin placa, ni un paso más. Esto no es Whitechapel.'); w.talking = false; return; }
         w.talking = false;
-        // the order matters: tests/walkthrough.js picks by index (found, witness, name); the new ones come after
-        const opts = [];
-        if (!G.hasClue('trozo')) opts.push(['¿Qué ha encontrado?', 'found']);
-        if (!G.hasClue('testigo')) opts.push(['¿Alguien vio algo?', 'witness']);
-        if (!G.flag('watkins_name')) opts.push(['¿Sabemos quién era?', 'name']);
-        if (G.hasClue('trozo') && !G.hasClue('berner_aviso')) opts.push(['¿Hay novedades de otras calles?', 'berner']);
-        if (!G.flag('mitre_city')) opts.push(['¿Quién lleva el caso?', 'city']);
-        opts.push(['Nada más.', 'bye']);
-        const c = opts[await G.choice(opts.map((o) => o[0]))][1];
-        w.talking = true;
-        if (c === 'found') {
-          await G.say('Agente Watkins', 'Paso aquí cada cuarto de hora. A la una y media, nada. A la una y cuarenta y cuatro, la vi.');
-          await G.say('Agente Watkins', 'Falta una pieza del delantal. Se la llevó quien lo hizo.');
-          G.clue('trozo');
-          mitreObjective(G);
-        } else if (c === 'witness') {
-          await G.say('Agente Watkins', 'Un vecino de Church Passage dice que, hacia la una y media, vio a una pareja a la entrada del pasaje. Él, abrigo oscuro y bombín. Y una linterna, dice. No está seguro.');
-          G.clue('testigo');
-          mitreObjective(G);
-          w.talking = false;
-          await G.think(G.two('Así viste Pike. Así vestimos todos.', 'Así visto yo.'));
-        } else if (c === 'name') {
-          G.flag('watkins_name', true);
-          await G.say('Agente Watkins', 'No. Aquí nadie la conoce.');
-          w.talking = false;
-          G.sanity(-2);
-        } else if (c === 'berner') {
-          await G.say('Agente Watkins', 'Aviso de la Metropolitana: Berner Street, hacia la una. Una mujer en el patio de un club, con la garganta cortada. Sin nombre todavía.');
-          G.clue('berner_aviso');
-          mitreObjective(G);
-        } else if (c === 'city') {
-          G.flag('mitre_city', true);
-          await G.say('Agente Watkins', 'Aquí manda la City, inspector. Lo de Berner Street es de ustedes. Usted está aquí de favor.');
-        }
+        // a conversation that stays open (G.talk); the topics keep the order tests/walkthrough.js relies on
+        // (found, witness, name). Heard again, a topic replays its words without the thought or the sanity.
+        await G.talk('watkins', [
+          { id: 'found', label: '¿Qué ha encontrado?', done: (G) => G.hasClue('trozo'), run: async (G) => {
+            w.talking = true;
+            await G.say('Agente Watkins', 'Paso aquí cada cuarto de hora. A la una y media, nada. A la una y cuarenta y cuatro, la vi.');
+            await G.say('Agente Watkins', 'Falta una pieza del delantal. Se la llevó quien lo hizo.');
+            w.talking = false;
+            G.clue('trozo');
+            mitreObjective(G);
+          } },
+          { id: 'witness', label: '¿Alguien vio algo?', done: (G) => G.hasClue('testigo'),
+            run: async (G) => {
+              w.talking = true;
+              await G.say('Agente Watkins', 'Un vecino de Church Passage dice que, hacia la una y media, vio a una pareja a la entrada del pasaje. Él, abrigo oscuro y bombín. Y una linterna, dice. No está seguro.');
+              w.talking = false;
+              G.clue('testigo');
+              mitreObjective(G);
+              await G.think(G.two('Así viste Pike. Así vestimos todos.', 'Así visto yo.'));
+            },
+            repeat: async (G) => {
+              w.talking = true;
+              await G.say('Agente Watkins', 'Un vecino de Church Passage dice que, hacia la una y media, vio a una pareja a la entrada del pasaje. Él, abrigo oscuro y bombín. Y una linterna, dice. No está seguro.');
+              w.talking = false;
+            } },
+          { id: 'name', label: '¿Sabemos quién era?', done: (G) => G.flag('watkins_name'),
+            run: async (G) => {
+              G.flag('watkins_name', true);
+              w.talking = true;
+              await G.say('Agente Watkins', 'No. Aquí nadie la conoce.');
+              w.talking = false;
+              G.sanity(-2);
+            },
+            repeat: async (G) => {
+              w.talking = true;
+              await G.say('Agente Watkins', 'No. Aquí nadie la conoce.');
+              w.talking = false;
+            } },
+          { id: 'berner', label: '¿Hay novedades de otras calles?', available: (G) => G.hasClue('trozo'), done: (G) => G.hasClue('berner_aviso'), run: async (G) => {
+            w.talking = true;
+            await G.say('Agente Watkins', 'Aviso de la Metropolitana: Berner Street, hacia la una. Una mujer en el patio de un club, con la garganta cortada. Sin nombre todavía.');
+            w.talking = false;
+            G.clue('berner_aviso');
+            mitreObjective(G);
+          } },
+          { id: 'city', label: '¿Quién lleva el caso?', done: (G) => G.flag('mitre_city'), run: async (G) => {
+            G.flag('mitre_city', true);
+            w.talking = true;
+            await G.say('Agente Watkins', 'Aquí manda la City, inspector. Lo de Berner Street es de ustedes. Usted está aquí de favor.');
+            w.talking = false;
+          } },
+        ]);
         w.talking = false;
       },
       use: async (G, item) => {

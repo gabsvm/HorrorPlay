@@ -19,6 +19,13 @@ export function normalizeState(s) {
   s.flags ??= {};
   for (const k of ['items', 'clues', 'deductions', 'profile']) s[k] = Array.isArray(s[k]) ? [...new Set(s[k])] : [];
   s.seen ??= {};
+  // the topics heard in each conversation, by "scene:npc" (G.talk): lists of topic ids, no repeats
+  const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+  s.conversationSeen = isObj(s.conversationSeen) ? s.conversationSeen : {};
+  for (const [k, v] of Object.entries(s.conversationSeen)) {
+    if (Array.isArray(v)) s.conversationSeen[k] = [...new Set(v.filter((x) => typeof x === 'string'))];
+    else delete s.conversationSeen[k];
+  }
   s.sanity = typeof s.sanity === 'number' && isFinite(s.sanity) ? Math.max(0, Math.min(100, s.sanity)) : 100;
   s.investigation ??= {};
   s.investigation.hypotheses ??= {};

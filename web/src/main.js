@@ -134,14 +134,14 @@ document.getElementById('btn-menu').addEventListener('click', () => game.onPause
 // Android Back, in a fixed order: the innermost thing that can be closed is closed; a decision is never taken for the player
 window.__appBack = () => {
   const ui = game.ui;
-  if (ui._itemDetailClose) { ui._itemDetailClose(); return; }   // an object's own view, inside the inventory
   if (ui._invClose) { ui._invClose(); return; }                 // the inventory
   if (ui._docClose) { ui._docClose(); return; }                 // a document, even in the middle of a scene
   if (ui._inspectClose) { ui._inspectClose(); return; }
   if (ui.notebookOpen) { ui.closeNotebook(); return; }
   if (ui._talkCancel) { ui._talkCancel(); return; }             // a conversation menu that can be left
   if (ui._choiceKeys) return;                                   // any other choice waits for the player
-  if (ui._advance) { ui.advance(); return; }
+  if (ui._advance) return;                                      // a line is never skipped by Back: it cannot be read again
+  if (game.selectedItem) { game.selectItem(null); return; }     // the object in hand is let go, as Escape does
   if (game.onPause) game.onPause();
 };
 // in the background a timed choice does not run out: its clock stops and starts again on return

@@ -172,49 +172,67 @@ export default {
       id: 'pike', name: 'Sargento Pike', cursor: 'talk', rect: (G) => { const a = G.actor('Pike'); return [a.x - 40, GROUND - 181, 80, 181]; }, walk: (G) => G.actor('Pike').x + 90, face: -1,
       act: async (G) => {
         const pike = G.actor('Pike'); pike.facing = 1;
-        const opts = [];
-        if (!G.hasClue('zurdo')) opts.push(['¿Qué dijo el médico?', 'doc']);
-        if (!G.flag('pike_polly')) opts.push(['¿Quién era ella?', 'polly']);
-        if (!G.flag('pike_notes') && G.flag('pike_polly')) opts.push(['¿Qué apunta en esa libreta, Pike?', 'notes']);
-        if (G.hasClue('zurdo') && !G.flag('knackers_lead')) opts.push(['¿Quién trabaja de noche por aquí?', 'lead']);
-        if (G.flag('neil_times') && !G.hasClue('ronda')) opts.push(['La hoja de rondas de esta noche.', 'beats']);
-        if (G.second() && G.flag('pike_notes') && !G.flag('pike_book_read')) opts.push(['Déjeme ver su libreta, Pike.', 'book']);
-        if (canFinishC1(G.state).ok && !G.flag('c1_done')) opts.push(['Cerramos por esta noche, Pike.', 'close']);
-        opts.push(['Nada más.', 'bye']);
-        const c = opts[await G.choice(opts.map((o) => o[0]))][1];
-        if (c === 'close') { await G.game.chapterHooks.closeC1(G, 'pike'); return; }
-        if (c === 'book') { pike.talking = true; await G.say('Pike', '...Tome. No tengo nada que esconderle.'); pike.talking = false; await G.game.chapterHooks.pikeBook(G); return; }
-        pike.talking = true;
-        if (c === 'doc') {
-          await G.say('Pike', 'Llewellyn cree que los cortes podrían ser de un zurdo.');
-          G.clue('zurdo');
-          await G.say('Pike', 'Dice que conocía el cuerpo. No es una afirmación que haga a la ligera.');
-          G.clue('anatomia');
-          pike.talking = false;
-        } else if (c === 'polly') {
-          G.flag('pike_polly', true);
-          await G.say('Pike', 'Tiene al lado un sombrero de paja negro; parece nuevo. Alguien lo eligió con cuidado.');
-          pike.talking = false;
-        } else if (c === 'notes') {
-          G.flag('pike_notes', true);
-          await G.say('Pike', 'Quién entra. Quién sale. A qué hora.');
-          pike.talking = false;
-          await G.say('Ashgrove', '¿También apunta cuándo llego yo?');
-          pike.talking = true;
-          await G.say('Pike', 'Cuatro y doce. Lo mandé llamar a las cuatro.');
-        } else if (c === 'beats') {
-          await G.say('Pike', 'Aquí la tiene, señor. Las horas de todos, y lo que declaran.');
-          pike.talking = false;
-          await G.game.chapterHooks.beats(G);
-        } else if (c === 'lead') {
-          G.flag('knackers_lead', true);
-          G.objective('Ir al desolladero de Winthrop Street, hacia el oeste.');
-          await G.say('Pike', 'Barber tiene un desolladero en Winthrop Street. No cierra de noche.');
-          pike.talking = false;
-          await G.say('Ashgrove', '¿Armas?');
-          pike.talking = true;
-          await G.say('Pike', 'Allí hasta el aprendiz lleva cuchillo.');
-        }
+        // a conversation that stays open: what was heard is marked and can be heard again (G.talk)
+        await G.talk('pike', [
+          { id: 'doc', label: '¿Qué dijo el médico?', done: (G) => G.hasClue('zurdo'), run: async (G) => {
+            pike.talking = true;
+            await G.say('Pike', 'Llewellyn cree que los cortes podrían ser de un zurdo.');
+            G.clue('zurdo');
+            await G.say('Pike', 'Dice que conocía el cuerpo. No es una afirmación que haga a la ligera.');
+            G.clue('anatomia');
+            pike.talking = false;
+          } },
+          { id: 'polly', label: '¿Quién era ella?', done: (G) => G.flag('pike_polly'), run: async (G) => {
+            G.flag('pike_polly', true);
+            pike.talking = true;
+            await G.say('Pike', 'Tiene al lado un sombrero de paja negro; parece nuevo. Alguien lo eligió con cuidado.');
+            pike.talking = false;
+          } },
+          { id: 'notes', label: '¿Qué apunta en esa libreta, Pike?', available: (G) => G.flag('pike_polly'), done: (G) => G.flag('pike_notes'), run: async (G) => {
+            G.flag('pike_notes', true);
+            pike.talking = true;
+            await G.say('Pike', 'Quién entra. Quién sale. A qué hora.');
+            pike.talking = false;
+            await G.say('Ashgrove', '¿También apunta cuándo llego yo?');
+            pike.talking = true;
+            await G.say('Pike', 'Cuatro y doce. Lo mandé llamar a las cuatro.');
+            pike.talking = false;
+          } },
+          // heard again, the lead does not set the objective back to the knacker's yard
+          { id: 'lead', label: '¿Quién trabaja de noche por aquí?', available: (G) => G.hasClue('zurdo'), done: (G) => G.flag('knackers_lead'),
+            run: async (G) => {
+              G.flag('knackers_lead', true);
+              G.objective('Ir al desolladero de Winthrop Street, hacia el oeste.');
+              pike.talking = true;
+              await G.say('Pike', 'Barber tiene un desolladero en Winthrop Street. No cierra de noche.');
+              pike.talking = false;
+              await G.say('Ashgrove', '¿Armas?');
+              pike.talking = true;
+              await G.say('Pike', 'Allí hasta el aprendiz lleva cuchillo.');
+              pike.talking = false;
+            },
+            repeat: async (G) => {
+              pike.talking = true;
+              await G.say('Pike', 'Barber tiene un desolladero en Winthrop Street. No cierra de noche.');
+              pike.talking = false;
+              await G.say('Ashgrove', '¿Armas?');
+              pike.talking = true;
+              await G.say('Pike', 'Allí hasta el aprendiz lleva cuchillo.');
+              pike.talking = false;
+            } },
+          { id: 'beats', label: 'La hoja de rondas de esta noche.', ends: true, available: (G) => G.flag('neil_times') && !G.hasClue('ronda'), run: async (G) => {
+            pike.talking = true;
+            await G.say('Pike', 'Aquí la tiene, señor. Las horas de todos, y lo que declaran.');
+            pike.talking = false;
+            await G.game.chapterHooks.beats(G);
+          } },
+          { id: 'book', label: 'Déjeme ver su libreta, Pike.', ends: true, available: (G) => G.second() && G.flag('pike_notes') && !G.flag('pike_book_read'), run: async (G) => {
+            pike.talking = true; await G.say('Pike', '...Tome. No tengo nada que esconderle.'); pike.talking = false;
+            await G.game.chapterHooks.pikeBook(G);
+          } },
+          { id: 'close', label: 'Cerramos por esta noche, Pike.', ends: true, available: (G) => canFinishC1(G.state).ok && !G.flag('c1_done'),
+            run: (G) => G.game.chapterHooks.closeC1(G, 'pike') },
+        ]);
         pike.talking = false;
       },
     },

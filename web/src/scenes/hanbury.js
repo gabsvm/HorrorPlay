@@ -197,7 +197,24 @@ export default {
           else await G.say('Pike', 'No lo haría si no necesitara una respuesta.');
           pike.talking = false;
         } else {
-          await G.say('Pike', 'Ya han decidido que fue «Leather Apron». Los diarios. No los testigos.');
+          // after his two beats, the conversation stays open (G.talk); nothing in it changes the case
+          pike.talking = false;
+          await G.talk('pike', [
+            { id: 'phillips', label: '¿Qué calcula Phillips?', run: async (G) => {
+              pike.talking = true;
+              await G.say('Pike', 'Phillips calcula entre las cuatro y media y las cinco y media.');
+              pike.talking = false;
+              await G.say('Ashgrove', '¿Y por qué no han recogido sus cosas?');
+              pike.talking = true;
+              await G.say('Pike', 'Porque alguien las colocó en fila. Quería que las viéramos así.');
+              pike.talking = false;
+            } },
+            { id: 'papers', label: '¿Qué dicen los diarios?', run: async (G) => {
+              pike.talking = true;
+              await G.say('Pike', 'Ya han decidido que fue «Leather Apron». Los diarios. No los testigos.');
+              pike.talking = false;
+            } },
+          ]);
         }
         pike.talking = false;
       },
@@ -217,6 +234,7 @@ export default {
           const c = await G.choice(['¿Qué opina del corte?', 'Me alegro de verle, doctor.']);
           g.talking = true;
           if (c === 0) {
+            G.flag('greaves_cut', true);
             await G.say('Greaves', 'Parece trabajo de alguien acostumbrado a la disección.');
             await G.say('Greaves', 'Tú tenías buena mano. No era un elogio que hiciera a menudo.');
           } else {
@@ -229,8 +247,21 @@ export default {
           await G.think('Nunca le he contado a nadie lo del láudano. ¿Cómo lo sabe?');
           G.sanity(-3);
         } else {
-          await G.say('Greaves', 'Sabes dónde encontrarme. Y aún conservo tu vieja ficha.');
           g.talking = false;
+          await G.talk('greaves', [
+            { id: 'cut', label: '¿Qué opina del corte?', done: (G) => G.flag('greaves_cut'), run: async (G) => {
+              G.flag('greaves_cut', true);
+              g.talking = true;
+              await G.say('Greaves', 'Parece trabajo de alguien acostumbrado a la disección.');
+              await G.say('Greaves', 'Tú tenías buena mano. No era un elogio que hiciera a menudo.');
+              g.talking = false;
+            } },
+            { id: 'where', label: '¿Dónde puedo encontrarle?', run: async (G) => {
+              g.talking = true;
+              await G.say('Greaves', 'Sabes dónde encontrarme. Y aún conservo tu vieja ficha.');
+              g.talking = false;
+            } },
+          ]);
         }
       },
     },
@@ -245,7 +276,19 @@ export default {
           a.talking = false;
           await G.think('Del hijo de la casera. Pero estaba a dos pasos del cuerpo.');
         } else {
-          await G.say('Sra. Richardson', 'Los de la ventana cobran por mirar. Yo vivo aquí y nadie me deja cerrar la puerta.');
+          a.talking = false;
+          await G.talk('amelia', [
+            { id: 'apron', label: 'El delantal.', done: (G) => G.flag('amelia1'), run: async (G) => {
+              a.talking = true;
+              await G.say('Sra. Richardson', 'Ese delantal lo lavé yo. Es de mi hijo John. ¿Va a escribirlo o va a preguntar otra vez?');
+              a.talking = false;
+            } },
+            { id: 'window', label: '¿Y la gente de las ventanas?', run: async (G) => {
+              a.talking = true;
+              await G.say('Sra. Richardson', 'Los de la ventana cobran por mirar. Yo vivo aquí y nadie me deja cerrar la puerta.');
+              a.talking = false;
+            } },
+          ]);
         }
         a.talking = false;
       },

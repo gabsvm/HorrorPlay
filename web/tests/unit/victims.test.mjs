@@ -33,14 +33,14 @@ export const tests = [
     for (const t of ['Nichols', 'Polly', 'cinco hijos', 'peniques', 'encargada']) ok(!rest.includes(t), `aparece «${t}»`);
   }],
   ['la opción «¿Quién era ella?» dice una sola línea de Pike y deja el flag pike_polly', () => {
-    const opt = block(bucks, "} else if (c === 'polly') {", "} else if (c === 'notes') {");
+    const opt = block(bucks, "{ id: 'polly', label: '¿Quién era ella?'", "{ id: 'notes',");
     eq(count(opt, 'G.say('), 1, 'líneas de Pike en la opción');
     ok(opt.includes(`G.say('Pike', '${HAT}')`), 'la línea del sombrero');
     ok(opt.includes("G.flag('pike_polly', true);"), 'falta el flag pike_polly');
     ok(!/cinco|peniques|encargada/.test(opt), 'queda un dato de vida en la opción');
   }],
   ['la opción de la libreta sigue exigiendo pike_polly', () => {
-    ok(bucks.includes("if (!G.flag('pike_notes') && G.flag('pike_polly')) opts.push(['¿Qué apunta en esa libreta, Pike?', 'notes']);"), 'la condición de la libreta cambió');
+    ok(bucks.includes("{ id: 'notes', label: '¿Qué apunta en esa libreta, Pike?', available: (G) => G.flag('pike_polly'),"), 'la condición de la libreta cambió');
   }],
   ['el hotspot y el inspect de la mujer de Buck\'s Row llevan el nombre nuevo, con ids intactos', () => {
     ok(bucks.includes("id: 'polly', name: 'El cuerpo de la mujer de Buck\\'s Row'"), 'nombre del hotspot');

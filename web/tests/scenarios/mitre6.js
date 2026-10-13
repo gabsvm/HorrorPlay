@@ -39,14 +39,14 @@ export async function run(opts) {
     m = MENUS.length;
     await act('watkins', null, ['encontrado']);
     offered = menuAt(m);
-    need(!offered.some((t) => /Alguien vio algo/.test(t)), 'El testigo ya no se ofrece');
+    need(offered.some((t) => /^✓ ¿Alguien vio algo/.test(t)), 'El testigo se ofrece marcado como oído');
     need(!offered.some((t) => /novedades/.test(t)), 'Antes del trozo no hay aviso');
     need(clue('trozo') && count('trozo') === 1, 'El trozo queda una vez');
 
     m = MENUS.length;
     await act('watkins', null, ['novedades']);
     offered = menuAt(m);
-    need(offered.some((t) => /novedades/.test(t)) && !offered.some((t) => /Qué ha encontrado/.test(t)), `Con trozo, aparecen novedades: ${offered}`);
+    need(offered.some((t) => /novedades/.test(t)) && offered.some((t) => /^✓ ¿Qué ha encontrado/.test(t)), `Con trozo, aparecen novedades: ${offered}`);
     need(says(/Aviso de la Metropolitana: Berner Street, hacia la una/), 'Watkins da el aviso');
     need(clue('berner_aviso') && count('berner_aviso') === 1, 'El aviso queda una vez');
 
@@ -54,7 +54,7 @@ export async function run(opts) {
     const sanityBeforeCity = game.state.sanity;
     await act('watkins', null, ['caso']);
     offered = menuAt(m);
-    need(offered.some((t) => /Quién lleva el caso/.test(t)) && !offered.some((t) => /novedades/.test(t)), `Tras el aviso: ${offered}`);
+    need(offered.some((t) => /Quién lleva el caso/.test(t)) && offered.some((t) => /^✓ ¿Hay novedades/.test(t)), `Tras el aviso: ${offered}`);
     need(says(/Aquí manda la City, inspector/), 'Watkins dice la línea de la City');
     need(game.state.flags.mitre_city === true, 'La City deja su flag');
     need(game.state.sanity === sanityBeforeCity, 'La línea de la City no cambia la cordura');
@@ -63,7 +63,7 @@ export async function run(opts) {
     const sanityBeforeName = game.state.sanity;
     await act('watkins', null, ['quién era']);
     offered = menuAt(m);
-    need(!offered.some((t) => /Quién lleva el caso/.test(t)), 'La City no se ofrece dos veces');
+    need(offered.some((t) => /^✓ ¿Quién lleva el caso/.test(t)), 'La City se ofrece marcada como oída');
     need(game.state.sanity === sanityBeforeName - 2, `El nombre cuesta dos de cordura: ${sanityBeforeName} → ${game.state.sanity}`);
     need(game.state.flags.watkins_name === true, 'El nombre deja su flag');
     need(says(/No\. Aquí nadie la conoce\./), 'Watkins dice «Aquí nadie la conoce»');
@@ -73,7 +73,7 @@ export async function run(opts) {
     m = MENUS.length;
     await act('watkins', null, ['Nada más']);
     offered = menuAt(m);
-    need(offered.length === 1 && /Nada más/.test(offered[0]), `Al final solo queda «Nada más»: ${offered}`);
+    need(offered.length === 6 && offered.slice(0, 5).every((t) => t.startsWith('✓ ')) && /Nada más/.test(offered[5]), `Al final todo está marcado como oído y queda «Nada más»: ${offered}`);
     need(count('berner_aviso') === 1 && count('trozo') === 1 && count('testigo') === 1, 'Ninguna pista se duplica al repetir');
     await act('corner');
     await act('east');

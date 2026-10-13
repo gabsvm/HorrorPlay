@@ -157,7 +157,8 @@ export class UI {
   hideDialogue() { this.el.dlg.classList.add('hidden'); this._speaker = null; }
 
   // prompt: a question shown above the options (a timed choice must never be made blind)
-  async choice(options, { timeout = 0, def = 0, prompt = '' } = {}) {
+  // cancel: the index Back/Escape picks (only a conversation menu has one: its «Nada más»)
+  async choice(options, { timeout = 0, def = 0, prompt = '', cancel = -1 } = {}) {
     if (window.FAST) {
       // tests pick by position or, preferably, by a piece of the option's text
       let k = (window.PICKS || []).length ? window.PICKS.shift() : 0;
@@ -190,6 +191,16 @@ export class UI {
         this.pauseClock = () => { if (!timer) return; clearTimeout(timer); timer = null; left = Math.max(0, deadline - performance.now()); bar.style.animationPlayState = 'paused'; };
         this.resumeClock = () => { if (timer || !left) return; deadline = performance.now() + left; timer = setTimeout(expire, left); bar.style.animationPlayState = 'running'; };
       }
+      const pick = (i) => {
+        if (timer) clearTimeout(timer);
+        this.pauseClock = this.resumeClock = null;
+        this._talkCancel = null;
+        audio.click();
+        box.classList.add('hidden');
+        this._choiceKeys = null;
+        res(i);
+      };
+      if (cancel >= 0 && !timeout) this._talkCancel = () => pick(cancel);
       this._choiceKeys = options.map((opt, i) => {
         const b = document.createElement('button');
         b.className = 'choice';
@@ -198,12 +209,7 @@ export class UI {
         b.addEventListener('click', (e) => {
           e.stopPropagation();
           if (performance.now() - shown < 280) return;   // the click that ended the last line, landing here
-          if (timer) clearTimeout(timer);
-          this.pauseClock = this.resumeClock = null;
-          audio.click();
-          box.classList.add('hidden');
-          this._choiceKeys = null;
-          res(i);
+          pick(i);
         });
         box.appendChild(b);
         return b;
