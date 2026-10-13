@@ -51,7 +51,7 @@ export function makeChapters() {
       look(G, 'child');
       G.game.r.fx.fade = 1;
       // the title card and the fade into the shore run together: the first control comes sooner, and nothing is cut
-      const card = G.card('', 'Limehouse', 'Octubre de 1866', 2600);
+      const card = G.card('', 'Limehouse', 'Octubre de 1866', 2200);
       await G.goto('foreshore', { x: 480, facing: 1, fade: false });
       await G.fade(0, 1800);
       await card;

@@ -69,7 +69,7 @@ export async function playIntro(G) {
   audio.setBeds({ rain: 0.35, drone: 0.08 }, 2);
   try {
     // 1. the notebook, where it was found and the two hands in it (about 4 seconds)
-    await w(400);
+    await w(200);
     show(line, true);
     await type(line, FOUND, 26, () => audio.tick());
     await w(1600);
@@ -99,7 +99,7 @@ export async function playIntro(G) {
         if (skipped) break;
         line.textContent = text;
         show(line, true);
-        await w(2400);
+        await w(3300);   // 59 characters at 17–20 a second need about 3–3.5 s
         show(line, false);
         await w(300);
       }
@@ -111,8 +111,8 @@ export async function playIntro(G) {
 
     // 3. the first page, in his own hand, and the signature (about 5 seconds). Silence before the page (F11, shot "Intro")
     if (!skipped) {
-      audio.setBeds({ rain: 0, drone: 0 }, 1.2);
-      await w(300);
+      audio.setBeds({ rain: 0, drone: 0 }, 0.6);
+      await w(700);   // the silence has fallen before the page appears
       page.querySelector('.text').textContent = '';
       page.querySelector('.sig').classList.remove('on');
       show(page, true);
@@ -122,7 +122,7 @@ export async function playIntro(G) {
       page.querySelector('.sig').classList.add('on');
       await w(1000);
       show(page, false);
-      await w(500);
+      await w(200);
     }
   } finally {
     window.removeEventListener('pointerdown', skip, true);

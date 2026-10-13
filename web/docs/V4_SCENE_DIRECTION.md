@@ -1,6 +1,6 @@
 # V4 — Dirección de escena (F11)
 
-Estado (2026-10-13): **las diez tomas de la tabla están implementadas o comprobadas** con la infraestructura existente (encuadre con `G.zoom`, silencio con `setBeds`/`playMusic`). Con movimiento reducido no hay ningún acercamiento de cámara en todo el juego (`G.zoom` y `frameDialogue`). Capturas a 1280×720 y 1920×1080 hechas para la introducción, la sesión, la firma, Polly, Wren, la persecución y la orilla; **sin captura**: la aparición de Goulston, el expediente y el examen de Annie. Nada escuchado con sonido. Detalle por toma en `V4_EXECUTION_LOG.md` (secciones F11).
+Estado (2026-10-13): de cada toma se cumplen el **foco** (encuadre con `G.zoom`), el **silencio** (`setBeds`/`playMusic`) y el **modo reducido sin acercamientos** (en todo el juego: `G.zoom` y `frameDialogue`). **No se cumplen** todavía: la **duración máxima** (ninguna toma pasa sola a la siguiente; esperan los clics del diálogo o del examen), el **tipo de entrada/salida** (los «cortes» de Polly y Wren son acercamientos con velocidad, no cortes) y el **fundido** de la columna «Modo reducido» (el modo reducido solo quita el acercamiento). Capturas a 1280×720 y 1920×1080: introducción, sesión, firma, Polly, Wren y persecución; la orilla, solo de la lámina de agua (no de la primera mirada al desagüe); **sin captura**: Goulston, el expediente y Annie. Nada escuchado con sonido.
 
 ## Convenciones
 
