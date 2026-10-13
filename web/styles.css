@@ -88,6 +88,8 @@ button { font-family: var(--sc); color: var(--ink); background: none; border: 0;
 #choices { position: absolute; left: 50%; bottom: calc(170 * var(--u)); transform: translateX(-50%); display: flex; flex-direction: column; gap: calc(8 * var(--u)); width: calc(720 * var(--u)); }
 .choice { text-align: left; font-family: var(--serif); font-size: calc(24 * var(--u)); padding: calc(10 * var(--u)) calc(22 * var(--u)); background: rgba(8,10,12,0.88); border-left: 2px solid rgba(176,138,78,0.4); transition: border-color .15s, background .15s, padding .15s; }
 .choice:hover, .choice:focus { border-left-color: #ffd88a; background: rgba(30, 24, 16, 0.92); padding-left: calc(30 * var(--u)); outline: none; }
+.choice-prompt { font-family: var(--serif); font-style: italic; font-size: calc(22 * var(--u)); color: #e6dcc4; padding: calc(6 * var(--u)) calc(4 * var(--u)); text-shadow: 0 0 calc(6 * var(--u)) #000; }
+html.touch .choice-prompt { font-size: max(calc(22 * var(--u)), 14px); }
 .choice .num { color: var(--gold); font-family: var(--sc); margin-right: calc(10*var(--u)); }
 
 #toast { position: absolute; left: 50%; top: calc(110 * var(--u)); transform: translateX(-50%); font-family: var(--sc); font-size: calc(19 * var(--u)); letter-spacing: 0.08em; color: #f0dfb5; text-shadow: 0 0 calc(10*var(--u)) #000; opacity: 0; transition: opacity .6s; white-space: nowrap; }

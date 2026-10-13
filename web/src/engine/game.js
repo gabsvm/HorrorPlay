@@ -821,7 +821,7 @@ export class Game {
       // with reduced motion the shocks stay, softened: a dimmer flash, a small jolt instead of a shake
       flash: (v = 1) => { game.r.fx.flash = prefs.reduceMotion ? v * 0.35 : v; game.punch = prefs.reduceMotion ? 0.3 : 1; },
       red: (v = 0.8) => { game.r.fx.red = prefs.reduceMotion ? v * 0.6 : v; game.punch = prefs.reduceMotion ? 0.3 : 1; },
-      shake: (v = 10) => { game.r.cam.shake = prefs.reduceMotion ? Math.min(3, v * 0.25) : v; game.punch = Math.max(game.punch || 0, prefs.reduceMotion ? 0.2 : 0.6); if (v >= 6) buzz(Math.min(90, v * 5)); },
+      shake: (v = 10) => { game.r.cam.shake = prefs.reduceMotion ? 0 : v; /* no shaking at all with reduced motion (F11 convention) */ game.punch = Math.max(game.punch || 0, prefs.reduceMotion ? 0.2 : 0.6); if (v >= 6) buzz(Math.min(90, v * 5)); },
       // Kneel over a body and examine it close up. `points`: [{ id, x, y, r, name, act(G) }] in 1280x720.
       inspect: async (id, { title, body, points }) => {
         const seen = ((game.state.seen ||= {})[`insp:${id}`] ||= {});

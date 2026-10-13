@@ -152,7 +152,8 @@ export class UI {
 
   hideDialogue() { this.el.dlg.classList.add('hidden'); this._speaker = null; }
 
-  async choice(options, { timeout = 0, def = 0 } = {}) {
+  // prompt: a question shown above the options (a timed choice must never be made blind)
+  async choice(options, { timeout = 0, def = 0, prompt = '' } = {}) {
     if (window.FAST) {
       // tests pick by position or, preferably, by a piece of the option's text
       let k = (window.PICKS || []).length ? window.PICKS.shift() : 0;
@@ -168,6 +169,7 @@ export class UI {
     const box = this.el.choices;
     box.innerHTML = '';
     box.classList.remove('hidden');
+    if (prompt) { const q = document.createElement('div'); q.className = 'choice-prompt'; q.textContent = prompt; box.appendChild(q); }
     const shown = performance.now();
     return new Promise((res) => {
       let timer = null;

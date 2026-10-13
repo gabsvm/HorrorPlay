@@ -1476,3 +1476,11 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 
 - Revisión del observador sobre a47c25d y 6c496b1: código APPROVE; REQUEST_CHANGES por afirmaciones. Corregido: el estado de la tabla dice qué columnas se cumplen (foco, silencio, sin acercamiento en modo reducido) y cuáles no (duración máxima, tipo de transición, fundido en modo reducido); el checklist dice qué se revisó y en qué commit, y marca la persecución y la intro actual como no revisadas. Intro: la línea de la calle pasa a 3300 ms (59 caracteres a 17–20 por segundo) y el silencio cae 1,2 s antes de la página; el primer control se vuelve a medir.
 - Remedido tras alargar la línea de la calle: 31,1 s. Para volver bajo 30 s sin quitar lectura: el silencio antes de la página cae en 0,6 s con 0,7 s de espera; dos pausas en negro se acortan (400→200 y 500→200 ms); la tarjeta «Limehouse» dura 2,2 s. **Primer control: 29,8 s** (mediana de 3: 29,8, 29,8, 29,9); la apertura termina a 16,4 s. `test-all`: 39 PASS.
+
+## F11 — revisión de la intro actual y de la persecución, 2026-10-13
+
+- Revisión del observador sobre 96f673d: la intro actual, APPROVE; la persecución, REQUEST_CHANGES por un P1.
+- **P1, corregido:** las preguntas de los tres cruces (`q`) nunca se mostraban; el jugador elegía a ciegas, con reloj y con la opción equivocada por defecto. Ahora `ui.choice` acepta `prompt` y cada cruce muestra su pregunta encima de las opciones, con un matiz que permite deducir la buena: «En Wentworth Street se mueve una linterna de policía», «Si me paro, me alcanzan», «Si entro, sabrán dónde vivo». Comprobado en el navegador a 1280×720 y 1920×1080.
+- **P2, corregido:** el reloj suma 45 ms por carácter de la pregunta a los 4,6 s de base (5,6 s en táctil) y se alarga con el texto lento (`prefs.text`). Desviación respecto a la tabla: con la pregunta, el cruce dura unos 7–8 s.
+- **P3, corregido:** con movimiento reducido no hay sacudidas en ninguna escena (`G.shake` a 0).
+- Pendiente de la tabla: el «corte» de entrada y salida de la persecución (entra con fundido y sale por las escaleras). `test-all`: 39 PASS.

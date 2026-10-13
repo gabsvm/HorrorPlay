@@ -1,6 +1,6 @@
 # El Huésped — guion completo
 
-_Generado desde el código del juego (2026-10-12) con `node web/tools/script/export.mjs`. Es todo lo que el jugador puede leer: diálogos, pensamientos de Thomas, elecciones, documentos, objetivos y el cuaderno._
+_Generado desde el código del juego (2026-10-13) con `node web/tools/script/export.mjs`. Es todo lo que el jugador puede leer: diálogos, pensamientos de Thomas, elecciones, documentos, objetivos y el cuaderno._
 
 ## Cómo está hecho el juego (para reescribirlo)
 
