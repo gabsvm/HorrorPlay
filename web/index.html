@@ -22,11 +22,27 @@
       <div id="sanity" title="Cordura"><div id="sanity-fill"></div></div>
       <div id="hud-buttons">
         <button id="btn-reveal" class="hud-btn" title="Revelar puntos de interés (Espacio)">Revelar</button>
+        <button id="btn-inv" class="hud-btn" title="Inventario (I)" aria-haspopup="dialog">Inventario<span id="inv-count"></span></button>
         <button id="btn-notebook" class="hud-btn" title="Cuaderno (N)">Cuaderno<span id="nb-badge" class="hidden"></span></button>
         <button id="btn-menu" class="hud-btn" title="Menú (Esc)">Menú</button>
       </div>
     </div>
-    <div id="inventory" class="hidden"></div>
+    <!-- the object in hand: a small marker, never a bar over the scene -->
+    <div id="held" class="hidden" role="status" aria-live="polite"><canvas id="held-icon" width="48" height="48" aria-hidden="true"></canvas><span id="held-name"></span><button id="held-cancel" type="button">Cancelar</button></div>
+    <!-- the inventory: a case that opens on request (I, or the HUD button) -->
+    <div id="inv-modal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="inv-title">
+      <div id="inv-case">
+        <h2 id="inv-title">Inventario</h2>
+        <div id="inv-body">
+          <div id="inv-grid" role="listbox" aria-label="Objetos"></div>
+          <div id="inv-detail">
+            <h3 id="inv-dname"></h3>
+            <p id="inv-dtext" aria-live="polite"></p>
+            <div id="inv-actions"><button id="inv-examine" type="button">Examinar</button><button id="inv-use" type="button">Usar</button><button id="inv-close" type="button">Cerrar</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div id="hover-label" class="hidden"></div>
     <div id="cursor"></div>
     <canvas id="cursor-item" width="48" height="48" class="hidden"></canvas>

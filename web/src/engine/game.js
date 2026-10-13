@@ -151,14 +151,21 @@ export class Game {
     });
     v.addEventListener('contextmenu', (e) => e.preventDefault());
     window.addEventListener('keydown', (e) => {
+      if (this.ui.inventoryOpen) {   // the case keeps the keyboard: Escape closes it, nothing else reaches the scene
+        if (e.key === 'Escape' || e.key === 'i' || e.key === 'I') this.ui._invClose?.();
+        return;
+      }
       if (e.key === 'n' || e.key === 'N') this.toggleNotebook();
+      if (e.key === 'i' || e.key === 'I') this.openInventory();
       if (e.key === 'Escape') {
-        if (this.ui.notebookOpen) this.ui.closeNotebook();
+        if (this.ui._docClose) this.ui._docClose();
+        else if (this.ui.notebookOpen) this.ui.closeNotebook();
         else if (this.selectedItem) this.selectItem(null);
         else if (this.onPause) this.onPause();
       }
     });
     document.getElementById('btn-notebook').addEventListener('click', () => this.toggleNotebook());
+    document.getElementById('btn-inv').addEventListener('click', (e) => { e?.stopPropagation?.(); this.openInventory(); });
     document.getElementById('btn-reveal').addEventListener('click', () => this.reveal());
     window.addEventListener('keydown', (e) => { if (e.key === ' ' && !this.ui._advance && !this.running) { e.preventDefault(); this.reveal(); } });
   }
@@ -315,14 +322,39 @@ export class Game {
     this.refreshInventory();
   }
 
-  refreshInventory(newId) {
-    this.ui.renderInventory(this.state.items, this.itemDefs, this.selectedItem, (id) => {
-      if (this.running) return;
-      const def = this.itemDefs[id];
-      if (this.selectedItem === id && def.examine) { this.selectItem(null); this.run((G) => def.examine(G)); return; }
-      this.selectItem(id);
-      if (this.selectedItem) this.ui.toast(`${def.name} — elige dónde usarlo (otra vez para examinar)`, 2600);
-    }, newId);
+  // the HUD (count and the object in hand) is rebuilt from state.items every time: nothing about it is saved
+  refreshInventory() {
+    if (this.selectedItem && !this.state.items.includes(this.selectedItem)) this.selectedItem = null;
+    this.ui.renderHud(this.state.items, this.itemDefs, this.selectedItem, () => this.selectItem(null));
+  }
+
+  // the inventory case: only when the player has control (no script, menu, notebook, cinematic or signature)
+  openInventory() {
+    if (this.running || this.inMenu || this.ui.notebookOpen || !this.scene || this.scene.noPlayer || this.ui.inventoryOpen) return false;
+    this.ui.openInventory(this.state.items, this.itemDefs, {
+      describe: (id) => this.describeItem(id),
+      canUse: () => !this.running && !this.inMenu,
+      onUse: (id) => {
+        this.selectedItem = id;
+        this.refreshInventory();
+        this.ui.toast(`${this.itemDefs[id].name}: toca dónde usarlo, o Cancelar`, 2600);
+      },
+    });
+    return true;
+  }
+
+  // what an object's own examine says, collected into the case instead of said behind it (it only reads state)
+  async describeItem(id) {
+    const def = this.itemDefs[id];
+    if (!def || !def.examine) return [];
+    const lines = [];
+    const plain = (t) => String(t ?? '').replace(/<[^>]+>/g, '');
+    const G2 = Object.create(this.G);
+    G2.think = async (t) => { lines.push(plain(t)); };
+    G2.narrate = G2.think;
+    G2.say = async (n, t) => { lines.push(plain(t)); };
+    try { await def.examine(G2); } catch (err) { console.error(err); }
+    return lines;
   }
 
   // ------------------------------------------------------------ deduction
@@ -573,16 +605,7 @@ export class Game {
     }
   }
 
-  // The satchel shows itself when the pointer goes near it, while an item is held, just after
-  // something new arrives, and always on touch screens.
-  updateSatchel() {
-    const p = this.pointer;
-    const show = !!this.selectedItem || p.touch || this.ui.coarse || this.ui.invHover || (p.inside && p.y > 560) || performance.now() < (this.invShowUntil || 0) || this.ui.notebookOpen;
-    this.ui.invTuck(!show);
-  }
-
   updateHover() {
-    this.updateSatchel();
     const p = this.pointer;
     const c = this.cursorEl;
     if (this.cursorItemEl && (!p.inside || p.touch || this.inMenu)) this.cursorItemEl.classList.add('hidden');
@@ -859,17 +882,14 @@ export class Game {
         if (game.state.items.includes(id)) return;
         game.state.items.push(id);
         G.tipOnce('item', {
-          mouse: 'Para usar un objeto, haz clic en él en el inventario y luego en lo que quieras usarlo. Dos clics sobre el objeto lo examinan. <kbd>Esc</kbd> lo suelta.',
-          touch: 'Para usar un objeto, tócalo en el inventario y luego toca dónde usarlo. Tócalo dos veces para examinarlo.',
+          mouse: 'Los objetos van al <b>Inventario</b> (botón de arriba o <kbd>I</kbd>). Allí puedes <b>Examinar</b> o <b>Usar</b> cada uno; <b>Usar</b> lo deja en la mano para elegir dónde. <kbd>Esc</kbd> lo suelta.',
+          touch: 'Los objetos van al <b>Inventario</b> (botón de arriba). Allí puedes <b>Examinar</b> o <b>Usar</b> cada uno; <b>Usar</b> lo deja en la mano para tocar dónde. <b>Cancelar</b> lo suelta.',
         }, 8000);
-        game.refreshInventory(id);
+        game.refreshInventory();
         game.ui.toast(`Obtienes: ${game.itemDefs[id].name}`);
         audio.pickup();
-        // the satchel opens to receive it and the icon flies there from where it was found
-        game.invShowUntil = performance.now() + 3200;
-        game.ui.invTuck(false);
-        const p = game.player, from = game.actingAt || { x: p.x - game.r.cam.x, y: p.y - p.h * 0.5 };
-        if (!window.FAST) game.ui.flyItem(game.itemDefs[id], id, from);
+        // the inventory button answers; nothing flies to a bar that is not there
+        game.ui.itemArrived();
         game.actingAt = null;
       },
       take: (id) => {

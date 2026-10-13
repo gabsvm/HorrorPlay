@@ -50,12 +50,6 @@ button { font-family: var(--sc); color: var(--ink); background: none; border: 0;
 @keyframes pulse { 50% { color: #ffd88a; text-shadow: 0 0 calc(14*var(--u)) #b08a4e; } }
 
 /* Inventory */
-#inventory { position: absolute; left: 50%; bottom: calc(14 * var(--u)); transform: translateX(-50%); display: flex; gap: calc(10 * var(--u)); }
-.inv-item { width: calc(68 * var(--u)); height: calc(68 * var(--u)); border: 1px solid rgba(176,138,78,0.35); background: rgba(6,8,10,0.72); position: relative; cursor: pointer; transition: border-color .2s, transform .2s; }
-.inv-item canvas { width: 100%; height: 100%; display: block; image-rendering: crisp-edges; image-rendering: pixelated; }
-.inv-item:hover { border-color: var(--gold); transform: translateY(calc(-3 * var(--u))); }
-.inv-item.selected { border-color: #ffd88a; box-shadow: 0 0 calc(14 * var(--u)) rgba(255, 200, 120, 0.35); }
-.inv-item.new { animation: newitem 1.6s ease-out; }
 @keyframes newitem { 0% { transform: scale(1.4); box-shadow: 0 0 calc(30*var(--u)) #ffd88a; } 100% { transform: none; } }
 
 #hover-label { position: absolute; font-family: var(--sc); font-size: calc(20 * var(--u)); color: #f3e6c8; text-shadow: 0 0 calc(4*var(--u)) #000, 0 0 calc(12*var(--u)) #000; transform: translate(-50%, -100%); margin-top: calc(-22 * var(--u)); white-space: nowrap; letter-spacing: 0.04em; text-align: center; line-height: 1.15; }
@@ -175,7 +169,6 @@ html.touch .choice-prompt { font-size: max(calc(22 * var(--u)), 14px); }
 .menu-btn:disabled { opacity: 0.25; cursor: default; letter-spacing: 0.1em; }
 .menu-foot { margin-top: calc(50*var(--u)); font-style: italic; color: var(--ink-dim); font-size: calc(17*var(--u)); }
 
-#ui.busy #hud-buttons, #ui.busy #inventory { opacity: 0.35; pointer-events: none; }
 
 /* Cursor */
 #ui > #cursor { pointer-events: none; }
@@ -200,19 +193,8 @@ html.touch .choice-prompt { font-size: max(calc(22 * var(--u)), 14px); }
 @keyframes dlgin { from { opacity: 0; transform: translateX(-50%) translateY(calc(14 * var(--u))); } }
 
 /* ---- Inventory: a leather satchel strip that tucks away when not needed ---- */
-#inventory { padding: calc(8*var(--u)) calc(12*var(--u)); background: linear-gradient(180deg, #2c1e14, #1a110b); border: 1px solid rgba(176,138,78,0.45); border-radius: calc(8*var(--u)) calc(8*var(--u)) 0 0; box-shadow: 0 calc(-6*var(--u)) calc(24*var(--u)) rgba(0,0,0,0.6), inset 0 0 0 calc(4*var(--u)) rgba(0,0,0,0.25); outline: 1px dashed rgba(196,160,96,0.28); outline-offset: calc(-6*var(--u)); bottom: 0; transition: transform .28s cubic-bezier(.2,.8,.2,1), opacity .2s; }
-#inventory:empty { display: none; }
-#inventory.tuck { transform: translateX(-50%) translateY(calc(100% - 16 * var(--u))); }
-#inventory::before { content: "▴ Bolsa"; position: absolute; left: 50%; top: calc(-22*var(--u)); transform: translateX(-50%); font-family: var(--sc); font-size: calc(14*var(--u)); letter-spacing: .12em; color: rgba(214,186,128,0.8); padding: calc(2*var(--u)) calc(12*var(--u)); background: #1f150e; border: 1px solid rgba(176,138,78,0.4); border-bottom: none; border-radius: calc(6*var(--u)) calc(6*var(--u)) 0 0; opacity: 0; transition: opacity .2s; pointer-events: none; }
-#inventory.tuck::before { opacity: 1; }
-.inv-item { background: radial-gradient(ellipse at 50% 40%, rgba(60,44,28,0.9), rgba(12,9,6,0.95)); border-radius: calc(4*var(--u)); border-color: rgba(176,138,78,0.4); }
-.inv-item .inv-name { position: absolute; left: 50%; bottom: calc(100% + 10*var(--u)); transform: translateX(-50%) translateY(calc(4*var(--u))); white-space: nowrap; font-size: calc(17*var(--u)); color: #f0e2c0; background: rgba(8,8,10,0.9); border: 1px solid rgba(176,138,78,0.4); padding: calc(3*var(--u)) calc(10*var(--u)); opacity: 0; transition: opacity .15s, transform .15s; pointer-events: none; }
-.inv-item:hover .inv-name { opacity: 1; transform: translateX(-50%); }
-.inv-item.selected { transform: translateY(calc(-8 * var(--u))); animation: held 1.4s ease-in-out infinite; }
 @keyframes held { 50% { box-shadow: 0 0 calc(22*var(--u)) rgba(255,200,120,0.55); } }
-.inv-item.arrive { animation: arrive .5s cubic-bezier(.2,1.6,.4,1); }
 @keyframes arrive { 0% { transform: scale(0.6); } 60% { transform: scale(1.18); box-shadow: 0 0 calc(30*var(--u)) #ffd88a; } 100% { transform: none; } }
-canvas.fly { position: absolute; width: calc(68*var(--u)); height: calc(68*var(--u)); image-rendering: pixelated; pointer-events: none; z-index: 5; filter: drop-shadow(0 0 calc(10*var(--u)) rgba(255,210,140,0.7)); }
 
 /* ---- Notebook as a bound book ---- */
 .book { padding: calc(12*var(--u)); background: linear-gradient(135deg, #3a2416, #22140c); border-radius: calc(10*var(--u)); box-shadow: inset 0 0 0 calc(2*var(--u)) rgba(176,138,78,0.25); }
@@ -271,7 +253,6 @@ html.touch #dlg-text { font-size: max(calc(25 * var(--u)), 15px); }
 html.touch #dialogue { width: calc(1000 * var(--u)); }
 html.touch .choice { font-size: max(calc(24 * var(--u)), 15px); padding: max(calc(10 * var(--u)), 10px) max(calc(22 * var(--u)), 14px); }
 html.touch #choices { width: calc(900 * var(--u)); }
-html.touch .inv-item { width: max(calc(68 * var(--u)), 46px); height: max(calc(68 * var(--u)), 46px); }
 html.touch .menu-btn { font-size: max(calc(26 * var(--u)), 17px); padding: max(calc(6 * var(--u)), 8px) calc(20 * var(--u)); }
 /* a finger needs about 44 px: the HUD buttons, the notebook tabs, its hint and close get that box (V4-16) */
 html.touch .hud-btn, html.touch #nb-tabs button, html.touch #nb-hint, html.touch #nb-close { min-height: 44px; min-width: 44px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; }
@@ -309,3 +290,36 @@ html.touch #cursor, html.touch #cursor-item { display: none !important; }
 #knocks .row { display: flex; gap: calc(14*var(--u)); justify-content: center; margin-top: calc(10*var(--u)); }
 #knocks .row button { position: static; }
 @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+/* ---- Inventory: a case opened on request (no bar over the scene) ---- */
+#ui.busy #hud-buttons, #ui.busy #held { opacity: 0.35; pointer-events: none; }
+#inv-count { color: var(--gold); }
+#btn-inv.arrive { animation: invArrive 0.9s ease-out; }
+@keyframes invArrive { 0% { color: #fff3d6; text-shadow: 0 0 calc(14*var(--u)) rgba(255,214,140,0.9); } 100% { text-shadow: 0 0 calc(6*var(--u)) #000; } }
+#held { position: absolute; left: 50%; bottom: calc(16 * var(--u)); transform: translateX(-50%); display: flex; align-items: center; gap: calc(10 * var(--u)); padding: calc(6*var(--u)) calc(8*var(--u)) calc(6*var(--u)) calc(10*var(--u)); background: rgba(12,9,6,0.82); border: 1px solid rgba(176,138,78,0.45); border-radius: calc(6*var(--u)); font-family: var(--serif); font-size: calc(17*var(--u)); color: #e6dcc4; pointer-events: auto; }
+#held canvas { width: calc(36*var(--u)); height: calc(36*var(--u)); image-rendering: pixelated; }
+#held-cancel { font-family: var(--sc); font-size: calc(15*var(--u)); color: #e6dcc4; background: rgba(60,40,24,0.9); border: 1px solid rgba(176,138,78,0.55); border-radius: calc(4*var(--u)); padding: calc(6*var(--u)) calc(12*var(--u)); }
+#inv-modal { position: absolute; inset: 0; background: rgba(4,3,2,0.72); display: flex; align-items: center; justify-content: center; z-index: 40; pointer-events: auto; }
+#inv-case { width: min(calc(900*var(--u)), 94%); max-height: 92%; display: flex; flex-direction: column; padding: calc(18*var(--u)) calc(22*var(--u)); background: linear-gradient(180deg, #3a2618, #24170e 60%, #1a100a); border: 2px solid #5a3e24; border-radius: calc(10*var(--u)); box-shadow: inset 0 0 0 calc(4*var(--u)) rgba(0,0,0,0.25), 0 calc(10*var(--u)) calc(40*var(--u)) rgba(0,0,0,0.8); color: #e6dcc4; }
+#inv-title { font-family: var(--sc); font-weight: 400; font-size: calc(24*var(--u)); letter-spacing: 0.12em; margin: 0 0 calc(12*var(--u)); color: var(--gold); }
+#inv-body { display: flex; gap: calc(18*var(--u)); min-height: 0; overflow: hidden; }
+#inv-grid { flex: 0 0 auto; display: grid; grid-template-columns: repeat(3, auto); gap: calc(10*var(--u)); align-content: start; overflow-y: auto; padding: calc(4*var(--u)); }
+.inv-slot { position: relative; width: calc(96*var(--u)); height: calc(96*var(--u)); min-width: 56px; min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(ellipse at 50% 40%, rgba(60,44,28,0.95), rgba(12,9,6,0.98)); border: 1px solid rgba(176,138,78,0.4); border-radius: calc(6*var(--u)); color: #e6dcc4; }
+.inv-slot canvas { width: 60%; height: 60%; image-rendering: pixelated; }
+.inv-slot-name { font-family: var(--serif); font-size: calc(12*var(--u)); line-height: 1.1; text-align: center; padding: 0 calc(4*var(--u)); }
+.inv-slot.selected { border-color: #ffd88a; box-shadow: 0 0 calc(12*var(--u)) rgba(255,200,120,0.45); }
+.inv-slot:focus-visible, #inv-actions button:focus-visible, #held-cancel:focus-visible { outline: 2px solid #ffd88a; outline-offset: 2px; }
+#inv-detail { flex: 1 1 auto; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+#inv-dname { font-family: var(--serif); font-size: calc(24*var(--u)); margin: 0 0 calc(8*var(--u)); }
+#inv-dtext { flex: 1 1 auto; overflow-y: auto; white-space: pre-line; font-family: var(--serif); font-style: italic; font-size: calc(19*var(--u)); line-height: 1.4; margin: 0 0 calc(12*var(--u)); color: #dccfae; }
+#inv-actions { display: flex; flex-wrap: wrap; gap: calc(10*var(--u)); }
+#inv-actions button { min-height: 48px; padding: calc(8*var(--u)) calc(18*var(--u)); font-family: var(--sc); font-size: calc(18*var(--u)); letter-spacing: 0.06em; color: #f0e4c4; background: rgba(70,46,26,0.95); border: 1px solid rgba(176,138,78,0.6); border-radius: calc(5*var(--u)); }
+#inv-actions button:disabled { opacity: 0.4; }
+html.touch #held { font-size: max(calc(17*var(--u)), 13px); }
+html.touch #held-cancel { min-height: 44px; min-width: 44px; font-size: max(calc(15*var(--u)), 13px); }
+html.touch .inv-slot-name { font-size: max(calc(12*var(--u)), 11px); }
+html.touch #inv-dname { font-size: max(calc(24*var(--u)), 15px); }
+html.touch #inv-dtext { font-size: max(calc(19*var(--u)), 13px); }
+html.touch #inv-actions button { font-size: max(calc(18*var(--u)), 14px); }
+html.touch #inv-title { font-size: max(calc(24*var(--u)), 15px); }
+@media (max-height: 420px) { #inv-case { padding: 8px 12px; } #inv-title { margin-bottom: 4px; } }

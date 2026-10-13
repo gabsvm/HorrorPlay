@@ -131,14 +131,22 @@ game.onPause = () => {
 document.getElementById('btn-menu').addEventListener('click', () => game.onPause());
 
 // Android app hooks: Back pauses (or closes what is open), leaving the app saves and goes quiet.
+// Android Back, in a fixed order: the innermost thing that can be closed is closed; a decision is never taken for the player
 window.__appBack = () => {
-  if (game.ui._inspectClose) { game.ui._inspectClose(); return; }
-  if (game.ui.notebookOpen) { game.ui.closeNotebook(); return; }
-  if (game.ui._advance) { game.ui.advance(); return; }
+  const ui = game.ui;
+  if (ui._itemDetailClose) { ui._itemDetailClose(); return; }   // an object's own view, inside the inventory
+  if (ui._invClose) { ui._invClose(); return; }                 // the inventory
+  if (ui._docClose) { ui._docClose(); return; }                 // a document, even in the middle of a scene
+  if (ui._inspectClose) { ui._inspectClose(); return; }
+  if (ui.notebookOpen) { ui.closeNotebook(); return; }
+  if (ui._talkCancel) { ui._talkCancel(); return; }             // a conversation menu that can be left
+  if (ui._choiceKeys) return;                                   // any other choice waits for the player
+  if (ui._advance) { ui.advance(); return; }
   if (game.onPause) game.onPause();
 };
-window.__appPause = () => { game.autosave(); if (audio.ctx) audio.ctx.suspend(); };
-window.__appResume = () => { if (audio.ctx) audio.ctx.resume(); };
+// in the background a timed choice does not run out: its clock stops and starts again on return
+window.__appPause = () => { game.autosave(); game.ui.pauseClock?.(); if (audio.ctx) audio.ctx.suspend(); };
+window.__appResume = () => { if (audio.ctx) audio.ctx.resume(); game.ui.resumeClock?.(); };
 
 game.finish = () => {
   Game.clearSave();

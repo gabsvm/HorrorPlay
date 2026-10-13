@@ -44,7 +44,9 @@ export class UI {
       ui: $('ui'), hud: $('hud'), date: $('date'), clock: $('clock'), sanity: $('sanity-fill'),
       dlg: $('dialogue'), dlgName: $('dlg-name'), dlgText: $('dlg-text'), dlgNext: $('dlg-next'),
       choices: $('choices'), toast: $('toast'), hover: $('hover-label'),
-      inv: $('inventory'), nb: $('notebook'), clueList: $('clue-list'), dedList: $('deduction-list'),
+      invBtn: $('btn-inv'), invCount: $('inv-count'), held: $('held'), heldIcon: $('held-icon'), heldName: $('held-name'), heldCancel: $('held-cancel'),
+      invModal: $('inv-modal'), invGrid: $('inv-grid'), invDName: $('inv-dname'), invDText: $('inv-dtext'), invExamine: $('inv-examine'), invUse: $('inv-use'), invClose: $('inv-close'),
+      nb: $('notebook'), clueList: $('clue-list'), dedList: $('deduction-list'),
       profList: $('profile-list'), profTitle: $('profile-title'), nbFeedback: $('nb-feedback'), theoryList: $('theory-list'),
       doc: $('document'), docBody: $('doc-body'), card: $('card'),
       nameEntry: $('name-entry'), namePrompt: $('name-prompt'), nameInput: $('name-input'), nameOk: $('name-ok'),
@@ -65,8 +67,10 @@ export class UI {
     for (const b of document.querySelectorAll ? document.querySelectorAll('#nb-tabs button') : []) b.addEventListener('click', () => { audio.paper?.(); this.notebookTab(b.dataset.tab); });
     $('nb-hint').addEventListener('click', () => this.hint());
     this.selectedClues = [];
-    this.el.inv.addEventListener('pointerenter', () => { this.invHover = true; });
-    this.el.inv.addEventListener('pointerleave', () => { this.invHover = false; });
+    // the marker of the object in hand cancels it; the case blocks the scene under it, and a press outside its panel closes it
+    this.el.heldCancel.addEventListener('pointerdown', (e) => e.stopPropagation());
+    this.el.heldCancel.addEventListener('click', (e) => { e.stopPropagation?.(); audio.click(); this._heldCancel?.(); });
+    this.el.invModal.addEventListener('pointerdown', (e) => { e.stopPropagation(); if (e.target === this.el.invModal) this._invClose?.(); });
     this.coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
     // «Mi postura» (positions.js): one listener on the list, so re-rendering never stacks them. A press on
     // a question's line folds or unfolds it (page state only); an option writes the position. Each press
@@ -94,7 +98,7 @@ export class UI {
   focusPosture(sel) { this.el.theoryList?.querySelector?.(sel)?.focus?.(); }
 
   busy(on) { this.el.ui.classList.toggle('busy', on); }
-  showHud(on) { this.el.hud.classList.toggle('hidden', !on); this.el.inv.classList.toggle('hidden', !on); }
+  showHud(on) { this.el.hud.classList.toggle('hidden', !on); if (!on) this.el.held.classList.add('hidden'); else if (this._heldCancel) this.el.held.classList.remove('hidden'); }
 
   setDate(date, clock) {
     if (date != null) this.el.date.textContent = date;
@@ -179,7 +183,12 @@ export class UI {
         bar.className = 'timer';
         bar.style.animationDuration = `${timeout}ms`;
         box.appendChild(bar);
-        timer = setTimeout(() => { box.classList.add('hidden'); this._choiceKeys = null; res(def); }, timeout);
+        const expire = () => { box.classList.add('hidden'); this._choiceKeys = null; this.pauseClock = this.resumeClock = null; res(def); };
+        let deadline = performance.now() + timeout, left = 0;
+        timer = setTimeout(expire, timeout);
+        // the clock stops while the app is away (Android pause) and resumes with the time that was left
+        this.pauseClock = () => { if (!timer) return; clearTimeout(timer); timer = null; left = Math.max(0, deadline - performance.now()); bar.style.animationPlayState = 'paused'; };
+        this.resumeClock = () => { if (timer || !left) return; deadline = performance.now() + left; timer = setTimeout(expire, left); bar.style.animationPlayState = 'running'; };
       }
       this._choiceKeys = options.map((opt, i) => {
         const b = document.createElement('button');
@@ -190,6 +199,7 @@ export class UI {
           e.stopPropagation();
           if (performance.now() - shown < 280) return;   // the click that ended the last line, landing here
           if (timer) clearTimeout(timer);
+          this.pauseClock = this.resumeClock = null;
           audio.click();
           box.classList.add('hidden');
           this._choiceKeys = null;
@@ -406,69 +416,120 @@ export class UI {
   }
 
   // ------------------------------------------------------------ inventory
-  renderInventory(items, defs, selected, onSelect, newId) {
-    const inv = this.el.inv;
-    inv.innerHTML = '';
+  // No bar over the scene: a HUD button with the count, a small marker for the object in hand, and a case
+  // that opens on request. Select, examine, use and close are separate buttons (no hidden double tap). The
+  // open case is page state only: it is rebuilt from state.items every time and is never saved.
+  itemPix(d) {
+    if (!d._pix) {
+      const cv = document.createElement('canvas');
+      cv.width = 96; cv.height = 96;
+      d.icon(cv.getContext('2d'));
+      d._pix = pixelize(cv, 0.5, { dither: 6, edge: 0.55 });
+    }
+    return d._pix;
+  }
+
+  // the HUD: "Inventario (n)", and the marker of the object in hand with its Cancel button
+  renderHud(items, defs, selected, onCancel) {
+    const n = items.length;
+    this.el.invCount.textContent = n ? ` (${n})` : '';
+    this.el.invBtn.setAttribute?.('aria-label', `Inventario: ${n} ${n === 1 ? 'objeto' : 'objetos'}`);
+    const d = selected && defs[selected];
+    if (d) {
+      const c = this.el.heldIcon.getContext('2d');
+      c.clearRect(0, 0, 48, 48);
+      c.drawImage(this.itemPix(d), 0, 0);
+      this.el.heldName.textContent = `${d.name}: elige dónde usarlo`;
+      this.el.held.classList.remove('hidden');
+    } else this.el.held.classList.add('hidden');
+    this._heldCancel = d ? onCancel : null;
+  }
+
+  // something new went into the case: the button answers, no icon flies to a slot that is not there
+  itemArrived() {
+    const b = this.el.invBtn;
+    b.classList.remove('arrive'); void b.offsetWidth; b.classList.add('arrive');
+  }
+
+  get inventoryOpen() { return !this.el.invModal.classList.contains('hidden'); }
+
+  // open the case: o = { describe(id) -> Promise<string[]>, canUse() -> bool, onUse(id) }
+  openInventory(items, defs, o) {
+    if (this.inventoryOpen) return;
+    const m = this.el.invModal, grid = this.el.invGrid;
+    const before = document.activeElement;
+    grid.innerHTML = '';
+    const slots = [];
+    let current = null, reading = 0;
+    const show = (id) => {
+      current = id;
+      for (const b of slots) {
+        const on = b.dataset.id === id;
+        b.classList.toggle('selected', on);
+        b.setAttribute?.('aria-selected', on ? 'true' : 'false');
+      }
+      const d = id && defs[id];
+      this.el.invDName.textContent = d ? d.name : 'Vacío';
+      this.el.invDText.textContent = d ? 'Examinar lee lo que Thomas ve en él. Usar lo deja en la mano para elegir dónde.' : 'No llevas nada.';
+      this.el.invExamine.disabled = !d || !d.examine;
+      this.el.invUse.disabled = !d || !o.canUse();
+    };
     for (const id of items) {
       const d = defs[id];
-      const b = document.createElement('div');
-      b.className = 'inv-item' + (selected === id ? ' selected' : '');
+      if (!d) continue;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'inv-slot';
       (b.dataset ||= {}).id = id;
-      if (newId === id) b.style.visibility = 'hidden';   // shown when the flying icon lands
-      if (!d._pix) {
-        const cv = document.createElement('canvas');
-        cv.width = 96; cv.height = 96;
-        d.icon(cv.getContext('2d'));
-        d._pix = pixelize(cv, 0.5, { dither: 6, edge: 0.55 });
-      }
+      b.setAttribute?.('role', 'option');
+      b.setAttribute?.('aria-label', d.name);
       const pix = document.createElement('canvas');
       pix.width = 48; pix.height = 48;
-      pix.getContext('2d').drawImage(d._pix, 0, 0);
+      pix.getContext('2d').drawImage(this.itemPix(d), 0, 0);
       b.appendChild(pix);
       const label = document.createElement('span');
-      label.className = 'inv-name'; label.textContent = d.name;
+      label.className = 'inv-slot-name'; label.textContent = d.name;
       b.appendChild(label);
-      b.addEventListener('pointerdown', (e) => { e.stopPropagation(); audio.click(); onSelect(id); });
-      inv.appendChild(b);
+      b.addEventListener('pointerdown', (e) => e.stopPropagation());
+      b.addEventListener('click', (e) => { e.stopPropagation?.(); audio.click(); show(id); });
+      grid.appendChild(b);
+      slots.push(b);
     }
-  }
-
-  // Tuck the satchel down to its handle when nothing needs it.
-  invTuck(on) {
-    if (this._tucked === on) return;
-    this._tucked = on;
-    this.el.inv.classList.toggle('tuck', on);
-  }
-
-  // A new item leaves the place it was found and drops into its slot.
-  flyItem(def, id, from) {
-    const slot = this.el.inv.querySelector(`.inv-item[data-id="${id}"]`);
-    if (!slot || !def._pix) { if (slot) slot.style.visibility = ''; return; }
-    const ui = this.el.ui.getBoundingClientRect();
-    const u = ui.width / 1280;
-    const f = document.createElement('canvas');
-    f.width = 48; f.height = 48; f.className = 'fly';
-    f.getContext('2d').drawImage(def._pix, 0, 0);
-    const x0 = from.x * u - 34 * u, y0 = from.y * u - 34 * u;
-    f.style.left = `${x0}px`; f.style.top = `${y0}px`;
-    this.el.ui.appendChild(f);
-    // wait for the satchel to slide up, then aim at where the slot really is
-    setTimeout(() => {
-      const r = slot.getBoundingClientRect();
-      const dx = r.left - ui.left - x0, dy = r.top - ui.top - y0;
-      const lift = -60 * u;
-      const anim = f.animate([
-        { transform: 'translate(0,0) scale(0.4)', opacity: 0 },
-        { transform: `translate(0,${lift}px) scale(1.5)`, opacity: 1, offset: 0.3 },
-        { transform: `translate(${dx}px,${dy}px) scale(1)`, opacity: 1 },
-      ], { duration: 950, easing: 'cubic-bezier(.45,0,.25,1)' });
-      anim.onfinish = () => {
-        f.remove();
-        slot.style.visibility = '';
-        slot.classList.remove('arrive'); void slot.offsetWidth; slot.classList.add('arrive');
-        audio.click();
-      };
-    }, 300);
+    const close = () => {
+      m.classList.add('hidden');
+      m.removeEventListener('keydown', trap);
+      this._invClose = null;
+      audio.bookClose?.();
+      (before && before.focus ? before : this.el.invBtn).focus?.();
+    };
+    // examine: the object's own words, read here, not said behind the case
+    const examine = async () => {
+      if (!current) return;
+      const ticket = ++reading;
+      this.el.invDText.textContent = '…';
+      const lines = await o.describe(current);
+      if (ticket !== reading || !this.inventoryOpen) return;
+      this.el.invDText.textContent = lines.length ? lines.join('\n\n') : 'Nada que añadir.';
+    };
+    const use = () => { if (!current || !o.canUse()) return; const id = current; close(); o.onUse(id); };
+    this.el.invExamine.onclick = (e) => { e?.stopPropagation?.(); examine(); };
+    this.el.invUse.onclick = (e) => { e?.stopPropagation?.(); use(); };
+    this.el.invClose.onclick = (e) => { e?.stopPropagation?.(); close(); };
+    // keep the keyboard inside the case (Tab and Shift+Tab cycle through what is enabled)
+    const trap = (e) => {
+      if (e.key !== 'Tab') return;
+      const f = [...slots, this.el.invExamine, this.el.invUse, this.el.invClose].filter((x) => !x.disabled);
+      if (!f.length) return;
+      const i = f.indexOf(document.activeElement);
+      const next = e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : (i === f.length - 1 ? 0 : i + 1);
+      e.preventDefault(); f[next].focus();
+    };
+    m.addEventListener('keydown', trap);
+    m.classList.remove('hidden');
+    this._invClose = close;
+    audio.bookOpen?.();
+    show(items.find((id) => defs[id]) || null);
+    (slots[0] || this.el.invClose).focus?.();
   }
 
   // ------------------------------------------------------------ notebook
