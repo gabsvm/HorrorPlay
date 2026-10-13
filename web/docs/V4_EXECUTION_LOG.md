@@ -1485,3 +1485,11 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - **P3, corregido:** con movimiento reducido no hay sacudidas en ninguna escena (`G.shake` a 0).
 - Pendiente de la tabla: el «corte» de entrada y salida de la persecución (entra con fundido y sale por las escaleras). `test-all`: 39 PASS.
 - Revisión del observador sobre f991972: P1 resuelto; dos P2 y un P3 corregidos. La opción buena del cruce 1 dice «Seguir recto, hacia las farolas.» (la «luz» podía confundirse con la linterna de Wentworth). El reloj cuenta 45 ms por carácter de la pregunta **y** las opciones. El guion (`GUION.md`) imprime ahora la pregunta de cada cruce (`tools/script/export.mjs`), y el modo FAST la registra (`  ? …`). Pendiente: medir la pregunta en móvil con texto grande (a 640×360 puede ocupar dos líneas). `test-all`: 39 PASS.
+
+## F11 — capturas que faltaban, 2026-10-13
+
+- **Goulston** (1280×720 y 1920×1080): la aparición con el encuadre a 1,6 sobre la jamba y «HERE I AM» en el ladrillo. En la captura sale el aviso de primera pista («Las pistas se anotan solas…») porque la partida se abrió directamente en la escena; en una partida normal ya habría salido antes.
+- **Expediente de Greaves** (1280×720 y 1920×1080): la página ocupa la pantalla y se lee entera.
+- **Examen de Annie** (1280×720 y 1920×1080): el primer plano pintado abierto.
+- **Pregunta de la persecución en teléfono** (640×360 y 800×360, clase `touch`): la pregunta ocupa una línea y el cuadro de opciones queda entero dentro de la pantalla (de 160 a 275 px de alto).
+- Capturas en el directorio de trabajo, no versionadas. Con esto todas las tomas tienen captura salvo la primera mirada al desagüe con su silencio.
