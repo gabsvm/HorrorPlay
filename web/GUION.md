@@ -760,7 +760,7 @@ _Archivo: src/scenes/seance.js_
   - > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
     - **Los espejos.**
       - **Madame Wexley:** Aquí tapamos los espejos cuando alguien muere. Yo no lo hice. Creí que era más valiente.
-    - **¿Empezamos, madame?**
+    - **¿Y la sesión?**
       - **Madame Wexley:** Siéntese cuando quiera. Ella ya está aquí. _(si state.flags.comb_custody === 'pike')_
       - **Madame Wexley:** El peine. No estoy fingiendo que no lo veo. _(si no)_
 

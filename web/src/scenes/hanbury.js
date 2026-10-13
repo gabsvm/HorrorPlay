@@ -200,7 +200,7 @@ export default {
           // after his two beats, the conversation stays open (G.talk); nothing in it changes the case
           pike.talking = false;
           await G.talk('pike', [
-            { id: 'phillips', label: '¿Qué calcula Phillips?', run: async (G) => {
+            { id: 'phillips', label: '¿Qué calcula Phillips?', done: (G) => G.hasClue('ordenados'), run: async (G) => {
               pike.talking = true;
               await G.say('Pike', 'Phillips calcula entre las cuatro y media y las cinco y media.');
               pike.talking = false;

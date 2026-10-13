@@ -1508,7 +1508,7 @@ Veredicto: REQUEST_CHANGES, sin P0 ni P1. Se corrige:
 - Con un objeto en la mano, Atrás lo suelta primero, igual que Escape.
 - Espacio no lanza «Revelar» detrás del maletín abierto.
 - Objetivos táctiles de 48 px en Inventario, Cuaderno y Cancelar.
-- `describeItem` anula toda escritura (pistas, objetos, cordura, flags, documentos, elecciones...), así que la pureza ya no depende de lo que hagan hoy los `examine`.
+- `describeItem` anula las escrituras a través de la API `G` (pistas, objetos, cordura, flags, documentos, elecciones, cambios de escena, visiones, conversaciones...). Un `examine` que tocara `G.state` directamente o el audio no queda cubierto; hoy ninguno lo hace.
 - La prueba comprueba que `selectedItem` no se guarda.
 
 Quedan anotados P3 sin cambio: flechas en el listbox; nombres de ranura a 11–12 px; reloj pausado justo a 0.
@@ -1519,7 +1519,7 @@ Quedan anotados P3 sin cambio: flechas en el listbox; nombres de ranura a 11–1
 - Cada tema tiene un id estable. Un tema ya oído se marca con «✓» y puede volver a oírse:
   - `repeat` repite las palabras sin sus efectos (objetivo, pensamiento, cordura).
   - Si no hay `repeat`, se repite `run`, cuyos efectos son idempotentes (pistas y flags).
-- Las acciones (hoja de rondas, libreta, cerrar la noche) cierran la conversación y no llevan marca.
+- Las acciones (hoja de rondas, libreta, cerrar la noche) cierran la conversación. Se registran en `conversationSeen`, pero no se muestran con ✓: desaparecen por su propia condición.
 - **Guardado:**
   - `state.conversationSeen["escena:personaje"]` guarda la lista de ids.
   - `normalizeState` añade el registro y lo limpia; la migración es idempotente.
@@ -1533,7 +1533,40 @@ Quedan anotados P3 sin cambio: flechas en el listbox; nombres de ranura a 11–1
 - **Pruebas:**
   - Nuevo escenario `dialogue-topics`: médico → la mujer → médico otra vez → nada más; sin pista ni anotación duplicadas; el desolladero oído otra vez no devuelve el objetivo; la hoja de rondas solo tras Neil; las marcas sobreviven a reanudar; Brennan desbloquea por orden; migración de una partida antigua.
   - Las pruebas que daban por hecho que un tema oído desaparecía se cambian a «se ofrece con ✓».
-  - Los recorridos eligen por texto, no por posición.
+  - Los recorridos eligen los temas de conversación por texto; las elecciones internas de un puzle o de una escena siguen por posición.
 - **Exportador del guion:** muestra cada conversación con sus temas, condiciones, palabras y «Oído otra vez».
 - **Comprobado en Chrome headless** a 640×360 (táctil) y 1280×720: menú con ✓, el tema nuevo se desbloquea, Atrás cierra sin dejar un guion colgado.
 - **Resultado:** `test-all` 41 PASS.
+
+### Revisión de Opus del bloque 3 (e92b9bd), y lo que se corrigió
+
+Veredicto: REQUEST_CHANGES con dos P2, sin P0 ni P1. Se corrige:
+- La opción de Wexley «¿Empezamos, madame?» prometía empezar la sesión; ahora dice «¿Y la sesión?». La sesión sigue abriéndose en la mesa, fuera de un menú que se puede cancelar.
+- `dialogue-topics` comprueba que, tras la hoja de rondas, el menú no vuelve: sobra una elección de más. También comprueba en el código que los temas `beats`, `book` y `close` llevan `ends`.
+- P3 corregidos:
+  - El tema `phillips` sale con ✓ porque su primer encuentro ya lo dijo.
+  - `describeItem` también anula `goto`, `run`, `vision`, `mad`, `fade`, `nameEntry` y `talk`.
+  - Se corrigen las frases del registro.
+- P3 aceptado: el tema «¿Qué ha encontrado?» de Watkins puede salir con ✓ si la pista `trozo` llegó por el cuerpo y no por él. Es solo cosmético.
+- P3 anotado para el autor: «Y aún conservo tu vieja ficha» (Greaves, Hanbury) no es texto nuevo de esta tanda; ya estaba antes de 675df9f.
+
+## Bloque 4: móvil (toque, pantalla, movimiento reducido), 2026-10-13
+
+- **UX-04, movimiento reducido** (`game.js`): `flash`, `red` y `shake` no dan ningún empujón de cámara (`punch` = 0), y `updateZoom` ignora `punch` en ese modo. Se mantienen el destello atenuado y el rojo.
+- **UX-05, tolerancia del toque** (`hotspotAt`): con el dedo, un toque que no cae en ningún rectángulo toma el más cercano a 24 px CSS como mucho (un objetivo de 48 px, corregido por el zoom). Si hay varios igual de cerca, va antes una persona que una cosa, y una cosa antes que una salida. Con ratón, los rectángulos siguen exactos.
+- **Opciones en táctil:**
+  - Cada opción mide al menos 48 px.
+  - El menú baja, porque el cuadro de diálogo se oculta mientras se elige.
+  - Un menú largo se desplaza en vez de salirse por arriba.
+  - Medido a 640×360 con 8 opciones: el menú ocupa de 56 a 330 px, se desplaza y no tapa el HUD.
+- **Firma con el teclado del móvil:**
+  - Mientras se escribe, el escenario no se encoge.
+  - La firma se coloca en el centro de lo que sigue visible (`visualViewport`).
+  - Mínimos táctiles: texto de 24 px y botón de 48 px.
+- **Zonas seguras** (`env(safe-area-inset-*)`): botones del HUD, fecha y maletín.
+- **Medido en Chrome headless** a 640×360 y 800×360 (táctil), 1280×720 y 1920×1080:
+  - Opciones, diálogo, cuaderno en la pestaña Teorías (página derecha con desplazamiento, Cerrar visible) y firma: todo dentro de pantalla, sin errores de JS.
+  - En táctil, objetivos de 48 px; la pestaña Teorías y Cerrar, de 44 px.
+- **No medido:** el teclado real de Android sobre la firma, que necesita el dispositivo.
+- **Pruebas:** nuevo escenario `touch-motion` (tolerancia, prioridad, ratón exacto, `punch` = 0 con movimiento reducido).
+- **Resultado:** `test-all`, 42 PASS.

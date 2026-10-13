@@ -85,6 +85,10 @@ export class Game {
 
   fitStage() {
     const vw = window.innerWidth, vh = window.innerHeight;
+    // the phone's keyboard over the signature only shortens the viewport: the stage keeps its size and the
+    // signature moves into the part still visible (ui.nameEntry), instead of everything shrinking to a strip
+    if (this._fit && vw === this._fit.vw && vh < this._fit.vh && document.activeElement?.id === 'name-input') return;
+    this._fit = { vw, vh };
     const u = Math.min(vw / W, vh / H);
     document.documentElement.style.setProperty('--u', `${u}px`);
   }
@@ -106,7 +110,7 @@ export class Game {
     this.punch = Math.max(0, (this.punch || 0) - dt * 2.5);
     const k = Math.min(1, dt * (tg.speed || 1.6));
     zs.z += (tg.z - zs.z) * k; zs.x += (tg.x - zs.x) * k; zs.y += (tg.y - zs.y) * k;
-    const z = zs.z + this.punch * 0.05;
+    const z = zs.z + (prefs.reduceMotion ? 0 : this.punch * 0.05);
     const half = 0.5 / z;
     const ux = Math.max(half, Math.min(1 - half, (zs.x - this.r.cam.x) / W));
     const uy = Math.max(half, Math.min(1 - half, 1 - zs.y / H));
@@ -183,16 +187,31 @@ export class Game {
     else this.ui.openNotebook(this);
   }
 
+  // What is under the pointer. A finger is wider than its point: on touch, a tap that misses every rectangle
+  // still takes the nearest one within 24 CSS px (a 48 px target), and when several are that close, a person
+  // to talk to comes before a thing to examine, and a thing before a way out (UX audit 675df9f, UX-05).
   hotspotAt(p) {
     if (!this.scene) return null;
     const wx = p.x + this.r.cam.x, wy = p.y;
     const list = this.activeHotspots();
+    const rects = list.map((h) => (typeof h.rect === 'function' ? h.rect(this.G) : h.rect));
     for (let i = list.length - 1; i >= 0; i--) {
-      const h = list[i];
-      const [x, y, w, hh] = typeof h.rect === 'function' ? h.rect(this.G) : h.rect;
-      if (wx >= x && wx <= x + w && wy >= y && wy <= y + hh) return h;
+      const [x, y, w, hh] = rects[i];
+      if (wx >= x && wx <= x + w && wy >= y && wy <= y + hh) return list[i];
     }
-    return null;
+    if (!(p.touch ?? this.pointer?.touch) && !this.ui.coarse) return null;
+    const width = this.stage?.getBoundingClientRect?.().width || W;
+    const tol = 24 * (W / width) / (this.r.fx.zoom?.[0] || 1);
+    const rank = (h) => (h.cursor === 'talk' ? 0 : h.cursor === 'exit' ? 2 : 1);
+    let best = null, bestKey = Infinity;
+    list.forEach((h, i) => {
+      const [x, y, w, hh] = rects[i];
+      const d = Math.hypot(Math.max(x - wx, 0, wx - x - w), Math.max(y - wy, 0, wy - y - hh));
+      if (d > tol) return;
+      const key = rank(h) * tol + d;
+      if (key < bestKey) { bestKey = key; best = h; }
+    });
+    return best;
   }
 
   // How a hotspot presents itself to the player.
@@ -353,7 +372,7 @@ export class Game {
     // a reading only: whatever an examine might write (now or in a later version) goes nowhere
     const G2 = Object.create(this.G);
     const nothing = () => false;
-    for (const k of ['clue', 'give', 'take', 'sanity', 'sanityOnce', 'doc', 'card', 'toast', 'objective', 'deduce', 'profile', 'walk', 'zoom', 'shake', 'flash', 'red', 'inspect', 'tipOnce']) G2[k] = nothing;
+    for (const k of ['clue', 'give', 'take', 'sanity', 'sanityOnce', 'doc', 'card', 'toast', 'objective', 'deduce', 'profile', 'walk', 'zoom', 'shake', 'flash', 'red', 'inspect', 'tipOnce', 'goto', 'run', 'vision', 'mad', 'fade', 'nameEntry', 'talk']) G2[k] = nothing;
     G2.choice = async () => 0;
     G2.voice = async (t) => { lines.push(plain(t)); };
     G2.flag = (k, v) => (v === undefined ? this.G.flag(k) : v);
@@ -874,10 +893,11 @@ export class Game {
       stairs: (x, y, opts) => game.player.climb(x, y, opts),
       face: (dir) => { game.player.facing = dir; },
       fade: (v, ms = 800) => game.fadeTo(v, ms),
-      // with reduced motion the shocks stay, softened: a dimmer flash, a small jolt instead of a shake
-      flash: (v = 1) => { game.r.fx.flash = prefs.reduceMotion ? v * 0.35 : v; game.punch = prefs.reduceMotion ? 0.3 : 1; },
-      red: (v = 0.8) => { game.r.fx.red = prefs.reduceMotion ? v * 0.6 : v; game.punch = prefs.reduceMotion ? 0.3 : 1; },
-      shake: (v = 10) => { game.r.cam.shake = prefs.reduceMotion ? 0 : v; /* no shaking at all with reduced motion (F11 convention) */ game.punch = Math.max(game.punch || 0, prefs.reduceMotion ? 0.2 : 0.6); if (v >= 6) buzz(Math.min(90, v * 5)); },
+      // with reduced motion the shocks stay, softened: a dimmer flash, no shake
+      // the camera never jumps either (UX-04): the push of a shock (punch) is 0 in that mode
+      flash: (v = 1) => { game.r.fx.flash = prefs.reduceMotion ? v * 0.35 : v; game.punch = prefs.reduceMotion ? 0 : 1; },
+      red: (v = 0.8) => { game.r.fx.red = prefs.reduceMotion ? v * 0.6 : v; game.punch = prefs.reduceMotion ? 0 : 1; },
+      shake: (v = 10) => { game.r.cam.shake = prefs.reduceMotion ? 0 : v; /* no shaking at all with reduced motion (F11 convention) */ if (!prefs.reduceMotion) game.punch = Math.max(game.punch || 0, 0.6); if (v >= 6) buzz(Math.min(90, v * 5)); },
       // Kneel over a body and examine it close up. `points`: [{ id, x, y, r, name, act(G) }] in 1280x720.
       inspect: async (id, { title, body, points }) => {
         const seen = ((game.state.seen ||= {})[`insp:${id}`] ||= {});

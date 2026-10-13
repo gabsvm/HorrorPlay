@@ -52,6 +52,23 @@ export async function run(opts) {
     await act('pike', null, ['Nada más']);
     need(MENUS[m].some((t) => t === 'La hoja de rondas de esta noche.'), 'tras Neil, la hoja de rondas (una acción, sin marca)');
 
+    // a topic that closes the conversation: after the beat sheet no menu of Pike's comes back, so a spare pick
+    // is left over (the FAST rule «no picks left, leave» cannot hide a menu that reopens)
+    let spare = '';
+    try { await act('pike', null, ['La hoja de rondas de esta noche.', 'Entre las 3:30 y las 3:40', 'Nada más']); } catch (e) { spare = e.message; }
+    need(/Sobraron elecciones/.test(spare) && clue('ronda'), `tras la hoja de rondas la conversación se cierra: ${spare || 'el menú volvió'}`);
+    window.PICKS = [];
+    // every action topic in the scenes closes its conversation
+    const fs = await import('node:fs');
+    for (const f of ['bucks_row', 'knackers']) {
+      const code = fs.readFileSync(new URL(`../../src/scenes/${f}.js`, import.meta.url), 'utf8');
+      for (const id of ['beats', 'book', 'close']) {
+        const at = code.indexOf(`{ id: '${id}', label:`);
+        if (at < 0) continue;
+        need(/ends: true/.test(code.slice(at, code.indexOf('\n', at))), `${f}: el tema «${id}» debe cerrar la conversación (ends)`);
+      }
+    }
+
     // save and resume: the marks stay
     await game.resume({ state: JSON.parse(JSON.stringify(game.state)), x: Math.round(game.player.x), facing: 1 });
     await settle();

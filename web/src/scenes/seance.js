@@ -246,7 +246,7 @@ export default {
               await G.say('Madame Wexley', 'Aquí tapamos los espejos cuando alguien muere. Yo no lo hice. Creí que era más valiente.');
               w.talking = false;
             } },
-            { id: 'begin', label: '¿Empezamos, madame?', run: async (G) => {
+            { id: 'begin', label: '¿Y la sesión?', run: async (G) => {
               w.talking = true;
               await G.say('Madame Wexley', G.state.flags.comb_custody === 'pike' ? 'Siéntese cuando quiera. Ella ya está aquí.' : 'El peine. No estoy fingiendo que no lo veo.');
               w.talking = false;

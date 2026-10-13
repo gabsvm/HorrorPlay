@@ -769,8 +769,20 @@ export class UI {
     nameInput.addEventListener('keydown', onKey);
     nameInput.addEventListener('input', onInput);
     nameOk.addEventListener('click', finish);
+    // with the phone's keyboard up, the signature goes to the middle of what is still visible
+    const vv = window.visualViewport;
+    const place = () => {
+      if (!vv) return;
+      const s = document.getElementById('stage').getBoundingClientRect();
+      const covered = vv.height < Math.min(window.innerHeight, s.bottom) * 0.85;
+      nameEntry.style.top = covered ? `${Math.max(8, vv.offsetTop + vv.height * 0.45 - s.top)}px` : '';
+    };
+    vv?.addEventListener('resize', place);
+    vv?.addEventListener('scroll', place);
     setTimeout(() => { nameInput.focus(); nameInput.setSelectionRange(nameInput.value.length, nameInput.value.length); }, 100);
     await p;
+    vv?.removeEventListener('resize', place);
+    vv?.removeEventListener('scroll', place);
     nameInput.removeEventListener('keydown', onKey);
     nameInput.removeEventListener('input', onInput);
     nameOk.removeEventListener('click', finish);
@@ -790,6 +802,7 @@ export class UI {
       await wait(1400);
     } else await wait(300);
     nameEntry.classList.add('hidden');
+    nameEntry.style.top = '';
     return text;
   }
 
