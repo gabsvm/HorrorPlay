@@ -1598,3 +1598,19 @@ Veredicto: REQUEST_CHANGES con dos P2, sin P0 ni P1. Se corrige:
   - Tamaños: 640×360, 800×360, 1280×720 y 1920×1080.
 - **Resultado:** `test-all`, 43 PASS.
 - **Sin probar:** el dispositivo Android físico (Atrás real, teclado sobre la firma, zonas seguras con muesca) y un lector de pantalla. `ANDROID_DEVICE_TESTED` sigue sin declararse.
+
+### Revisión final de Opus de la fase (675df9f..5cc7c35)
+
+Veredicto: **APPROVE**, sin P0, P1 ni P2. Estado: CODE_COMPLETE, sin probar en dispositivo; `ANDROID_DEVICE_TESTED` no se declara.
+
+P3 corregidos:
+- Al cerrar la firma se aplica el reajuste del escenario que quedó retenido mientras se escribía.
+- `android-back` espera a que pase la guarda de 280 ms y comprueba que el jugador elige de verdad.
+
+P3 que quedan para F17 o el dispositivo:
+- En un teléfono, la tolerancia equivale a unos 48 px lógicos: un toque al suelo cerca de algo lo arma en vez de caminar. Cuesta un toque, nunca dispara una acción.
+- Un dispositivo `coarse` usado con ratón actúa con tolerancia sin armar antes.
+- Las zonas seguras pueden sumarse a las bandas del escenario en un móvil con muesca.
+- Las pruebas no tienen el tamaño real del escenario ni el puente Java de Atrás.
+
+`test-all` exit 0, 43 PASS. APK `ElHuesped-1.0-rc28.apk`, compilado desde este HEAD.

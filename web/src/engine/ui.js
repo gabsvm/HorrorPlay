@@ -803,6 +803,7 @@ export class UI {
     } else await wait(300);
     nameEntry.classList.add('hidden');
     nameEntry.style.top = '';
+    window.dispatchEvent?.(new Event('resize'));   // a resize held back while typing is applied now (fitStage)
     return text;
   }
 

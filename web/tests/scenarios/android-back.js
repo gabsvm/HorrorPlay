@@ -65,10 +65,11 @@ export async function run(opts) {
       await tick();
       back(); await tick();
       need(picked === null && !!ui._choiceKeys, 'Atrás no decide una elección de escena');
-      ui._choiceKeys[0].click?.() ?? ui._choiceKeys[0].dispatchEvent?.(new Event('click'));
+      await new Promise((r) => setTimeout(r, 300));   // past the guard against the click that ended the last line
+      ui._choiceKeys[0].click();
+      await tick();
+      need(picked === 0 && !ui._choiceKeys, `el jugador elige y la elección se cierra: ${picked}`);
     });
-    await tick();
-    if (ui._choiceKeys) { ui.el.choices.classList.add('hidden'); ui._choiceKeys = null; }
 
     // the inventory case comes before anything behind it
     need(game.openInventory(), 'el maletín se abre');
