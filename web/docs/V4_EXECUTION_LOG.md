@@ -1570,3 +1570,31 @@ Veredicto: REQUEST_CHANGES con dos P2, sin P0 ni P1. Se corrige:
 - **No medido:** el teclado real de Android sobre la firma, que necesita el dispositivo.
 - **Pruebas:** nuevo escenario `touch-motion` (tolerancia, prioridad, ratón exacto, `punch` = 0 con movimiento reducido).
 - **Resultado:** `test-all`, 42 PASS.
+
+## Bloque 5: QA, regresiones y rendimiento, 2026-10-13
+
+- **Pruebas que pedía la auditoría** (test-all incluye todos los escenarios):
+  - `android-back`: la UI real, con FAST apagado, contra el DOM simulado. Cubre:
+    - documento abierto con un guion detrás;
+    - línea de diálogo: no se salta;
+    - cuaderno;
+    - menú de conversación: elige «Nada más»;
+    - elección cronometrada: Atrás no decide, y la app en segundo plano congela el reloj, que sigue al volver;
+    - elección de escena: espera;
+    - maletín;
+    - objeto en la mano: se suelta;
+    - pausa, y Atrás otra vez para salir de ella.
+  - `touch-targets` y `reduce-motion`: escenario `touch-motion` (bloque 4), más las medidas en Chrome a 4 tamaños.
+  - `modal-resume`: el maletín abierto no se guarda (`inventory14`); las marcas de conversación sobreviven a reanudar (`dialogue-topics`); el reloj de una elección se congela al pausar la app (`android-back`).
+  - `dialogue-topics` (bloque 3).
+  - `puzzle-regressions`: los escenarios de puzles que ya existían siguen en verde con los cambios de menús: `beats`, `brennan`, `mitre6`, `seance`, `goulston`, `finale`, `finale14`, `resume` y los tres recorridos completos.
+- **Rendimiento en Chrome headless** (indicativo, no es un móvil): Buck's Row, el desolladero, Hanbury, Mitre Square y el maletín abierto, a 1280×720 y 640×360. 75 fps estables (el refresco de headless): mediana 13,3 ms, p95 13,6 ms, peor 13,9 ms. Montículo JS de 12 a 19 MB. Sin errores.
+- **Capturas locales** (no versionadas):
+  - inventario: `inv-*` y `held-*`;
+  - conversación con ✓: `talk-*`;
+  - menú de 8 opciones: `choices8-*`;
+  - diálogo: `dialogue-*`;
+  - cuaderno en Teorías: `theories-*`.
+  - Tamaños: 640×360, 800×360, 1280×720 y 1920×1080.
+- **Resultado:** `test-all`, 43 PASS.
+- **Sin probar:** el dispositivo Android físico (Atrás real, teclado sobre la firma, zonas seguras con muesca) y un lector de pantalla. `ANDROID_DEVICE_TESTED` sigue sin declararse.
