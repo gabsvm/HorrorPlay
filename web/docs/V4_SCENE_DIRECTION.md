@@ -1,6 +1,6 @@
 # V4 — Dirección de escena (F11)
 
-Estado: **solo la deuda de la orilla está implementada** (la boca del colector, ver abajo, verificada en 1280×720 y 1920×1080). Ninguna toma de cámara de la tabla está implementada: no hay encuadres nuevos, ni duraciones máximas aplicadas, ni modos reducidos por toma. La tabla fija qué debe mostrar cada toma y qué modo reducido le corresponde.
+Estado (2026-10-13): **las diez tomas de la tabla están implementadas o comprobadas** con la infraestructura existente (encuadre con `G.zoom`, silencio con `setBeds`/`playMusic`). Con movimiento reducido no hay ningún acercamiento de cámara en todo el juego (`G.zoom` y `frameDialogue`). Capturas a 1280×720 y 1920×1080 hechas para la introducción, la sesión, la firma, Polly, Wren, la persecución y la orilla; **sin captura**: la aparición de Goulston, el expediente y el examen de Annie. Nada escuchado con sonido. Detalle por toma en `V4_EXECUTION_LOG.md` (secciones F11).
 
 ## Convenciones
 

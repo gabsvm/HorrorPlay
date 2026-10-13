@@ -324,8 +324,10 @@ export default {
               const bed = G.audio.wantBeds || {};
               const said = G.think('El ruido se calla al acercarme.');
               G.audio.setBeds({}, 0.3);
+              G.audio.playMusic(null, 0.3);   // the track falls silent too (F11, «Orilla»)
               await G.wait(1200);
               G.audio.setBeds(bed, 1.5);
+              G.audio.playMusic(G.scene.music || null);
               await said;
             }
           }

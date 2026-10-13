@@ -1467,3 +1467,9 @@ Implementada tras la revisión del observador (REQUEST_CHANGES, aplicados sus ha
 - **Examen de Annie** (`scenes/hanbury.js`): el primer plano ya es el pintado de la inspección; se añade silencio (fondos y música) mientras dura y la vuelta del sonido al cerrarlo. Sin captura.
 - Ningún encuadre tapa pruebas, personajes ni subtítulos en las capturas. Nada escuchado con sonido. `test-all`: 39 PASS.
 - Revisión del observador sobre 2774922: REQUEST_CHANGES (la lluvia visible quedaba muda). Corregido: en Buck's Row y en el desolladero la lluvia baja (0,12 y 0,08) sin apagarse, y se cortan viento, zumbido y música; en Hanbury el silencio total se mantiene (el primer plano tapa la escena), pero solo en el primer examen (`annie_examined`), para no reiniciar la música en cada vistazo. `test-all`: 39 PASS.
+
+## F11 (persecución y orilla), 2026-10-13
+
+- **Persecución** (`scenes/alleys.js`): ya cumplía la tabla (encuadre abierto, tres cruces con 4,6 s o 5,6 s en táctil, sin silencio, «sin cambios» con movimiento reducido). No se cambia. Captura a 1280×720 y 1920×1080 del primer cruce con su barra de tiempo.
+- **Orilla** (`scenes/foreshore.js`): la primera mirada al desagüe en 1888 ya callaba los fondos 1,2 s, pero la música «dread» seguía; ahora también se calla y vuelve después. Encuadre abierto, sin movimiento de cámara (imagen fija en modo reducido). Capturas de la orilla a 1280×720 y 1920×1080 de la ronda anterior.
+- Con esto, las diez tomas de `V4_SCENE_DIRECTION.md` están hechas o comprobadas. `test-all`: 39 PASS.
