@@ -1688,3 +1688,20 @@ Sigue pendiente **UX-B04**: el teléfono físico (Moto g86 power / Android 17). 
 - **Resultado:** `test-all` exit 0, 44 PASS (43 de antes más `browser`).
 - **Sin probar en dispositivo:** pérdida real del contexto en el Moto g86 power, batería, temperatura, FPS de GPU y memoria de WebView. `ANDROID_DEVICE_TESTED` sigue sin declararse.
 - **Fuera de alcance, según la recomendación de la auditoría:** no se cambia de motor (Godot o Unity), y la firma de distribución sigue siendo la de depuración.
+
+### Revisión de Opus de fef3724
+
+Veredicto: **APPROVE**, sin P0, P1 ni P2.
+
+P3 aplicados:
+- Un sombreador que no compila también muestra la pantalla de aviso (`code NO_WEBGL`).
+- Si la restauración del contexto falla, se guarda la partida y se avisa de que hay que reabrir el juego.
+- Sin contexto, el bucle espera como con la app oculta: el juego no avanza a ciegas.
+- La calidad no sube en mitad de una escena de guion.
+- `test-all` muestra como SKIP, y no como PASS, una comprobación que no pudo ejecutarse (sin Chrome).
+
+P3 aceptados:
+- En pausa, el tiempo de la escena avanza a unas 0,6 veces su ritmo.
+- La subida de calidad se mide en baja calidad: como mucho dos parpadeos por sesión.
+
+`test-all` exit 0, 44 PASS. La etapa `browser` se ejecutó con Chrome (12/12).

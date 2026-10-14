@@ -26,9 +26,10 @@ for (const [name, args] of runs) {
   const t0 = Date.now();
   const r = spawnSync(process.execPath, args, { cwd: web, encoding: 'utf8' });
   const ok = r.status === 0;
-  results.push([name, ok, ((Date.now() - t0) / 1000).toFixed(1)]);
+  const skipped = ok && /^SKIP:/m.test(r.stdout || '');   // a check that could not run is reported apart, not as a pass
+  results.push([name, ok, ((Date.now() - t0) / 1000).toFixed(1), skipped]);
   if (!ok) console.log(`\n--- ${name} ---\n${(r.stdout || '').slice(-2500)}${(r.stderr || '').split('\n').filter((l) => !/ExperimentalWarning|trace-warnings/.test(l)).join('\n').slice(-1500)}`);
 }
 console.log('');
-for (const [name, ok, s] of results) console.log(`${ok ? 'PASS' : 'FAIL'}  ${name.padEnd(28)} ${s}s`);
+for (const [name, ok, s, skipped] of results) console.log(`${skipped ? 'SKIP' : ok ? 'PASS' : 'FAIL'}  ${name.padEnd(28)} ${s}s`);
 process.exit(results.every((r) => r[1]) ? 0 : 1);

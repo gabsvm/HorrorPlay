@@ -48,6 +48,7 @@ export class Game {
     this.ui.game = this;
     this.r.onLost = () => this.ui.toast('Recuperando la imagen…', 4000);
     this.r.onRestored = () => this.ui.toast('Imagen recuperada.', 1800);
+    this.r.onFatal = () => { try { this.autosave(); } catch {} this.ui.toast('No se pudo recuperar la imagen. Cierra y vuelve a abrir el juego: la partida está guardada.', 12000, true); };
     this.state = freshState();
     this.actors = [];
     this.scene = null;
@@ -593,7 +594,8 @@ export class Game {
     requestAnimationFrame((t) => this.loop(t));
     // hidden (another app, the screen off): no work at all. Paused behind the menu: the scene still breathes,
     // at about 12 frames a second instead of the screen's rate (engine audit 1b3fc5e, P2)
-    if (typeof document !== 'undefined' && document.hidden) { this.last = now; return; }
+    // without a GPU context the picture is frozen: the game waits too, instead of playing on blind
+    if ((typeof document !== 'undefined' && document.hidden) || this.r.lost) { this.last = now; return; }
     if (this.paused && now - this.last < 80) return;
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
@@ -617,7 +619,7 @@ export class Game {
       if (iv < 120) this._iv = this._iv == null ? iv : this._iv * 0.98 + iv * 0.02;
       // down when a phone cannot hold the frame rate for a while; back up only after a long, clearly easy
       // stretch (20 s near 60 fps with little work), at most twice a session so it never seesaws
-      if (this.paused || this.inMenu) this._easySince = null;
+      if (this.paused || this.inMenu || this.running) this._easySince = null;   // never changes up mid-scene
       else if (!this._autoLow && now > 8000 && (this._cost > 15 || this._iv > 40)) { this._autoLow = true; this._easySince = null; metrics.quality('baja', this._cost, this._iv); }
       else if (this._autoLow && (this._ups || 0) < 2) {
         const easy = this._cost < 5 && this._iv < 19;

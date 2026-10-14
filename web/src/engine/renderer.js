@@ -222,7 +222,7 @@ export class Renderer {
     this.lost = false;
     view.addEventListener('webglcontextlost', (e) => { e.preventDefault(); this.lost = true; this.onLost?.(); });
     view.addEventListener('webglcontextrestored', () => {
-      this.initGL();
+      try { this.initGL(); } catch (err) { console.error(err); this.onFatal?.(err); return; }   // stays lost, and says so
       this.gl.viewport(0, 0, this.view.width, this.view.height);
       this._staticKey = null;   // the next frame repaints and uploads the static and foreground layers
       this.lost = false;
@@ -244,7 +244,7 @@ export class Renderer {
     const gl = this.gl;
     const sh = (type, src) => {
       const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
-      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS) && !gl.isContextLost()) { const e = new Error(`El sombreador no compila: ${gl.getShaderInfoLog(s)}`); e.code = 'NO_WEBGL'; throw e; }
       return s;
     };
     const prog = gl.createProgram();
