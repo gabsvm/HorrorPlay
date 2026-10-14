@@ -137,3 +137,13 @@ Citadas según la especificación V4-09. **Ninguna se ha abierto en esta fase**;
 - Cada fase que toque una escena de esta tabla: primero verifica la fuente de su fila, después cambia el estado de URL a `VERIFIED <fecha>` o `FUENTE PENDIENTE`, y solo entonces modifica texto.
 - Ninguna escena pasa a `CODE_COMPLETE` con una fila `[A]` o `[U]` sin marcador de narrador o corrección aprobada por Opus.
 - El registro no decide canon: el canon A (H-21, H-22) queda fuera de revisión histórica.
+
+## V5 (14-10-2026): carta «Dear Boss», fuente leída
+
+Fuente abierta en esta ronda: https://www.casebook.org/ripper_letters/dear_boss_letter/ (resumen automático de la página: **secundaria, pendiente de texto completo**; no es la primaria).
+
+- Fecha de la carta: 25-IX-1888. Recibida por la Central News el 27-IX. Remitida a Scotland Yard el 29-IX. Tinta roja (la posdata, lápiz rojo). — Coincide con H-11/H-12 (ahora con fuente secundaria leída).
+- **Corrección V5 (a confirmar):** según ese resumen, la transcripción se imprimió el 1-X-1888 en el *Daily Telegraph*; no se descarta que otros diarios la publicaran ese día. El documento del juego usa ese título. El documento del juego (`readPaper`) pasa a titularse «THE DAILY TELEGRAPH». El texto de la cita no cambia.
+- El primer facsímil impreso es de principios de octubre (*Evening News*, 3–4-X), después del 1-X: el juego no muestra ningún facsímil y la comparación de letra **no usa trazos** de la carta (V5-02).
+- La circulación de copias entre inspectores (H-35) sigue siendo ficción etiquetada.
+- Ficción V5 (`[F]`): la calle del 1-X (`heardName`), los desconocidos de «Escucha» y del epílogo, y la cadena del nombre. No se atribuyen a personas reales ni a periódicos reales.

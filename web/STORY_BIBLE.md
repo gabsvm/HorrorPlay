@@ -6,6 +6,8 @@ Biblia narrativa del juego. Todo lo que se escriba o se diseñe sale de este doc
 
 ---
 
+> **V5 (14-10-2026).** La dirección editorial vigente del giro está en `docs/V5_NARRATIVE_BIBLE.md`: Thomas puede sospechar de su propia mano en la primera partida y el misterio de mayor alcance pasa a ser **para qué necesitaba una firma pública** (la cadena del nombre). Donde este documento diga que la primera lectura oculta a Thomas hasta el capítulo IV, léase «sin cerrarlo»: la sospecha razonada es posible desde el capítulo III; la certeza llega antes del agua.
+
 ## 1. Premisa en una línea
 
 Un inspector de Whitechapel persigue al asesino que aterroriza el East End en el otoño de 1888 y sospecha de todo el mundo menos del único hombre que nunca mira en los espejos.
@@ -24,7 +26,7 @@ Un inspector de Whitechapel persigue al asesino que aterroriza el East End en el
 3. La advertencia de los ribereños es precisa: «Si el agua dice tu nombre, no contestes». La voz puede imitar a alguien querido, pero no puede anular esa condición de entrada.
 4. En octubre de **1866**, Thomas puede contestar o guardar silencio, según decida el jugador. Si contesta, el Huésped entra entonces. **Si calla, permanece fuera durante trece años; el primer ingreso ocurre en marzo de 1879**, cuando Thomas decide responder *de viva voz* durante otro encuentro junto al lavadero del hospital; después olvida haberlo hecho. Esa respuesta se documenta, pero Thomas la olvida.
 5. Una vez dentro, el Huésped «alquila horas»: desaparecen lapsos de memoria, se mueven objetos, cambian sus guantes y sus botas. Cada noche controla más tiempo. El acto de 1879 refuerza el vínculo si ya había entrado en 1866.
-6. **El nombre es una dirección.** Para permanecer sin depender de una sola respuesta privada, el Huésped necesita que muchas personas repitan un nombre nuevo; una ciudad lo hace poderoso y visible socialmente, no omnipotente.
+6. **El nombre es una dirección.** Para permanecer sin depender de una sola respuesta privada, el Huésped necesita que muchas personas repitan un nombre nuevo; una ciudad lo hace poderoso y visible socialmente, no omnipotente. **Decir, leer, oír o escribir «Jack» no mete al Huésped en nadie** (solo entra por respuesta voluntaria). «Thomas» es el nombre privado; «Jack» es una firma pública construida, no el nombre verdadero del demonio.
 7. Los crímenes son un medio para propagar ese nombre. La mano de Thomas escribe la carta *Dear Boss* con tinta roja en la noche del **24 al 25 de septiembre de 1888**. La carta lleva fecha del **25**, llega a la Central News Agency el **27** y se conoce masivamente después del doble crimen del **30 de septiembre**. Su nombre firmado es «Jack the Ripper».
 8. La sustitución es lenta y trágica: Thomas puede elegir sus últimas acciones, pero ya no puede detener la difusión del nombre. Al terminar, recuerda cada vez menos cómo se llama. No hay un nuevo sacrificio necesario para «completar» el ritual.
 
@@ -87,7 +89,7 @@ Tras el expediente de Greaves, Pike confronta personalmente a Thomas. El jugador
 
 En el agua, la voz dice «Thomas». Si el jugador insiste en callar, **Thomas calla de verdad durante unos segundos**; luego su boca, ya dominada, dice «Aquí estoy». El juego muestra que no se produjo una nueva invitación: la entidad ya estaba alojada en él por una respuesta pasada.
 
-El cuaderno obliga a hacer **tres relaciones finales razonadas** con la ficha de Thomas y presenta una cuarta evidencia —la respuesta de 1879—, distinta si el niño respondió o no en 1866. La voz no explica qué significa ser un nombre: se oyen conversaciones, titulares e informes que pronuncian «Jack» y el jugador concluye el resto.
+El cuaderno obliga a hacer **tres relaciones finales razonadas** con la ficha de Thomas y presenta una cuarta evidencia —la respuesta de 1879—, distinta si el niño respondió o no en 1866. Además (V5) pide ordenar **la cadena del nombre** en la pestaña «Nombre»: una mano, una firma, un eco. La voz no explica qué significa ser un nombre: se oyen desconocidos que pronuncian «Jack» tras el 30 de septiembre y el jugador concluye el resto.
 
 Epílogo, Miller's Court, 9 de noviembre: Wren le pregunta «¿Cómo se llama usted?». Se recupera la **interfaz de firma** del inicio (`final_name_entry`): el jugador escribe «Thomas» u otro texto, pero el resultado visible termina siempre en **J-A-C-K**. Debe ser una transformación lenta, no un salto instantáneo. La opción de última acción se refleja en una línea del epílogo; los destinos canónicos siguen siendo trágicos.
 
@@ -113,7 +115,7 @@ Cada pista es legítima y tiene una lectura inocente en el momento:
 
 ### Dos lecturas
 
-**Primera partida.** El jugador veterano espera «el detective es el asesino», así que el juego le ofrece
+**Primera partida.** (V5: quien sospecha de Thomas puede registrarlo desde el capítulo III como «Pude escribirla yo»; el juego reacciona y no lo penaliza. Lo que sigue describe el camino de quien no lo sospecha.) El jugador veterano espera «el detective es el asesino», así que el juego le ofrece
 otro tópico más tentador: **a Thomas le están tendiendo una trampa**. Alguien entra por su ventana
 mientras duerme, le moja las botas, le vuelca la tinta roja y le roba un bisturí del estuche. Los
 sospechosos razonables son **Pike** (reparte las rondas, lleva bombín y linterna, apunta a qué hora
@@ -134,7 +136,8 @@ izquierda manchada, la sangre seca de los guantes) no aparecen.
    del zar (fila y columna sobre una tabla de 5x5 sin K, clavada en la pared bajo la carta astral).
    Thomas los lee con la tabla: HOSPES, y con eso se abre la sesión. En la oscuridad, los mismos seis
    grupos vuelven más fuertes: esta vez sabe la palabra.
-3. **La letra** (cap. III): la carta «Dear Boss» frente a cuatro muestras manuscritas; comparar el remate de la **J**, el enlace de las **t** y la inclinación de los trazos. La similitud sugiere a Greaves, pero **no lo demuestra**. La segunda lectura permite comparar también los apuntes de Thomas. **No alterar la transcripción histórica añadiendo letras «ſ» que el original no usa.**
+3. **La letra** (cap. III): la copia de la carta que circula **no guarda el trazo** del original, así que no se compara ninguna escritura con ella. Se comparan las cuatro escrituras de la mesa entre sí (Greaves y Thomas escriben con la misma escuela, así que no se distinguen) y se pesa lo que sí existe: tres pliegos que faltan, tinta roja, la fecha de la noche perdida. Respuestas válidas: Greaves (por lo que sabe de Thomas), **«Pude escribirla yo»** (sospecha, no demostración) y «la muestra no basta». **No alterar la transcripción histórica añadiendo letras «ſ» que el original no usa.**
+4. **La cadena del nombre** (cap. IV, V5): tres preguntas de procedencia sin coste ni bloqueo (qué pasó primero; si la copia y el recorte son dos fuentes; qué prueba que desconocidos digan «Jack»). Dos fallos traen ayuda; cuatro, la respuesta dicha por Thomas.
 
 ### El perfil del asesino (mecánica del cuaderno)
 Cada deducción **de tipo inferencia sustentada** añade un rasgo al **Perfil del sospechoso** (las hipótesis de culpabilidad no son rasgos probados): *zurdo, sabe anatomía, conoce las rondas, ronda el río, sabe escribir, tiene acceso a las escenas antes que la policía*. En el capítulo 4, el cuaderno muestra el perfil completo en una página y, en la de enfrente, la ficha de **Thomas Ashgrove**. El jugador hace la deducción final él mismo.
@@ -185,3 +188,5 @@ El canon sigue igual: la entrada exige una respuesta voluntaria (en 1866 o, si e
 - **Cordura como percepción.** Firme (≥65): las pruebas se leen mejor. Tensa (36–64): la habitación contesta a veces. Desgastada (≤35): lo del otro lado se ve más claro (el método de los golpes, la luz del Ditch) y los hechos se dudan más; la gente lo nota. Ninguna banda bloquea nada ni muestra pistas falsas. La barra de cordura usa los mismos tres tramos, así que su color coincide con la banda.
 - **Segunda lectura.** Un momento nuevo por capítulo (el hombre del agua, la libreta de Pike, Wexley sabe a quién hablan los golpes, el borrador de la carta, la noche de 1879) y atajos por los puzles ya resueltos para quien terminó el juego.
 - **Víctimas.** Cada una tiene al menos un detalle humano documentado: Polly y su sombrero nuevo; Annie, el ganchillo y las flores; Elizabeth Stride, sueca, «Long Liz»; Catherine Eddowes, de vuelta del lúpulo de Kent con John Kelly; Mary Jane Kelly, unos veinticinco años, a la que una vecina oyó cantar.
+
+- **V5 · Cadena del nombre y sospecha propia.** La pestaña «Nombre» (chain.js) se abre con la calle del 1 de octubre o al despertar; el agua exige las tres fuentes independientes **y** la cadena ordenada. «Pude escribirla yo» es una postura de `letter_author` y una hipótesis de la teoría `carta`. Estados: `v5_name_chain`, `v5_name_echo_seen`, pista `eco`. Ver `docs/V5_NARRATIVE_BIBLE.md`.
