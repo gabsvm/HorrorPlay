@@ -1,5 +1,5 @@
 // Every automated check, one after another, with a summary at the end.
-//   node web/tools/test-all.mjs [--quick]     (--quick skips the long playthroughs)
+//   node web/tools/test-all.mjs [--quick]     (--quick skips the long playthroughs and the browser checks)
 import { spawnSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -17,6 +17,8 @@ const runs = [
     ['walk', ['tools/walk.mjs']],
     ['walk second', ['tools/walk.mjs', 'second']],
     ['walk alt', ['tools/walk.mjs', 'alt']],
+    // what only a real browser can show (the knocks puzzle, the WebGL context, the pause rate); skipped without Chrome
+    ['browser', ['tools/browser-check.mjs']],
   ]),
 ];
 const results = [];

@@ -1662,3 +1662,29 @@ Veredicto: **APPROVE**, sin P0, P1 ni P2. Se aplica el único P3: al cambiar de 
 `test-all` exit 0, 43 PASS. APK `ElHuesped-1.0-rc29.apk`, compilado desde este HEAD.
 
 Sigue pendiente **UX-B04**: el teléfono físico (Moto g86 power / Android 17). `ANDROID_DEVICE_TESTED` sigue sin declararse.
+
+## Auditoría de motor 1b3fc5e: correcciones, 2026-10-14
+
+- **P1, contexto WebGL** (`renderer.js`, `main.js`):
+  - Se escuchan `webglcontextlost` (con `preventDefault`) y `webglcontextrestored`.
+  - Mientras falta el contexto no se dibuja nada y se avisa con «Recuperando la imagen…».
+  - Al volver se rehacen el programa, el buffer, las texturas y la paleta, y la capa estática y la delantera se repintan y se suben otra vez.
+  - Sin WebGL, o con un sombreador que no enlaza (ahora se comprueba `LINK_STATUS`), la pantalla lo explica en vez de quedarse en negro, y no se tocan las partidas.
+- **P2, bucle:**
+  - Con la pestaña o la app ocultas no se hace ningún trabajo.
+  - En pausa, la escena se dibuja a unos 12 fps (medido: 12,0 en pausa y 75 jugando, en headless). Esos fotogramas no cuentan para la calidad automática.
+  - `preserveDrawingBuffer` se quita: nada lee el lienzo y las capturas por CDP siguen funcionando.
+  - Sin medir: la subida de texturas por fotograma en un teléfono.
+- **P2, calidad automática:** vuelve a alta tras 20 s claramente holgados (coste < 5 ms e intervalo < 19 ms), como mucho dos veces por sesión, para que no oscile. Las bajadas y subidas quedan en las métricas `?metrics` (`cambiosDeCalidad`).
+- **P2, prueba de HOSPES en navegador real:** nuevo `tools/browser-check.mjs`, en Chrome sin ventana por CDP. `test-all` lo incluye como etapa `browser` (se salta sin Chrome). Comprueba:
+  - golpes con Atrás, Escape y «Dejarlo»; resolver; resolver y pulsar Atrás enseguida;
+  - perder el contexto (`WEBGL_lose_context`): no dibuja; recuperarlo: vuelve a dibujar y la imagen no es negra;
+  - el ritmo en pausa;
+  - la pantalla sin WebGL (`--disable-3d-apis`);
+  - que no haya errores de JS.
+- **P3:**
+  - Un paso con el objeto en la mano se cuenta como `pasosConObjeto`, no como clic sin efecto.
+  - README al día: controles del inventario (I, Examinar, Usar, Cancelar, flechas); orden de Esc y de Atrás; grabaciones CC0 de terceros con sus créditos; `npx --yes esbuild` en el empaquetado; el EXE de Windows necesita Edge; la nueva etapa de navegador.
+- **Resultado:** `test-all` exit 0, 44 PASS (43 de antes más `browser`).
+- **Sin probar en dispositivo:** pérdida real del contexto en el Moto g86 power, batería, temperatura, FPS de GPU y memoria de WebView. `ANDROID_DEVICE_TESTED` sigue sin declararse.
+- **Fuera de alcance, según la recomendación de la auditoría:** no se cambia de motor (Godot o Unity), y la firma de distribución sigue siendo la de depuración.

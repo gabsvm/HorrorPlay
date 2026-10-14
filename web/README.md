@@ -17,12 +17,13 @@ Abre `http://localhost:5317`. No necesita instalar nada ni compilar: son módulo
 | Acción | Ratón / teclado | Táctil |
 |---|---|---|
 | Caminar, examinar, hablar | Clic | Toque |
-| Usar un objeto | Clic en el objeto del inventario y luego en el destino | Igual |
-| Examinar un objeto del inventario | Clic dos veces en él | Igual |
+| Inventario | I o botón **Inventario** | Botón **Inventario** |
+| Examinar un objeto | En el inventario: elegirlo y **Examinar** (flechas, Inicio y Fin para moverse) | Tocarlo y **Examinar** |
+| Usar un objeto | En el inventario: **Usar**, y luego clic en el destino; queda en la mano hasta **Cancelar** o Esc | Igual, con toque; **Cancelar** o Atrás lo sueltan |
 | Revelar puntos de interés | Espacio o botón **Revelar** | Botón **Revelar** |
 | Cuaderno (pistas y deducciones) | N o botón **Cuaderno** | Botón |
 | Avanzar diálogo | Clic, Espacio o Intro | Toque |
-| Menú / cancelar | Esc | Botón **Menú** |
+| Cerrar lo abierto / menú | Esc: cierra documento, inventario, cuaderno, menú de conversación o puzle; si no hay nada, pausa | Atrás (Android), en ese mismo orden, o botón **Menú** |
 | Acortar un rótulo o una tarjeta | Clic, Espacio o Intro | Toque |
 | Elegir una opción | Clic o tecla 1–9 | Toque |
 
@@ -52,7 +53,7 @@ Todo el arte se pinta por código a resolución completa, se reduce a una rejill
 - `src/engine/actor.js`: personajes procedurales con anatomía, ciclo de paso, vestuario, caras de perfil y miradas por encima del hombro, convertidos en sprites en cada fotograma.
 - `src/engine/life.js`: vida ambiental (humo, goteras, ratas, gatos, cuervos, siluetas tras las cortinas, polillas, periódicos al viento, ondas en los charcos).
 
-El audio también es procedural, con música compuesta para cada estado: cuerdas para la tensión, una caja de música para los recuerdos y un pulso para la persecución. No hay assets de terceros.
+El audio también es procedural, con música compuesta para cada estado: cuerdas para la tensión, una caja de música para los recuerdos y un pulso para la persecución. La tela y el papel son grabaciones breves CC0 de terceros superpuestas a la síntesis (créditos en `assets/audio/CREDITS.md`).
 
 ## Pruebas
 
@@ -62,16 +63,17 @@ Sin navegador, desde la raíz del repositorio, todo de una vez:
 node web/tools/test-all.mjs
 ```
 
-Con `--quick` se saltan las tres partidas completas. Por separado:
+Con `--quick` se saltan las tres partidas completas y las comprobaciones en navegador. Por separado:
 
 - `node web/tools/unit.mjs`: la lógica pura de `tests/unit/` (condiciones para avanzar, guardados viejos, teorías, cordura, firma, higiene).
 - `node web/tools/smoke.mjs`: pinta todas las escenas y sus variantes contra un canvas/WebGL simulado y estricto.
 - `node web/tools/audio-smoke.mjs`: todos los sonidos y la música contra un Web Audio simulado.
 - `node web/tools/walk.mjs`: el juego real con un DOM simulado, del prólogo a los créditos; `second` lo juega como segunda lectura; `alt` juega mal a propósito.
 - `node web/tools/walk.mjs <escenario>`: uno de `tests/scenarios/` — `compat` (guardados de antes), `integrity` (datos y referencias), `notebook`, `feedback`, `c1-minimal`, `comb-pike`, `mob`, `seance`, `chapter3`, `finale`, `sanity`, `second-reading`, `resume`. Las elecciones se toman por su texto.
+- `node web/tools/browser-check.mjs`: lo que solo un navegador real puede mostrar, en Chrome sin ventana: el puzle de golpes con Atrás, Escape y «Dejarlo»; la pérdida y recuperación del contexto WebGL; el aviso sin WebGL; el ritmo en pausa. Se salta si no encuentra Chrome (`CHROME=<ruta>` para indicarlo).
 - `WALK_LOG=run.log node web/tools/walk.mjs` y `node web/tools/read-count.mjs run.log`: cuánto se lee en una partida.
 
-Métricas de desarrollo: `?metrics` en la dirección registra en la consola (nunca envía nada) el tiempo hasta el primer control, la espera en rótulos, clics sin efecto, objetos mal usados, intentos de puzle, ayudas pedidas y tiempo por capítulo; `window.__metrics()` las devuelve. En `localhost` o con `?dev`, un error de guion se avisa en pantalla.
+Métricas de desarrollo: `?metrics` en la dirección registra en la consola (nunca envía nada) el tiempo hasta el primer control, la espera en rótulos, clics sin efecto, pasos con un objeto en la mano, objetos mal usados, cambios automáticos de calidad, intentos de puzle, ayudas pedidas y tiempo por capítulo; `window.__metrics()` las devuelve. En `localhost` o con `?dev`, un error de guion se avisa en pantalla.
 
 Con el juego abierto en el navegador, en la consola:
 
@@ -89,7 +91,7 @@ Parámetros de desarrollo en la URL: `?scene=bucks_row&x=900&noenter=1&flags=a,b
 bash web/tools/build-apk.sh
 ```
 
-Genera `web/dist/el-huesped.apk` solo con las build-tools del SDK de Android y el JDK (sin Gradle ni descargas). El APK es un WebView a pantalla completa, en horizontal y sin que se apague la pantalla, que carga la versión de un solo archivo desde sus assets. Atrás abre la pausa, y salir de la app guarda y silencia el sonido. Las partidas se guardan en el teléfono. Se firma con una clave de depuración local (`web/android/debug.keystore`, se crea la primera vez y no se sube al repositorio). El icono sale de `python web/tools/make-icon.py`, que encuadra la pintura `web/android/icon-source.png` como icono adaptativo (y el `.ico` de Windows).
+Genera `web/dist/el-huesped.apk` solo con las build-tools del SDK de Android y el JDK (sin Gradle; el empaquetado usa `npx --yes esbuild`, que lo descarga si no está en caché). El APK es un WebView a pantalla completa, en horizontal y sin que se apague la pantalla, que carga la versión de un solo archivo desde sus assets. Atrás cierra lo que esté abierto (documento, inventario, cuaderno, conversación, puzle) y, si no hay nada, abre la pausa; nunca elige por el jugador ni salta una línea. Salir de la app guarda, silencia el sonido y congela el reloj de una elección con tiempo. Las partidas se guardan en el teléfono. Se firma con una clave de depuración local (`web/android/debug.keystore`, se crea la primera vez y no se sube al repositorio). El icono sale de `python web/tools/make-icon.py`, que encuadra la pintura `web/android/icon-source.png` como icono adaptativo (y el `.ico` de Windows).
 
 Instalar con el teléfono conectado por USB (depuración USB activada): `adb install -r web/dist/el-huesped.apk`. O copiar el APK al teléfono y abrirlo, permitiendo instalar apps de origen desconocido.
 
@@ -99,4 +101,4 @@ Instalar con el teléfono conectado por USB (depuración USB activada): `adb ins
 bash web/tools/build-win.sh
 ```
 
-Genera `web/dist/ElHuesped.exe` con el compilador de C# que trae Windows (.NET Framework 4), sin SDK ni descargas. Es un solo archivo: lleva dentro la versión de un solo archivo del juego, la extrae en `%LOCALAPPDATA%\ElHuesped` y la abre en una ventana de aplicación de Edge a pantalla completa, con un perfil propio donde quedan las partidas. `ElHuesped.exe --windowed` la abre en ventana; F11 alterna.
+Genera `web/dist/ElHuesped.exe` con el compilador de C# que trae Windows (.NET Framework 4), sin SDK (el empaquetado usa `npx --yes esbuild`, como el APK). Es un solo archivo: lleva dentro la versión de un solo archivo del juego, la extrae en `%LOCALAPPDATA%\ElHuesped` y la abre en una ventana de aplicación de Edge (necesita Microsoft Edge instalado; no lleva un motor propio) a pantalla completa, con un perfil propio donde quedan las partidas. `ElHuesped.exe --windowed` la abre en ventana; F11 alterna.
