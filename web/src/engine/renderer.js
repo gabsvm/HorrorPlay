@@ -213,8 +213,21 @@ export class Renderer {
   static uid = 0;
   constructor(view) {
     this.view = view;
-    this.gl = view.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false, preserveDrawingBuffer: true });
-    if (!this.gl) throw new Error('WebGL no disponible');
+    // no preserveDrawingBuffer: nothing reads the canvas back, and a frame not drawn still shows the last one
+    this.gl = view.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false, preserveDrawingBuffer: false });
+    if (!this.gl) { const e = new Error('WebGL no disponible'); e.code = 'NO_WEBGL'; throw e; }
+    // The phone can take the GPU context away (memory pressure, a GPU reset, the app sent to the background).
+    // While it is gone nothing is drawn; when it comes back, the program, buffers and textures are made again
+    // and the layers are uploaded anew (engine audit 1b3fc5e, P1).
+    this.lost = false;
+    view.addEventListener('webglcontextlost', (e) => { e.preventDefault(); this.lost = true; this.onLost?.(); });
+    view.addEventListener('webglcontextrestored', () => {
+      this.initGL();
+      this.gl.viewport(0, 0, this.view.width, this.view.height);
+      this._staticKey = null;   // the next frame repaints and uploads the static and foreground layers
+      this.lost = false;
+      this.onRestored?.();
+    });
     this.rs = PX;
     this.time = 0;
     this.fx = { mad: 0, fade: 1, flash: 0, red: 0, desat: 0, zoom: [1, 0.5, 0.5] };
@@ -238,6 +251,7 @@ export class Renderer {
     gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS));
     gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
     gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS) && !gl.isContextLost()) { const e = new Error(`El programa de sombreado no enlaza: ${gl.getProgramInfoLog(prog)}`); e.code = 'NO_WEBGL'; throw e; }
     gl.useProgram(prog);
     this.prog = prog;
     const buf = gl.createBuffer();
@@ -327,6 +341,7 @@ export class Renderer {
 
   frame(scene, actors, dt, overlay) {
     this.time += dt;
+    if (this.lost || this.gl.isContextLost()) return;   // nothing to draw on until the context comes back
     const rs = this.rs, t = this.time;
     const camX = Math.round((this.cam.x + (Math.random() - 0.5) * this.cam.shake) * rs) / rs;
     const camY = (Math.random() - 0.5) * this.cam.shake * 0.5;
@@ -714,6 +729,7 @@ export class Renderer {
     const fc = f.color || [0.42, 0.5, 0.52];
     gl.uniform3f(u.uFogCol, fc[0], fc[1], fc[2]);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    this.presented = (this.presented || 0) + 1;   // frames drawn (the browser checks count them)
   }
 }
 

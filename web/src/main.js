@@ -19,7 +19,26 @@ import millers from './scenes/millers.js';
 const scenes = { room, bucks_row, knackers, foreshore, hanbury, seance, mitre, goulston, alleys, greaves, millers };
 const { chapters, hooks } = makeChapters();
 
-const game = new Game({ scenes, chapters, items: ITEMS, clues: CLUES, deductions: DEDUCTIONS });
+// Without WebGL the game cannot draw: say so plainly instead of a black screen. Nothing is touched: the saves
+// stay where they are for a device or a browser that can show it (engine audit 1b3fc5e, P1).
+function cannotDraw(err) {
+  const box = document.createElement('div');
+  box.id = 'fatal';
+  box.setAttribute('role', 'alert');
+  box.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:#05070a;color:#e6dcc4;font:18px/1.5 Georgia,serif;text-align:center;z-index:999';
+  box.innerHTML = '<div style="max-width:560px"><h1 style="font-weight:normal;font-size:28px;margin:0 0 12px">El Huésped no puede mostrarse aquí</h1>'
+    + '<p>Este navegador o dispositivo no ofrece WebGL, o lo tiene desactivado, y el juego lo necesita para dibujar.</p>'
+    + '<p>Tus partidas guardadas no se han tocado. Prueba con un navegador actualizado (Chrome, Edge o Firefox), activa la aceleración por hardware, o reinicia el dispositivo.</p>'
+    + `<p style="opacity:.55;font-size:14px">${String(err && err.message || err).replace(/[<>&]/g, '')}</p></div>`;
+  document.body.appendChild(box);
+}
+let game;
+try {
+  game = new Game({ scenes, chapters, items: ITEMS, clues: CLUES, deductions: DEDUCTIONS });
+} catch (err) {
+  if (err && err.code === 'NO_WEBGL') cannotDraw(err);
+  throw err;
+}
 // the notebook's police record (intro.js recordHtml): a document of 1888, not an item of the boy's inventory
 const readRecord = () => game.ui.doc(recordHtml());
 game.chapterHooks = hooks;

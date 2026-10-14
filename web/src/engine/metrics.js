@@ -9,6 +9,8 @@ const m = {
   firstInput: null,
   cinematicMs: 0,
   invalidClicks: 0,
+  movesWithItem: 0,
+  quality: [],         // automatic quality changes: { to, at, cost, interval }
   wrongItems: 0,
   hints: 0,
   chapters: {},        // id -> { start, ms }
@@ -20,6 +22,8 @@ export const metrics = {
   input() { if (ON && m.firstInput == null) m.firstInput = Math.round(performance.now() - m.started); },
   cinematic(ms) { if (ON) m.cinematicMs += ms; },
   invalidClick() { if (ON) m.invalidClicks++; },
+  moveWithItem() { if (ON) m.movesWithItem++; },
+  quality(to, cost, iv) { if (ON) m.quality.push({ to, at: Math.round(performance.now() - m.started), cost: +(cost || 0).toFixed(1), interval: +(iv || 0).toFixed(1) }); },
   wrongItem() { if (ON) m.wrongItems++; },
   hint() { if (ON) m.hints++; },
   chapter(id, state) {
@@ -36,6 +40,8 @@ export const metrics = {
       primerControlMs: m.firstInput,
       cinematicasMs: Math.round(m.cinematicMs),
       clicsSinEfecto: m.invalidClicks,
+      pasosConObjeto: m.movesWithItem,
+      cambiosDeCalidad: m.quality,
       objetosMalUsados: m.wrongItems,
       ayudasPedidas: m.hints,
       intentosRondas: ev.beats ? ev.beats.misses + 1 : null,

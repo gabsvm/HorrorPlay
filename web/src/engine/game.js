@@ -46,6 +46,8 @@ export class Game {
     this.r = new Renderer(this.view);
     this.ui = new UI();
     this.ui.game = this;
+    this.r.onLost = () => this.ui.toast('Recuperando la imagen…', 4000);
+    this.r.onRestored = () => this.ui.toast('Imagen recuperada.', 1800);
     this.state = freshState();
     this.actors = [];
     this.scene = null;
@@ -248,7 +250,7 @@ export class Game {
     if (!h) {
       // with an object in hand, empty ground is a step, not a cancel: only Cancel, Back or Escape let it go
       // (UX audit b69323b, UX-B03); the marker keeps showing what is held
-      if (this.selectedItem) metrics.invalidClick();
+      if (this.selectedItem) metrics.moveWithItem();   // a step with the object in hand, not a wasted click
       const wx = p.x + this.r.cam.x;
       const [a, b] = this.scene.walk;
       this.player.walkTo(Math.max(a, Math.min(b, wx)));
@@ -589,11 +591,16 @@ export class Game {
   // ------------------------------------------------------------ loop
   loop(now) {
     requestAnimationFrame((t) => this.loop(t));
+    // hidden (another app, the screen off): no work at all. Paused behind the menu: the scene still breathes,
+    // at about 12 frames a second instead of the screen's rate (engine audit 1b3fc5e, P2)
+    if (typeof document !== 'undefined' && document.hidden) { this.last = now; return; }
+    if (this.paused && now - this.last < 80) return;
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
     const t0 = performance.now();
     try { this.tick(now, dt); } catch (err) { if (!this._loopErr) console.error(err); this._loopErr = true; }
-    this.adaptQuality(performance.now() - t0, now);
+    // the throttled frames of the pause say nothing about the phone: they do not count towards the quality
+    if (!this.paused) this.adaptQuality(performance.now() - t0, now); else this._lastNow = null;
   }
 
   // Quality: 'alta' always full, 'baja' always light, 'auto' drops the costly effects (rim light,
@@ -608,7 +615,16 @@ export class Game {
       const iv = this._lastNow != null ? now - this._lastNow : 16;
       this._lastNow = now;
       if (iv < 120) this._iv = this._iv == null ? iv : this._iv * 0.98 + iv * 0.02;
-      if (!this._autoLow && now > 8000 && (this._cost > 15 || this._iv > 40)) this._autoLow = true;
+      // down when a phone cannot hold the frame rate for a while; back up only after a long, clearly easy
+      // stretch (20 s near 60 fps with little work), at most twice a session so it never seesaws
+      if (this.paused || this.inMenu) this._easySince = null;
+      else if (!this._autoLow && now > 8000 && (this._cost > 15 || this._iv > 40)) { this._autoLow = true; this._easySince = null; metrics.quality('baja', this._cost, this._iv); }
+      else if (this._autoLow && (this._ups || 0) < 2) {
+        const easy = this._cost < 5 && this._iv < 19;
+        if (!easy) this._easySince = null;
+        else if (this._easySince == null) this._easySince = now;
+        else if (now - this._easySince > 20000) { this._autoLow = false; this._ups = (this._ups || 0) + 1; this._easySince = null; this._cost = 8; metrics.quality('alta', this._cost, this._iv); }
+      }
       low = !!this._autoLow;
     }
     if (low !== !!this.r.lowFx) {
