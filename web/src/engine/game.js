@@ -165,6 +165,7 @@ export class Game {
         if (this.ui._docClose) this.ui._docClose();
         else if (this.ui.notebookOpen) this.ui.closeNotebook();
         else if (this.ui._talkCancel) this.ui._talkCancel();
+        else if (this.ui._knockClose && !this.ui._advance) this.ui._knockClose();
         else if (this.selectedItem) this.selectItem(null);
         else if (this.onPause) this.onPause();
       }
@@ -188,8 +189,9 @@ export class Game {
   }
 
   // What is under the pointer. A finger is wider than its point: on touch, a tap that misses every rectangle
-  // still takes the nearest one within 24 CSS px (a 48 px target), and when several are that close, a person
-  // to talk to comes before a thing to examine, and a thing before a way out (UX audit 675df9f, UX-05).
+  // still takes the nearest one within 24 CSS px (a 48 px target). Distance decides; only when two are about
+  // as near (within 3 units) does a person to talk to come before a thing, and a thing before a way out
+  // (UX audit 675df9f UX-05; b69323b UX-B02).
   hotspotAt(p) {
     if (!this.scene) return null;
     const wx = p.x + this.r.cam.x, wy = p.y;
@@ -203,15 +205,17 @@ export class Game {
     const width = this.stage?.getBoundingClientRect?.().width || W;
     const tol = 24 * (W / width) / (this.r.fx.zoom?.[0] || 1);
     const rank = (h) => (h.cursor === 'talk' ? 0 : h.cursor === 'exit' ? 2 : 1);
-    let best = null, bestKey = Infinity;
+    const near = [];
     list.forEach((h, i) => {
       const [x, y, w, hh] = rects[i];
       const d = Math.hypot(Math.max(x - wx, 0, wx - x - w), Math.max(y - wy, 0, wy - y - hh));
-      if (d > tol) return;
-      const key = rank(h) * tol + d;
-      if (key < bestKey) { bestKey = key; best = h; }
+      if (d <= tol) near.push({ h, d });
     });
-    return best;
+    if (!near.length) return null;
+    const dMin = Math.min(...near.map((n) => n.d));
+    const tied = near.filter((n) => n.d <= dMin + 3);
+    tied.sort((a, b) => rank(a.h) - rank(b.h) || a.d - b.d);
+    return tied[0].h;
   }
 
   // How a hotspot presents itself to the player.
@@ -242,7 +246,9 @@ export class Game {
     if (this.player.fidget) { if (this.player.pose === 'inspect') this.player.pose = null; this.player.fidget = null; this.player.shiver = 0; this.player.stillT = 0; }
     const h = this.hotspotAt(p);
     if (!h) {
-      if (this.selectedItem) { this.selectItem(null); metrics.invalidClick(); return; }
+      // with an object in hand, empty ground is a step, not a cancel: only Cancel, Back or Escape let it go
+      // (UX audit b69323b, UX-B03); the marker keeps showing what is held
+      if (this.selectedItem) metrics.invalidClick();
       const wx = p.x + this.r.cam.x;
       const [a, b] = this.scene.walk;
       this.player.walkTo(Math.max(a, Math.min(b, wx)));
@@ -283,6 +289,8 @@ export class Game {
         metrics.wrongItem();
         await G.think(this.itemDefs[item].wrong || this.wrongUse(h));
         settle();
+        // it did not work there: the object stays in hand, to try somewhere else (UX-B03)
+        if (this.state.items.includes(item)) { this.selectedItem = item; this.refreshInventory(); }
         return;
       }
       try {
@@ -858,11 +866,12 @@ export class Game {
       // idempotent) replays it without new effects. `done` recognises topics heard in a save from before the
       // marks were kept. `ends` closes the conversation after the topic (a puzzle, closing the night).
       // The marks are kept in state.conversationSeen["scene:npc"]. Never for a timed or irreversible choice.
-      talk: async (npc, topics, { exit = 'Nada más.' } = {}) => {
+      // `after`: the menu comes right after a scripted first meeting (headless tests then leave unless they pick)
+      talk: async (npc, topics, { exit = 'Nada más.', after = false } = {}) => {
         const key = `${game.scene.id}:${npc}`;
         const marks = () => (game.state.conversationSeen[key] ||= []);
         const heard = (t) => marks().includes(t.id) || !!t.done?.(G);
-        let asked = 0;
+        let asked = after ? 1 : 0;
         for (;;) {
           // headless tests: once their picks run out after a topic, they leave the conversation
           if (window.FAST && asked && !(window.PICKS || []).length) return null;

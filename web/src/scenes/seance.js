@@ -233,11 +233,14 @@ export default {
           if (c === 0) { w.talking = true; await G.say('Madame Wexley', 'No es el abrigo lo que debe quitarse.'); w.talking = false; G.sanityOnce('wexley_done', -3); }
           return;
         }
+        const intro = !G.flag('wex_q1');
         if (!G.flag('wex_q1')) {
           G.flag('wex_q1', true);
           await G.say('Madame Wexley', 'A un policía le cobraría el doble. A usted no le cobraré nada.');
           await G.say('Madame Wexley', 'Aquí tapamos los espejos cuando alguien muere. Yo no lo hice. Creí que era más valiente.');
-        } else {
+        }
+        // right after the first words, the topics are offered at once (UX audit b69323b, UX-B06)
+        {
           // before the séance, a conversation that stays open (G.talk); after it, she only wants him out
           w.talking = false;
           await G.talk('wexley', [
@@ -251,7 +254,7 @@ export default {
               await G.say('Madame Wexley', G.state.flags.comb_custody === 'pike' ? 'Siéntese cuando quiera. Ella ya está aquí.' : 'El peine. No estoy fingiendo que no lo veo.');
               w.talking = false;
             } },
-          ]);
+          ], { after: intro });
         }
         w.talking = false;
       },

@@ -179,6 +179,7 @@ export default {
       id: 'pike', name: 'Sargento Pike', cursor: 'talk', rect: [860, GROUND - 181, 80, 181], walk: 800, face: 1,
       act: async (G) => {
         const pike = G.actor('Pike'); pike.facing = -1; pike.talking = true;
+        const intro = !G.hasClue('ordenados') || !G.flag('pike_hb2');
         if (!G.hasClue('ordenados')) {
           await G.say('Pike', 'Phillips calcula entre las cuatro y media y las cinco y media.');
           pike.talking = false;
@@ -196,8 +197,10 @@ export default {
           if (c === 0) await G.say('Pike', 'Entendido.');
           else await G.say('Pike', 'No lo haría si no necesitara una respuesta.');
           pike.talking = false;
-        } else {
-          // after his two beats, the conversation stays open (G.talk); nothing in it changes the case
+        }
+        // after either of his two beats, or on any later visit, the conversation stays open (G.talk); nothing in
+        // it changes the case (UX audit b69323b, UX-B06: the topics come at once after a beat)
+        {
           pike.talking = false;
           await G.talk('pike', [
             { id: 'phillips', label: '¿Qué calcula Phillips?', done: (G) => G.hasClue('ordenados'), run: async (G) => {
@@ -214,7 +217,7 @@ export default {
               await G.say('Pike', 'Ya han decidido que fue «Leather Apron». Los diarios. No los testigos.');
               pike.talking = false;
             } },
-          ]);
+          ], { after: intro });
         }
         pike.talking = false;
       },
@@ -223,6 +226,7 @@ export default {
       id: 'greaves', name: 'Dr. Lionel Greaves', cursor: 'talk', rect: [1100, GROUND - 198, 90, 198], walk: 1040, face: 1,
       act: async (G) => {
         const g = G.actor('Greaves'); g.facing = -1; g.talking = true;
+        const intro = !G.flag('greaves_met');
         if (!G.flag('greaves_met')) {
           G.flag('greaves_met', true);
           await G.say('Greaves', 'Sigues mirando las manos primero, Thomas.');
@@ -246,7 +250,9 @@ export default {
           g.talking = false;
           await G.think('Nunca le he contado a nadie lo del láudano. ¿Cómo lo sabe?');
           G.sanity(-3);
-        } else {
+        }
+        // right after the first words, the topics are offered at once (UX audit b69323b, UX-B06)
+        {
           g.talking = false;
           await G.talk('greaves', [
             { id: 'cut', label: '¿Qué opina del corte?', done: (G) => G.flag('greaves_cut'), run: async (G) => {
@@ -261,7 +267,7 @@ export default {
               await G.say('Greaves', 'Sabes dónde encontrarme. Y aún conservo tu vieja ficha.');
               g.talking = false;
             } },
-          ]);
+          ], { after: intro });
         }
       },
     },
@@ -269,13 +275,16 @@ export default {
       id: 'amelia', name: 'Sra. Richardson, la casera', cursor: 'talk', rect: [430, GROUND - 163, 80, 163], walk: 540, face: -1,
       act: async (G) => {
         const a = G.actor('Amelia'); a.talking = true; a.facing = 1;
+        const intro = !G.flag('amelia1');
         if (!G.flag('amelia1')) {
           G.flag('amelia1', true);
           await G.say('Sra. Richardson', 'Diecisiete personas bajo este techo. Dígame cómo nadie oyó nada.');
           await G.say('Sra. Richardson', 'Ese delantal lo lavé yo. Es de mi hijo John. ¿Va a escribirlo o va a preguntar otra vez?');
           a.talking = false;
           await G.think('Del hijo de la casera. Pero estaba a dos pasos del cuerpo.');
-        } else {
+        }
+        // right after the first words, the topics are offered at once (UX audit b69323b, UX-B06)
+        {
           a.talking = false;
           await G.talk('amelia', [
             { id: 'apron', label: 'El delantal.', done: (G) => G.flag('amelia1'), run: async (G) => {
@@ -288,7 +297,7 @@ export default {
               await G.say('Sra. Richardson', 'Los de la ventana cobran por mirar. Yo vivo aquí y nadie me deja cerrar la puerta.');
               a.talking = false;
             } },
-          ]);
+          ], { after: intro });
         }
         a.talking = false;
       },

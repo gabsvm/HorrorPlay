@@ -1,6 +1,6 @@
 # El Huésped — guion completo
 
-_Generado desde el código del juego (2026-10-13) con `node web/tools/script/export.mjs`. Es todo lo que el jugador puede leer: diálogos, pensamientos de Thomas, elecciones, documentos, objetivos y el cuaderno._
+_Generado desde el código del juego (2026-10-14) con `node web/tools/script/export.mjs`. Es todo lo que el jugador puede leer: diálogos, pensamientos de Thomas, elecciones, documentos, objetivos y el cuaderno._
 
 ## Cómo está hecho el juego (para reescribirlo)
 
@@ -556,14 +556,13 @@ _Archivo: src/scenes/hanbury.js_
       - **Pike:** Entendido.
     - _Si no:_
       - **Pike:** No lo haría si no necesitara una respuesta.
-  - _Si no:_
-    - > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
-      - **¿Qué calcula Phillips?**
-        - **Pike:** Phillips calcula entre las cuatro y media y las cinco y media.
-        - **Thomas:** ¿Y por qué no han recogido sus cosas?
-        - **Pike:** Porque alguien las colocó en fila. Quería que las viéramos así.
-      - **¿Qué dicen los diarios?**
-        - **Pike:** Ya han decidido que fue «Leather Apron». Los diarios. No los testigos.
+- > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
+  - **¿Qué calcula Phillips?**
+    - **Pike:** Phillips calcula entre las cuatro y media y las cinco y media.
+    - **Thomas:** ¿Y por qué no han recogido sus cosas?
+    - **Pike:** Porque alguien las colocó en fila. Quería que las viéramos así.
+  - **¿Qué dicen los diarios?**
+    - **Pike:** Ya han decidido que fue «Leather Apron». Los diarios. No los testigos.
 
 #### Dr. Lionel Greaves `greaves`
 **Al interactuar:**
@@ -580,13 +579,12 @@ _Archivo: src/scenes/hanbury.js_
   - **Greaves:** ¿Sigues tomando láudano? Si es así, no lo mezcles con ginebra.
   - [+ Pista al cuaderno: greaves_sabe]
   - *Thomas (piensa):* Nunca le he contado a nadie lo del láudano. ¿Cómo lo sabe?
-- _Si no:_
-  - > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
-    - **¿Qué opina del corte?**
-      - **Greaves:** Parece trabajo de alguien acostumbrado a la disección.
-      - **Greaves:** Tú tenías buena mano. No era un elogio que hiciera a menudo.
-    - **¿Dónde puedo encontrarle?**
-      - **Greaves:** Sabes dónde encontrarme. Y aún conservo tu vieja ficha.
+- > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
+  - **¿Qué opina del corte?**
+    - **Greaves:** Parece trabajo de alguien acostumbrado a la disección.
+    - **Greaves:** Tú tenías buena mano. No era un elogio que hiciera a menudo.
+  - **¿Dónde puedo encontrarle?**
+    - **Greaves:** Sabes dónde encontrarme. Y aún conservo tu vieja ficha.
 
 #### Sra. Richardson, la casera `amelia`
 **Al interactuar:**
@@ -594,12 +592,11 @@ _Archivo: src/scenes/hanbury.js_
   - **Sra. Richardson:** Diecisiete personas bajo este techo. Dígame cómo nadie oyó nada.
   - **Sra. Richardson:** Ese delantal lo lavé yo. Es de mi hijo John. ¿Va a escribirlo o va a preguntar otra vez?
   - *Thomas (piensa):* Del hijo de la casera. Pero estaba a dos pasos del cuerpo.
-- _Si no:_
-  - > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
-    - **El delantal.**
-      - **Sra. Richardson:** Ese delantal lo lavé yo. Es de mi hijo John. ¿Va a escribirlo o va a preguntar otra vez?
-    - **¿Y la gente de las ventanas?**
-      - **Sra. Richardson:** Los de la ventana cobran por mirar. Yo vivo aquí y nadie me deja cerrar la puerta.
+- > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
+  - **El delantal.**
+    - **Sra. Richardson:** Ese delantal lo lavé yo. Es de mi hijo John. ¿Va a escribirlo o va a preguntar otra vez?
+  - **¿Y la gente de las ventanas?**
+    - **Sra. Richardson:** Los de la ventana cobran por mirar. Yo vivo aquí y nadie me deja cerrar la puerta.
 
 #### Delantal de cuero `apron`
 **Al interactuar:**
@@ -756,13 +753,12 @@ _Archivo: src/scenes/seance.js_
 - _Si !flag('wex_q1'):_
   - **Madame Wexley:** A un policía le cobraría el doble. A usted no le cobraré nada.
   - **Madame Wexley:** Aquí tapamos los espejos cuando alguien muere. Yo no lo hice. Creí que era más valiente.
-- _Si no:_
-  - > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
-    - **Los espejos.**
-      - **Madame Wexley:** Aquí tapamos los espejos cuando alguien muere. Yo no lo hice. Creí que era más valiente.
-    - **¿Y la sesión?**
-      - **Madame Wexley:** Siéntese cuando quiera. Ella ya está aquí. _(si state.flags.comb_custody === 'pike')_
-      - **Madame Wexley:** El peine. No estoy fingiendo que no lo veo. _(si no)_
+- > **Conversación** (el menú vuelve tras cada tema; lo ya oído lleva ✓ y se puede volver a oír; sale con «Nada más.»):
+  - **Los espejos.**
+    - **Madame Wexley:** Aquí tapamos los espejos cuando alguien muere. Yo no lo hice. Creí que era más valiente.
+  - **¿Y la sesión?**
+    - **Madame Wexley:** Siéntese cuando quiera. Ella ya está aquí. _(si state.flags.comb_custody === 'pike')_
+    - **Madame Wexley:** El peine. No estoy fingiendo que no lo veo. _(si no)_
 
 #### Espejo `mirror`
 **Al interactuar:**

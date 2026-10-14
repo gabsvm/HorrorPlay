@@ -473,6 +473,7 @@ export class UI {
         const on = b.dataset.id === id;
         b.classList.toggle('selected', on);
         b.setAttribute?.('aria-selected', on ? 'true' : 'false');
+        b.tabIndex = on ? 0 : -1;   // one stop for the grid in the Tab order; the arrows move inside it
       }
       const d = id && defs[id];
       this.el.invDName.textContent = d ? d.name : 'Vacío';
@@ -521,10 +522,21 @@ export class UI {
     this.el.invExamine.onclick = (e) => { e?.stopPropagation?.(); examine(); };
     this.el.invUse.onclick = (e) => { e?.stopPropagation?.(); use(); };
     this.el.invClose.onclick = (e) => { e?.stopPropagation?.(); close(); };
-    // keep the keyboard inside the case (Tab and Shift+Tab cycle through what is enabled)
+    // keep the keyboard inside the case (Tab and Shift+Tab cycle through what is enabled); in the grid of
+    // slots the arrows, Home and End move the selection, as a listbox does (UX audit b69323b, UX-B05)
+    const COLS = 3;
     const trap = (e) => {
+      const at = slots.indexOf(document.activeElement);
+      if (at >= 0 && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) {
+        const n = slots.length;
+        const to = { ArrowLeft: at - 1, ArrowRight: at + 1, ArrowUp: at - COLS, ArrowDown: at + COLS, Home: 0, End: n - 1 }[e.key];
+        e.preventDefault();
+        if (to < 0 || to >= n) return;
+        slots[to].focus(); show(slots[to].dataset.id);
+        return;
+      }
       if (e.key !== 'Tab') return;
-      const f = [...slots, this.el.invExamine, this.el.invUse, this.el.invClose].filter((x) => !x.disabled);
+      const f = [...slots.filter((x) => x.tabIndex === 0), this.el.invExamine, this.el.invUse, this.el.invClose].filter((x) => !x.disabled);
       if (!f.length) return;
       const i = f.indexOf(document.activeElement);
       const next = e.shiftKey ? (i <= 0 ? f.length - 1 : i - 1) : (i === f.length - 1 ? 0 : i + 1);
@@ -721,7 +733,11 @@ export class UI {
     document.getElementById('ui').appendChild(box);
     const word = box.querySelector('.word'), khelp = box.querySelector('.khelp');
     let typed = '', misses = 0, given = '';
-    const result = await new Promise((done) => {
+    const result = await new Promise((resolve) => {
+      let over = false;
+      const done = (v) => { if (over) return; over = true; this._knockClose = null; resolve(v); };
+      // Back and Escape leave the puzzle as «Dejarlo» does (UX audit b69323b, UX-B01)
+      this._knockClose = () => { audio.click(); done(false); };
       box.querySelector('.leave').addEventListener('click', () => { audio.click(); done(false); });
       box.querySelector('.erase')?.addEventListener('click', () => { typed = given; word.textContent = typed; audio.click(); });
       box.querySelector('.ask')?.addEventListener('click', async (e) => {
@@ -748,6 +764,7 @@ export class UI {
         });
       }
     });
+    this._knockClose = null;
     box.remove();
     return { ok: result, misses };
   }

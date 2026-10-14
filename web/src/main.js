@@ -141,6 +141,7 @@ window.__appBack = () => {
   if (ui._talkCancel) { ui._talkCancel(); return; }             // a conversation menu that can be left
   if (ui._choiceKeys) return;                                   // any other choice waits for the player
   if (ui._advance) return;                                      // a line is never skipped by Back: it cannot be read again
+  if (ui._knockClose) { ui._knockClose(); return; }             // the knocks puzzle: left as «Dejarlo» leaves it
   if (game.selectedItem) { game.selectItem(null); return; }     // the object in hand is let go, as Escape does
   if (game.onPause) game.onPause();
 };

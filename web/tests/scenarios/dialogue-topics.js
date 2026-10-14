@@ -96,6 +96,24 @@ export async function run(opts) {
     m = MENUS.length;
     await act('brennan', null, ['Nada más']);
     need(MENUS[m].includes('✓ ¿Dónde estaba a las tres y media?'), `una partida antigua con la coartada oída la muestra marcada: ${MENUS[m]}`);
+    // right after a scripted first meeting the topics are offered at once (UX-B06): Greaves's question about the
+    // cut is already marked; Pike's first beat, then his menu with Phillips marked
+    await start('c2', await fixture('saves-v1-baseline/c2.json'));
+    expectScene('hanbury');
+    m = MENUS.length;
+    await act('greaves', null, ['corte', 'Dónde puedo', 'Nada más']);
+    const gm = MENUS.slice(m);
+    need(gm.length === 3 && gm[1].includes('✓ ¿Qué opina del corte?') && gm[1].includes('¿Dónde puedo encontrarle?'), `tras conocer a Greaves, sus temas sin volver a pulsarlo: ${JSON.stringify(gm)}`);
+    need(count(/Parece trabajo de alguien acostumbrado/) === 1, 'el corte no se repite solo');
+    if (!clue('ordenados')) {
+      m = MENUS.length;
+      await act('pike', null, ['Nada más']);
+      need(MENUS[m] && MENUS[m].includes('✓ ¿Qué calcula Phillips?'), `tras el primer encuentro con Pike, su menú: ${MENUS[m]}`);
+    }
+    // a headless pass with no picks after a first meeting leaves the menu at once (it does not replay a topic)
+    const n = window.LOG.length;
+    await act('amelia');
+    need(!window.LOG.slice(n).some((l) => /cobran por mirar/.test(l)), 'sin elección, la primera visita no reproduce un tema');
     return { menus: MENUS.length };
   }, opts);
 }

@@ -1614,3 +1614,28 @@ P3 que quedan para F17 o el dispositivo:
 - Las pruebas no tienen el tamaño real del escenario ni el puente Java de Atrás.
 
 `test-all` exit 0, 43 PASS. APK `ElHuesped-1.0-rc28.apk`, compilado desde este HEAD.
+
+## Auditoría UX b69323b: correcciones, 2026-10-13
+
+- **UX-B01 (P1), puzle de golpes HOSPES:** `ui.knockPuzzle` expone `_knockClose`, un cierre idempotente igual que «Dejarlo», y lo limpia al terminar.
+  - Atrás (`main.js`) lo cierra después de los menús y antes de la pausa. Si Wexley está leyendo una línea, Atrás espera a que termine.
+  - Escape también lo cierra en el ordenador.
+  - Comprobado en Chrome a 640×360 (táctil) y 1280×720: con Atrás, Escape y «Dejarlo» el resultado es `ok:false`, el panel desaparece y la partida no se pausa. Resolver A-B sigue dando `ok:true`.
+  - No hay prueba en el arnés: el DOM simulado no tiene `querySelector`.
+- **UX-B02 (P2), selección por cercanía:** decide la distancia. La categoría (persona > cosa > salida) solo desempata entre los que están a 3 unidades o menos del más cercano. `touch-motion` comprueba:
+  - un objeto a 1 gana a una persona a 23;
+  - a igual distancia, la persona va antes que la salida, y el objeto antes que la salida;
+  - una salida mucho más cerca gana a una persona.
+- **UX-B03 (P2), objeto en la mano:**
+  - Tocar el suelo vacío ya no suelta el objeto: Thomas camina y el indicador sigue.
+  - Un uso que no sirve dice por qué y deja el objeto en la mano para probar en otro sitio.
+  - Solo Cancelar, Atrás o Escape lo sueltan, o un punto que lo consuma de verdad.
+  - Sin cambios en `state.items` ni en la progresión.
+  - Probado en `touch-motion` y en Chrome.
+- **UX-B05 (P3), maletín:** las flechas mueven la selección (rejilla de 3 columnas), igual que Inicio y Fin. Solo la ranura seleccionada está en el orden de Tab. Comprobado en Chrome. Sin lector de pantalla.
+- **UX-B06 (P3), conversaciones de primera visita:** tras el primer encuentro con Greaves, la Sra. Richardson y Wexley, y tras cualquiera de los dos momentos de Pike en Hanbury, el menú de temas aparece sin volver a pulsar al personaje.
+  - Las escenas de guion y sus elecciones irreversibles no cambian.
+  - `G.talk(..., { after })`: en las pruebas headless, sin elección se sale del menú.
+  - `dialogue-topics` comprueba Greaves (el corte ya marcado), Pike y que no se reproduce ningún tema solo.
+- **UX-B04:** sigue pendiente; necesita el teléfono.
+- **Resultado:** `test-all` exit 0, 43 PASS.
