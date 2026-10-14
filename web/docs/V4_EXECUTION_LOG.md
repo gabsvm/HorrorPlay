@@ -1654,3 +1654,11 @@ Veredicto: REQUEST_CHANGES con dos P2, sin P0 ni P1. Se corrige:
 - **P3 anotado para el autor.** «Y aún conservo tu vieja ficha» (Greaves) llega ahora en el primer encuentro, porque el menú se abre enseguida. Es texto anterior a esta fase; refuerza la pista del expediente.
 
 `test-all` exit 0, 43 PASS.
+
+### Revisión final de Opus de d62e882
+
+Veredicto: **APPROVE**, sin P0, P1 ni P2. Se aplica el único P3: al cambiar de escena (`goto`) se suelta el objeto que se llevaba en la mano. Así, cruzar una salida con un objeto no convierte el primer toque a una persona de la escena nueva en un uso fallido.
+
+`test-all` exit 0, 43 PASS. APK `ElHuesped-1.0-rc29.apk`, compilado desde este HEAD.
+
+Sigue pendiente **UX-B04**: el teléfono físico (Moto g86 power / Android 17). `ANDROID_DEVICE_TESTED` sigue sin declararse.

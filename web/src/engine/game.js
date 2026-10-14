@@ -515,6 +515,8 @@ export class Game {
     // the modelled props are painted into the layers when the scene is built: give them a moment to load
     await Promise.race([loadProps(), wait(2000)]);
     this.ui.hover(null);
+    // a new place starts with empty hands: an object carried through a way out is put away (review of UX-B03)
+    if (this.selectedItem) { this.selectedItem = null; this.refreshInventory(); }
     if (this.scene?.leave) this.scene.leave(this.G);
     scene.G = this.G;
     this.scene = scene;
