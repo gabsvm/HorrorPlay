@@ -158,7 +158,11 @@ export const CLUES = {
   testigo: { tag: 'Mitre Square', text: 'Un testigo vio a un hombre con abrigo oscuro y bombín que llevaba una linterna "como las de la policía".', truth2: 'Como yo.' },
   berner_aviso: { tag: 'Mitre Square · aviso', text: 'Berner Street, hacia la una: una mujer en el patio de un club, garganta cortada. Sin nombre todavía.' },
   carta: { tag: 'Prensa · 1 oct', text: 'Una carta fechada el 25 y recibida por la Central News el 27 circula bajo la firma «Jack the Ripper». Según el periódico, está escrita con tinta roja.', truth2: 'La escribí durante las horas perdidas de la noche del 24 al 25.' },
-  letra: { tag: 'La carta', text: 'El remate de la J y la unión de las t recuerdan a la receta de Greaves. La semejanza no prueba autoría.',
+  // V5-03: heard in the street on 1 October (room.js window, or on leaving, chapters.js heardName); the name circulates without the man
+  eco: { tag: 'Mi cuarto · 1 oct', text: 'Abajo, en la calle, tres desconocidos hablan de «Jack» y de la carta como de un vecino que da miedo. Ninguno sabe quién la escribió. Ninguno me conoce.',
+    truth2: 'Ya no me necesitan para decirlo.' },
+  // V5-02: the copy keeps no strokes, so this clue is about what the hands on the desk can and cannot settle
+  letra: { tag: 'La carta', text: 'La copia que circula no conserva la letra del original: con ella no se cotejan trazos. Mis apuntes y la receta de Greaves usan la misma escuela de letra, así que las muestras de mi mesa no separan una mano de otra.',
     truth2: 'Mis apuntes de anatomía tienen los mismos gestos: Greaves me enseñó a escribir así.' },
   estuche: { tag: 'Mi cuarto · 1 oct', text: 'Mi viejo estuche de disección, debajo de la cama. Falta un bisturí.', truth2: 'No me lo robaron.' },
 
@@ -182,7 +186,7 @@ export const DEDUCTIONS = [
   { id: 'd_hospes', a: 'hospes', b: 'regla', text: 'El agua llama, alguien contesta, y desde entonces hay un anfitrión y un huésped. Wexley no hablaba de espíritus: hablaba del Ditch.' },
   { id: 'd_rojo', kind: 'inferencia', a: 'dedos', b: 'carta', denial: true, text: 'Según el periódico, la carta fechada el 25 está escrita en rojo. La misma madrugada faltaron hojas de mi escritorio. Es posible que se escribiera aquí.', truth: 'Escribí esa carta. Le di un nombre.' },
   { id: 'd_pike', kind: 'hipotesis', a: 'llave_pike', b: 'testigo', flag: 'sospecha_pike', denialLate: true, text: 'Pike tiene una llave, viste como el testigo describe y registra mis horarios. También podría estar investigándome. ¿Qué explicación encaja con los hechos?', truth: 'Pike apuntaba dónde estaba yo porque tenía miedo de saberlo.' },
-  { id: 'd_letra', kind: 'hipotesis', a: 'letra', b: 'greaves_sabe', flag: 'sospecha_greaves', denialLate: true, text: 'La letra recuerda la de Greaves y él conoce mi historial. Tengo motivos para preguntarle por el pasado, no pruebas de que redactara la carta.', truth: 'Escribo como él porque me enseñó él.' },
+  { id: 'd_letra', kind: 'hipotesis', a: 'letra', b: 'greaves_sabe', flag: 'sospecha_greaves', denialLate: true, text: 'Greaves escribe como yo y conoce mi historial. Tengo motivos para preguntarle por el pasado, no pruebas de que redactara la carta: una copia sin trazos no separa su mano de la mía.', truth: 'Escribo como él porque me enseñó él.' },
   { id: 'd_rapido', a: 'rapido', b: 'ronda', profile: 'Llega a las escenas antes que la policía', text: 'Siempre está cerca. Llega antes que nadie.' },
   { id: 'd_testigo', a: 'testigo', b: 'trozo', profile: 'Abrigo oscuro, bombín, linterna de policía', text: 'El testigo describe un abrigo oscuro, un bombín y una linterna similar a la policial. El trozo del delantal fue hallado después; no sabemos quién lo dejó.' },
   { id: 'd_estuche', kind: 'hipotesis', a: 'estuche', b: 'bisturi', denial: true, text: 'Un bisturí idéntico al del estuche faltante apareció junto a Buck\'s Row. No sé quién lo sacó de mi cuarto.', truth: 'No me lo robaron. Wren lo sacó de la alcantarilla de Buck\'s Row.' },

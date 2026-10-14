@@ -72,10 +72,11 @@
           <ul id="clue-list"></ul>
         </div>
         <div class="page right">
-          <div id="nb-tabs"><button data-tab="ded" class="on">Conclusiones</button><button data-tab="theory">Teorías</button><button data-tab="profile">Perfil</button></div>
+          <div id="nb-tabs"><button data-tab="ded" class="on">Conclusiones</button><button data-tab="theory">Teorías</button><button data-tab="profile">Perfil</button><button data-tab="name" id="nb-tab-name" class="hidden">Nombre</button></div>
           <div id="nb-feedback"></div>
           <div class="tab" data-tab="ded"><ul id="deduction-list"></ul></div>
           <div class="tab hidden" data-tab="theory"><p class="hint">Lo que las pruebas sostienen y lo que no. No hace falta elegir una para seguir.</p><ul id="theory-list"></ul></div>
+          <div class="tab hidden" data-tab="name"><p class="hint">Una mano, una firma, un eco. Lo que cada papel demuestra y lo que no.</p><ul id="chain-list"></ul><button type="button" id="chain-go" class="chain-go">Ordenar la cadena</button></div>
           <div class="tab hidden" data-tab="profile"><h2 id="profile-title">Perfil del asesino</h2><ul id="profile-list"></ul></div>
         </div>
         <button id="nb-hint" class="close hint-btn">¿Qué hago ahora?</button>

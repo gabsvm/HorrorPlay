@@ -135,6 +135,17 @@ html.touch .choice-prompt { font-size: max(calc(22 * var(--u)), 14px); }
 #theory-list .posture button[aria-pressed="true"] { background: rgba(140,30,20,0.16); border-color: var(--blood); font-weight: bold; }
 #theory-list .posture button:focus-visible { outline: 2px solid var(--blood); outline-offset: 2px; }
 #theory-list .posture .ptoggle { display: block; width: 100%; font-weight: normal; text-align: left; }
+#nb-tabs button.hidden { display: none; }
+#chain-list li { font-style: normal; border-left-color: rgba(42,33,22,0.25); }
+#chain-list .ct { font-family: var(--sc); display: block; letter-spacing: 0.04em; }
+#chain-list .ct .st { font-size: 0.78em; margin-left: calc(6*var(--u)); color: #7a6440; }
+#chain-list .ct .st.on { color: var(--blood); }
+#chain-list .cn, #chain-list .cs { display: block; font-size: 0.92em; margin-top: calc(3*var(--u)); }
+#chain-list .cs { font-size: 0.82em; color: #5a4a33; }
+#chain-list .concl { display: block; margin-top: calc(6*var(--u)); font-style: italic; }
+.chain-go { min-height: 44px; min-width: 44px; margin-top: calc(8*var(--u)); padding: 6px 14px; font-family: var(--sc); font-size: calc(19*var(--u)); color: var(--paper-ink); background: rgba(42,33,22,0.08); border: 1px solid rgba(42,33,22,0.45); border-radius: calc(3*var(--u)); cursor: pointer; }
+.chain-go:focus-visible { outline: 2px solid var(--blood); outline-offset: 2px; }
+.chain-go[disabled] { opacity: 0.45; cursor: default; }
 #nb-feedback { margin-bottom: calc(6*var(--u)); }
 #deduction-list .ded-kind { font-family: var(--sc); font-size: 0.72em; letter-spacing: 0.1em; text-transform: uppercase; color: #7a5a2e; }
 #profile-list li { font-family: var(--sc); font-style: normal; color: var(--blood); font-size: calc(19*var(--u)); }

@@ -22,7 +22,9 @@ export const QUESTIONS = {
     options: [['brennan', 'Pudo ser Brennan'], ['prensa', 'El barrio ya lo había elegido'], ['insuficiente', 'No hay bastante para decirlo']],
     visible: (s) => hasClue(s, 'brennan_zurdo') || hasClue(s, 'delantal') },
   letter_author: { theory: 'carta', title: '¿Quién escribió la carta?',
-    options: [['greaves', 'Pudo escribirla Greaves'], ['cercano', 'Salió de mi cuarto'], ['insuficiente', 'No hay bastante para decirlo']],
+    options: [['greaves', 'Pudo escribirla Greaves'], ['cercano', 'Salió de mi cuarto'], ['yo', 'Pude escribirla yo'], ['insuficiente', 'No hay bastante para decirlo']],
+    // V5-02: «yo» is offered once the lost night's evidence (the sheets and the ink) is in the notebook
+    optionOk: (s, o) => o !== 'yo' || hasClue(s, 'dedos'),
     visible: (s) => hasClue(s, 'carta') },
   buck_window: { theory: 'rondas', title: 'Ventana de las rondas', options: [['firme', 'Firme'], ['compatible', 'Compatible, con margen'], ['insuficiente', 'Insuficiente']],
     visible: (s) => hasClue(s, 'ronda') },   // visible con la pista ronda (F02)
@@ -78,7 +80,7 @@ export function basisFor(state, q, option) {
 export function setPosition(state, q, option) {
   if (state.flags?.awake || state.flags?.second) return false;
   const Q = question(q);
-  if (!Q || !Q.visible(state) || !Q.options.some(([v]) => v === option)) return false;
+  if (!Q || !Q.visible(state) || !Q.options.some(([v]) => v === option) || (Q.optionOk && !Q.optionOk(state, option))) return false;
   const previous = readPosition(state, q);
   if (option === previous) return false;
   const inv = (state.investigation ??= {});

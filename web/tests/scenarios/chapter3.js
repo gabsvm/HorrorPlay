@@ -7,8 +7,10 @@ import { scenario, fixture } from './harness.js';
 const RUNS = [
   // [junction picks, expected outcome, the handwriting answer, what Greaves then says, what Pike says]
   [[0, 1, 1], 'clean', 'La muestra no basta', /No acusaste a nadie por una letra/, /Nadie te vio esta noche/],
-  [[1, 1, 1], 'spotted', 'Greaves: se parece', /Pensaste que la carta era mía/, /te vio la cara/],
+  [[1, 1, 1], 'spotted', 'Greaves: escribe', /Pensaste que la carta era mía/, /te vio la cara/],
   [[1, 0, 0], 'injured', 'La muestra no basta', /esa mano/, /mano cosida/],
+  // V5-02: the first reading may suspect his own hand, from the paper, the ink and the lost night; Greaves answers it
+  [[0, 1, 1], 'clean', 'Pude escribirla yo', /ya has pensado en tu propia mano/, /Nadie te vio esta noche/],
 ];
 
 export async function run(opts) {
@@ -30,7 +32,9 @@ export async function run(opts) {
       await act('paper');
       await act('desk', null, [hand]);
       need(game.state.clues.includes('letra'), 'La comparación da la pista de la letra sea cual sea la respuesta');
-      need(flag('handwriting_assessment') === (hand.startsWith('La muestra') ? 'inconclusive' : 'greaves_like'), 'Se guarda la valoración de la letra');
+      need(flag('handwriting_assessment') === (hand.startsWith('La muestra') ? 'inconclusive' : hand.startsWith('Pude') ? 'self_suspicion' : 'greaves_like'), 'Se guarda la valoración de la letra');
+      if (hand.startsWith('Pude')) need(!/Esa J|se parece a la suya/.test(window.LOG.join(' ')), 'La sospecha propia no se apoya en una letra que no se ve');
+      need(game.state.clues.includes('letra') && !game.state.clues.includes('eco'), 'La calle todavía no se ha oído');
       await act('bed');
       await act('door');
       await waitScene('greaves');

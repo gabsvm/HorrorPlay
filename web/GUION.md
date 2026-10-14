@@ -14,13 +14,14 @@ _Generado desde el código del juego (2026-10-14) con `node web/tools/script/exp
 - **Al reescribir:** se puede cambiar cualquier texto, quitar interacciones que solo describen (o dejarlas sin texto) y fusionar conversaciones. Conviene mantener los `id` de las cosas y de las pistas, o indicar los nuevos, para poder pasarlo al juego.
 
 ## Contexto: la biblia de la historia
-# EL HUÉSPED — Whitechapel, 1888
 
 > *Hospes* (lat.): el que recibe y el que es recibido. Anfitrión y huésped son la misma palabra.
 
 Biblia narrativa del juego. Todo lo que se escriba o se diseñe sale de este documento.
 
 ---
+
+> **V5 (14-10-2026).** La dirección editorial vigente del giro está en `docs/V5_NARRATIVE_BIBLE.md`: Thomas puede sospechar de su propia mano en la primera partida y el misterio de mayor alcance pasa a ser **para qué necesitaba una firma pública** (la cadena del nombre). Donde este documento diga que la primera lectura oculta a Thomas hasta el capítulo IV, léase «sin cerrarlo»: la sospecha razonada es posible desde el capítulo III; la certeza llega antes del agua.
 
 ### 1. Premisa en una línea
 
@@ -40,7 +41,7 @@ Un inspector de Whitechapel persigue al asesino que aterroriza el East End en el
 3. La advertencia de los ribereños es precisa: «Si el agua dice tu nombre, no contestes». La voz puede imitar a alguien querido, pero no puede anular esa condición de entrada.
 4. En octubre de **1866**, Thomas puede contestar o guardar silencio, según decida el jugador. Si contesta, el Huésped entra entonces. **Si calla, permanece fuera durante trece años; el primer ingreso ocurre en marzo de 1879**, cuando Thomas decide responder *de viva voz* durante otro encuentro junto al lavadero del hospital; después olvida haberlo hecho. Esa respuesta se documenta, pero Thomas la olvida.
 5. Una vez dentro, el Huésped «alquila horas»: desaparecen lapsos de memoria, se mueven objetos, cambian sus guantes y sus botas. Cada noche controla más tiempo. El acto de 1879 refuerza el vínculo si ya había entrado en 1866.
-6. **El nombre es una dirección.** Para permanecer sin depender de una sola respuesta privada, el Huésped necesita que muchas personas repitan un nombre nuevo; una ciudad lo hace poderoso y visible socialmente, no omnipotente.
+6. **El nombre es una dirección.** Para permanecer sin depender de una sola respuesta privada, el Huésped necesita que muchas personas repitan un nombre nuevo; una ciudad lo hace poderoso y visible socialmente, no omnipotente. **Decir, leer, oír o escribir «Jack» no mete al Huésped en nadie** (solo entra por respuesta voluntaria). «Thomas» es el nombre privado; «Jack» es una firma pública construida, no el nombre verdadero del demonio.
 7. Los crímenes son un medio para propagar ese nombre. La mano de Thomas escribe la carta *Dear Boss* con tinta roja en la noche del **24 al 25 de septiembre de 1888**. La carta lleva fecha del **25**, llega a la Central News Agency el **27** y se conoce masivamente después del doble crimen del **30 de septiembre**. Su nombre firmado es «Jack the Ripper».
 8. La sustitución es lenta y trágica: Thomas puede elegir sus últimas acciones, pero ya no puede detener la difusión del nombre. Al terminar, recuerda cada vez menos cómo se llama. No hay un nuevo sacrificio necesario para «completar» el ritual.
 
@@ -103,7 +104,7 @@ Tras el expediente de Greaves, Pike confronta personalmente a Thomas. El jugador
 
 En el agua, la voz dice «Thomas». Si el jugador insiste en callar, **Thomas calla de verdad durante unos segundos**; luego su boca, ya dominada, dice «Aquí estoy». El juego muestra que no se produjo una nueva invitación: la entidad ya estaba alojada en él por una respuesta pasada.
 
-El cuaderno obliga a hacer **tres relaciones finales razonadas** con la ficha de Thomas y presenta una cuarta evidencia —la respuesta de 1879—, distinta si el niño respondió o no en 1866. La voz no explica qué significa ser un nombre: se oyen conversaciones, titulares e informes que pronuncian «Jack» y el jugador concluye el resto.
+El cuaderno obliga a hacer **tres relaciones finales razonadas** con la ficha de Thomas y presenta una cuarta evidencia —la respuesta de 1879—, distinta si el niño respondió o no en 1866. Además (V5) pide ordenar **la cadena del nombre** en la pestaña «Nombre»: una mano, una firma, un eco. La voz no explica qué significa ser un nombre: se oyen desconocidos que pronuncian «Jack» tras el 30 de septiembre y el jugador concluye el resto.
 
 Epílogo, Miller's Court, 9 de noviembre: Wren le pregunta «¿Cómo se llama usted?». Se recupera la **interfaz de firma** del inicio (`final_name_entry`): el jugador escribe «Thomas» u otro texto, pero el resultado visible termina siempre en **J-A-C-K**. Debe ser una transformación lenta, no un salto instantáneo. La opción de última acción se refleja en una línea del epílogo; los destinos canónicos siguen siendo trágicos.
 
@@ -129,7 +130,7 @@ Cada pista es legítima y tiene una lectura inocente en el momento:
 
 ### Dos lecturas
 
-**Primera partida.** El jugador veterano espera «el detective es el asesino», así que el juego le ofrece
+**Primera partida.** (V5: quien sospecha de Thomas puede registrarlo desde el capítulo III como «Pude escribirla yo»; el juego reacciona y no lo penaliza. Lo que sigue describe el camino de quien no lo sospecha.) El jugador veterano espera «el detective es el asesino», así que el juego le ofrece
 otro tópico más tentador: **a Thomas le están tendiendo una trampa**. Alguien entra por su ventana
 mientras duerme, le moja las botas, le vuelca la tinta roja y le roba un bisturí del estuche. Los
 sospechosos razonables son **Pike** (reparte las rondas, lleva bombín y linterna, apunta a qué hora
@@ -150,7 +151,8 @@ izquierda manchada, la sangre seca de los guantes) no aparecen.
    del zar (fila y columna sobre una tabla de 5x5 sin K, clavada en la pared bajo la carta astral).
    Thomas los lee con la tabla: HOSPES, y con eso se abre la sesión. En la oscuridad, los mismos seis
    grupos vuelven más fuertes: esta vez sabe la palabra.
-3. **La letra** (cap. III): la carta «Dear Boss» frente a cuatro muestras manuscritas; comparar el remate de la **J**, el enlace de las **t** y la inclinación de los trazos. La similitud sugiere a Greaves, pero **no lo demuestra**. La segunda lectura permite comparar también los apuntes de Thomas. **No alterar la transcripción histórica añadiendo letras «ſ» que el original no usa.**
+3. **La letra** (cap. III): la copia de la carta que circula **no guarda el trazo** del original, así que no se compara ninguna escritura con ella. Se comparan las cuatro escrituras de la mesa entre sí (Greaves y Thomas escriben con la misma escuela, así que no se distinguen) y se pesa lo que sí existe: tres pliegos que faltan, tinta roja, la fecha de la noche perdida. Respuestas válidas: Greaves (por lo que sabe de Thomas), **«Pude escribirla yo»** (sospecha, no demostración) y «la muestra no basta». **No alterar la transcripción histórica añadiendo letras «ſ» que el original no usa.**
+4. **La cadena del nombre** (cap. IV, V5): tres preguntas de procedencia sin coste ni bloqueo (qué pasó primero; si la copia y el recorte son dos fuentes; qué prueba que desconocidos digan «Jack»). Dos fallos traen ayuda; cuatro, la respuesta dicha por Thomas.
 
 ### El perfil del asesino (mecánica del cuaderno)
 Cada deducción **de tipo inferencia sustentada** añade un rasgo al **Perfil del sospechoso** (las hipótesis de culpabilidad no son rasgos probados): *zurdo, sabe anatomía, conoce las rondas, ronda el río, sabe escribir, tiene acceso a las escenas antes que la policía*. En el capítulo 4, el cuaderno muestra el perfil completo en una página y, en la de enfrente, la ficha de **Thomas Ashgrove**. El jugador hace la deducción final él mismo.
@@ -201,6 +203,8 @@ El canon sigue igual: la entrada exige una respuesta voluntaria (en 1866 o, si e
 - **Cordura como percepción.** Firme (≥65): las pruebas se leen mejor. Tensa (36–64): la habitación contesta a veces. Desgastada (≤35): lo del otro lado se ve más claro (el método de los golpes, la luz del Ditch) y los hechos se dudan más; la gente lo nota. Ninguna banda bloquea nada ni muestra pistas falsas. La barra de cordura usa los mismos tres tramos, así que su color coincide con la banda.
 - **Segunda lectura.** Un momento nuevo por capítulo (el hombre del agua, la libreta de Pike, Wexley sabe a quién hablan los golpes, el borrador de la carta, la noche de 1879) y atajos por los puzles ya resueltos para quien terminó el juego.
 - **Víctimas.** Cada una tiene al menos un detalle humano documentado: Polly y su sombrero nuevo; Annie, el ganchillo y las flores; Elizabeth Stride, sueca, «Long Liz»; Catherine Eddowes, de vuelta del lúpulo de Kent con John Kelly; Mary Jane Kelly, unos veinticinco años, a la que una vecina oyó cantar.
+
+- **V5 · Cadena del nombre y sospecha propia.** La pestaña «Nombre» (chain.js) se abre con la calle del 1 de octubre o al despertar; el agua exige las tres fuentes independientes **y** la cadena ordenada. «Pude escribirla yo» es una postura de `letter_author` y una hipótesis de la teoría `carta`. Estados: `v5_name_chain`, `v5_name_echo_seen`, pista `eco`. Ver `docs/V5_NARRATIVE_BIBLE.md`.
 
 
 ## Introducción (antes del prólogo)
@@ -497,7 +501,7 @@ _Archivo: src/scenes/foreshore.js_
 _(sin texto)_
 
 ### `onDeduce`
-- [Objetivo] Ir al agua.
+- [Objetivo] Ir al agua. | En el cuaderno, pestaña «Nombre»: ordenar la cadena de la firma.
 
 ### Cosas con las que se interactúa
 
@@ -690,7 +694,10 @@ _Archivo: src/scenes/greaves.js_
 - *Thomas (piensa):* Expedientes por año. El de 1879 está apartado.
 **Al usar un objeto sobre ello:**
 - _Si !second() && !flag('awake') && Q.visible(state):_
-  - > **Elección:** 1) Todavía no sé quién la escribió.  ·  2) La carta pudo escribirla Greaves.  ·  3) Alguien que entra en mi cuarto.
+  - > **Menú de conversación** (las opciones que aparecen según lo ya hecho):
+    - Todavía no sé quién la escribió.
+    - La carta pudo escribirla Greaves.
+    - Alguien que entra en mi cuarto.
 
 #### Frascos de especímenes `jars`
 **Al interactuar:**
@@ -976,7 +983,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
   - *Thomas (piensa):* No. Primero el barco.
 - **La voz (la voz):** _Thomas._
 - *Thomas (piensa):* ¿Nat?
-- **La voz (la voz):** _Tommy. Estoy aquí abajo. Tengo frío._
+- **La voz (la voz):** _Tommy. Estoy aquí abajo. Tengo frío. Dime que estás aquí._
 - > **Elección:** 1) «Aquí estoy».  ·  2) Guardar silencio.
 - _Si !answered:_
   - **La voz (la voz):** _Solo tienes que decirlo._
@@ -1013,9 +1020,9 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
   - Brennan: hay que vigilarlo. _(si hasClue('brennan_zurdo'))_
   - Brennan: no hay nada contra él.
 - _Si who === 'pike':_
-  - **Pike:** Lo vigilaremos. Con cuidado: aquí se cuelga a la gente por menos. _(para "suspect")_
+  - **Pike:** Lo vigilaremos. Apunto dos columnas: lo que dicen de él y lo que hay contra él. La segunda está casi vacía. _(para "suspect")_
   - **Pike:** Lo apunto así. Será el único que lo escriba esta semana. _(para "clear")_
-  - **Pike:** Prudente. El barrio no lo será. _(para "unsure")_
+  - **Pike:** Prudente. El barrio no lo será: ya le ha puesto nombre. _(para "unsure")_
 
 ### `beats`
 - [Documento] DIVISIÓN J (BETHNAL GREEN) — RONDAS · copia a la H Noche del 30 al 31 de agosto de 1888 Remitida a Whitechapel: la H pide las rondas de la noche por lo de George Yard. PC 97J Neil. Buck's Row, Brady Street, Baker's Row. Vuelta de media hora: pasa ante el portón del establo a las y cuarto y a menos cuarto. PC 96J Thain. Brady Street. A las y media se detiene en la esquina de Buck's Row y alumbra la calle con la linterna. PC 55H Mizen. Baker's Row y Hanbury Street. Desde su punto no se ve Buck's Row. Declaraciones: Thain alumbró Buck's Row a las 3:30; no había nada en el suelo. Charles Cross, carretero, entró en la calle hacia las 3:40 y la encontró delante del portón. {two('Firmado: el inspector de guardia', 'Firmado: T. Ashgrove, inspector de guardia')}
@@ -1066,6 +1073,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - **Madame Wexley (la voz):** _Tommy._
 - *Thomas (piensa):* Nat me llamaba Tommy. Nadie más.
 - **Madame Wexley (la voz):** _Dejaste de buscarme, Tommy._
+- **Madame Wexley:** Esa voz no es de ningún muerto de esta mesa. Sabe a quién ha venido a buscar.
 - **Madame Wexley (la voz):** _¿Te acuerdas de lo que dijiste?_
 - [+ Pista al cuaderno: nat_voz]
 - _Si !flag('answered1866'):_
@@ -1119,6 +1127,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 
 ### `mobScene`
 - **Vecinos:** ¡Leather Apron! ¡Que salga el matarife!
+- *Thomas (piensa):* Le han puesto un nombre. La calle ya no pregunta.
 - **Brennan:** ¡Pregúntenle a los del turno! ¡He trabajado toda la noche!
 - **Un hombre:** ¡Usted lo ha investigado! ¿Es él o no?
 - > **Menú de conversación** (las opciones que aparecen según lo ya hecho):
@@ -1187,7 +1196,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - [Objetivo] Leer el periódico. Mirar debajo de la cama.
 
 ### `readPaper`
-- [Documento] THE DAILY NEWS — 1 de octubre de 1888 LOS CRÍMENES DEL EAST END. LA CARTA FIRMADA «JACK THE RIPPER». Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con tinta roja, menciona al «Leather Apron» y reivindica los crímenes: "I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..." Yours truly / Jack the Ripper {{ spotted: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(state.flags) + '. Asegura que podría reconocerlo.', injured: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(state.flags) + '. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.' }[state.flags.chase_outcome] || ''}
+- [Documento] THE DAILY TELEGRAPH — 1 de octubre de 1888 LOS CRÍMENES DEL EAST END. LA CARTA FIRMADA «JACK THE RIPPER». Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con tinta roja, menciona al «Leather Apron» y reivindica los crímenes: "I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..." Yours truly / Jack the Ripper {{ spotted: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(state.flags) + '. Asegura que podría reconocerlo.', injured: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(state.flags) + '. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.' }[state.flags.chase_outcome] || ''}
 - [+ Pista al cuaderno: carta]
 - *Thomas (piensa):* Fechada el 25. La noche que perdí. _(1ª lectura)_
 - *Thomas (piensa):* Fechada el 25. Faltaban tres pliegos en mi mesa. _(2ª lectura)_
@@ -1195,7 +1204,8 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
   - *Thomas (piensa):* Puede que la haya inventado un periodista. Una carta así vende periódicos.
 - _Si second():_
   - **La voz (la voz):** _Jack._
-- *Thomas (piensa):* Esa letra la he visto antes. En el escritorio tengo letras de todos.
+- *Thomas (piensa):* Una firma. Ya la imprimieron.
+- *Thomas (piensa):* Los inspectores tienen una copia. En el escritorio tengo letras de todos.
 - _Si bo === 'severe':_
   - *Thomas (piensa):* Brennan sigue sin poder trabajar. No he rectificado la acusación.
 - _Si no:_
@@ -1206,23 +1216,35 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - [Objetivo] {`${left.join('; ')}.`.replace(/^./, (m) => m.toUpperCase())} | Salir.
 
 ### `compareHands`
-- [Documento] Copia de la carta que circula entre los inspectores y cuatro escrituras La copia de la carta, sin la letra del original: "Dear Boss... Yours truly, Jack the Ripper" La nota de Madame Wexley:Mano redondeada y espaciada. "Los muertos piden hablar con usted..." Un informe del sargento Pike, con mis correcciones en rojo:Letra cerrada y recta. "Ronda sin novedad. Las farolas de Buck's Row siguen sin gas..." La receta del láudano, del doctor Greaves:Letras unidas, la J con una cola larga, el remate de las t muy corto. "Tinctura opii. Veinte gotas al acostarse. — L. G." El recibo del desolladero de Barber, de Silas Brennan:"X — su marca" {two('', 'Mis apuntes de anatomía, cuarto curso, 1878:La misma J, las mismas t. "Carótida: corre junto a la tráquea..."')}
-- *Thomas (piensa):* Esa J. Esas t. Las conozco.
-- > **Elección:** 1) Madame Wexley.  ·  2) Pike.  ·  3) Greaves: se parece a la suya.  ·  4) Brennan.  ·  5) {...(second() ? ['La mía.'] : [])}  ·  6) La muestra no basta. Necesito más pruebas.  ·  7) Revisar las muestras.
+- [Documento] Copia de la carta que circula entre los inspectores y las escrituras de mi mesa La copia de la carta, sin la letra del original: "Dear Boss... Yours truly, Jack the Ripper" Una copia pasada en limpio no guarda el trazo: no se puede cotejar con ninguna de las escrituras de abajo. La nota de Madame Wexley:Mano redondeada y espaciada. "Los muertos piden hablar con usted..." Un informe del sargento Pike, con mis correcciones en rojo:Letra cerrada y recta. "Ronda sin novedad. Las farolas de Buck's Row siguen sin gas..." La receta del láudano, del doctor Greaves:Letras unidas, la J con una cola larga, el remate de las t muy corto. "Tinctura opii. Veinte gotas al acostarse. — L. G." El recibo del desolladero de Barber, de Silas Brennan:"X — su marca" Mis apuntes de anatomía, cuarto curso, 1878:La misma J, las mismas t. "Carótida: corre junto a la tráquea..." Lo que sí cabe pesar, de mi mesa:Tres pliegos que faltan de mi papel de cartas. El tintero rojo, casi vacío. La carta, fechada el 25; la noche que perdí fue la del 24 al 25.
+- *Thomas (piensa):* Greaves y yo escribimos igual: me enseñó él. Una copia no dice cuál de las dos manos fue.
+- > **Elección:** 1) Madame Wexley.  ·  2) Pike.  ·  3) Greaves: escribe como yo y sabe de mí.  ·  4) Brennan.  ·  5) Pude escribirla yo.  ·  6) {...(second() ? ['La mía.'] : [])}  ·  7) La muestra no basta. Necesito más pruebas.  ·  8) Revisar las muestras.
 - _Si pick.startsWith('Greaves'):_
-  - *Thomas (piensa):* Es una escritura parecida. No es una identificación.
+  - *Thomas (piensa):* Escribimos igual. Sin el original no sé cuál de las dos manos fue.
+- _Si pick === 'Pude escribirla yo.':_
+  - *Thomas (piensa):* No puedo cotejar trazos con una copia. Pero la carta lleva la fecha de la noche que perdí. Faltan tres pliegos de mi mesa, y la tinta es roja.
+  - *Thomas (piensa):* También podría ser mi mano. Eso no basta para demostrarlo.
 - _Si pick === 'La mía.':_
-  - *Thomas (piensa):* Es mi propia letra. Copié a Greaves años atrás.
+  - *Thomas (piensa):* Es mía. No necesito el trazo para saberlo, aunque no pueda probarlo con una copia.
 - _Si pick.startsWith('La muestra'):_
-  - *Thomas (piensa):* Una copia y cuatro letras de mi mesa. Con esto no se acusa a nadie.
-- *Thomas (piensa):* No coincide con Wexley. _(para "Madame Wexley.")_
-- *Thomas (piensa):* No coincide con Pike. Sus notas sí llevan mis correcciones. _(para "Pike.")_
+  - *Thomas (piensa):* Una copia y las letras de mi mesa. Con esto no se acusa a nadie.
+- *Thomas (piensa):* Una copia no tiene trazo que cotejar con Wexley. Nada más las une a la carta. _(para "Madame Wexley.")_
+- *Thomas (piensa):* Con una copia no hay trazo que cotejar con Pike. Sus notas sí llevan mis correcciones. _(para "Pike.")_
 - *Thomas (piensa):* Brennan firmó con una cruz. No hay muestra suficiente. _(para "Brennan.")_
 - [+ Pista al cuaderno: letra]
 
+### `heardName`
+- _Si leaving:_
+  - *Thomas (piensa):* Abajo, en la calle, ya están vendiendo el periódico.
+- **Un vendedor de periódicos:** ¡La carta del asesino! ¡Jack the Ripper, firmado de su puño!
+- **Una mujer:** Dicen que Jack ya avisó antes de la última. ¿Tú lo has visto?
+- **Un hombre:** ¿A Jack? ¿A quién iba a ver? Es el que dicen.
+- [+ Pista al cuaderno: eco]
+- *Thomas (piensa):* Ninguno me conoce.
+
 ### `leaveRoomC3b`
 - _Si !hasClue('letra'):_
-  - *Thomas (piensa):* Necesito comparar la carta antes de salir.
+  - *Thomas (piensa):* Antes de salir, tengo que ver qué puede decir mi mesa de la carta.
 - _Si !hasClue('estuche'):_
   - *Thomas (piensa):* El estuche bajo la cama. Falta una pieza.
 
@@ -1234,6 +1256,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
   - *Thomas (piensa):* «T. A.» No puedo seguir llamándolo una coincidencia.
   - *Thomas (piensa):* En 1866 ya me oyó el agua. Esto volvió a ocurrir. _(si flag('answered1866'))_
   - *Thomas (piensa):* En 1866 callé. En el hospital no. _(si no)_
+  - *Thomas (piensa):* Mi mano izquierda se ha cerrado sobre algo que no tengo. Conoce el peso.
 - **Greaves:** La encontraste.
 - _Si hand === 'greaves_like':_
   - **Greaves:** Pensaste que la carta era mía. Te enseñé a escribir así; no a firmar eso.
@@ -1243,10 +1266,16 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
   - _Si no:_
     - _Si hand === 'self_recognition':_
       - **Greaves:** Reconociste tu letra. Yo la reconocí en marzo de 1879.
+    - _Si no:_
+      - _Si hand === 'self_suspicion' || state.investigation?.positions?.letter_author === 'yo':_
+        - **Greaves:** Lo llevas en la cara: ya has pensado en tu propia mano. Eso no se piensa sin miedo.
 - _Si state.flags.chase_outcome === 'injured':_
   - **Greaves:** Y esa mano. ¿Quién te la ha cosido?
 - _Si perception.othersNotice(state.sanity):_
   - **Greaves:** No duermes. Se te ve en los ojos, Thomas.
+- **Greaves:** Pike me trajo una copia de la carta. Me pareció oír tu voz leyéndola. No sabía qué significaba.
+- **Thomas:** No recuerdo haberla escrito.
+- **Greaves:** No te he preguntado qué recuerdas.
 - **Greaves:** Aquel día te hallé en la sala. No sé lo que ocurrió antes.
 - **Greaves:** Pike vino a preguntarme si alguien puede actuar sin recordarlo. Le respondí que sí.
 - > **Elección:** 1) Me está acusando a mí.  ·  2) ¿Y si tiene razón?  ·  3) ¿Le habló usted de Nat a Wexley?
@@ -1264,7 +1293,8 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - **Pike:** Nadie te vio esta noche. Eso es lo que más me asusta. _(para "clean")_
 - **Pike:** {'El agente Long dice que te vio la cara en ' + chaseStreet(state.flags) + '. No le he contestado.'} _(para "spotted")_
 - **Pike:** {'Long encontró sangre en una tapia de ' + chaseStreet(state.flags) + '. Y tú llevas la mano cosida.'} _(para "injured")_
-- **Pike:** Traigo tus rondas. Tu firma. No sé aún cuánto hiciste, pero no puedo dejarte marchar.
+- **Pike:** Traigo tus rondas. Tu firma. Eso lo he visto. Lo demás es lo que temo, y no voy a escribirlo como si lo hubiera visto.
+- **Pike:** No sé aún cuánto hiciste. Pero no puedo dejarte marchar.
 - > **Elección:** 1) «Deténgame, Pike».  ·  2) «Proteja a Wren. La niña del río».  ·  3) (Romper el folio del expediente que me señala)
 - _Si last === 0:_
   - **Thomas:** Póngame las esposas antes de que cambie de opinión.
@@ -1287,18 +1317,24 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - *Thomas (piensa):* Yo abrí la puerta. _(si flag('answered1866'))_
 - *Thomas (piensa):* Callé aquella noche. No la siguiente. _(si no)_
 - *Thomas (piensa):* Greaves, Pike, el bisturí, la carta. Un mismo hombre.
+- _Si state.flags.handwriting_assessment === 'self_suspicion' || state.investigation?.positions?.letter_author === 'yo':_
+  - *Thomas (piensa):* Ya había pensado en mi propia mano. Tenía razón y no quise tenerla.
 - [+ Pista al cuaderno: ficha]
 - *Thomas (piensa):* Es mi ficha. Encaja demasiado bien.
-- [Objetivo] En el cuaderno: comparar mi ficha con al menos tres pruebas independientes. Una hipótesis sin prueba no cuenta.
+- [Objetivo] En el cuaderno: comparar mi ficha con al menos tres pruebas independientes. Una hipótesis sin prueba no cuenta. Después, la pestaña «Nombre».
 
 ### `outfall1888`
 - _Si !canEnterFinale(state).ok:_
   - *Thomas (piensa):* Todavía no. Antes tengo que estar seguro. El cuaderno.
+- _Si !chainDone(state):_
+  - *Thomas (piensa):* Sé quién. Falta entender para qué la firma. El cuaderno, la pestaña «Nombre».
 - **La voz (la voz):** _Ven al agua, Tommy._
 
 ### `finaleWater`
 - _Si !canEnterFinale(state).ok:_
   - *Thomas (piensa):* Primero comprobaré lo que sé. No voy a contestar a ciegas.
+- _Si !chainDone(state):_
+  - *Thomas (piensa):* Todavía no entiendo para qué la firma. No voy a contestar a ciegas.
 - _Si !flag('water_before'):_
   - _Si flag('sospecha_pike') || flag('sospecha_greaves') || flag('accused'):_
     - *Thomas (piensa):* Brennan, Greaves, Pike. A todos los puse delante de mí.
@@ -1319,11 +1355,34 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
     - **Thomas:** (Entre los dedos) Aquí estoy.
     - *Thomas (piensa):* La mano no baja. No es mía.
 - **La voz (la voz):** _Escucha._
+- **La voz (la voz):** _{line}_
 - *Thomas (piensa):* El mío ya no viene cuando lo llamo.
 - [Visión: hands]
 - **La voz (la voz):** _¿Cómo te llamabas?_
 - *Thomas (piensa):* Thomas...
 - [→ Escena: millers]
+
+### `nameChain`
+- [Documento] La cadena del nombre{CHAIN_LINKS.map((l) => `${l.title}${l.note}`).join('')} Lo que no tengo: el original de la carta.
+- _Si !flag('awake'):_
+  - *Thomas (piensa):* Todavía me falta saber qué hizo mi propio cuerpo. Después, para qué la firma.
+- _Si !hasClue('eco'):_
+  - [+ Pista al cuaderno: eco]
+- _Si chainDone(state):_
+  - *Thomas (piensa):* {CHAIN_CONCLUSION[0]}
+- *Thomas (piensa):* Una mano, una firma, un eco. Lo ordeno.
+- > **Elección:** 1) {...q.options}  ·  2) Mirar los tres papeles otra vez.  ·  3) Dejarlo por ahora.
+- _Si c === labels.length - 1:_
+  - *Thomas (piensa):* Todavía no. Los papeles no se van.
+- *Thomas (piensa):* {q.miss}
+- _Si misses === 2:_
+  - *Thomas (piensa):* {q.help}
+- _Si misses >= 4:_
+  - *Thomas (piensa):* {q.options}
+- *Thomas (piensa):* {CHAIN_CONCLUSION.join(' ')}
+- *Thomas (piensa):* Al «Thomas» contesté yo. Al otro no tuvo que contestar nadie. _(si flag('answered1866'))_
+- *Thomas (piensa):* Al «Thomas» contesté en 1879. Al otro no tuvo que contestar nadie. _(si no)_
+- [Objetivo] Ir al agua. | En el cuaderno: comparar mi ficha con al menos tres pruebas independientes.
 
 ### `epilogue`
 - **Wren:** ¡Señor! Lo busca la policía. Y los hombres que no son policía.
@@ -1341,6 +1400,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - **Wren:** {lead} {what}
 - [Rótulo] Yours truly, Jack the Ripper — Don't mind me giving the trade name.
 - [Rótulo] El 9 de noviembre de 1888, Mary Jane Kelly fue asesinada en Miller's Court. Tenía unos veinticinco años. Esa noche, una vecina la oyó cantar. Fue la última de las cinco víctimas canónicas; la identidad del asesino no quedó establecida.
+- [Rótulo] Las cinco tenían nombre antes que él: Polly, Annie, Elizabeth, Catherine, Mary Jane.
 - [Rótulo] Silas Brennan no volvió a andar sin bastón. Nadie le pidió perdón. | Brennan sobrevivió a la turba, pero perdió su trabajo. Nadie rectificó la acusación. | Brennan sobrevivió sin heridas aquella noche. No volvió a hablar con Thomas.
 - _Si intent === 'destroy_page':_
   - [Rótulo] El expediente de 1879 se archivó con un folio roto. La enfermera Bell volvió a declarar.
@@ -1351,6 +1411,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
     - _Si intent === 'warn_wren':_
       - [Rótulo] Wren no volvió a dormir junto al Ditch.
 - [Rótulo] Nadie volvió a ver al inspector Thomas Ashgrove. El Black Ditch sigue corriendo bajo el East End.
+- [Rótulo] —¿Has oído lo de Jack? —Dicen que otra vez.
 - [Rótulo] El Huésped — Fin
 
 ## El cuaderno: objetos, pistas y deducciones
@@ -1561,9 +1622,14 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 - Texto: Una carta fechada el 25 y recibida por la Central News el 27 circula bajo la firma «Jack the Ripper». Según el periódico, está escrita con tinta roja.
 - Verdad (2ª lectura): La escribí durante las horas perdidas de la noche del 24 al 25.
 
+**`eco`**
+- Dónde: Mi cuarto · 1 oct
+- Texto: Abajo, en la calle, tres desconocidos hablan de «Jack» y de la carta como de un vecino que da miedo. Ninguno sabe quién la escribió. Ninguno me conoce.
+- Verdad (2ª lectura): Ya no me necesitan para decirlo.
+
 **`letra`**
 - Dónde: La carta
-- Texto: El remate de la J y la unión de las t recuerdan a la receta de Greaves. La semejanza no prueba autoría.
+- Texto: La copia que circula no conserva la letra del original: con ella no se cotejan trazos. Mis apuntes y la receta de Greaves usan la misma escuela de letra, así que las muestras de mi mesa no separan una mano de otra.
 - Verdad (2ª lectura): Mis apuntes de anatomía tienen los mismos gestos: Greaves me enseñó a escribir así.
 
 **`estuche`**
@@ -1647,7 +1713,7 @@ _Archivo: src/story/data.js. `text` es lo que se lee en la primera partida; `tex
 
 **`d_letra`**
 - Une las pistas: `letra` + `greaves_sabe`
-- Texto: La letra recuerda la de Greaves y él conoce mi historial. Tengo motivos para preguntarle por el pasado, no pruebas de que redactara la carta.
+- Texto: Greaves escribe como yo y conoce mi historial. Tengo motivos para preguntarle por el pasado, no pruebas de que redactara la carta: una copia sin trazos no separa su mano de la mía.
 - Verdad (2ª lectura): Escribo como él porque me enseñó él.
 
 **`d_rapido`**

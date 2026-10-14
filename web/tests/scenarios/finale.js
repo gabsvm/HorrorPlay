@@ -13,7 +13,7 @@ const RUNS = [
 ];
 
 export async function run(opts) {
-  return scenario(async ({ game, start, act, deduce, need, expectScene, waitScene, flag, settle }) => {
+  return scenario(async ({ game, start, act, deduce, need, chain, expectScene, waitScene, flag, settle }) => {
     const snap = await fixture('saves-v1-baseline/c4.json');
     const seen = [];
     for (const [pick, intent, waterPick, attitude, answered, gap, wrenSays, card] of RUNS) {
@@ -39,6 +39,11 @@ export async function run(opts) {
       need(game.state.scene === 'foreshore', 'Sin pruebas suficientes no empieza el final');
       for (const c of ['zurdo', 'bisturi', 'testigo']) await deduce('ficha', c);
       need(flag('recognized'), 'Con tres pruebas independientes llega el reconocimiento, sin monólogo');
+      // the sources are not the whole question: the water waits for the chain of the name (V5-03)
+      await act('water');
+      need(game.state.scene === 'foreshore' && !flag('water_reply_intent'), 'Sin ordenar la cadena del nombre el agua no se abre');
+      await chain();
+      need(flag('v5_name_chain') === 'reasoned', 'La cadena queda ordenada');
       // "not yet": he steps back, nothing is lost
       await act('water', null, ['Todavía no']);
       need(game.state.scene === 'foreshore' && flag('water_reply_intent') === 'unsure', '«Todavía no» devuelve al cuaderno');

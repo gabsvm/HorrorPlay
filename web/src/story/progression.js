@@ -5,6 +5,7 @@
 // player would naturally get it, as short phrases the hint and the objective can use.
 
 import { REVISIONS_KEEP, sanitizePositions } from './positions.js';
+import { chainDone } from './chain.js';
 
 const clue = (s, id) => s.clues.includes(id);
 const ded = (s, id) => s.deductions.includes(id);
@@ -43,6 +44,11 @@ export function normalizeState(s) {
   // Wren's «No fue él» is said only when the night closes with Brennan (chapters.js, endC1): a save closed
   // that way has it too. Only ever sets the flag, never clears it; a save from before V3 has no route, so no flag.
   if (s.investigation.routes.c1?.closedAt === 'knackers') s.flags.v4_wren_not_him = true;
+  // V5-03: the street heard on 1 October is a clue of the notebook; a save past that room that read the paper but not
+  // the street (it is not a gate) gets the clue once, derived from having read the paper. Never removed, never doubled.
+  if ((s.chapter === 'c4' || s.flags.awake) && s.clues.includes('carta') && !s.clues.includes('eco')) s.clues.push('eco');
+  // a save made on the foreshore with «Ir al agua.» but without the chain asks for the chain, as the water now does
+  if (s.scene === 'foreshore' && s.flags.awake && s.objective === 'Ir al agua.' && !chainDone(s) && finalSources(s).length >= 3) s.objective = 'En el cuaderno, pestaña «Nombre»: ordenar la cadena de la firma.';
   return s;
 }
 
@@ -97,7 +103,7 @@ export function canLeaveMitre(s) {
 export function canLeaveRoomC3b(s) {
   const missing = [];
   if (!flag(s, 'paper_read')) missing.push('leer el periódico');
-  if (!clue(s, 'letra')) missing.push('comparar la letra de la carta con las del escritorio');
+  if (!clue(s, 'letra')) missing.push('repasar lo que mi escritorio puede decir de la carta');
   if (!clue(s, 'estuche')) missing.push('mirar debajo de la cama');
   return result(missing);
 }
@@ -124,6 +130,15 @@ export function canEnterFinale(s) {
   return result(n >= 3 ? [] : [`relacionar mi ficha con ${3 - n} prueba${3 - n === 1 ? '' : 's'} independiente${3 - n === 1 ? '' : 's'} más`]);
 }
 
+// V5-03: the water opens when the sources are met AND the player has ordered the chain of the name (chain.js). The
+// sources alone still decide canEnterFinale (the recognition); the chain is the second question of the case.
+export function canEnterWater(s) {
+  const a = canEnterFinale(s);
+  const missing = [...a.missing];
+  if (!chainDone(s)) missing.push('reconstruir en el cuaderno la cadena del nombre (pestaña Nombre)');
+  return result(missing);
+}
+
 // ------------------------------------------------------------ the open question
 // What the case asks of the player right now: the gate of the place they are in, if it is not met.
 export function currentGate(s) {
@@ -133,7 +148,7 @@ export function currentGate(s) {
   if (sc === 'seance') return flag(s, 'seance_done') ? canLeaveSeance(s) : canStartSeance(s);
   if (sc === 'mitre') return canLeaveMitre(s);
   if (sc === 'room' && phase === 'c3b') return canLeaveRoomC3b(s);
-  if (sc === 'foreshore' && flag(s, 'awake')) return canEnterFinale(s);
+  if (sc === 'foreshore' && flag(s, 'awake')) return canEnterWater(s);
   return null;
 }
 
@@ -146,6 +161,7 @@ export function gateDeductions(s) {
     return canFinishC1(s).ok || C1_CONCLUSIONS.some((d) => ded(s, d)) ? [] : C1_CONCLUSIONS;
   }
   if (sc === 'foreshore' && flag(s, 'awake')) {
+    if (canEnterFinale(s).ok) return [];   // the sources are met: only the chain is left, and it is not a pair
     const have = new Set(finalSources(s));
     return Object.keys(FINAL_SOURCES).filter((d) => FINAL_SOURCES[d] && !have.has(FINAL_SOURCES[d]) && !ded(s, d));
   }

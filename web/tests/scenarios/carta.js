@@ -31,12 +31,12 @@ export async function run(opts) {
       };
     };
 
-    // first reading: the doubt is said, after the date and before «Esa letra la he visto antes»
+    // first reading: the doubt is said, after the date and before «Una firma. Ya la imprimieron.»
     const first = await readPaper(false);
     need(first.paperRead, 'La primera lectura marca el periódico como leído');
     const fechada = first.log.indexOf('Fechada el 25');
     const duda = first.log.indexOf('Puede que la haya inventado un periodista');
-    const letra = first.log.indexOf('Esa letra la he visto antes');
+    const letra = first.log.indexOf('Una firma. Ya la imprimieron.');
     need(fechada >= 0 && duda > fechada && letra > duda, `Primera lectura: la duda va entre la fecha y la letra (${fechada}, ${duda}, ${letra})`);
 
     // second reading: the doubt is not said, and the reading leaves the same clues and no new flag

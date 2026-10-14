@@ -172,8 +172,11 @@ export default {
         // before he shows the file: Thomas's own reading of the letter, a posture (positions.js), no flag and no gate
         const Q = QUESTIONS.letter_author;
         if (!G.second() && !G.flag('awake') && Q.visible(G.state)) {
-          const c = await G.choice(['Todavía no sé quién la escribió.', 'La carta pudo escribirla Greaves.', 'Alguien que entra en mi cuarto.']);
-          const value = ['insuficiente', 'greaves', 'cercano'][c];
+          // V5-02: «Pude escribirla yo» is one more answer, offered with the lost night's evidence in the notebook
+          const answers = [['Todavía no sé quién la escribió.', 'insuficiente'], ['La carta pudo escribirla Greaves.', 'greaves'], ['Alguien que entra en mi cuarto.', 'cercano'],
+            ...(Q.optionOk(G.state, 'yo') ? [['Pude escribirla yo.', 'yo']] : [])];
+          const c = await G.choice(answers.map((a) => a[0]));
+          const value = answers[c][1];
           G.game.setPosition('letter_author', value);
         }
         await G.game.chapterHooks.readFile(G);

@@ -44,16 +44,21 @@ export const THEORIES = [
   },
   {
     id: 'carta',
-    q: '¿Quién escribió la carta: Greaves, alguien que imita, o alguien cercano a mí?',
+    q: '¿Quién escribió la carta: Greaves, alguien que imita, alguien cercano a mí o yo mismo?',
     hyps: [
       { id: 'greaves', text: 'La escribió Greaves.',
-        for: [C('letra', 'la J y las t se parecen a su receta'), C('greaves_sabe', 'sabe cosas de mí que no conté')],
+        for: [C('greaves_sabe', 'sabe cosas de mí que no conté')],
         against: [F('hand_inconclusive', 'la muestra no basta para identificar a nadie'), C('expediente', 'su expediente me señala a mí, no a él')],
         rule: (n) => (n.against ? 'no demostrada' : n.for >= 2 ? 'plausible' : n.for ? 'sin evaluar' : 'sin evaluar') },
       { id: 'imitador', text: 'Alguien que se hace pasar por el asesino.',
         for: [C('carta', 'la carta circula en los periódicos'), C('delantal', 'repite lo de «Leather Apron» que ya leía todo el mundo')],
         against: [D('d_rojo', 'la tinta roja y los pliegos de mi mesa')],
         rule: (n) => (n.against ? 'no demostrada' : n.for >= 2 ? 'plausible' : 'sin evaluar') },
+      // V5-02: a suspicion Thomas can hold in the first reading, from the desk and the lost night. It rests on opportunity and dates, not on a hand he cannot compare.
+      { id: 'yo', text: 'Pude escribirla yo, la noche que perdí.',
+        for: [C('dedos', 'tres pliegos que faltan de mi mesa y tinta roja en los dedos'), C('carta', 'fechada el 25, la noche que perdí'), C('llave_pike', 'la puerta cerrada con llave')],
+        against: [],
+        rule: (n, s) => (s.flags.awake ? 'sostenida' : n.for >= 2 ? 'plausible' : 'sin evaluar') },
       { id: 'cercano', text: 'Alguien que entra en mi cuarto: la carta salió de mi mesa.',
         for: [C('dedos', 'tinta roja y pliegos que faltan'), D('d_rojo', 'la misma madrugada que la carta'), C('llave_pike', 'Pike tiene la otra llave')],
         against: [],

@@ -52,22 +52,32 @@ export const tests = [
     const at = (s) => readPaper.indexOf(s);
     ok(at('Fechada el 25.') > 0 && at('Fechada el 25.') < at(SUSPICION), 'la sospecha no va después de «Fechada el 25»');
     ok(at(SUSPICION) < at('G.audio.whisper(2, 0.14)'), 'la sospecha va después del susurro');
-    ok(at(SUSPICION) < at('Esa letra la he visto antes'), 'la sospecha va después de «Esa letra la he visto antes»');
+    ok(at(SUSPICION) < at('Una firma. Ya la imprimieron.'), 'la sospecha va antes de «Una firma. Ya la imprimieron.»');
+    ok(!readPaper.includes('Esa letra la he visto antes'), 'el periódico no muestra ninguna letra: no puede decir «esa letra la he visto antes»');
   }],
   ['compareHands: la comparación es con una copia, no con el periódico', () => {
     ok(!compareHands.includes('tal como la reproduce el Daily News'), 'queda «tal como la reproduce el Daily News»');
-    ok(compareHands.includes('<h3>Copia de la carta que circula entre los inspectores y cuatro escrituras</h3>'), 'falta la cabecera de la copia');
+    ok(compareHands.includes('<h3>Copia de la carta que circula entre los inspectores y las escrituras de mi mesa</h3>'), 'falta la cabecera de la copia');
     ok(compareHands.includes('La copia de la carta, sin la letra del original:'), 'falta la línea de la copia');
     ok(compareHands.includes('Dear Boss... Yours truly, Jack the Ripper'), 'se ha tocado la cita de la carta');
-    ok(compareHands.includes("await G.think('Una copia y cuatro letras de mi mesa. Con esto no se acusa a nadie.');"), 'falta el pensamiento de inconclusive');
+    ok(compareHands.includes("await G.think('Una copia y las letras de mi mesa. Con esto no se acusa a nadie.');"), 'falta el pensamiento de inconclusive');
   }],
-  ['compareHands: los tres valores de handwriting_assessment siguen en el código', () => {
-    for (const v of ['greaves_like', 'inconclusive', 'self_recognition']) ok(compareHands.includes(`assessment = '${v}'`), `falta ${v}`);
+  ['compareHands: los cuatro valores de handwriting_assessment siguen en el código', () => {
+    for (const v of ['greaves_like', 'inconclusive', 'self_recognition', 'self_suspicion']) ok(compareHands.includes(`assessment = '${v}'`), `falta ${v}`);
     ok(compareHands.includes('G.state.flags.handwriting_assessment = assessment;'), 'no se guarda handwriting_assessment');
     ok(!CH.includes('handwriting_category'), 'no debe existir handwriting_category');
   }],
-  ['un guardado con handwriting_assessment se carga sin cambio de estado (los tres valores)', () => {
-    for (const v of ['greaves_like', 'inconclusive', 'self_recognition']) {
+  ['V5-02: ninguna opción compara trazos con la copia, y «Pude escribirla yo» está en la primera lectura', () => {
+    ok(compareHands.includes('no guarda el trazo'), 'el documento debe decir que la copia no guarda el trazo');
+    ok(!/Esa J. Esas t. Las conozco/.test(compareHands), 'sigue la frase que compara trazos con una copia');
+    ok(!/se parece a la suya/.test(compareHands), 'sigue «se parece a la suya»');
+    const names = compareHands.slice(compareHands.indexOf('const names'), compareHands.indexOf('let assessment'));
+    ok(names.includes("'Pude escribirla yo.'"), 'falta la opción «Pude escribirla yo.»');
+    ok(!/G.second() ? [[^]]*Pude escribirla yo/.test(names), '«Pude escribirla yo.» no puede depender de la segunda lectura');
+    ok(compareHands.includes('También podría ser mi mano. Eso no basta para demostrarlo.'), 'falta la salvedad: sospecha, no demostración');
+  }],
+  ['un guardado con handwriting_assessment se carga sin cambio de estado (los cuatro valores)', () => {
+    for (const v of ['greaves_like', 'inconclusive', 'self_recognition', 'self_suspicion']) {
       const raw = { chapter: 'c3', scene: 'room', flags: { handwriting_assessment: v, room_phase: 'c3b', paper_read: true }, items: [], clues: ['carta', 'letra'], deductions: [], profile: [], sanity: 100 };
       const once = normalizeState(JSON.parse(JSON.stringify(raw)));
       eq(once.flags.handwriting_assessment, v, `${v} se pierde al cargar`);

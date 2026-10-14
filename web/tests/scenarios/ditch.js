@@ -21,6 +21,7 @@ export async function run(opts) {
       s.chapter = fs ? 'c4' : 'c1';
       s.sanity = sanity;
       s.deductions = deductions;
+      if (deductions.length) s.flags.v5_name_chain = 'reasoned';   // the chain of the name is ordered too (V5-03)
       delete s.seen['foreshore:outfall'];
       delete s.seen['foreshore:outfall:1888'];
       return s;

@@ -12,7 +12,7 @@ import { paintBody, paintVision } from '../art/bodies.js';
 import { UI } from './ui.js';
 import { audio } from './audio.js';
 import { prefs } from './prefs.js';
-import { normalizeState, currentGate, gateDeductions, canEnterFinale } from '../story/progression.js';
+import { normalizeState, currentGate, gateDeductions, canEnterFinale, canEnterWater } from '../story/progression.js';
 import { statuses } from '../story/theories.js';
 import { setPosition as writePosition } from '../story/positions.js';
 import { perception } from '../story/perception.js';
@@ -458,14 +458,30 @@ export class Game {
     if (d.profile && !this.state.profile.includes(d.profile)) this.state.profile.push(d.profile);
     if (d.flag) this.state.flags[d.flag] = true;
     if (d.denial) { this.state.sanity = Math.max(0, this.state.sanity - 4); this.ui.setSanity(this.state.sanity); audio.heartbeat(0.7); }
-    if (d.final && canEnterFinale(this.state).ok) { this.state.objective = 'Ir al agua.'; this.ui.setObjective(this.state.objective); }
+    if (d.final && canEnterFinale(this.state).ok) { this.state.objective = canEnterWater(this.state).ok ? 'Ir al agua.' : 'En el cuaderno, pestaña «Nombre»: ordenar la cadena de la firma.'; this.ui.setObjective(this.state.objective); }
     this.updateInvestigation();
     if (d.final) { audio.whisper(1.4, 0.1); this.state.sanity = Math.max(0, this.state.sanity - 4); this.ui.setSanity(this.state.sanity); }
     this.pendingDeduction = d;
     return d;
   }
 
+  // V5-03: the notebook's «Nombre» page asks for the chain to be ordered. The page closes and the script runs on the stage,
+  // where the choices are; closing the notebook is what starts it (onNotebookClosed). Tests call runNameChain directly.
+  requestNameChain() {
+    if (this.running) return false;
+    this.pendingChain = true;
+    this.ui.closeNotebook();
+    return true;
+  }
+
+  async runNameChain() {
+    this.pendingChain = false;
+    await this.run((G) => this.chapterHooks.nameChain(G));
+    if (this.scene?.onDeduce) await this.run((G) => this.scene.onDeduce(G));
+  }
+
   async onNotebookClosed() {
+    if (this.pendingChain) { this.pendingDeduction = null; await this.runNameChain(); return; }
     const d = this.pendingDeduction;
     this.pendingDeduction = null;
     if (d && d.after) await this.run((G) => d.after(G));

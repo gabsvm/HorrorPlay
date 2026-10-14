@@ -2,6 +2,7 @@
 // Prologue (1866, dusk, Thomas as a boy) and climax (1888, night).
 import * as A from '../art/paint.js';
 import { perception, perceptionBand } from '../story/perception.js';
+import { chainDone } from '../story/chain.js';
 import { profileStairs } from '../art/props.js';
 import { P, shade } from '../art/palette.js';
 import { rng } from '../art/noise.js';
@@ -301,7 +302,8 @@ export default {
     G.audio.whisper(1, 0.05);
     await G.wait(700);
     G.player.pose = null;
-    G.objective('Ir al agua.');
+    // the sources are met; the second question (the chain of the name) may still be open
+    G.objective(chainDone(G.state) ? 'Ir al agua.' : 'En el cuaderno, pestaña «Nombre»: ordenar la cadena de la firma.');
   },
 
   hotspots: [

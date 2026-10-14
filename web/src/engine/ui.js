@@ -5,6 +5,7 @@ import { pixelize } from '../art/pixel.js';
 import { Actor } from './actor.js';
 import { evaluate as theories } from '../story/theories.js';
 import { QUESTIONS, readPosition, BRENNAN_STANCE_LABEL } from '../story/positions.js';
+import { chainView, CHAIN_CONCLUSION } from '../story/chain.js';
 import { morphFrames } from './signature.js';
 import { perception, perceptionBand } from '../story/perception.js';
 import { metrics } from './metrics.js';
@@ -47,7 +48,7 @@ export class UI {
       invBtn: $('btn-inv'), invCount: $('inv-count'), held: $('held'), heldIcon: $('held-icon'), heldName: $('held-name'), heldCancel: $('held-cancel'),
       invModal: $('inv-modal'), invGrid: $('inv-grid'), invDName: $('inv-dname'), invDText: $('inv-dtext'), invExamine: $('inv-examine'), invUse: $('inv-use'), invClose: $('inv-close'),
       nb: $('notebook'), clueList: $('clue-list'), dedList: $('deduction-list'),
-      profList: $('profile-list'), profTitle: $('profile-title'), nbFeedback: $('nb-feedback'), theoryList: $('theory-list'),
+      profList: $('profile-list'), profTitle: $('profile-title'), nbFeedback: $('nb-feedback'), theoryList: $('theory-list'), chainList: $('chain-list'), chainGo: $('chain-go'), chainTab: $('nb-tab-name'),
       doc: $('document'), docBody: $('doc-body'), card: $('card'),
       nameEntry: $('name-entry'), namePrompt: $('name-prompt'), nameInput: $('name-input'), nameOk: $('name-ok'),
       menu: $('menu'), menuButtons: $('menu-buttons'),
@@ -66,6 +67,8 @@ export class UI {
     // the right-hand page: conclusions, the open questions, the profile
     for (const b of document.querySelectorAll ? document.querySelectorAll('#nb-tabs button') : []) b.addEventListener('click', () => { audio.paper?.(); this.notebookTab(b.dataset.tab); });
     $('nb-hint').addEventListener('click', () => this.hint());
+    // V5-03 «Nombre»: the page asks for the chain to be ordered on the stage (game.requestNameChain)
+    this.el.chainGo?.addEventListener('click', () => { audio.paper?.(); this.game?.requestNameChain?.(); });
     this.selectedClues = [];
     // the marker of the object in hand cancels it; the case blocks the scene under it, and a press outside its panel closes it
     this.el.heldCancel.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -606,7 +609,9 @@ export class UI {
       dedList.appendChild(li);
     });
     this._inkFrom = null;
-    if (!st.deductions.length) dedList.innerHTML = '<li>Ninguna todavía.</li>';
+    const chained = st.flags.v5_name_chain === 'reasoned';
+    if (chained) { const li = document.createElement('li'); li.innerHTML = '<span class="ded-kind">Inferencia</span> ' + CHAIN_CONCLUSION[0]; dedList.appendChild(li); }
+    if (!st.deductions.length && !chained) dedList.innerHTML = '<li>Ninguna todavía.</li>';
     // the open questions: each explanation with what supports it and what does not
     const ths = theories(st);
     const tl = this.el.theoryList;
@@ -622,9 +627,32 @@ export class UI {
       }
       if (!ths.length) tl.innerHTML = '<li>Todavía no hay preguntas que sostener.</li>';
     }
+    this.renderChain(st);
     profList.innerHTML = '';
     profTitle.style.display = st.profile.length ? '' : 'none';
     for (const p of st.profile) { const li = document.createElement('li'); li.innerHTML = awake ? `${p} <span class="truth">— T. A.</span>` : p; profList.appendChild(li); }
+  }
+
+  // V5-03: the page «Nombre» (chain.js). It shows the three links and what each proves and does not; once ordered it keeps
+  // the conclusion and offers the exercise again as a review (no cost). The tab appears with the street heard, or once awake.
+  renderChain(st) {
+    const { chainList, chainGo, chainTab } = this.el;
+    if (!chainList) return;
+    const v = chainView(st);
+    chainTab?.classList.toggle('hidden', !v.open);
+    if (!v.open && this._tab === 'name') this.notebookTab('ded');
+    chainList.innerHTML = '';
+    for (const l of v.links) {
+      const li = document.createElement('li');
+      li.innerHTML = '<span class="ct">' + l.title + '<span class="st' + (l.held ? ' on' : '') + '">' + (l.held ? 'anotado' : 'lo recuerdo') + '</span></span><span class="cn">' + l.note + '</span>' + (v.done ? '<span class="cs">Demuestra: ' + l.shows + ' No demuestra: ' + l.notShows + '</span>' : '');
+      chainList.appendChild(li);
+    }
+    if (v.done) {
+      const li = document.createElement('li');
+      li.innerHTML = CHAIN_CONCLUSION.map((t) => '<span class="concl">' + t + '</span>').join('');
+      chainList.appendChild(li);
+    }
+    if (chainGo) { chainGo.textContent = v.done ? 'Repasar la cadena' : 'Ordenar la cadena'; chainGo.disabled = !v.canOrder; chainGo.title = v.canOrder ? '' : 'Después del expediente'; }
   }
 
   // «Mi postura» under a theory (positions.js). Each shown question is one folded line: its button gives
@@ -648,7 +676,7 @@ export class UI {
       const open = this._openPosture === q;
       html += `<div class="posture"><button type="button" class="ptoggle" aria-expanded="${open}" data-toggle="${q}">Mi postura: ${cur ? label(cur) : 'sin postura'} ${open ? '▾' : '▸'}</button>`;
       if (open) {
-        const opts = Q.options.map(([v, text]) => `<button type="button" data-q="${q}" data-v="${v}" aria-pressed="${v === cur}">${text}</button>`).join('');
+        const opts = Q.options.filter(([v]) => v === cur || !Q.optionOk || Q.optionOk(st, v)).map(([v, text]) => `<button type="button" data-q="${q}" data-v="${v}" aria-pressed="${v === cur}">${text}</button>`).join('');
         html += `<span class="ps">Estado de pruebas: lo que permiten las pruebas reunidas. Mi postura: lo que creo ahora; puedo cambiarla.</span>${said}<span class="pbtns">${opts}</span>`;
       }
       html += '</div>';

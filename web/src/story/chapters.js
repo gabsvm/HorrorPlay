@@ -5,7 +5,8 @@
 // second reading he never could.
 import { Actor } from '../engine/actor.js';
 import { playIntro } from './intro.js';
-import { canFinishC1, canEnterFinale } from './progression.js';
+import { canFinishC1, canEnterFinale, canEnterWater } from './progression.js';
+import { CHAIN_LINKS, CHAIN_QUESTIONS, CHAIN_CONCLUSION, CHAIN_FLAG, chainDone } from './chain.js';
 import { perception, perceptionBand } from './perception.js';
 import { chaseStreet } from './data.js';
 
@@ -153,7 +154,8 @@ export function makeChapters() {
       G.mad(0.3);
       await G.voice('Thomas.');
       await G.think('¿Nat?');
-      await G.voice('Tommy. Estoy aquí abajo. Tengo frío.');
+      await G.voice('Tommy. Estoy aquí abajo. Tengo frío. Dime que estás aquí.');
+      await G.wait(700);
       // Both answers stand, in both readings. Answering lets it in tonight; keeping quiet only puts
       // it off: thirteen years later, in the dissecting room, Thomas answers anyway (1879).
       let answered = (await G.choice(['«Aquí estoy».', 'Guardar silencio.'])) === 0;
@@ -234,9 +236,9 @@ export function makeChapters() {
       G.state.investigation.routes.c1 = { closedAt: G.scene.id, stance, conclusions: G.state.deductions.filter((d) => /^d_(bisturi|zurdo|ronda|confianza|brennan)$/.test(d)) };
       if (who === 'pike') {
         const pike = G.actor('Pike'); pike.talking = true;
-        await G.say('Pike', { suspect: 'Lo vigilaremos. Con cuidado: aquí se cuelga a la gente por menos.',
+        await G.say('Pike', { suspect: 'Lo vigilaremos. Apunto dos columnas: lo que dicen de él y lo que hay contra él. La segunda está casi vacía.',
           clear: 'Lo apunto así. Será el único que lo escriba esta semana.',
-          unsure: 'Prudente. El barrio no lo será.' }[stance]);
+          unsure: 'Prudente. El barrio no lo será: ya le ha puesto nombre.' }[stance]);
         pike.talking = false;
       }
       G.flag('c1_done', true);
@@ -357,6 +359,9 @@ export function makeChapters() {
       await G.voice('Tommy.', { name: 'Madame Wexley' });
       await G.think('Nat me llamaba Tommy. Nadie más.');
       await G.voice('Dejaste de buscarme, Tommy.', { name: 'Madame Wexley' });
+      w.talking = true;
+      await G.say('Madame Wexley', 'Esa voz no es de ningún muerto de esta mesa. Sabe a quién ha venido a buscar.');
+      w.talking = false;
       await G.voice('¿Te acuerdas de lo que dijiste?', { name: 'Madame Wexley' });
       G.clue('nat_voz');
       if (!G.flag('answered1866')) await G.think('Yo no contesté en Limehouse. ¿A qué noche se refiere?');
@@ -478,6 +483,7 @@ export function makeChapters() {
       G.audio.setBeds({ crowd: 0.9, wind: 0.2, drone: 0.2 }, 1);
       await G.walk(1900);
       await G.say('Vecinos', '¡Leather Apron! ¡Que salga el matarife!');
+      await G.think('Le han puesto un nombre. La calle ya no pregunta.');
       const b = G.actor('Brennan');
       b.talking = true;
       await G.say('Brennan', '¡Pregúntenle a los del turno! ¡He trabajado toda la noche!');
@@ -621,7 +627,7 @@ export function makeChapters() {
       G.player.pose = 'kneel';
       await G.wait(300);
       G.player.pose = null;
-      await G.doc(`<h3>THE DAILY NEWS — 1 de octubre de 1888</h3>
+      await G.doc(`<h3>THE DAILY TELEGRAPH — 1 de octubre de 1888</h3>
         <p class="small">LOS CRÍMENES DEL EAST END. LA CARTA FIRMADA «JACK THE RIPPER».</p>
         <p>Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con <b>tinta roja</b>, menciona al «Leather Apron» y reivindica los crímenes:</p>
         <p class="red">"I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..."</p>
@@ -635,7 +641,8 @@ export function makeChapters() {
       if (!G.second()) await G.think('Puede que la haya inventado un periodista. Una carta así vende periódicos.');
       G.audio.whisper(2, 0.14);
       if (G.second()) await G.voice('Jack.');
-      await G.think('Esa letra la he visto antes. En el escritorio tengo letras de todos.');
+      await G.think('Una firma. Ya la imprimieron.');
+      await G.think('Los inspectores tienen una copia. En el escritorio tengo letras de todos.');
       G.sanity(-4);
       const bo = G.state.flags.brennan_outcome;
       if (bo === 'severe') await G.think('Brennan sigue sin poder trabajar. No he rectificado la acusación.');
@@ -644,34 +651,45 @@ export function makeChapters() {
 
     // what the room still asks before Thomas goes out on the 1st of October
     c3bObjective(G) {
-      const left = [!G.hasClue('letra') && 'comparar la letra de la carta con las del escritorio', !G.hasClue('estuche') && 'mirar debajo de la cama'].filter(Boolean);
+      const left = [!G.hasClue('letra') && 'repasar lo que mi escritorio puede decir de la carta', !G.hasClue('estuche') && 'mirar debajo de la cama'].filter(Boolean);
       G.objective(left.length ? `${left.join('; ')}.`.replace(/^./, (m) => m.toUpperCase()) : 'Salir.');
     },
 
-    // the letter's hand against every hand on the desk: the tail of the J and the short cross of the t.
-    // A likeness, not an identification: the file at Greaves's surgery is what settles it.
+    // What the desk can and cannot say about who wrote the letter (V5-02). The copy that circulates keeps no strokes,
+    // so no hand is compared with it: the four hands on the desk are compared with each other, and what can be weighed
+    // is the paper, the ink, the date and the lost night. A suspicion, never an identification: «Pude escribirla yo» is
+    // offered in the first reading as one answer among others, and saying the sample is not enough is enough to go on.
     async compareHands(G) {
-      const hands = () => G.doc(`<h3>Copia de la carta que circula entre los inspectores y cuatro escrituras</h3>
+      const hands = () => G.doc(`<h3>Copia de la carta que circula entre los inspectores y las escrituras de mi mesa</h3>
         <p class="small">La copia de la carta, sin la letra del original:</p>
         <p class="red">"Dear Boss... Yours truly, Jack the Ripper"</p>
+        <p class="small">Una copia pasada en limpio no guarda el trazo: no se puede cotejar con ninguna de las escrituras de abajo.</p>
         <p class="small">La nota de Madame Wexley:</p><p class="hand">Mano redondeada y espaciada. "Los muertos piden hablar con usted..."</p>
         <p class="small">Un informe del sargento Pike, con mis correcciones en rojo:</p><p class="hand">Letra cerrada y recta. "Ronda sin novedad. Las farolas de Buck's Row siguen sin gas..."</p>
         <p class="small">La receta del láudano, del doctor Greaves:</p><p class="hand">Letras unidas, la J con una cola larga, el remate de las t muy corto. "Tinctura opii. Veinte gotas al acostarse. — L. G."</p>
         <p class="small">El recibo del desolladero de Barber, de Silas Brennan:</p><p class="hand">"X — su marca"</p>
-        ${G.two('', '<p class="small">Mis apuntes de anatomía, cuarto curso, 1878:</p><p class="hand">La misma J, las mismas t. "Carótida: corre junto a la tráquea..."</p>')}`);
+        <p class="small">Mis apuntes de anatomía, cuarto curso, 1878:</p><p class="hand">La misma J, las mismas t. "Carótida: corre junto a la tráquea..."</p>
+        <p class="small">Lo que sí cabe pesar, de mi mesa:</p><p class="hand">Tres pliegos que faltan de mi papel de cartas. El tintero rojo, casi vacío. La carta, fechada el 25; la noche que perdí fue la del 24 al 25.</p>`);
       await hands();
-      await G.think('Esa J. Esas t. Las conozco.');
-      // a likeness is not an identification: saying so is an answer too, and it is enough to go on
-      const names = ['Madame Wexley.', 'Pike.', 'Greaves: se parece a la suya.', 'Brennan.', ...(G.second() ? ['La mía.'] : []), 'La muestra no basta. Necesito más pruebas.', 'Revisar las muestras.'];
+      await G.think('Greaves y yo escribimos igual: me enseñó él. Una copia no dice cuál de las dos manos fue.');
+      // a suspicion is not an identification: saying so is an answer too, and it is enough to go on
+      const names = ['Madame Wexley.', 'Pike.', 'Greaves: escribe como yo y sabe de mí.', 'Brennan.', 'Pude escribirla yo.', ...(G.second() ? ['La mía.'] : []), 'La muestra no basta. Necesito más pruebas.', 'Revisar las muestras.'];
       let assessment;
       for (;;) {
         const pick = names[await G.choice(names)];
         if (pick === 'Revisar las muestras.') { await hands(); continue; }
-        if (pick.startsWith('Greaves')) { await G.think('Es una escritura parecida. No es una identificación.'); assessment = 'greaves_like'; break; }
-        if (pick === 'La mía.') { await G.think('Es mi propia letra. Copié a Greaves años atrás.'); assessment = 'self_recognition'; break; }
-        if (pick.startsWith('La muestra')) { await G.think('Una copia y cuatro letras de mi mesa. Con esto no se acusa a nadie.'); assessment = 'inconclusive'; break; }
-        await G.think({ 'Madame Wexley.': 'No coincide con Wexley.',
-          'Pike.': 'No coincide con Pike. Sus notas sí llevan mis correcciones.',
+        if (pick.startsWith('Greaves')) { await G.think('Escribimos igual. Sin el original no sé cuál de las dos manos fue.'); assessment = 'greaves_like'; break; }
+        if (pick === 'Pude escribirla yo.') {
+          // not from a hand he cannot see: from the paper that is missing, the red ink and the night he lost
+          await G.think('No puedo cotejar trazos con una copia. Pero la carta lleva la fecha de la noche que perdí. Faltan tres pliegos de mi mesa, y la tinta es roja.');
+          await G.think('También podría ser mi mano. Eso no basta para demostrarlo.');
+          G.sanityOnce('self_suspicion', -3);
+          assessment = 'self_suspicion'; break;
+        }
+        if (pick === 'La mía.') { await G.think('Es mía. No necesito el trazo para saberlo, aunque no pueda probarlo con una copia.'); assessment = 'self_recognition'; break; }
+        if (pick.startsWith('La muestra')) { await G.think('Una copia y las letras de mi mesa. Con esto no se acusa a nadie.'); assessment = 'inconclusive'; break; }
+        await G.think({ 'Madame Wexley.': 'Una copia no tiene trazo que cotejar con Wexley. Nada más las une a la carta.',
+          'Pike.': 'Con una copia no hay trazo que cotejar con Pike. Sus notas sí llevan mis correcciones.',
           'Brennan.': 'Brennan firmó con una cruz. No hay muestra suficiente.' }[pick]);
       }
       G.state.flags.handwriting_assessment = assessment;
@@ -680,9 +698,26 @@ export function makeChapters() {
       hooks.c3bObjective(G);
     },
 
+    // The street, on the morning of the 1st of October: three strangers say the name of the letter's signature as of a
+    // neighbour who frightens them. None of them knows Thomas or who wrote it (V5-03, the «eco» link of the chain). Heard
+    // from the window; if the player never goes to it, it reaches him on the way out (leaveRoomC3b), so it is never a gate.
+    async heardName(G, { leaving = false } = {}) {
+      if (G.hasClue('eco')) return;
+      if (leaving) await G.think('Abajo, en la calle, ya están vendiendo el periódico.');
+      G.audio.whistle(0.03, true);
+      await G.say('Un vendedor de periódicos', '¡La carta del asesino! ¡Jack the Ripper, firmado de su puño!');
+      await G.say('Una mujer', 'Dicen que Jack ya avisó antes de la última. ¿Tú lo has visto?');
+      await G.say('Un hombre', '¿A Jack? ¿A quién iba a ver? Es el que dicen.');
+      G.clue('eco');
+      G.flag('v5_name_echo_seen', true);
+      G.sanityOnce('eco', -2);
+      await G.think('Ninguno me conoce.');
+    },
+
     async leaveRoomC3b(G) {
-      if (!G.hasClue('letra')) { await G.think('Necesito comparar la carta antes de salir.'); return; }
+      if (!G.hasClue('letra')) { await G.think('Antes de salir, tengo que ver qué puede decir mi mesa de la carta.'); return; }
       if (!G.hasClue('estuche')) { await G.think('El estuche bajo la cama. Falta una pieza.'); return; }
+      await hooks.heardName(G, { leaving: true });
       await G.fade(1, 1200);
       await G.chapter('c4');
     },
@@ -708,6 +743,10 @@ export function makeChapters() {
         G.sanity(-10);
         await G.think('«T. A.» No puedo seguir llamándolo una coincidencia.');
         await G.think(G.flag('answered1866') ? 'En 1866 ya me oyó el agua. Esto volvió a ocurrir.' : 'En 1866 callé. En el hospital no.');
+        // before anyone says it: the hand knows first (V5, certainty before the water)
+        G.player.pose = 'reach';
+        await G.think('Mi mano izquierda se ha cerrado sobre algo que no tengo. Conoce el peso.');
+        G.player.pose = null;
       }
       G.audio.door();
       G.cinema(true);
@@ -720,8 +759,14 @@ export function makeChapters() {
       if (hand === 'greaves_like') await G.say('Greaves', 'Pensaste que la carta era mía. Te enseñé a escribir así; no a firmar eso.');
       else if (hand === 'inconclusive' && G.state.investigation?.positions?.letter_author !== 'greaves') await G.say('Greaves', 'No acusaste a nadie por una letra. Siempre fuiste prudente con las pruebas. Con las tuyas también.');
       else if (hand === 'self_recognition') await G.say('Greaves', 'Reconociste tu letra. Yo la reconocí en marzo de 1879.');
+      else if (hand === 'self_suspicion' || G.state.investigation?.positions?.letter_author === 'yo') await G.say('Greaves', 'Lo llevas en la cara: ya has pensado en tu propia mano. Eso no se piensa sin miedo.');
       if (G.state.flags.chase_outcome === 'injured') await G.say('Greaves', 'Y esa mano. ¿Quién te la ha cosido?');
       if (perception.othersNotice(G.state.sanity)) await G.say('Greaves', 'No duermes. Se te ve en los ojos, Thomas.');
+      await G.say('Greaves', 'Pike me trajo una copia de la carta. Me pareció oír tu voz leyéndola. No sabía qué significaba.');
+      gr.talking = false;
+      await G.say('Ashgrove', 'No recuerdo haberla escrito.');
+      gr.talking = true;
+      await G.say('Greaves', 'No te he preguntado qué recuerdas.');
       await G.say('Greaves', 'Aquel día te hallé en la sala. No sé lo que ocurrió antes.');
       await G.say('Greaves', 'Pike vino a preguntarme si alguien puede actuar sin recordarlo. Le respondí que sí.');
       gr.talking = false;
@@ -758,7 +803,8 @@ export function makeChapters() {
       await G.say('Pike', { clean: 'Nadie te vio esta noche. Eso es lo que más me asusta.',
         spotted: 'El agente Long dice que te vio la cara en ' + chaseStreet(G.state.flags) + '. No le he contestado.',
         injured: 'Long encontró sangre en una tapia de ' + chaseStreet(G.state.flags) + '. Y tú llevas la mano cosida.' }[G.state.flags.chase_outcome || 'clean']);
-      await G.say('Pike', 'Traigo tus rondas. Tu firma. No sé aún cuánto hiciste, pero no puedo dejarte marchar.');
+      await G.say('Pike', 'Traigo tus rondas. Tu firma. Eso lo he visto. Lo demás es lo que temo, y no voy a escribirlo como si lo hubiera visto.');
+      await G.say('Pike', 'No sé aún cuánto hiciste. Pero no puedo dejarte marchar.');
       const last = await G.choice(['«Deténgame, Pike».', '«Proteja a Wren. La niña del río».', '(Romper el folio del expediente que me señala)']);
       if (last === 0) {
         // he lets Pike in, and the arrest begins: one cuff closes before the gap
@@ -813,11 +859,13 @@ export function makeChapters() {
       if (tried) await G.think(tried);
       await G.think(G.flag('answered1866') ? 'Yo abrí la puerta.' : 'Callé aquella noche. No la siguiente.');
       await G.think('Greaves, Pike, el bisturí, la carta. Un mismo hombre.');
+      // a player who had thought of his own hand in the first reading is answered, not corrected
+      if (G.state.flags.handwriting_assessment === 'self_suspicion' || G.state.investigation?.positions?.letter_author === 'yo') await G.think('Ya había pensado en mi propia mano. Tenía razón y no quise tenerla.');
       G.flag('awake', true);
       G.shake(4);
       G.clue('ficha');
       await G.think('Es mi ficha. Encaja demasiado bien.');
-      G.objective('En el cuaderno: comparar mi ficha con al menos tres pruebas independientes. Una hipótesis sin prueba no cuenta.');
+      G.objective('En el cuaderno: comparar mi ficha con al menos tres pruebas independientes. Una hipótesis sin prueba no cuenta. Después, la pestaña «Nombre».');
     },
 
     finaleReady(G) { return canEnterFinale(G.state).ok; },
@@ -825,12 +873,14 @@ export function makeChapters() {
     async outfall1888(G) {
       G.flag('ditch_glow', true);
       if (!canEnterFinale(G.state).ok) { await G.think('Todavía no. Antes tengo que estar seguro. El cuaderno.'); return; }
+      if (!chainDone(G.state)) { await G.think('Sé quién. Falta entender para qué la firma. El cuaderno, la pestaña «Nombre».'); return; }
       G.zoom(1.22, G.player.x, G.scene.groundY - G.player.h * 0.7, 0.35);
       await G.voice('Ven al agua, Tommy.');
     },
 
     async finaleWater(G) {
       if (!canEnterFinale(G.state).ok) { await G.think('Primero comprobaré lo que sé. No voy a contestar a ciegas.'); return; }
+      if (!chainDone(G.state)) { await G.think('Todavía no entiendo para qué la firma. No voy a contestar a ciegas.'); return; }
       G.flag('ditch_glow', true); G.flag('water_light', true);
       G.cinema(true);
       G.audio.setBeds({ river: 0.5, drone: 0.7, heart: 0.5 }, 4);
@@ -884,7 +934,12 @@ export function makeChapters() {
       await G.voice('Escucha.');
       // "Jack": a newsboy, a quarrel far off, Pike dictating a report. The thing makes no speech
       G.audio.setBeds({ river: 0.4, drone: 0.7, crowd: 0.5 }, 3);
-      for (let i = 0; i < 4; i++) { G.audio.whisper(1.6, 0.1 + i * 0.03); await G.wait(1300); }
+      // the city after the 30th: strangers say the name; not one of them has seen the man, and the thing makes no speech
+      for (const [name, line] of [['Un vendedor', '¡Jack the Ripper! ¡Lo último de Jack!'], ['Un vecino', 'Si lo cojo yo, a ese Jack...'], ['Una voz, de comisaría', 'Anote: sin noticias de Jack.']]) {
+        G.audio.whisper(1.6, 0.1);
+        await G.voice(line, { name });
+        await G.wait(500);
+      }
       await G.think('El mío ya no viene cuando lo llamo.');
       await G.vision('hands');
       await G.voice('¿Cómo te llamabas?');
@@ -902,6 +957,43 @@ export function makeChapters() {
       await G.wait(1600);
       G.date('9 de noviembre de 1888', '3:48');
       await G.goto('millers', { x: 160, facing: 1, fade: false });
+    },
+
+    // V5-03 «La cadena del nombre»: the second question. Three papers, three questions, no cost and no lock: a wrong answer
+    // is answered, two wrong ones bring the help, «mirar» shows the papers again, «dejarlo» leaves it for later. Solved,
+    // it writes only the flag (chain.js) and Thomas says an order of events, not a theory of what the name is.
+    async nameChain(G) {
+      const recap = () => G.doc(`<h3>La cadena del nombre</h3>${CHAIN_LINKS.map((l) => `<p class="small">${l.title}</p><p class="hand">${l.note}</p>`).join('')}
+        <p class="small">Lo que no tengo: el original de la carta.</p>`);
+      if (!G.flag('awake')) { await G.think('Todavía me falta saber qué hizo mi propio cuerpo. Después, para qué la firma.'); return; }
+      if (!G.hasClue('eco')) { G.clue('eco'); G.flag('v5_name_echo_seen', true); }   // an old save that never heard the street gets it here, once
+      await recap();
+      if (chainDone(G.state)) { await G.think(CHAIN_CONCLUSION[0]); return; }   // a review: the order, not the exercise again
+      await G.think('Una mano, una firma, un eco. Lo ordeno.');
+      const ev = ((G.state.investigation ??= {}).evaluations ??= {});
+      let total = 0;
+      for (const q of CHAIN_QUESTIONS) {
+        let misses = 0;
+        for (;;) {
+          const labels = [...q.options, 'Mirar los tres papeles otra vez.', 'Dejarlo por ahora.'];
+          const c = await G.choice(labels, { cancel: labels.length - 1, prompt: q.ask });
+          if (c === labels.length - 1) { await G.think('Todavía no. Los papeles no se van.'); return; }
+          if (c === labels.length - 2) { await recap(); continue; }
+          if (c === q.right) break;
+          misses++; total++;
+          await G.think(q.miss[c]);
+          if (misses === 2) await G.think(q.help);
+          // nobody is left guessing: after four misses Thomas says the answer himself and the question is closed
+          if (misses >= 4) { await G.think(q.options[q.right]); break; }
+        }
+      }
+      ev.chain = { misses: total };
+      G.state.flags[CHAIN_FLAG] = 'reasoned';
+      await G.think(CHAIN_CONCLUSION.join(' '));
+      await G.think(G.flag('answered1866') ? 'Al «Thomas» contesté yo. Al otro no tuvo que contestar nadie.' : 'Al «Thomas» contesté en 1879. Al otro no tuvo que contestar nadie.');
+      G.sanity(-3);
+      G.game.updateInvestigation();
+      G.objective(canEnterWater(G.state).ok ? 'Ir al agua.' : 'En el cuaderno: comparar mi ficha con al menos tres pruebas independientes.');
     },
 
     async epilogue(G) {
@@ -961,6 +1053,7 @@ export function makeChapters() {
       G.desat(0); G.mad(0);
       await G.card('', 'Yours truly, Jack the Ripper', "Don't mind me giving the trade name.", 6000);
       await G.card('', '', 'El 9 de noviembre de 1888, Mary Jane Kelly fue asesinada en Miller\'s Court. Tenía unos veinticinco años. Esa noche, una vecina la oyó cantar. Fue la última de las cinco víctimas canónicas; la identidad del asesino no quedó establecida.', 7000);
+      await G.card('', '', 'Las cinco tenían nombre antes que él: Polly, Annie, Elizabeth, Catherine, Mary Jane.', 4600);
       const brennan = G.state.flags.brennan_outcome || (G.flag('accused') ? 'severe' : 'injured');
       await G.card('', '', {
         severe: 'Silas Brennan no volvió a andar sin bastón. Nadie le pidió perdón.',
@@ -971,6 +1064,9 @@ export function makeChapters() {
       else if (intent === 'surrender') await G.card('', '', 'El sargento Pike guardó la esposa abierta en un cajón de la comisaría de Commercial Street.', 4600);
       else if (intent === 'warn_wren') await G.card('', '', 'Wren no volvió a dormir junto al Ditch.', 4600);
       await G.card('', '', 'Nadie volvió a ver al inspector Thomas Ashgrove. El Black Ditch sigue corriendo bajo el East End.', 5200);
+      // far off, in the street, two strangers use the other name; neither mentions the man who was Thomas
+      G.audio.setBeds({ crowd: 0.35, wind: 0.2 }, 2);
+      await G.card('', '', '—¿Has oído lo de Jack? —Dicen que otra vez.', 4200);
       await G.card('', 'El Huésped', 'Fin', 5200);
       G.cinema(false);
       G.game.finish();

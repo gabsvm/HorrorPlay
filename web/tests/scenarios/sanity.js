@@ -5,7 +5,7 @@
 import { scenario, fixture } from './harness.js';
 
 export async function run(opts) {
-  return scenario(async ({ game, start, act, deduce, need, expectScene, waitScene, settle }) => {
+  return scenario(async ({ game, start, act, deduce, need, chain, expectScene, waitScene, settle }) => {
     const out = {};
     for (const level of [10, 36, 64, 100]) {
       // the séance's raps
@@ -30,6 +30,7 @@ export async function run(opts) {
       await act('cabinet', 'llave', ['Todavía no sé quién la escribió.', 'acusando', 'Romper el folio']);
       await waitScene('foreshore');
       for (const c of ['zurdo', 'bisturi', 'testigo']) await deduce('ficha', c);
+      await chain();
       game.state.sanity = level;
       const m = window.LOG.length;
       await act('water', null, ['Responder']);

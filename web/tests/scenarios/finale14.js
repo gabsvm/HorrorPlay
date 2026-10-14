@@ -22,7 +22,7 @@ const L9 = [];
 for (let a = 0; a < 3; a++) for (let b = 0; b < 3; b++) L9.push([a, b, (a + b) % 3]);
 
 export async function run(opts) {
-  return scenario(async ({ game, start, act, deduce, need, expectScene, waitScene, flag, settle }) => {
+  return scenario(async ({ game, start, act, deduce, need, chain, expectScene, waitScene, flag, settle }) => {
     const snap = await fixture('saves-v1-baseline/c4.json');
     const seen = [];
     for (const answered of [true, false]) {
@@ -48,6 +48,7 @@ export async function run(opts) {
         need(game.state.scene === 'foreshore', `Sin pruebas suficientes no empieza el final (${label})`);
         for (const c of ['zurdo', 'bisturi', 'testigo']) await deduce('ficha', c);
         need(flag('recognized'), `Con tres pruebas independientes llega el reconocimiento (${label})`);
+        await chain();
         n = window.LOG.length;
         await act('water', null, [W.pick]);
         await waitScene('millers');

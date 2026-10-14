@@ -28,6 +28,14 @@ export function harness() {
     return res;
   };
   const need = (cond, msg) => { if (!cond) throw new Error(msg); };
+  // V5-03: the chain of the name, ordered through the same script the notebook's «Nombre» page starts
+  const chain = async (picks = [1, 2, 0]) => {
+    await settle();
+    window.PICKS = [...picks];
+    await game.runNameChain();
+    await settle();
+    if (window.PICKS.length) throw new Error(`Sobraron elecciones en la cadena: ${JSON.stringify(window.PICKS)}`);
+  };
   const has = (id) => game.state.items.includes(id);
   const clue = (id) => game.state.clues.includes(id);
   const flag = (k) => game.state.flags[k];
@@ -41,7 +49,7 @@ export function harness() {
     await game.startChapter(chapter);
     await settle();
   };
-  return { game, errors, settle, waitScene, expectScene, act, deduce, need, has, clue, flag, start };
+  return { game, errors, settle, waitScene, expectScene, act, deduce, need, chain, has, clue, flag, start };
 }
 
 // run a scenario body, collecting script errors (Game.run only logs them) as failures

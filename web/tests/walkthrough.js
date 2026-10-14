@@ -164,6 +164,12 @@ export async function run({ log = true, second = false } = {}) {
     await act('water');
     need(game.state.scene === 'foreshore', 'El final no debería empezar sin deducciones');
     await deduce('ficha', 'zurdo'); await deduce('ficha', 'bisturi'); await deduce('ficha', 'testigo'); await deduce('ficha', 'expediente');
+    // the second question: the chain of the name (V5-03). The water stays shut until it is ordered.
+    await act('water');
+    need(game.state.scene === 'foreshore' && !game.state.flags.water_reply_intent, 'El agua no debe abrirse sin la cadena del nombre');
+    window.PICKS = [1, 2, 0];                  // the order of events; the copy and the clipping are one source; the name without the man
+    await game.runNameChain(); await settle();
+    need(game.state.flags.v5_name_chain === 'reasoned', 'La cadena del nombre no quedó ordenada');
     await act('outfall');
     await act('water');
     await settle();

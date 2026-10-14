@@ -288,6 +288,7 @@ export default {
         }
         // no words: the glass fogged from inside (c3a), the newsboys down the street (later)
         else if (p === 'c3a') G.audio.whisper(1.2, 0.05);
+        else if (G.flag('paper_read') && !G.hasClue('eco')) await G.game.chapterHooks.heardName(G);   // V5-03: the street says the name
         else G.audio.whistle(0.03, true);
       },
     },
