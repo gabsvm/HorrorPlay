@@ -6,7 +6,7 @@
 import { Actor } from '../engine/actor.js';
 import { playIntro } from './intro.js';
 import { canFinishC1, canEnterFinale, canEnterWater } from './progression.js';
-import { CHAIN_LINKS, CHAIN_QUESTIONS, CHAIN_CONCLUSION, CHAIN_FLAG, chainDone } from './chain.js';
+import { CHAIN_LINKS, CHAIN_QUESTIONS, CHAIN_CONCLUSION, CHAIN_FLAG, PROVENANCE, chainDone } from './chain.js';
 import { perception, perceptionBand } from './perception.js';
 import { chaseStreet } from './data.js';
 
@@ -982,17 +982,17 @@ export function makeChapters() {
           if (c === q.right) break;
           misses++; total++;
           await G.think(q.miss[c]);
-          if (misses === 2) await G.think(q.help);
+          if (misses === 1) await G.think(q.help);   // the help comes with the first miss: nobody guesses by elimination
           // nobody is left guessing: after four misses Thomas says the answer himself and the question is closed
           if (misses >= 4) { await G.think(q.options[q.right]); break; }
         }
       }
       ev.chain = { misses: total };
       G.state.flags[CHAIN_FLAG] = 'reasoned';
+      await G.doc(PROVENANCE);
       await G.think(CHAIN_CONCLUSION.join(' '));
       await G.think(G.flag('answered1866') ? 'Al «Thomas» contesté yo. Al otro no tuvo que contestar nadie.' : 'Al «Thomas» contesté en 1879. Al otro no tuvo que contestar nadie.');
-      G.sanity(-3);
-      G.game.updateInvestigation();
+      G.game.updateInvestigation();   // no cost: a right reasoning is not an adverse event
       G.objective(canEnterWater(G.state).ok ? 'Ir al agua.' : 'En el cuaderno: comparar mi ficha con al menos tres pruebas independientes.');
     },
 

@@ -29,7 +29,7 @@ export function harness() {
   };
   const need = (cond, msg) => { if (!cond) throw new Error(msg); };
   // V5-03: the chain of the name, ordered through the same script the notebook's «Nombre» page starts
-  const chain = async (picks = [1, 2, 0]) => {
+  const chain = async (picks = [1, 1, 0]) => {
     await settle();
     window.PICKS = [...picks];
     await game.runNameChain();

@@ -4,7 +4,7 @@
 //   node web/tools/walk.mjs v5
 import { scenario, fixture } from './harness.js';
 
-const CHAIN_HELP = 'Tres fechas: el 25, el 27 y el 1 de octubre.';
+const CHAIN_HELP = 'Primero la fecha que escribe, después la que recibe';
 
 export async function run(opts) {
   return scenario(async ({ game, start, act, need, expectScene, waitScene, flag, settle, chain }) => {
@@ -45,22 +45,22 @@ export async function run(opts) {
     n = window.LOG.length;
     await chain([0, 1, 'Dejarlo']);   // Q1: a miss, then right; Q2: leave it for later
     log = window.LOG.slice(n).join(' ');
-    need(/La carta está fechada el 25/.test(log), 'el error de la primera pregunta se contesta');
+    need(/No se recibe lo que todavía no está escrito/.test(log), 'el error de la primera pregunta se contesta');
     need(!flag('v5_name_chain') && game.state.sanity === sanity0, 'dejarla a mitad no resuelve ni cuesta');
 
     // Q1: two misses (the help comes), look again, right; Q2: four misses (Thomas says it and closes it); Q3: right
     n = window.LOG.length;
-    await chain([2, 0, 3, 1, 0, 1, 0, 1, 0]);
+    await chain([2, 0, 3, 1, 0, 2, 0, 2, 0]);
     log = window.LOG.slice(n).join(' ');
-    need(log.includes(CHAIN_HELP), 'dos fallos traen la ayuda de la primera pregunta');
-    need(log.includes('Una copia y un resumen de la misma carta cuentan una sola vez.'), 'dos fallos traen la ayuda de la segunda');
-    need(log.includes('No: son la misma carta copiada'), 'tras cuatro fallos Thomas dice la respuesta y la pregunta se cierra');
+    need(log.includes(CHAIN_HELP), 'el primer fallo trae la ayuda de la primera pregunta');
+    need(log.includes('Un papel que desciende de otro no es una segunda fuente'), 'el primer fallo trae la ayuda de la segunda');
+    need(log.includes('Salen de la misma carta: la policía la copió'), 'tras cuatro fallos Thomas dice la respuesta y la pregunta se cierra');
     need(flag('v5_name_chain') === 'reasoned', 'la cadena queda ordenada');
     need(game.state.investigation.evaluations.chain.misses === 6, 'se cuentan los fallos');
-    need(game.state.sanity === sanity0 - 3, 'cuesta lo mismo con seis fallos que con ninguno: 3');
+    need(game.state.sanity === sanity0, 'ordenar la cadena no cuesta cordura, falle lo que falle');
     need(/Primero hubo una mano. Después, una firma/.test(log) && /Le dio un lugar en la ciudad/.test(log), 'Thomas dice el orden, no una teoría');
     need(/Al «Thomas» contesté en 1879/.test(log), 'el eco del prólogo cambia con la ruta (calló en 1866)');
-    need(!/entra(r|n)?|poseíd|contagi/i.test(log), `ninguna palabra de contagio: ${(log.match(/.{0,30}(entra(r|n)?|poseíd|contagi).{0,30}/i) || [])[0]}`);
+    need(!/\bentra(r|n)?\b|poseíd|contagi/i.test(log), `ninguna palabra de contagio: ${(log.match(/.{0,30}(\bentra(r|n)?\b|poseíd|contagi).{0,30}/i) || [])[0]}`);
     need(game.state.clues.includes('eco'), 'la pista de la calle consta');
 
     // a review is free and asks nothing

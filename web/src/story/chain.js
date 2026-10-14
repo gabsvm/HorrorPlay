@@ -29,28 +29,35 @@ export const CHAIN_LINKS = [
 // Each question: `ask`, the options, the index of the right one, what a wrong one gets as an answer
 // (`miss`, same order, null for the right one) and `help`, said after two misses on the same question.
 export const CHAIN_QUESTIONS = [
-  { ask: '¿Qué pasó primero?',
-    options: ['La calle dijo «Jack» desde el 25 y después alguien escribió la carta.',
+  { ask: '¿En qué orden pasó todo?',
+    options: ['Se escribió el 27, la Central News la recibió el 25 y la calle la repite desde el 1.',
       'Se escribió el 25, la Central News la recibió el 27 y la calle la repite desde el 1.',
-      'La Central News la recibió el 27 y entonces alguien la escribió.'],
+      'Se escribió el 25, la calle la repite desde el 27 y la Central News la recibe el 1.'],
     right: 1,
-    miss: ['La carta está fechada el 25. La calle lo dice desde el 1 de octubre.', null, 'No se recibe lo que no está escrito. La fecha es del 25.'],
-    help: 'Tres fechas: el 25, el 27 y el 1 de octubre. Primero la que escribe, después la que recibe, después la que se oye.' },
-  { ask: 'La copia de los inspectores y el recorte del periódico: ¿son dos fuentes distintas sobre quién la escribió?',
-    options: ['Sí: cada uno confirma al otro.',
-      'Sí: el periódico la imprimió sin que la policía se lo pidiera.',
-      'No: son la misma carta copiada, y ninguna dice quién la escribió.'],
-    right: 2,
-    miss: ['Los dos descienden de la misma carta. No se confirman: se repiten.', 'Que otro la imprima no la convierte en otra carta.', null],
-    help: 'Una copia y un resumen de la misma carta cuentan una sola vez.' },
-  { ask: 'Los tres de la calle dicen «Jack». ¿Qué prueba eso?',
-    options: ['Que el nombre circula sin el hombre: nadie necesita haberlo visto.',
-      'Que me conocen y están a punto de delatarme a la policía.',
-      'Que alguien más tiene que haber escrito la carta de verdad.'],
+    miss: ['No se recibe lo que todavía no está escrito.', null, 'La calle no pudo repetir el 27 lo que el periódico imprimió el 1.'],
+    help: 'Primero la fecha que escribe, después la que recibe, después la que se oye en la calle.' },
+  { ask: 'La copia de los inspectores y el recorte del periódico: ¿qué relación tienen?',
+    options: ['Son dos confirmaciones: la policía y el periódico la tuvieron por separado.',
+      'Salen de la misma carta: la policía la copió y el periódico la imprimió.',
+      'La copia sale del recorte, y el recorte de lo que se dice en la calle.'],
+    right: 1,
+    miss: ['Los dos reciben la misma carta de la Central News. No se confirman: se repiten.', null, 'La calle lo leyó después, el 1 de octubre: no puede ser el origen.'],
+    help: 'Un papel que desciende de otro no es una segunda fuente: es el mismo papel visto otra vez.' },
+  { ask: '¿De dónde sale lo que dicen los tres de la calle?',
+    options: ['Del recorte del periódico: lo leen y lo repiten sin haber visto a nadie.',
+      'De alguien que sabe quién la escribió y se lo ha contado a la calle.',
+      'De la copia de los inspectores, que alguien ha dejado salir de la comisaría.'],
     right: 0,
-    miss: [null, 'Ninguno me ha mirado siquiera.', 'La calle repite lo que lee: no prueba quién escribió.'],
-    help: 'Ninguno me conoce. Lo que repiten es el nombre, no al hombre.' },
+    miss: [null, 'Ninguno sabe quién fue: dicen el nombre como quien repite un titular.', 'Nada indica que la copia haya salido de la comisaría. El recorte basta.'],
+    help: 'La calle habla de lo que lee. Lo que lee es el recorte. No ha visto al hombre.' },
 ];
+
+// the order the player has just derived, shown once: what each paper comes from, and who ever saw the man
+export const PROVENANCE = `<h3>De dónde sale cada papel</h3>
+  <p class="hand">La mano (noche del 24 al 25) → la carta, fechada el 25</p>
+  <p class="hand">→ Central News, el 27 → <b>copia de la policía</b> y <b>texto impreso</b> (1 de octubre): una sola carta, vista dos veces</p>
+  <p class="hand">→ la calle, que lee el recorte: <b>el nombre sin el hombre</b></p>
+  <p class="small">Quien dice «Jack» no ha visto a nadie. Quien escribió no firmó con su nombre.</p>`;
 
 export const chainDone = (s) => s.flags?.[CHAIN_FLAG] === 'reasoned';
 

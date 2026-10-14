@@ -1375,10 +1375,11 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - _Si c === labels.length - 1:_
   - *Thomas (piensa):* Todavía no. Los papeles no se van.
 - *Thomas (piensa):* {q.miss}
-- _Si misses === 2:_
+- _Si misses === 1:_
   - *Thomas (piensa):* {q.help}
 - _Si misses >= 4:_
   - *Thomas (piensa):* {q.options}
+- [Documento] {PROVENANCE}
 - *Thomas (piensa):* {CHAIN_CONCLUSION.join(' ')}
 - *Thomas (piensa):* Al «Thomas» contesté yo. Al otro no tuvo que contestar nadie. _(si flag('answered1866'))_
 - *Thomas (piensa):* Al «Thomas» contesté en 1879. Al otro no tuvo que contestar nadie. _(si no)_

@@ -27,7 +27,10 @@ export const tests = [
   }],
   ['la cadena: la copia y el recorte cuentan como una sola fuente, y nada se dice de contagio', () => {
     const txt = JSON.stringify([CHAIN_LINKS, CHAIN_QUESTIONS]);
-    ok(/misma carta/.test(txt), 'debe decir que copia y recorte son la misma carta');
+    ok(/descienden|desciende/.test(txt) && /misma carta/.test(txt), 'copia y recorte descienden de la misma carta (una sola fuente)');
+    // las opciones de una pregunta no se distinguen por la longitud
+    for (const q of CHAIN_QUESTIONS) { const L = q.options.map((o) => o.length); ok(Math.max(...L) - Math.min(...L) <= 25, 'longitudes parecidas: ' + L); }
+    eq(CHAIN_QUESTIONS.map((q) => q.right), [1, 1, 0], 'posiciones');
     ok(!/pose[ií]d|contag|infect|poder del nombre|se alimenta/i.test(txt), 'ni posesión ni contagio por leer el nombre');
     ok(!/Daily News ?[:.]? *«?Jack/.test(txt), 'sin citas inventadas del periódico');
   }],

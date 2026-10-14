@@ -86,6 +86,35 @@ try {
     s = await st();
     need(s.ok === true && !s.overlay, 'golpes: Atrás justo después de acertar no pierde el acierto');
 
+    // ---- V5: the notebook's «Nombre» page, with the real button (chain.js): disabled before the file, then it closes the
+    // notebook, shows the papers and the first question; Android Back leaves it without cost; it can be started again
+    await b.open('scene=foreshore&noenter&x=520');
+    await b.ev(`(() => { const s = game.state; s.clues.push('dedos', 'carta', 'eco'); s.flags.fs_1888 = true; game.ui.openNotebook(game); game.ui.notebookTab('name'); game.ui.renderNotebook(); return true; })()`);
+    const tabShown = await b.ev(`!document.getElementById('nb-tab-name').classList.contains('hidden')`);
+    const dis = await b.ev(`document.getElementById('chain-go').disabled`);
+    need(tabShown && dis === true, 'cadena: la pestaña «Nombre» se lee con la calle oída, pero no se ordena antes del expediente');
+    await b.ev(`(() => { game.state.flags.awake = true; game.ui.renderNotebook(); return true; })()`);
+    need((await b.ev(`document.getElementById('chain-go').disabled`)) === false, 'cadena: despierto, el botón se activa');
+    const sanityBefore = await b.ev('game.state.sanity');
+    await b.ev(`document.getElementById('chain-go').click()`); await sleep(700);
+    const after = await b.ev(`({ nb: !document.getElementById('notebook').classList.contains('hidden'), doc: !document.getElementById('document').classList.contains('hidden'), running: game.running })`);
+    need(!after.nb && after.doc && after.running > 0, 'cadena: el botón cierra el cuaderno y muestra los papeles en el escenario');
+    await b.ev(`document.getElementById('doc-close').click()`); await sleep(900);
+    // the lines before the question are advanced as a player would, until the choices are on screen
+    const toChoices = async () => { for (let i = 0; i < 10; i++) { if (await b.ev('!!game.ui._choiceKeys')) return; await b.ev('game.ui.advance && game.ui.advance()'); await sleep(450); } };
+    const toIdle = async () => { for (let i = 0; i < 10 && (await b.ev('game.running')) > 0; i++) { await b.ev('game.ui.advance && game.ui.advance()'); await sleep(450); } };
+    await toChoices();
+    const nOpts = await b.ev(`document.querySelectorAll('#choices button').length`);
+    need(nOpts === 5, `cadena: la primera pregunta ofrece 5 opciones (hay ${nOpts})`);
+    await b.ev('window.__appBack()'); await sleep(600); await toIdle();
+    const left = await b.ev(`({ running: game.running, flag: game.state.flags.v5_name_chain || null, sanity: game.state.sanity, pending: !!game.pendingChain })`);
+    need(left.running === 0 && !left.flag && left.sanity === sanityBefore && !left.pending, 'cadena: Atrás la deja sin resolver, sin coste y sin quedar a medias');
+    await b.ev(`game.ui.openNotebook(game); game.ui.notebookTab('name'); document.getElementById('chain-go').click()`); await sleep(700);
+    need(await b.ev(`!document.getElementById('document').classList.contains('hidden')`), 'cadena: se puede volver a empezar');
+    await b.ev(`document.getElementById('doc-close').click()`); await sleep(500);
+    await toChoices(); await sleep(600);  await b.ev('window.__appBack()'); await sleep(600); await toIdle();
+    { const r = await b.ev('({ running: game.running, flag: game.state.flags.v5_name_chain || null, doc: !document.getElementById("document").classList.contains("hidden"), dlg: document.getElementById("dialogue").className + "|" + document.getElementById("dlg-text").textContent.slice(0,40), choices: document.querySelectorAll("#choices button").length, nb: !document.getElementById("notebook").classList.contains("hidden") })'); need(r.running === 0 && !r.flag, 'cadena: dejarla otra vez deja el juego libre'); }
+
     // ---- the WebGL context lost and restored
     await b.open('scene=bucks_row&noenter&x=900');
     const drawn = () => b.ev('game.r.presented || 0');
