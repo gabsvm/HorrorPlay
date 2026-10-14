@@ -41,11 +41,23 @@ export async function run(opts) {
     for (let gx = wa + 10; gx < wb && !ground; gx += 15) if (!game.hotspotAt({ x: gx - cx, y: 700, touch: false })) ground = gx;
     await game.onClick({ x: ground - cx, y: 700 }, false);
     need(game.selectedItem === held, `tocar el suelo con un objeto en la mano no lo suelta: ${game.selectedItem}`);
-    // a wrong use says so and leaves it in hand to try elsewhere
+    const wait = async () => { for (let i = 0; i < 400 && game.running; i++) await new Promise((r) => setTimeout(r, 5)); };
+    const tap = async (id) => { const [hx, hy, hw, hh2] = rectOf(id); await game.onClick({ x: hx + hw / 2 - game.r.cam.x, y: hy + hh2 / 2 }, false); await wait(); };
+    // a wrong use on a thing says so and leaves it in hand to try elsewhere
     window.PICKS = [];
-    await game.onClick({ x: x + w / 2 - cx, y: y + hh / 2 }, false);
-    for (let i = 0; i < 400 && game.running; i++) await new Promise((r) => setTimeout(r, 5));
-    need(game.selectedItem === held, `un uso que no sirve deja el objeto en la mano: ${game.selectedItem}`);
+    const n = window.LOG.length;
+    await tap('window');
+    need(game.selectedItem === held && window.LOG.length > n, `un uso que no sirve en una cosa lo dice y deja el objeto en la mano: ${game.selectedItem}`);
+    // on a person it is put away, so the next tap talks instead of repeating «no sirve» (review of UX-B03)
+    window.PICKS = ['Nada más'];
+    await tap('pike');
+    need(game.selectedItem === null, `tras un uso que no sirve con una persona, el objeto se guarda: ${game.selectedItem}`);
+    window.PICKS = [];
+    // a way out that takes no object is taken with the object still in hand (the test does not leave: west
+    // needs the lead; the object is still checked to stay)
+    game.selectedItem = held; game.refreshInventory();
+    await tap('west');
+    need(game.selectedItem === held, `una salida sin uso no gasta un intento con el objeto: ${game.selectedItem}`);
     game.selectItem(null);
 
     // reduced motion: no punch from any shock

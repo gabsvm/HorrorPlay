@@ -190,7 +190,7 @@ export class Game {
 
   // What is under the pointer. A finger is wider than its point: on touch, a tap that misses every rectangle
   // still takes the nearest one within 24 CSS px (a 48 px target). Distance decides; only when two are about
-  // as near (within 3 units) does a person to talk to come before a thing, and a thing before a way out
+  // as near (within an eighth of the tolerance) does a person to talk to come before a thing, and a thing before a way out
   // (UX audit 675df9f UX-05; b69323b UX-B02).
   hotspotAt(p) {
     if (!this.scene) return null;
@@ -213,7 +213,7 @@ export class Game {
     });
     if (!near.length) return null;
     const dMin = Math.min(...near.map((n) => n.d));
-    const tied = near.filter((n) => n.d <= dMin + 3);
+    const tied = near.filter((n) => n.d <= dMin + tol / 8);   // a near tie, scaled like the tolerance
     tied.sort((a, b) => rank(a.h) - rank(b.h) || a.d - b.d);
     return tied[0].h;
   }
@@ -255,7 +255,8 @@ export class Game {
       this.clickMark = { x: Math.max(a, Math.min(b, wx)), t: 0 };
       return;
     }
-    const item = this.selectedItem;
+    // a way out that takes no object is simply taken: the object stays in hand (UX audit b69323b, review of UX-B03)
+    const item = this.selectedItem && !(h.cursor === 'exit' && !h.use) ? this.selectedItem : null;
     {
       const [hx, hy, hw, hh] = typeof h.rect === 'function' ? h.rect(this.G) : h.rect;
       this.actingAt = { x: hx + hw / 2 - this.r.cam.x, y: Math.min(660, hy + hh / 2) };
@@ -289,8 +290,9 @@ export class Game {
         metrics.wrongItem();
         await G.think(this.itemDefs[item].wrong || this.wrongUse(h));
         settle();
-        // it did not work there: the object stays in hand, to try somewhere else (UX-B03)
-        if (this.state.items.includes(item)) { this.selectedItem = item; this.refreshInventory(); }
+        // it did not work on a thing: the object stays in hand, to try somewhere else (UX-B03); on a person it
+        // is put away, so the next tap talks instead of repeating that it does not work
+        if (h.cursor !== 'talk' && this.state.items.includes(item)) { this.selectedItem = item; this.refreshInventory(); }
         return;
       }
       try {

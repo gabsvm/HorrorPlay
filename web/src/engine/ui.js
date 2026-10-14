@@ -734,8 +734,9 @@ export class UI {
     const word = box.querySelector('.word'), khelp = box.querySelector('.khelp');
     let typed = '', misses = 0, given = '';
     const result = await new Promise((resolve) => {
-      let over = false;
-      const done = (v) => { if (over) return; over = true; this._knockClose = null; resolve(v); };
+      let over = false, solved = false;
+      // once the word is right, nothing can turn it into «Dejarlo» during the pause before it closes
+      const done = (v) => { if (over || (solved && !v)) return; over = true; this._knockClose = null; resolve(v); };
       // Back and Escape leave the puzzle as «Dejarlo» does (UX audit b69323b, UX-B01)
       this._knockClose = () => { audio.click(); done(false); };
       box.querySelector('.leave').addEventListener('click', () => { audio.click(); done(false); });
@@ -751,7 +752,7 @@ export class UI {
           if (typed.length >= answer.length) return;
           typed += b.dataset.ch; word.textContent = typed; audio.tick();
           if (typed.length < answer.length) return;
-          if (typed === answer) { audio.sting(0.2); await wait(900); done(true); return; }
+          if (typed === answer) { solved = true; this._knockClose = null; audio.sting(0.2); await wait(900); done(true); return; }
           misses++; help++;
           word.classList.remove('nope'); void word.offsetWidth; word.classList.add('nope');
           khelp.textContent = hint();

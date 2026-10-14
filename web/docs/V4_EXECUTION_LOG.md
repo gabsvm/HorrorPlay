@@ -1639,3 +1639,18 @@ P3 que quedan para F17 o el dispositivo:
   - `dialogue-topics` comprueba Greaves (el corte ya marcado), Pike y que no se reproduce ningún tema solo.
 - **UX-B04:** sigue pendiente; necesita el teléfono.
 - **Resultado:** `test-all` exit 0, 43 PASS.
+
+### Revisión de Opus de 45ffc74, y lo que se corrigió
+
+Veredicto: REQUEST_CHANGES con dos P2, sin P0 ni P1. Se corrige:
+
+- **Puzle de golpes.** Al acertar la palabra, el cierre se desarma antes de la pausa de 900 ms. Ni Atrás, ni Escape, ni «Dejarlo» pueden convertir un acierto en abandono. Comprobado en Chrome: acertar y pulsar Atrás enseguida sigue dando `ok:true`.
+- **Objeto en la mano, uso equivocado.**
+  - Sobre una cosa: dice por qué y conserva el objeto.
+  - Sobre una persona: lo guarda, así que el siguiente toque habla en vez de repetir «no sirve».
+  - Una salida que no acepta objetos se toma sin gastar un intento, y el objeto sigue en la mano.
+  - `touch-motion` comprueba los tres casos: ventana, Pike y la salida oeste.
+- **P3 corregido.** El desempate por categoría usa una octava parte de la tolerancia, escalada como ella por tamaño y zoom, en vez de 3 unidades fijas.
+- **P3 anotado para el autor.** «Y aún conservo tu vieja ficha» (Greaves) llega ahora en el primer encuentro, porque el menú se abre enseguida. Es texto anterior a esta fase; refuerza la pista del expediente.
+
+`test-all` exit 0, 43 PASS.
