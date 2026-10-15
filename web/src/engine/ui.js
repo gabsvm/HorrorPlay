@@ -63,6 +63,7 @@ export class UI {
       if (/^[1-9]$/.test(e.key) && this._choiceKeys) { const b = this._choiceKeys[Number(e.key) - 1]; if (b) b.click(); }
     });
     // a press of Enter or Space that was advancing the text must not close the document the moment it opens
+    $('doc-close').addEventListener('keydown', (e) => { if (e.repeat && (e.key === 'Enter' || e.key === ' ')) e.preventDefault(); });   // a held key never closes it
     $('doc-close').addEventListener('click', () => { if (performance.now() - (this._docOpenT || 0) < 350) return; this._docClose && this._docClose(); });
     $('nb-close').addEventListener('click', () => this.closeNotebook());
     // the right-hand page: conclusions, the open questions, the profile

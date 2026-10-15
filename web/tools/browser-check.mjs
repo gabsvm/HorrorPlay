@@ -132,8 +132,8 @@ try {
     await b.open('scene=bucks_row&noenter&x=1000');
     await b.ev(`(() => { window.__doc = 'open'; game.running++; (async () => { await game.ui.say('Pike', 'Nadie ha tocado nada desde que la ronda pasó.', { auto: 60 }); await game.ui.doc('<h3>HOJA DE RONDAS</h3><p>Portón fuera de vista de 3:30 a 3:40.</p>'); window.__doc = 'closed'; await game.ui.say('Pike', '¿Qué opina, Ashgrove?', { auto: 60 }); window.__after = true; game.running--; })(); return true; })()`);
     for (let i = 0; i < 30 && !(await b.ev(`!document.getElementById('document').classList.contains('hidden')`)); i++) await sleep(150);
-    await b.key('Enter'); await b.key(' '); await sleep(100);
-    need(await b.ev(`!document.getElementById('document').classList.contains('hidden')`), 'documento: Intro o Espacio justo al abrirse no lo cierran sin leerlo');
+    { const el = await b.ev('performance.now() - game.ui._docOpenT'); await b.key('Enter'); await b.key(' '); await sleep(100);
+      need(el > 300 || await b.ev(`!document.getElementById('document').classList.contains('hidden')`), `documento: Intro o Espacio justo al abrirse no lo cierran sin leerlo (a los ${Math.round(el)} ms)`); }
     await sleep(450);
     const under = await b.ev(`(() => { const btn = document.getElementById('doc-close'), r = btn.getBoundingClientRect(); const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { dlg: document.getElementById('dialogue').classList.contains('hidden'), self: hit === btn || btn.contains(hit), open: !document.getElementById('document').classList.contains('hidden'), focus: document.activeElement === btn }; })()`);
     need(under.open && under.dlg && under.self && under.focus, `documento: la línea de diálogo anterior se oculta, «Dejar» recibe el clic y el foco (${JSON.stringify(under)})`);
@@ -147,6 +147,11 @@ try {
     await sleep(900);
     need(await b.ev(`document.getElementById('dialogue').classList.contains('hidden') && !document.getElementById('card').classList.contains('hidden')`), 'tarjeta: la última línea de diálogo no queda sobre la tarjeta');
     await sleep(3200);
+
+    // ---- QA-V5-018: the prologue's child is drawn procedurally, and Thomas's modelled atlas is still there afterwards
+    await b.open('scene=foreshore&noenter&x=1000');
+    { const r = await b.ev(`(async () => { const G = game.G, h = game.chapterHooks; const had = !!(game._thomasModel && game._thomasModel.ready); game.state.chapter = 'prologue'; h.restoreLook(G); const child = game.player.model === null && game.player.hat === 'cap'; await game.goto('room', { fade: false, noEnter: true }); await game.goto('bucks_row', { fade: false, noEnter: true }); game.state.chapter = 'c1'; h.restoreLook(G); await game.goto('room', { fade: false, noEnter: true }); await game.goto('bucks_row', { fade: false, noEnter: true }); await new Promise((r) => setTimeout(r, 300)); return { had, child, released: !!game._thomasModel.released, ready: !!game._thomasModel.ready, back: game.player.model === game._thomasModel }; })()`);
+      need(r.had && r.child && !r.released && r.ready && r.back, `niño y atlas: el niño no lleva el atlas del adulto y, pasado el prólogo y la habitación, Thomas vuelve a su atlas (${JSON.stringify(r)})`); }
 
     // ---- QA-V5-004: the scene with the keyboard alone (real key events); nothing acts by itself
     await b.open('scene=bucks_row&noenter&x=1000');

@@ -582,7 +582,8 @@ export class Game {
     this.player.x = x ?? scene.spawn ?? scene.walk[0] + 40;
     this.player.facing = facing ?? 1;
     if (scene.actors) for (const a of scene.actors(this.G)) this.addActor(a);
-    releaseModels(new Set(this.actors.map((a) => a.model).filter(Boolean)));
+    // the protagonist's atlas is never let go, even while the child or the procedural room figure is on screen: he comes back to it
+    releaseModels(new Set([this._thomasModel, ...this.actors.map((a) => a.model)].filter(Boolean)));
     scene.life = scene.makeLife ? scene.makeLife(this.G) : [];
     // what swings in the street joins its life; what swings in the foreground is drawn with that layer
     for (const s of scene.built.swings || []) if (!s.fg) scene.life.push(new Swing(s));

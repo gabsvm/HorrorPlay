@@ -23,8 +23,14 @@ export class KbSpots {
     this._space = false;
     if (!this.box) return;
     this.box.addEventListener('focusin', (e) => { const b = e.target.closest?.('button'); if (b) this.focus(b.dataset.id); });
-    this.box.addEventListener('keydown', (e) => { if (e.key === ' ') { e.preventDefault(); this._space = true; this.g.reveal(); } });
-    this.box.addEventListener('keyup', (e) => { if (e.key === ' ') { e.preventDefault(); setTimeout(() => { this._space = false; }, 0); } });
+    this.box.addEventListener('keydown', (e) => {
+      // a held Enter or Space (key repeat) never acts: only a deliberate press does
+      if (e.repeat && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); return; }
+      if (e.key === ' ') { e.preventDefault(); this._space = true; this.g.reveal(); }
+    });
+    // the Space that was pressed on a point is over whenever it is released, wherever the focus has gone since
+    window.addEventListener('keyup', (e) => { if (e.key === ' ') setTimeout(() => { this._space = false; }, 0); }, true);
+    window.addEventListener('blur', () => { this._space = false; });
     this.box.addEventListener('focusout', (e) => { if (!this.box.contains(e.relatedTarget)) this.clear(); });
     this.box.addEventListener('click', (e) => {
       // Space on a button clicks it on key-up: here Space reveals instead; and a press right after the focus came back is ignored
