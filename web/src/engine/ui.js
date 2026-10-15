@@ -271,9 +271,11 @@ export class UI {
 
   async doc(html) {
     if (window.FAST) { (window.LOG ||= []).push('[documento]'); return; }
+    this.hideDialogue();   // the last line stays on screen until something replaces it: it must not sit over «Dejar» (QA-V5-001)
     this.el.docBody.innerHTML = html;
     this.el.doc.classList.remove('hidden');
     audio.paper();
+    try { $('doc-close').focus({ preventScroll: true }); } catch { /* not focusable yet: the click still works */ }
     await new Promise((r) => { this._docClose = r; });
     this._docClose = null;
     this.el.doc.classList.add('hidden');
@@ -283,6 +285,7 @@ export class UI {
   async card(kicker, title, sub = '', ms = 4200) {
     if (window.FAST) { (window.LOG ||= []).push(`[${kicker} ${title} ${sub}]`); return; }
     const c = this.el.card;
+    this.hideDialogue();   // the last line (Wren's, over the closing cards) must not stay over the card (QA-V5-001)
     $('card-kicker').textContent = kicker;
     $('card-title').textContent = title;
     $('card-sub').textContent = sub;
@@ -811,9 +814,16 @@ export class UI {
     let finish;
     const p = new Promise((r) => { finish = r; });
     const onKey = (e) => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); finish(); } };
-    const onInput = () => audio.pen();
+    // the prefilled name is selected, so the first thing typed, pasted or deleted replaces it (QA-V5-006); a press
+    // on the field before anything has been written selects it again instead of dropping the caret in the middle of it
+    let typed = false;
+    const selectAll = () => { try { nameInput.select(); } catch { /* not focusable yet */ } };
+    const onInput = () => { typed = true; audio.pen(); };
+    const onUp = () => { if (!typed && nameInput.value) setTimeout(selectAll, 0); };   // the browser collapses the selection after the click: select once it has
     nameInput.addEventListener('keydown', onKey);
     nameInput.addEventListener('input', onInput);
+    nameInput.addEventListener('click', onUp);
+    nameInput.addEventListener('focus', selectAll);
     nameOk.addEventListener('click', finish);
     // with the phone's keyboard up, the signature goes to the middle of what is still visible
     const vv = window.visualViewport;
@@ -825,12 +835,14 @@ export class UI {
     };
     vv?.addEventListener('resize', place);
     vv?.addEventListener('scroll', place);
-    setTimeout(() => { nameInput.focus(); nameInput.setSelectionRange(nameInput.value.length, nameInput.value.length); }, 100);
+    setTimeout(() => { nameInput.focus(); if (nameInput.value) selectAll(); }, 100);
     await p;
     vv?.removeEventListener('resize', place);
     vv?.removeEventListener('scroll', place);
     nameInput.removeEventListener('keydown', onKey);
     nameInput.removeEventListener('input', onInput);
+    nameInput.removeEventListener('click', onUp);
+    nameInput.removeEventListener('focus', selectAll);
     nameOk.removeEventListener('click', finish);
     nameInput.readOnly = true;
     nameInput.blur();

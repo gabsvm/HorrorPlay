@@ -21,6 +21,7 @@ Abre `http://localhost:5317`. No necesita instalar nada ni compilar: son módulo
 | Examinar un objeto | En el inventario: elegirlo y **Examinar** (flechas, Inicio y Fin para moverse) | Tocarlo y **Examinar** |
 | Usar un objeto | En el inventario: **Usar**, y luego clic en el destino; queda en la mano hasta **Cancelar** o Esc | Igual, con toque; **Cancelar** o Atrás lo sueltan |
 | Revelar puntos de interés | Espacio o botón **Revelar** | Botón **Revelar** |
+| Jugar sin ratón | **← / →** (o **Tab**) recorren los puntos de la escena de izquierda a derecha y el elegido se nombra en pantalla; **Intro** actúa como un clic (con un objeto en la mano, lo usa) y **Mayús+Intro** mira; mientras corre un guion, o con el cuaderno, el inventario o un documento abiertos, la lista no está | — |
 | Cuaderno (pistas y deducciones) | N o botón **Cuaderno** | Botón |
 | Avanzar diálogo | Clic, Espacio o Intro | Toque |
 | Cerrar lo abierto / menú | Esc: cierra documento, inventario, cuaderno, menú de conversación o puzle; si no hay nada, pausa | Atrás (Android), en ese mismo orden, o botón **Menú** |
@@ -42,6 +43,7 @@ web/
   src/story/                datos (objetos, pistas, deducciones) y capítulos
   tests/walkthrough.js      recorrido automático de todo el juego
   tools/serve.py            servidor de desarrollo sin caché
+  assets/fonts/             las tres tipografías (WOFF2 latino) con sus licencias: el juego no pide nada a Google Fonts
 ```
 
 ### Dirección de arte: pixel-art HD

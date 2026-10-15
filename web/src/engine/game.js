@@ -10,6 +10,7 @@ import { live } from '../art/paint.js';
 import { Swing } from './life.js';
 import { paintBody, paintVision } from '../art/bodies.js';
 import { UI } from './ui.js';
+import { KbSpots } from './kbspots.js';
 import { audio } from './audio.js';
 import { prefs } from './prefs.js';
 import { normalizeState, currentGate, gateDeductions, canEnterFinale, canEnterWater } from '../story/progression.js';
@@ -46,6 +47,7 @@ export class Game {
     this.r = new Renderer(this.view);
     this.ui = new UI();
     this.ui.game = this;
+    this.kb = new KbSpots(this);   // the scene's hotspots for the keyboard (QA-V5-004)
     this.r.onLost = () => this.ui.toast('Recuperando la imagen…', 4000);
     this.r.onRestored = () => this.ui.toast('Imagen recuperada.', 1800);
     this.r.onFatal = () => { try { this.autosave(); } catch {} this.ui.toast('No se pudo recuperar la imagen. Cierra y vuelve a abrir el juego: la partida está guardada.', 12000, true); };
@@ -94,6 +96,7 @@ export class Game {
     this._fit = { vw, vh };
     const u = Math.min(vw / W, vh / H);
     document.documentElement.style.setProperty('--u', `${u}px`);
+    document.documentElement.classList?.toggle('small', u < 0.85);   // type floors for a short window or phone (QA-V5-016)
   }
 
   // ------------------------------------------------------------ input
@@ -111,6 +114,7 @@ export class Game {
     const zs = (this.zoom ||= { z: 1, x: W / 2, y: H / 2 });
     const tg = this.zoomTarget || { z: 1, x: zs.x, y: zs.y };
     this.punch = Math.max(0, (this.punch || 0) - dt * 2.5);
+    if (prefs.reduceMotion && !this.zoomTarget && zs.z > 1) zs.z = 1;   // switched on mid-scene: the frame stops moving at once
     const k = Math.min(1, dt * (tg.speed || 1.6));
     zs.z += (tg.z - zs.z) * k; zs.x += (tg.x - zs.x) * k; zs.y += (tg.y - zs.y) * k;
     const z = zs.z + (prefs.reduceMotion ? 0 : this.punch * 0.05);
@@ -176,7 +180,7 @@ export class Game {
     document.getElementById('btn-notebook').addEventListener('click', () => this.toggleNotebook());
     document.getElementById('btn-inv').addEventListener('click', (e) => { e?.stopPropagation?.(); this.openInventory(); });
     document.getElementById('btn-reveal').addEventListener('click', () => this.reveal());
-    window.addEventListener('keydown', (e) => { if (e.key === ' ' && !this.ui._advance && !this.running && !this.ui.inventoryOpen) { e.preventDefault(); this.reveal(); } });
+    window.addEventListener('keydown', (e) => { if (e.key === ' ' && !this.ui._advance && !this.running && !this.ui.inventoryOpen && !(e.target && e.target.tagName === 'BUTTON')) { e.preventDefault(); this.reveal(); } });
   }
 
   reveal() {
@@ -243,11 +247,12 @@ export class Game {
     return (this.scene.hotspots || []).filter((h) => !h.when || h.when(this.G));
   }
 
-  async onClick(p, look) {
+  // forced: a hotspot chosen with the keyboard (kbspots.js); the pointer then plays no part
+  async onClick(p, look, forced = null) {
     if (this.inMenu || this.running || !this.scene || this.ui.notebookOpen) return;
     this.idleClock = 0;
     if (this.player.fidget) { if (this.player.pose === 'inspect') this.player.pose = null; this.player.fidget = null; this.player.shiver = 0; this.player.stillT = 0; }
-    const h = this.hotspotAt(p);
+    const h = forced || this.hotspotAt(p);
     if (!h) {
       // with an object in hand, empty ground is a step, not a cancel: only Cancel, Back or Escape let it go
       // (UX audit b69323b, UX-B03); the marker keeps showing what is held
@@ -565,7 +570,8 @@ export class Game {
     scene.fgSwings = (scene.built.swings || []).filter((s) => s.fg).map((s) => new Swing(s));
     this.r.cam.x = this.camTarget();
     this.zoomTarget = null;
-    this.zoom = { z: window.FAST ? 1 : 1.07, x: this.player.x, y: scene.groundY - 160 };
+    // the scene settles in from 1.07 unless motion is reduced: then it never moves (QA-V5-002)
+    this.zoom = { z: window.FAST || prefs.reduceMotion ? 1 : 1.07, x: this.player.x, y: scene.groundY - 160 };
     audio.setBeds((typeof scene.beds === 'function' ? scene.beds(this.G) : scene.beds) || {}, 1.5);
     // the acoustics of the place, what sounds in it, and the city outside
     audio.setSpace(scene.space || (scene.indoor ? 'room' : 'street'));
@@ -681,6 +687,7 @@ export class Game {
     const p = this.pointer;
     const c = this.cursorEl;
     if (this.cursorItemEl && (!p.inside || p.touch || this.inMenu)) this.cursorItemEl.classList.add('hidden');
+      this.kb.sync();
     if (p.touch && this.armed && !this.running) { this.hoverH = this.armed; if (performance.now() - this.armedAt > 4000) { this.armed = null; this.ui.hover(null); } return; }
     if (!p.inside || p.touch || this.inMenu) { c.style.display = this.inMenu && p.inside && !p.touch ? 'block' : 'none'; c.style.left = `calc(${p.x} * var(--u))`; c.style.top = `calc(${p.y} * var(--u))`; c.className = ''; this.ui.hover(null); return; }
     c.style.display = 'block';
@@ -690,6 +697,7 @@ export class Game {
     const h = this.hotspotAt(p);
     this.hoverH = h;
     const exit = h && h.cursor === 'exit';
+    if (this.kb.focused) return;   // the keyboard is naming a thing: the pointer's label waits
     c.className = h ? (exit ? (this.exitDir(h) < 0 ? 'exit-left' : 'exit-right') : (h.cursor || 'look')) : (this.selectedItem ? 'item' : '');
     if (h) this.ui.hover(h.name, p.x, p.y, this.verbFor(h), this.selectedItem ? 'item' : exit ? 'exit' : '', exit ? this.exitDir(h) : 0);
     else this.ui.hover(null);
