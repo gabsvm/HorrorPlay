@@ -8,10 +8,14 @@ Estado: `CANDIDATE_READY_FOR_REVIEW` (ver REPORT). No hacer commit/push sin orde
 ## Inspeccionar (teléfono primero)
 
 1. `comparison/08_galeria_general.png` — resumen en retrato.
-2. `comparison/03_gameplay_640x360_antes_despues.png` — lectura a tamaño real (E mockup).
+2. `comparison/09_ingame_640_antes_despues.png` — lectura a tamaño real con píxeles
+   del motor (Edge + `actor.js`; escena simulada, E-real). El mockup PIL es
+   `comparison/03_gameplay_640x360_antes_despues.png`.
 3. `comparison/05_animacion_contact_sheet.png` — 6 acciones, mismo instante (A frente a C).
-4. `comparison/preview_idle_walk.gif` — ciclos idle/walk.
-5. Resto de `comparison/01–07` para silueta, pixelado nearest, detalle master y topología.
+4. `comparison/preview_walk_v21.gif` y `comparison/preview_talk_v21.gif` — ciclos
+   del motor (caminata y charla, 8 frames cada uno).
+5. `comparison/11_ingame_detalle_motor.png` — rodillas, botas, manos y rostro x4.
+6. Resto de `comparison/01–07,10` para silueta, pixelado nearest, detalle master y topología.
 
 ## Contenido
 
@@ -19,21 +23,27 @@ Estado: `CANDIDATE_READY_FOR_REVIEW` (ver REPORT). No hacer commit/push sin orde
   ACCESSORIES, RIG, LIGHTS, CAMERAS; cámara orto `cam` idéntica a exportación; 4
   cámaras de estudio; rig de 21 empties; notas en el bloque `THOMAS_V2_NOTES`).
 - `source/thomas_v2.glb` — exportación GLB (mallas/materiales; reimportación NOT_TESTED).
-- `exports/game_candidate/` — `albedo.png`, `normal.png`, `model.json` en formato motor.
+- `exports/game_candidate/` — V2.0 en formato motor (congelado como referencia).
+- `exports/game_candidate_v21/` — V2.1 en formato motor, renderizado DESDE el
+  `.blend` (fuente única): `albedo.png`, `normal.png`, `model.json`.
 - `exports/sample_frames/` — un frame crudo por animación (19 PNG).
-- `scripts/` — `render_candidate.py`, `pack_candidate.py`, `verify_candidate.py`,
-  `build_master.py`, `render_studio.py`, `verify_blend.py` (+ utilidades de cámara).
-- `working/` — intermedios regenerables (17,6 MB): raw V2, baseline regenerado completo,
-  frames y studios. No versionar sin criterio; se regeneran con los comandos de abajo.
-- `MANIFEST.json` — checksums SHA-256 y tamaños de la entrega.
+- `scripts/` — `render_from_blend.py` (pipeline vigente),
+  `render_candidate.py` (legado congelado), `apply_v21_to_blend.py`,
+  `pack_candidate.py`, `verify_candidate.py`, `build_master.py`,
+  `render_studio.py`, `verify_blend.py`, `export_check_glb.py` (+ utilidades).
+- `working/` — SOLO LOCAL (no versionado): intermedios regenerables, arnés temporal
+  de capturas (`in_harness.*`) y scripts de una sola vez. Se regenera con lo de abajo.
+- `MANIFEST.json` — checksums SHA-256 y tamaños de la entrega (sin `working/`).
+- `PLAN_V2.1.md` — plan de esta iteración.
 
 ## Reproducir (todo aislado, sin tocar producción)
 
 ```powershell
 $bl = "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe"
-& $bl -b --factory-startup -P web/art_review/thomas_v2/scripts/render_candidate.py -- web/art_review/thomas_v2/working/v2_raw
-python web/art_review/thomas_v2/scripts/pack_candidate.py web/art_review/thomas_v2/working/v2_raw
-python web/art_review/thomas_v2/scripts/verify_candidate.py
+& $bl -b web/art_review/thomas_v2/source/Thomas_Ashgrove_V2.blend -P web/art_review/thomas_v2/scripts/apply_v21_to_blend.py
+& $bl -b web/art_review/thomas_v2/source/Thomas_Ashgrove_V2.blend --factory-startup -P web/art_review/thomas_v2/scripts/render_from_blend.py -- web/art_review/thomas_v2/working/v21_raw
+python web/art_review/thomas_v2/scripts/pack_candidate.py web/art_review/thomas_v2/working/v21_raw web/art_review/thomas_v2/exports/game_candidate_v21
+python web/art_review/thomas_v2/scripts/verify_candidate.py web/art_review/thomas_v2/exports/game_candidate_v21
 & $bl -b web/art_review/thomas_v2/source/Thomas_Ashgrove_V2.blend -P web/art_review/thomas_v2/scripts/verify_blend.py
 ```
 

@@ -95,3 +95,39 @@ Candidato: `albedo.png` 78.703 B, `normal.png` 408.619 B, `model.json` 378 B
 Prueba visual con interruptor V1/V2 o rama separada (sin tocar el save), imágenes a
 640×360 y en Android; solo entonces copiar los 3 ficheros, reempaquetar, tests y
 partida de regresión, conservando el baseline para reversión. Detalle en README.
+
+## 7. Addendum V2.1 (fuente única + motor real)
+
+Veredicto V2.1: **`CANDIDATE_READY_FOR_REVIEW`** — supera el bloqueo P1 de la
+auditoría (fuente única demostrada) y aporta capturas reales del motor (09–11).
+
+Fuente única: `scripts/render_from_blend.py` carga `source/Thomas_Ashgrove_V2.blend`,
+vincula el rig por nombre (25 objetos) y reutiliza `pose()`/`build_coat()` para los
+122 frames. Prueba de ida y vuelta medida: botón ×5 en el `.blend` → **1300 px**
+cambiados en el frame reconstruido (zona pecho x101–141/y61–136); tras revertir,
+**0 px** de diff. `render_candidate.py` queda congelado como legado documentado.
+Deltas V2.1 aplicados AL `.blend` (`apply_v21_to_blend.py`, 21 edits): ojos/ojeras/
+boca más oscuros, manos ×1.15 con puños claros, botones ×1.3, patillas/cejas
+mayores, líneas de sombra del abrigo más profundas. Postura intacta a propósito
+(riesgo de anclaje al suelo; documentado, no disfrazado).
+
+Motor real (navegador Edge headless + `actor.js`/`model.js` de producción sin
+modificar, sprites por `drawModel`/`shadeVolume`, rs=0.5, placa 1280 verificada por
+cajas: V1 x185–252, V2.1 x392–464, pies y=320): `09_ingame_640` (640×360),
+`10_ingame_1280` (nearest), `11_ingame_detalle` (rodillas/botas/manos/rostro x4),
+`preview_walk_v21.gif` y `preview_talk_v21.gif` (8 frames del motor cada uno).
+Escena simulada y arnés temporal declarados; sin escenas completas del juego ni
+Android (sigue pendiente para Claude).
+
+Validación estricta: `verify_blend.py` 13/13 PASS (colecciones, 116 mallas, 11.260
+verts, 21 empties, orto 2.7, grupo `Out`, 2 vidrios, 25 lookups).
+`export_check_glb.py` GLB-OK: reexportado del master V2.1 (407.476 B), reimporta con
+geometría (23.540 verts en escena temporal).
+Candidato V2.1 (`exports/game_candidate_v21/`, mismo contrato 122/206/10/0.5):
+albedo 81.600 B + normal 411.975 B = 482 KB; VRAM decodificada 22.120 KB (igual que
+V2.0; producción ≈20,5 MB).
+
+Tabla honesta: TESTED = contrato atlas, ida/vuelta blend→atlas, sprites del motor
+en navegador, GLB reimportado, cajas de anclaje. PARTIAL = caja 144×242 (silueta
+más ancha), suelas −19 frente a −17. NOT_TESTED = escenas completas del juego,
+Android, FPS en dispositivo.

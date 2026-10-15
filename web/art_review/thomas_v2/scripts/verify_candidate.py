@@ -8,7 +8,7 @@ from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, '..'))
-CAND = os.path.join(ROOT, 'exports', 'game_candidate')
+CAND = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else os.path.join(ROOT, 'exports', 'game_candidate')
 PROD = os.path.normpath(os.path.join(ROOT, '..', '..', 'assets', 'models', 'thomas'))
 fails = []
 def check(name, ok, detail=''):

@@ -1,0 +1,4 @@
+# Benchmark-local intermediates: regenerable via README commands. Kept on disk, never versioned.
+working/
+# Blender auto-backups
+*.blend1
