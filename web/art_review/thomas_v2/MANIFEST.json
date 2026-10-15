@@ -1,0 +1,374 @@
+{
+ "benchmark": "thomas_v2",
+ "base": {
+  "branch": "reboot/web-el-huesped",
+  "head": "ffe46380b12def737c968fdd9f035ce093561b55",
+  "head_date": "2026-10-15",
+  "production_untouched": true,
+  "git_status": "?? web/art_review/ (solo nuevos, sin modificar)"
+ },
+ "toolchain": {
+  "blender": "5.2.2 LTS",
+  "build_hash": "d13f752e3b9c",
+  "python": "3.14.6",
+  "pillow": "12.3.0",
+  "numpy": "2.5.3",
+  "render": "BLENDER_EEVEE, taa_render_samples=64, Raw, film_transparent"
+ },
+ "contract": {
+  "frames": 122,
+  "anims": 19,
+  "height": 206,
+  "cols": 10,
+  "ns": 0.5,
+  "cand_box": {
+   "w": 144,
+   "h": 242,
+   "ax": 66,
+   "ay": 223
+  },
+  "prod_box": {
+   "w": 134,
+   "h": 236,
+   "ax": 60,
+   "ay": 219
+  }
+ },
+ "files": [
+  {
+   "path": "README.md",
+   "bytes": 3112,
+   "sha256": "2a893cd7a9146b08ff032b3ae2ef19ffdea06b81caad3120122eb2326021b29d"
+  },
+  {
+   "path": "REPORT.md",
+   "bytes": 6106,
+   "sha256": "ea9c8d31797fb5df974b3e4e80f016a0b2a1365aa5208d9942161b1b884ec9f5"
+  },
+  {
+   "path": "source/Thomas_Ashgrove_V2.blend",
+   "bytes": 210819,
+   "sha256": "748f6aa7144cbe29e158bc39eb11f6d9e4a888304a6ee4355cd2fb73e09918e4"
+  },
+  {
+   "path": "source/thomas_v2.glb",
+   "bytes": 406468,
+   "sha256": "b04b63e432653e097d9ff53c08ba373f604a639d5f1690099d171a9f3bd090a8"
+  },
+  {
+   "path": "scripts/render_candidate.py",
+   "bytes": 47606,
+   "sha256": "7439e9cf7e169ae51a85c0c0026cba134c73a787c6c84d32aef37bcc0d3fe2dd"
+  },
+  {
+   "path": "scripts/pack_candidate.py",
+   "bytes": 3683,
+   "sha256": "3333ac54aa99171475562588be4b8bf5af10f9821219611ed080da62a3a94736"
+  },
+  {
+   "path": "scripts/verify_candidate.py",
+   "bytes": 4575,
+   "sha256": "288b57ea6153448f68405e155d744b139eca39a43963f2ae723f156fd3a91077"
+  },
+  {
+   "path": "scripts/build_master.py",
+   "bytes": 49590,
+   "sha256": "81fdac9dd4930c340e5ccd3d6d2a4edc5b7bb3658489020f5938a9d3f27352d6"
+  },
+  {
+   "path": "scripts/render_studio.py",
+   "bytes": 1299,
+   "sha256": "00a3809aa2fd5c6081dd917633b48f00a4402dbcd995b0b83e608f19a8121406"
+  },
+  {
+   "path": "scripts/verify_blend.py",
+   "bytes": 1031,
+   "sha256": "c190b2528fc4feb47c7267b71f343e88359889d22d2890b9ef121b5e0f9c06cc"
+  },
+  {
+   "path": "scripts/fix_studio_cams.py",
+   "bytes": 767,
+   "sha256": "fbe1097683fa38aeacf589f65fd79216d652c286531af2aa1779b6cebcf6b109"
+  },
+  {
+   "path": "scripts/swap_cam_names.py",
+   "bytes": 448,
+   "sha256": "f770ee40a259cfd0044410a7c5b08cef80e6023a0a8ba9513c6d024f2ad1793b"
+  },
+  {
+   "path": "exports/game_candidate/albedo.png",
+   "bytes": 78703,
+   "sha256": "9824d6af23ae8d944e7dffe4a1643a37da7db5104baf6382a01769a892272707",
+   "pixels": [
+    1440,
+    3146
+   ]
+  },
+  {
+   "path": "exports/game_candidate/normal.png",
+   "bytes": 408619,
+   "sha256": "bf63a615993620bb4f0ad54485841234de799db274850efa558e5a3aafeee6ee",
+   "pixels": [
+    720,
+    1573
+   ]
+  },
+  {
+   "path": "exports/game_candidate/model.json",
+   "bytes": 378,
+   "sha256": "9eeada55189f2acb3f1ef3bcc8a54080bfdc91cdba9aa72a013b8bbaf945b28c"
+  },
+  {
+   "path": "comparison/01_hero_modelo_antes_despues.png",
+   "bytes": 89187,
+   "sha256": "0b46bfa8a9939ece13b00a7d04af82eb2c8082491afbd1dde5b9f6850a38fe4c",
+   "pixels": [
+    1600,
+    1150
+   ]
+  },
+  {
+   "path": "comparison/02_silueta_antes_despues.png",
+   "bytes": 100413,
+   "sha256": "758ad09be6ab14388068e816d18f8cadeaed1d306e66d3bcde90cfc08b186d8c",
+   "pixels": [
+    1600,
+    1050
+   ]
+  },
+  {
+   "path": "comparison/03_gameplay_640x360_antes_despues.png",
+   "bytes": 32497,
+   "sha256": "04cdb7242779659fe8b7825e83ac0a0013be475cf6c0b32f23141c004ae4c687",
+   "pixels": [
+    640,
+    360
+   ]
+  },
+  {
+   "path": "comparison/04_gameplay_1280x720_pixelado.png",
+   "bytes": 45368,
+   "sha256": "c9e7a7300c9b4340b4b9c751416a428dbeba4f9a959a28675b17fd9011a92a6e",
+   "pixels": [
+    1280,
+    720
+   ]
+  },
+  {
+   "path": "comparison/05_animacion_contact_sheet.png",
+   "bytes": 142779,
+   "sha256": "1fbaaec2d76f8454357b1279125dc846136faf2960ee902d5104d598f2e011a0",
+   "pixels": [
+    1600,
+    2040
+   ]
+  },
+  {
+   "path": "comparison/06_rostro_manos_ropa.png",
+   "bytes": 192788,
+   "sha256": "4b8337a391d7eb8875c5c1e2167a423b8293f56da04fbe73ba44e07a8eed29a0",
+   "pixels": [
+    1600,
+    1000
+   ]
+  },
+  {
+   "path": "comparison/07_topologia_materiales.png",
+   "bytes": 125632,
+   "sha256": "3c10f49eba5a6e8a7ef1578acf04909be493eed6999caf95c8125585b62f5942",
+   "pixels": [
+    1600,
+    1000
+   ]
+  },
+  {
+   "path": "comparison/08_galeria_general.png",
+   "bytes": 321349,
+   "sha256": "9386d4ce73822f85eb0c3cb00ad154dc7dafe98934aedf851a190d703cc70455",
+   "pixels": [
+    1200,
+    1900
+   ]
+  },
+  {
+   "path": "comparison/preview_idle_walk.gif",
+   "bytes": 66686,
+   "sha256": "7a3af17cac6d933ba0095293c267bde3b513bdf651fc34f58b339343cee6749b",
+   "pixels": [
+    320,
+    170
+   ]
+  },
+  {
+   "path": "exports/sample_frames/clutch.png",
+   "bytes": 12375,
+   "sha256": "ddf74f5b7b616ca075475def90787b0d3a824491e847d3d3e76c52194b671c0c",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/idle.png",
+   "bytes": 11441,
+   "sha256": "d7d73942dbae4361b5902f63cdc756186a9b804ca1373257e234b73a2ff1dfe5",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/inspect.png",
+   "bytes": 11554,
+   "sha256": "1adf79c7b02bc07c1e4789cab65191383d62837a71f5d3affc3e2a6379d15a39",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/kneel.png",
+   "bytes": 12399,
+   "sha256": "9b2f96e4815fdda9e572f67a70605b787d64dd259a4261268907ceed83658412",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/reach.png",
+   "bytes": 11793,
+   "sha256": "5248e924c00d884a89aa09771f5e403c080a9da9a13946a79d218d7b16ab2e48",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/reach_hi.png",
+   "bytes": 11425,
+   "sha256": "1cbe234989c295c4afbfa36223477c3697c90ae6c790c9b8b95830d34be8208b",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/reach_lo.png",
+   "bytes": 11771,
+   "sha256": "2c80a24fe169cbbb42c50e859a201e8594ca45c3a7b54ea8dfa68964ed9068e8",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/reach_mid.png",
+   "bytes": 11920,
+   "sha256": "c81bbe996c12b758b7afee386e73879d141bf942f26f2920ac87020ef70972a6",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/recoil.png",
+   "bytes": 11678,
+   "sha256": "2076a39bb56dd408c0715b58d9a119a57e203b79b9719d36a4dab183587685e1",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/run.png",
+   "bytes": 13390,
+   "sha256": "7e83597fb909a3123718b8eaeb2af161c9d10540f0d628bd734b4dc0842f806f",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/sit.png",
+   "bytes": 12012,
+   "sha256": "53b9d8224825159745de28b202e1bb4bfa57fa0eca5852bb307a732d14c9d720",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/take.png",
+   "bytes": 13305,
+   "sha256": "edcc882e5f5f873147ecf70e6c25fa906a8b980ca160054235ab3618b4a45564",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/talk.png",
+   "bytes": 11059,
+   "sha256": "db59f1672771dd470a200956f6c1cd07567589222008e0b30dd970f372ba68ad",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/turn.png",
+   "bytes": 12072,
+   "sha256": "306fabd8b56d5eddb46e0dcdeca83bf80939ef2b13e16096743eeab4e96992d4",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/walk.png",
+   "bytes": 12230,
+   "sha256": "3e39ae990e32a5871dad880ea6395379900f2afcadfba49d7ebeebde0a4f3fee",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/walk3.png",
+   "bytes": 12716,
+   "sha256": "9750efcccd2b25d069a2e65d6e898e185630a27b569159d5fee43bb38bb166c1",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/walkh.png",
+   "bytes": 12247,
+   "sha256": "8ccd258c1b72520f4209f3c07c0fa1917446811bdfcfe743e3fd8f603a512284",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/walkq.png",
+   "bytes": 11857,
+   "sha256": "7822ed0b9912b41c7919e6699d3c5143905e09d483df03b9dd43b0997538d4ca",
+   "pixels": [
+    216,
+    270
+   ]
+  },
+  {
+   "path": "exports/sample_frames/write.png",
+   "bytes": 12601,
+   "sha256": "7d15a8879a6443a14340c6372390de9586c07a6833990fe6f6409c03e81213bb",
+   "pixels": [
+    216,
+    270
+   ]
+  }
+ ]
+}
