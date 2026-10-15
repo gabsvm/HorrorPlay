@@ -36,6 +36,13 @@ export async function run(opts) {
     game.dressFor('room');
     need(p.hat === 'bowler', 'al pasar a c4 la ropa vuelve al actor');
     // the prologue's child keeps his own look when the scene changes (no adult clothes on him)
+    // QA-V5-018: the child is not the adult's modelled atlas (a small man in a bowler); the adult gets it back
+    game.state.chapter = 'prologue';
+    game.chapterHooks.restoreLook(game.G);
+    need(p.model === null && p.hat === 'cap', 'el niño del prólogo se dibuja sin el atlas del adulto');
+    game.state.chapter = 'c1';
+    game.chapterHooks.restoreLook(game.G);
+    need(p.hat === 'bowler' && p.model === game._thomasModel, 'el adulto recupera su atlas modelado');
     game.state.chapter = 'prologue';
     p.hat = 'cap'; p.coat = '#3a342c'; p.lantern = false;
     game.dressFor('foreshore');

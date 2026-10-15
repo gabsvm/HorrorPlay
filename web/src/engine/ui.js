@@ -62,7 +62,8 @@ export class UI {
       if (e.key === 'Escape' && this._inspectClose && !this._advance) this._inspectClose();
       if (/^[1-9]$/.test(e.key) && this._choiceKeys) { const b = this._choiceKeys[Number(e.key) - 1]; if (b) b.click(); }
     });
-    $('doc-close').addEventListener('click', () => this._docClose && this._docClose());
+    // a press of Enter or Space that was advancing the text must not close the document the moment it opens
+    $('doc-close').addEventListener('click', () => { if (performance.now() - (this._docOpenT || 0) < 350) return; this._docClose && this._docClose(); });
     $('nb-close').addEventListener('click', () => this.closeNotebook());
     // the right-hand page: conclusions, the open questions, the profile
     for (const b of document.querySelectorAll ? document.querySelectorAll('#nb-tabs button') : []) b.addEventListener('click', () => { audio.paper?.(); this.notebookTab(b.dataset.tab); });
@@ -272,6 +273,8 @@ export class UI {
   async doc(html) {
     if (window.FAST) { (window.LOG ||= []).push('[documento]'); return; }
     this.hideDialogue();   // the last line stays on screen until something replaces it: it must not sit over «Dejar» (QA-V5-001)
+    const opener = document.activeElement;   // a menu button that opened it gets its focus back
+    this._docOpenT = performance.now();
     this.el.docBody.innerHTML = html;
     this.el.doc.classList.remove('hidden');
     audio.paper();
@@ -279,6 +282,7 @@ export class UI {
     await new Promise((r) => { this._docClose = r; });
     this._docClose = null;
     this.el.doc.classList.add('hidden');
+    try { if (opener && opener !== document.body && opener.isConnected && opener.focus) opener.focus({ preventScroll: true }); } catch { /* gone */ }
     audio.paper();
   }
 
@@ -823,7 +827,8 @@ export class UI {
     nameInput.addEventListener('keydown', onKey);
     nameInput.addEventListener('input', onInput);
     nameInput.addEventListener('click', onUp);
-    nameInput.addEventListener('focus', selectAll);
+    const onFocus = () => { if (!typed) selectAll(); };
+    nameInput.addEventListener('focus', onFocus);
     nameOk.addEventListener('click', finish);
     // with the phone's keyboard up, the signature goes to the middle of what is still visible
     const vv = window.visualViewport;
@@ -842,7 +847,7 @@ export class UI {
     nameInput.removeEventListener('keydown', onKey);
     nameInput.removeEventListener('input', onInput);
     nameInput.removeEventListener('click', onUp);
-    nameInput.removeEventListener('focus', selectAll);
+    nameInput.removeEventListener('focus', onFocus);
     nameOk.removeEventListener('click', finish);
     nameInput.readOnly = true;
     nameInput.blur();

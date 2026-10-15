@@ -2,7 +2,9 @@
 // ordered from left to right: Tab or the left/right arrows move through them, Enter (or Space) acts exactly as a
 // click on the thing does (the same walk, the same item in hand), Shift+Enter looks. The focused one is named on
 // the stage with its verb, ringed when it is in view and pointed at with an arrow when it is not.
-// Nothing here acts by itself: a hotspot is only ever used when the player presses Enter on it.
+// Only Enter acts. Space keeps its meaning (reveal the points of interest) even with a point in focus, and what the list
+// itself has just focused ignores a press for a moment: the Enter or Space that advanced the last line of a conversation
+// must never also act on the thing the focus lands on afterwards.
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -17,16 +19,22 @@ export class KbSpots {
     this.kbMode = false;       // the last thing the player touched was the keyboard
     this.focused = false;
     this._camX = null;
+    this._focusAt = 0;
+    this._space = false;
     if (!this.box) return;
     this.box.addEventListener('focusin', (e) => { const b = e.target.closest?.('button'); if (b) this.focus(b.dataset.id); });
+    this.box.addEventListener('keydown', (e) => { if (e.key === ' ') { e.preventDefault(); this._space = true; this.g.reveal(); } });
+    this.box.addEventListener('keyup', (e) => { if (e.key === ' ') { e.preventDefault(); setTimeout(() => { this._space = false; }, 0); } });
     this.box.addEventListener('focusout', (e) => { if (!this.box.contains(e.relatedTarget)) this.clear(); });
     this.box.addEventListener('click', (e) => {
+      // Space on a button clicks it on key-up: here Space reveals instead; and a press right after the focus came back is ignored
+      if (this._space || performance.now() - this._focusAt < 450) return;
       const b = e.target.closest?.('button');
       const h = b && this.list.find((x) => x.id === b.dataset.id);
       if (h) this.g.onClick(null, !!e.shiftKey, h);
     });
     window.addEventListener('keydown', (e) => {
-      if (['Tab', 'ArrowLeft', 'ArrowRight', 'Enter', ' '].includes(e.key)) this.kbMode = true;
+      if (['Tab', 'ArrowLeft', 'ArrowRight'].includes(e.key)) this.kbMode = true;   // Enter and Space also advance dialogue: they say nothing about where the focus belongs
       if ((e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') || e.altKey || e.ctrlKey || e.metaKey) return;
       const t = e.target;
       if (t && t !== document.body && !this.box.contains(t) && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
@@ -73,7 +81,7 @@ export class KbSpots {
       // a script has just ended or the scene changed and the player was using the keyboard: put the focus back
       const want = had || (this.kbMode && (document.activeElement === document.body || !document.activeElement) ? (list.some((h) => h.id === this.id) ? this.id : list[0]?.id) : null);
       const b = want && [...this.box.children].find((x) => x.dataset.id === want);
-      if (b) b.focus({ preventScroll: true });
+      if (b) { this._focusAt = performance.now(); b.focus({ preventScroll: true }); }
     }
     if (this.focused) this.place();
   }

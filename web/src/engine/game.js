@@ -32,6 +32,11 @@ export function freshState() {
 // in development (localhost or ?dev) a script that fails says so on screen; players never see it
 const DEV = typeof location !== 'undefined' && (/[?&]dev/.test(location.search || '') || /^(localhost|127\.0\.0\.1)$/.test(location.hostname || ''));
 
+// the typefaces are painted into the scene's canvases: have them loaded first (a no-op without a page, as in the headless tests)
+const fontsReady = () => (typeof document !== 'undefined' && document.fonts?.load
+  ? Promise.all(['italic 20px "IM Fell English"', '20px "IM Fell English"', '600 20px "IM Fell English SC"', '20px "Special Elite"'].map((f) => document.fonts.load(f, 'Ñá').catch(() => null)))
+  : Promise.resolve());
+
 export class Game {
   constructor({ scenes, chapters, items, clues, deductions }) {
     this.scenes = scenes;
@@ -62,6 +67,7 @@ export class Game {
     this.player = new Actor('Thomas', { h: 206, hat: 'bowler', coat: '#23262b', coatLen: 0.88, flare: 1.2, lantern: true, speed: 150, z: 10, collarUp: true, sideburns: true, hair: '#1a1410', gloves: '#2a221c', scarf: '#4a1612', stubble: 'rgba(30,22,18,0.35)' });
     this.player.isPlayer = true;
     this.player.model = modelFor('Thomas');
+    this._thomasModel = this.player.model;   // the adult's modelled atlas: the prologue's child is drawn procedurally instead (look(), chapters.js)
     loadCloseups();
     loadProps();
     this.player.onStep = (a) => {
@@ -541,7 +547,8 @@ export class Game {
     // a wounded hand (the chase, injured) is drawn procedurally too: the bandage is part of that drawing
     const bandaged = f.chase_outcome === 'injured';
     this.player.bandaged = bandaged;
-    this.player.model = coatOff || lanternOff || bandaged ? null : this._thomasModel;
+    // the room of chapter one is drawn procedurally the whole visit, so that taking the coat or the lantern never swaps the figure on screen
+    this.player.model = coatOff || lanternOff || bandaged || (inRoom && ph === 'c1') ? null : this._thomasModel;
   }
 
   async goto(id, { x, facing, fade = true, noEnter = false } = {}) {
@@ -549,7 +556,7 @@ export class Game {
     if (!scene) throw new Error(`Escena desconocida: ${id}`);
     if (fade) await this.fadeTo(1, 700);
     // the modelled props are painted into the layers when the scene is built: give them a moment to load
-    await Promise.race([loadProps(), wait(2000)]);
+    await Promise.race([Promise.all([loadProps(), fontsReady()]), wait(2000)]);
     this.ui.hover(null);
     // a new place starts with empty hands: an object carried through a way out is put away (review of UX-B03)
     if (this.selectedItem) { this.selectedItem = null; this.refreshInventory(); }

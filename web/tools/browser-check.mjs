@@ -132,6 +132,9 @@ try {
     await b.open('scene=bucks_row&noenter&x=1000');
     await b.ev(`(() => { window.__doc = 'open'; game.running++; (async () => { await game.ui.say('Pike', 'Nadie ha tocado nada desde que la ronda pasó.', { auto: 60 }); await game.ui.doc('<h3>HOJA DE RONDAS</h3><p>Portón fuera de vista de 3:30 a 3:40.</p>'); window.__doc = 'closed'; await game.ui.say('Pike', '¿Qué opina, Ashgrove?', { auto: 60 }); window.__after = true; game.running--; })(); return true; })()`);
     for (let i = 0; i < 30 && !(await b.ev(`!document.getElementById('document').classList.contains('hidden')`)); i++) await sleep(150);
+    await b.key('Enter'); await b.key(' '); await sleep(100);
+    need(await b.ev(`!document.getElementById('document').classList.contains('hidden')`), 'documento: Intro o Espacio justo al abrirse no lo cierran sin leerlo');
+    await sleep(450);
     const under = await b.ev(`(() => { const btn = document.getElementById('doc-close'), r = btn.getBoundingClientRect(); const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return { dlg: document.getElementById('dialogue').classList.contains('hidden'), self: hit === btn || btn.contains(hit), open: !document.getElementById('document').classList.contains('hidden'), focus: document.activeElement === btn }; })()`);
     need(under.open && under.dlg && under.self && under.focus, `documento: la línea de diálogo anterior se oculta, «Dejar» recibe el clic y el foco (${JSON.stringify(under)})`);
     { const r = await b.ev(`(() => { const r = document.getElementById('doc-close').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`); await b.click(r.x, r.y); }
@@ -159,8 +162,8 @@ try {
     need(k2.id && k2.id !== k1.id, 'teclado: la flecha siguiente pasa al siguiente punto');
     await b.key('ArrowLeft'); await sleep(150);
     need((await kb()).id === k1.id, 'teclado: la flecha contraria vuelve al anterior');
-    await b.key(' '); await sleep(150);
-    need((await kb()).reveal === 0, 'teclado: Espacio sobre un punto no revela ni dispara otra cosa');
+    { const x0 = await b.ev('game.player.x'); await b.key(' '); await sleep(350); const ks = await kb(); await sleep(1200);
+      need(ks.reveal > 0 && ks.running === 0 && (await b.ev('game.player.x')) === x0, 'teclado: Espacio sobre un punto revela los puntos y no actúa (ni anda, ni arranca un guion)'); }
     // a person chosen by name and acted on with Enter: the same walk and the same script as a click
     const idx = await b.ev(`[...document.querySelectorAll('#kb-spots button')].findIndex((x) => /Pike/.test(x.textContent))`);
     need(idx >= 0, 'teclado: la lista incluye a los personajes con los que se puede hablar');
@@ -169,10 +172,12 @@ try {
     const act = await kb();
     need(act.running > 0, 'teclado: Intro actúa sobre el punto enfocado (el guion arranca)');
     need(await b.ev(`document.getElementById('kb-spots').classList.contains('hidden')`), 'teclado: mientras el guion corre, la lista no está disponible');
-    for (let i = 0; i < 60 && (await b.ev('game.running')) > 0; i++) { if (await b.ev('!!game.ui._choiceKeys')) await b.key('1'); else await b.key('Enter'); await sleep(350); }
+    for (let i = 0; i < 60 && (await b.ev('game.running')) > 0; i++) { if (await b.ev('!!game.ui._talkCancel')) await b.key('Escape'); else if (await b.ev('!!game.ui._choiceKeys')) await b.key('1'); else await b.key('Enter'); await sleep(350); }
     await sleep(700);
     const back2 = await kb();
-    need(back2.running === 0 && back2.id !== null, 'teclado: al acabar el guion, el foco vuelve a la lista');
+    need(back2.running === 0 && back2.id !== null, 'teclado: al acabar el guion, el foco vuelve a la lista (' + JSON.stringify(back2) + ')');
+    // Space with the focus back on the list reveals; it does not act (Enter does, and ignores a press within 450 ms of the focus returning)
+    { const xs = await b.ev('game.player.x'); await b.key(' '); await sleep(250); const s2 = await kb(); need(s2.running === 0 && (await b.ev('game.player.x')) === xs, 'teclado: Espacio con el foco recién vuelto a la lista no actúa sobre él'); await sleep(600); }
     await b.key('n'); await sleep(400);
     need(await b.ev(`!document.getElementById('notebook').classList.contains('hidden') && document.getElementById('kb-spots').classList.contains('hidden')`), 'teclado: con el cuaderno abierto no hay puntos de la escena');
     await b.key('Escape'); await sleep(400);

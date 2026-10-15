@@ -37,7 +37,7 @@ export async function run(opts) {
       // QA-V5-010, measured: Greaves costs 10 (the file) and 15 (the cut) on every route, so the sanity that reaches Wren is
       // at most HIGH − 25: always the frayed band. «Era Thomas.» is written for a higher value that no route reaches (it is
       // only reached from a fixture, tests/scenarios/sanity.js); it is not forced: an author's decision, see the QA report.
-      need(perceptionBand(a - 25) === 'frayed', `con ${a} a la llegada, la cordura ante Wren no está en la banda desgastada (${label})`);
+      arrivals[`${label} → ante Wren como mucho`] = a - 25;   // measurement, reported with the run; the branch is the author's to decide
     }
     // exploration: a second look at the jars costs nothing (the cost is paid once)
     const f = await fixture('saves-v1-baseline/c4.json');

@@ -124,6 +124,9 @@ export const tests = [
     ok(lackAlreadySaid(objective, 'reconstruir en el cuaderno la cadena del nombre (pestaña Nombre)'), 'el objetivo y la falta dicen lo mismo y se repite');
     ok(!lackAlreadySaid('Buscar en la consulta de Greaves.', 'relacionar tres pruebas independientes en el cuaderno'), 'una falta distinta sí se dice');
     ok(!lackAlreadySaid('Mirar alrededor.', ''), 'sin falta no hay nada que repetir');
+    // the cases the review found: a stale list and a count must still be said
+    ok(!lackAlreadySaid('Hablar con el médico, mirar el delantal y salir de Hanbury Street.', 'hablar con el médico'), 'la falta de Hanbury se sigue diciendo');
+    ok(!lackAlreadySaid('En el cuaderno: comparar mi ficha con al menos tres pruebas independientes.', 'relacionar mi ficha con 2 pruebas independientes más'), 'el recuento de pruebas se sigue diciendo');
   }],
   ['post-QA: «La mano» no afirma que el papel y la tinta fueran suyos (QA-V5-013)', () => {
     const mano = CHAIN_LINKS.find((l) => l.id === 'mano');

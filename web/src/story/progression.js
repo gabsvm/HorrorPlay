@@ -168,10 +168,11 @@ export function gateDeductions(s) {
   return [];
 }
 
-// The notebook's hint says what the place still asks for after the objective. When the objective already says it, once
-// is enough (QA-V5-009): true when most of the distinctive words of what is missing are the objective's own.
+// The notebook's hint says what the place still asks for after the objective. On the foreshore the objective and the
+// gate both say «the chain of the name, tab Nombre»: once is enough (QA-V5-009). Deliberately narrow: a list that goes
+// stale (Hanbury's objective) or a count (how many proofs are still missing) must still be said.
 export function lackAlreadySaid(objective, lack) {
-  const words = (t) => new Set(String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().match(/[a-z]{5,}/g) || []);
-  const b = words(objective), l = [...words(lack)];
-  return l.length > 0 && l.filter((w) => b.has(w)).length / l.length >= 0.6;
+  const n = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const both = (t) => /\bcadena\b/.test(n(t)) && /\bnombre\b/.test(n(t));
+  return both(objective) && both(lack);
 }

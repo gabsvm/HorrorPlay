@@ -73,7 +73,7 @@ La cadena son **etapas de transmisión**, no tres fuentes independientes sobre l
 
 ## 8. Reglas de redacción
 
-- Primero hubo una mano. Después, una firma. Ahora nadie necesita haberlo visto para hablar de él. La conclusión de Thomas es un orden de hechos, no una cosmología.
+- Primero hubo una mano. Después, una firma. Después, la calle. La conclusión de Thomas es un orden de hechos, no una cosmología.
 - Ningún personaje de 1888 cita obras posteriores (*The King in Yellow* es de 1895).
 - Ninguna escena anterior a la calle del 1 de octubre dice «Jack» (`tests/unit/v5.test.mjs`).
 - Las fuentes históricas no verificadas siguen marcadas en `V4_HISTORICAL_LEDGER.md`; V5 no añade datos históricos nuevos, solo ficción etiquetada.

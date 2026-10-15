@@ -18,6 +18,9 @@ css = open(os.path.join(web, 'styles.css'), encoding='utf-8').read()
 # the typefaces (assets/fonts) travel inside the page as data URIs, like the sounds and the figures
 css = re.sub(r'url\(assets/fonts/([\w.-]+\.woff2)\)', lambda m: 'url(data:font/woff2;base64,' + base64.b64encode(open(os.path.join(web, 'assets', 'fonts', m.group(1)), 'rb').read()).decode() + ')', css)
 css += NL + ':root{color-scheme:dark}html,body{height:100%;background:#000}' + NL
+# the licences of the typefaces travel with them (assets/fonts/LICENSES.md): OFL 1.1 for IM Fell, Apache 2.0 for Special Elite
+lic = '<!-- Tipografias incluidas: IM Fell English / IM Fell English SC (SIL Open Font License 1.1) y Special Elite (Apache License 2.0).' + NL + NL.join(open(os.path.join(web, 'assets', 'fonts', n), encoding='utf-8').read() for n in ('OFL.txt', 'LICENSE-2.0.txt')) + NL + '-->' + NL
+assert '-->' not in lic[:-4]
 js = open(os.path.join(os.path.dirname(out), 'bundle.js'), encoding='utf-8').read().replace('</script', '<\\/script')
 body = html.split('<body>')[1].split('</body>')[0].replace('<script type="module" src="src/main.js"></script>', '')
 # the recorded sounds travel inside the page as data URIs (the engine reads window.__SAMPLES first)
@@ -46,9 +49,9 @@ if apk:
     page = NL.join([
         '<!doctype html>', '<html lang="es">', '<head>', '<meta charset="utf-8">',
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">',
-        '<title>El Huésped</title>', '<script>window.__APK = true;</script>',
+        '<title>El Huésped</title>', lic + '<script>window.__APK = true;</script>',
     ]) + NL + style + '</head>' + NL + '<body>' + NL + body + NL + scripts + '</body>' + NL + '</html>' + NL
 else:
-    page = '<title>El Huésped</title>' + NL + style + body + NL + scripts
+    page = lic + '<title>El Huésped</title>' + NL + style + body + NL + scripts
 open(out, 'w', encoding='utf-8').write(page)
 print(f'{out}: {len(page)} bytes')

@@ -14,7 +14,8 @@ const LOOKS = {
   child: { hat: 'cap', coat: '#3a342c', coatLen: 0.62, flare: 1.05, build: 0.9, speed: 120, lantern: false, collarUp: false, patches: true, scarf: '#5a2a22', sideburns: false, hair: '#2a1e16', gloves: null, stubble: null },
   adult: { hat: 'bowler', coat: '#23262b', coatLen: 0.88, flare: 1.2, build: 1, speed: 150, lantern: true, collarUp: true, patches: false, sideburns: true, hair: '#1a1410', trousers: '#1a1b1e', gloves: '#2a221c', scarf: '#4a1612', stubble: 'rgba(30,22,18,0.35)' },
 };
-function look(G, k) { Object.assign(G.player, LOOKS[k]); }
+// the child is drawn procedurally: the modelled atlas is the adult's, and scaled down it was a small man in a bowler (QA-V5-018)
+function look(G, k) { Object.assign(G.player, LOOKS[k]); G.player.model = k === 'child' ? null : (G.game._thomasModel ?? G.player.model); }
 
 // the séance raps, as [row, column] knocks on the board under the star chart: H O S P E S
 const RAPS = [[2, 3], [3, 4], [4, 3], [3, 5], [1, 5], [4, 3]];
@@ -761,8 +762,9 @@ export function makeChapters() {
       else if (hand === 'inconclusive' && G.state.investigation?.positions?.letter_author !== 'greaves') about = 'No acusaste a nadie por una letra. Siempre fuiste prudente con las pruebas. Con las tuyas también.';
       else if (hand === 'self_recognition') about = 'Reconociste tu letra. Yo la reconocí en marzo de 1879.';
       else if (hand === 'self_suspicion' || G.state.investigation?.positions?.letter_author === 'yo') about = 'Lo llevas en la cara: ya has pensado en tu propia mano. Eso no se piensa sin miedo.';
-      await G.say('Greaves', about ? `La encontraste. ${about}` : 'La encontraste.');
-      const notice = [G.state.flags.chase_outcome === 'injured' && 'Y esa mano. ¿Quién te la ha cosido?', perception.othersNotice(G.state.sanity) && 'No duermes. Se te ve en los ojos, Thomas.'].filter(Boolean);
+      await G.say('Greaves', 'La encontraste.');
+      // what he notices in one breath; the remark about sleep only when he has not already read his face
+      const notice = [about, G.state.flags.chase_outcome === 'injured' && 'Y esa mano. ¿Quién te la ha cosido?', !about && perception.othersNotice(G.state.sanity) && 'No duermes. Se te ve en los ojos, Thomas.'].filter(Boolean);
       if (notice.length) await G.say('Greaves', notice.join(' '));
       await G.say('Greaves', 'Pike me trajo una copia de la carta. Me pareció oír tu voz leyéndola. No sabía qué significaba.');
       gr.talking = false;

@@ -1257,8 +1257,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
   - *Thomas (piensa):* En 1866 ya me oyó el agua. Esto volvió a ocurrir. _(si flag('answered1866'))_
   - *Thomas (piensa):* En 1866 callé. En el hospital no. _(si no)_
   - *Thomas (piensa):* Mi mano izquierda se ha cerrado sobre algo que no tengo. Conoce el peso.
-- **Greaves:** La encontraste. {about} _(si about)_
-- **Greaves:** La encontraste. _(si no)_
+- **Greaves:** La encontraste.
 - _Si notice.length:_
   - **Greaves:** {notice.join(' ')}
 - **Greaves:** Pike me trajo una copia de la carta. Me pareció oír tu voz leyéndola. No sabía qué significaba.

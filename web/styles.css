@@ -19,8 +19,11 @@
   --type: "Special Elite", "Courier New", monospace;
 }
 
-/* scrollbars in the colours of the paper and the lantern, thin, instead of the browser's white ones (QA-V5-007); they inherit */
-html { scrollbar-width: thin; scrollbar-color: rgba(122, 96, 52, 0.85) rgba(42, 33, 22, 0.16); }
+/* scrollbars in the colours of the paper and the lantern, thin, instead of the browser's white ones (QA-V5-007);
+   scrollbar-color inherits, scrollbar-width does not */
+html { scrollbar-color: rgba(122, 96, 52, 0.85) rgba(42, 33, 22, 0.16); }
+* { scrollbar-width: thin; }
+.close:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
