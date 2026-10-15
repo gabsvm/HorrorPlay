@@ -8,6 +8,68 @@ import { rng } from '../art/noise.js';
 
 const WIDTH = 1500, GROUND = 664;
 
+// A skeleton drawn from bones, not from a stick: skull with jaw and sockets, the neck, collar bones, sternum with
+// ribs on both sides, the spine as vertebrae, pelvis, arm and leg bones with their joints, hands and feet.
+// Drawn for a figure 300 high and scaled to `h`; `ink` gives a line drawing (the anatomical chart), otherwise the
+// bones are filled and edged so they read against the dark (the articulated skeleton). (QA-V5-017)
+function boneFigure(ctx, { x, top, h, bone, edge, w = 3, ink = false }) {
+  const k = h / 300;
+  const X = (dx) => x + dx * k, Y = (dy) => top + dy * k;
+  ctx.save();
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const path = (pts) => { ctx.beginPath(); pts.forEach(([a, b], i) => (i ? ctx.lineTo(X(a), Y(b)) : ctx.moveTo(X(a), Y(b)))); };
+  const stroke = (pts, wd = w) => {
+    path(pts);
+    if (!ink) { ctx.strokeStyle = edge; ctx.lineWidth = wd * k + 2.4; ctx.stroke(); path(pts); }
+    ctx.strokeStyle = bone; ctx.lineWidth = Math.max(1.2, wd * k); ctx.stroke();
+  };
+  const blob = (cx, cy, rx, ry, rot = 0) => {
+    ctx.beginPath(); ctx.ellipse(X(cx), Y(cy), rx * k, ry * k, rot, 0, Math.PI * 2);
+    if (!ink) { ctx.fillStyle = bone; ctx.fill(); ctx.strokeStyle = edge; ctx.lineWidth = 1.6; ctx.stroke(); } else { ctx.strokeStyle = bone; ctx.lineWidth = Math.max(1.2, 2 * k); ctx.stroke(); }
+  };
+  const hole = (cx, cy, r) => { ctx.fillStyle = ink ? bone : '#0a0a0a'; ctx.beginPath(); ctx.ellipse(X(cx), Y(cy), r * k, r * 1.15 * k, 0, 0, Math.PI * 2); ctx.fill(); };
+  // spine behind the ribs
+  stroke([[0, 56], [0, 176]], 4);
+  for (let i = 0; i < 12; i++) blob(0, 62 + i * 9.6, 5.2, 3.4);
+  // ribs: seven pairs, wide in the middle and narrowing to the waist, meeting the sternum
+  for (let i = 0; i < 7; i++) {
+    const y = 76 + i * 10.5, wid = 30 - Math.abs(i - 2.5) * 2.6 - (i > 4 ? (i - 4) * 3 : 0);
+    for (const d of [-1, 1]) stroke([[d * 3, y], [d * wid * 0.55, y - 4], [d * wid, y + 7], [d * wid * 0.7, y + 17], [d * 5, y + 15]], 2.3);
+  }
+  stroke([[0, 70], [0, 124]], 4.6);                                // sternum
+  stroke([[-30, 71], [-12, 66], [0, 68], [12, 66], [30, 71]], 3.4);   // collar bones
+  // neck, skull and jaw
+  for (let i = 0; i < 3; i++) blob(0, 49 + i * 4.6, 5, 2.2);
+  blob(0, 20, 17, 19);                                              // cranium
+  blob(0, 42, 10.5, 6.5);                                           // jaw
+  hole(-6.5, 20, 4.2); hole(6.5, 20, 4.2);                          // sockets
+  ctx.fillStyle = ink ? bone : '#0a0a0a'; ctx.beginPath(); ctx.moveTo(X(0), Y(26)); ctx.lineTo(X(-2.6), Y(33)); ctx.lineTo(X(2.6), Y(33)); ctx.fill();   // nasal cavity
+  for (let i = -3; i <= 3; i++) { ctx.strokeStyle = ink ? bone : '#0a0a0a'; ctx.lineWidth = Math.max(0.8, 0.9 * k); ctx.beginPath(); ctx.moveTo(X(i * 2.5), Y(39)); ctx.lineTo(X(i * 2.5), Y(43)); ctx.stroke(); }   // teeth
+  // arms: humerus, then the two bones of the forearm, a joint at the elbow and the hand
+  for (const d of [-1, 1]) {
+    stroke([[d * 31, 72], [d * 36, 128]], 3.6);
+    blob(d * 36.5, 130, 4.2, 4.2);
+    stroke([[d * 35, 134], [d * 40, 182]], 2.6); stroke([[d * 38, 133], [d * 44, 180]], 2.2);
+    for (let f = 0; f < 4; f++) stroke([[d * 41.5, 184], [d * (40 + f * 3.4), 196 + (f % 2) * 3]], 1.6);
+  }
+  // pelvis
+  for (const d of [-1, 1]) {
+    path([[d * 3, 172], [d * 22, 176], [d * 28, 190], [d * 16, 206], [d * 4, 198]]);
+    ctx.closePath();
+    if (!ink) { ctx.fillStyle = bone; ctx.fill(); ctx.strokeStyle = edge; ctx.lineWidth = 1.6; } else { ctx.strokeStyle = bone; ctx.lineWidth = Math.max(1.2, 2 * k); }
+    ctx.stroke();
+  }
+  hole(0, 200, 3.4);
+  // legs: femur, knee, tibia and the slimmer fibula, foot
+  for (const d of [-1, 1]) {
+    stroke([[d * 12, 204], [d * 15, 252]], 4.4);
+    blob(d * 15.5, 254, 4.6, 4.6);
+    stroke([[d * 15, 258], [d * 17, 296]], 3.4); stroke([[d * 19, 258], [d * 21, 294]], 1.8);
+    stroke([[d * 17, 297], [d * 7, 298], [d * 24, 298]], 2.8);
+  }
+  ctx.restore();
+}
+
 // What the drawer holds once it is open: a note from Scotland Yard, copied to Greaves. It is found
 // with the key and it is still there every time the drawer is looked at again.
 const NOTA_SWANSON = `<h3>SCOTLAND YARD — NOTA DEL INSPECTOR JEFE D. S. SWANSON</h3>
@@ -63,10 +125,8 @@ export default {
       // anatomical chart
       ctx.fillStyle = '#c6b892'; ctx.fillRect(660, 140, 150, 230);
       ctx.fillStyle = '#4a3a1e'; ctx.fillRect(656, 136, 158, 6); ctx.fillRect(656, 368, 158, 6);
-      ctx.strokeStyle = '#5a3a2a'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(735, 180, 16, 0, Math.PI * 2); ctx.moveTo(735, 196); ctx.lineTo(735, 290); ctx.moveTo(700, 220); ctx.lineTo(770, 220); ctx.moveTo(735, 290); ctx.lineTo(710, 350); ctx.moveTo(735, 290); ctx.lineTo(760, 350); ctx.stroke();
-      for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(718, 228 + i * 10); ctx.quadraticCurveTo(735, 234 + i * 10, 752, 228 + i * 10); ctx.stroke(); }
-      ctx.fillStyle = '#8a2a1e'; ctx.beginPath(); ctx.ellipse(742, 236, 8, 10, 0.3, 0, Math.PI * 2); ctx.fill();
+      boneFigure(ctx, { x: 733, top: 152, h: 208, bone: '#5a3a2a', w: 3, ink: true });
+      ctx.fillStyle = '#8a2a1e'; ctx.beginPath(); ctx.ellipse(739, 214, 5.5, 7.5, 0.3, 0, Math.PI * 2); ctx.fill();   // the heart, on his left
       ctx.strokeStyle = 'rgba(40,30,20,0.6)'; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(770, 190 + i * 24); ctx.lineTo(800, 190 + i * 24); ctx.stroke(); }
       A.stain(ctx, 660, 140, 150, 230, { seed: 3, alpha: 0.5 });
       // window onto Whitechapel Road
@@ -85,17 +145,10 @@ export default {
       ctx.fillStyle = '#b08a4e'; ctx.fillRect(1322, GROUND - 270, 16, 10);
       ctx.fillStyle = '#171009'; ctx.fillRect(1254, GROUND - 150, 152, 140);
       ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(1260, GROUND - 144, 68, 128); ctx.fillRect(1332, GROUND - 144, 68, 128);
-      // articulated skeleton on its stand
-      ctx.strokeStyle = '#c4b8a0'; ctx.lineWidth = 4;
+      // articulated skeleton on its stand: the pole behind, then the bones
       const sx = 1140;
-      ctx.fillStyle = '#c4b8a0'; ctx.beginPath(); ctx.ellipse(sx, GROUND - 300, 15, 17, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#0a0a0a'; ctx.beginPath(); ctx.ellipse(sx - 5, GROUND - 302, 4, 4, 0, 0, Math.PI * 2); ctx.ellipse(sx + 6, GROUND - 302, 4, 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(sx - 4, GROUND - 290, 8, 3);
-      ctx.beginPath(); ctx.moveTo(sx, GROUND - 284); ctx.lineTo(sx, GROUND - 160); ctx.stroke();
-      for (let i = 0; i < 6; i++) { ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(sx, GROUND - 262 + i * 12, 24 - i * 2, 5, 0, 0, Math.PI); ctx.stroke(); }
-      ctx.lineWidth = 4; ctx.beginPath(); ctx.ellipse(sx, GROUND - 156, 20, 9, 0, 0, Math.PI * 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(sx - 26, GROUND - 272); ctx.lineTo(sx - 32, GROUND - 216); ctx.lineTo(sx - 30, GROUND - 168); ctx.moveTo(sx + 26, GROUND - 272); ctx.lineTo(sx + 34, GROUND - 216); ctx.lineTo(sx + 30, GROUND - 168);
-      ctx.moveTo(sx - 10, GROUND - 150); ctx.lineTo(sx - 14, GROUND - 92); ctx.lineTo(sx - 16, GROUND - 40); ctx.moveTo(sx + 10, GROUND - 150); ctx.lineTo(sx + 14, GROUND - 92); ctx.lineTo(sx + 16, GROUND - 40); ctx.stroke();
-      ctx.fillStyle = '#1a1a1a'; ctx.fillRect(sx - 3, GROUND - 330, 6, 330); ctx.fillRect(sx - 30, GROUND - 6, 60, 6); ctx.fillRect(sx - 3, GROUND - 336, 26, 4);
+      ctx.fillStyle = '#1a1a1a'; ctx.fillRect(sx - 3, GROUND - 336, 6, 330); ctx.fillRect(sx - 30, GROUND - 6, 60, 6); ctx.fillRect(sx - 3, GROUND - 342, 26, 4);
+      boneFigure(ctx, { x: sx, top: GROUND - 332, h: 306, bone: '#c4b8a0', edge: '#0a0a0a', w: 3 });
       // desk: microscope, a skull used as a paperweight, case notes, the green-shaded lamp
       desk(ctx, 560, GROUND, 300);
       chair(ctx, 880, GROUND, -1);

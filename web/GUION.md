@@ -1,6 +1,6 @@
 # El Huésped — guion completo
 
-_Generado desde el código del juego (2026-10-14) con `node web/tools/script/export.mjs`. Es todo lo que el jugador puede leer: diálogos, pensamientos de Thomas, elecciones, documentos, objetivos y el cuaderno._
+_Generado desde el código del juego (2026-10-15) con `node web/tools/script/export.mjs`. Es todo lo que el jugador puede leer: diálogos, pensamientos de Thomas, elecciones, documentos, objetivos y el cuaderno._
 
 ## Cómo está hecho el juego (para reescribirlo)
 
@@ -1196,7 +1196,7 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
 - [Objetivo] Leer el periódico. Mirar debajo de la cama.
 
 ### `readPaper`
-- [Documento] THE DAILY TELEGRAPH — 1 de octubre de 1888 LOS CRÍMENES DEL EAST END. LA CARTA FIRMADA «JACK THE RIPPER». Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con tinta roja, menciona al «Leather Apron» y reivindica los crímenes: "I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..." Yours truly / Jack the Ripper {{ spotted: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(state.flags) + '. Asegura que podría reconocerlo.', injured: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(state.flags) + '. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.' }[state.flags.chase_outcome] || ''}
+- [Documento] RECORTE DE PRENSA — 1 de octubre de 1888 LOS CRÍMENES DEL EAST END. LA CARTA FIRMADA «JACK THE RIPPER». Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con tinta roja, menciona al «Leather Apron» y reivindica los crímenes: "I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..." Yours truly / Jack the Ripper {{ spotted: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(state.flags) + '. Asegura que podría reconocerlo.', injured: 'Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(state.flags) + '. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.' }[state.flags.chase_outcome] || ''}
 - [+ Pista al cuaderno: carta]
 - *Thomas (piensa):* Fechada el 25. La noche que perdí. _(1ª lectura)_
 - *Thomas (piensa):* Fechada el 25. Faltaban tres pliegos en mi mesa. _(2ª lectura)_
@@ -1257,22 +1257,10 @@ _Archivo: src/story/chapters.js. Cada una la dispara una escena o un objeto en e
   - *Thomas (piensa):* En 1866 ya me oyó el agua. Esto volvió a ocurrir. _(si flag('answered1866'))_
   - *Thomas (piensa):* En 1866 callé. En el hospital no. _(si no)_
   - *Thomas (piensa):* Mi mano izquierda se ha cerrado sobre algo que no tengo. Conoce el peso.
-- **Greaves:** La encontraste.
-- _Si hand === 'greaves_like':_
-  - **Greaves:** Pensaste que la carta era mía. Te enseñé a escribir así; no a firmar eso.
-- _Si no:_
-  - _Si hand === 'inconclusive' && state.investigation?.positions?.letter_author !== 'greaves':_
-    - **Greaves:** No acusaste a nadie por una letra. Siempre fuiste prudente con las pruebas. Con las tuyas también.
-  - _Si no:_
-    - _Si hand === 'self_recognition':_
-      - **Greaves:** Reconociste tu letra. Yo la reconocí en marzo de 1879.
-    - _Si no:_
-      - _Si hand === 'self_suspicion' || state.investigation?.positions?.letter_author === 'yo':_
-        - **Greaves:** Lo llevas en la cara: ya has pensado en tu propia mano. Eso no se piensa sin miedo.
-- _Si state.flags.chase_outcome === 'injured':_
-  - **Greaves:** Y esa mano. ¿Quién te la ha cosido?
-- _Si perception.othersNotice(state.sanity):_
-  - **Greaves:** No duermes. Se te ve en los ojos, Thomas.
+- **Greaves:** La encontraste. {about} _(si about)_
+- **Greaves:** La encontraste. _(si no)_
+- _Si notice.length:_
+  - **Greaves:** {notice.join(' ')}
 - **Greaves:** Pike me trajo una copia de la carta. Me pareció oír tu voz leyéndola. No sabía qué significaba.
 - **Thomas:** No recuerdo haberla escrito.
 - **Greaves:** No te he preguntado qué recuerdas.

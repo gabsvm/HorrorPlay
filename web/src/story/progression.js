@@ -167,3 +167,11 @@ export function gateDeductions(s) {
   }
   return [];
 }
+
+// The notebook's hint says what the place still asks for after the objective. When the objective already says it, once
+// is enough (QA-V5-009): true when most of the distinctive words of what is missing are the objective's own.
+export function lackAlreadySaid(objective, lack) {
+  const words = (t) => new Set(String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().match(/[a-z]{5,}/g) || []);
+  const b = words(objective), l = [...words(lack)];
+  return l.length > 0 && l.filter((w) => b.has(w)).length / l.length >= 0.6;
+}

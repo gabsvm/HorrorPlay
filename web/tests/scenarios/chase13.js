@@ -7,6 +7,20 @@ import { scenario } from './harness.js';
 export async function run(opts) {
   return scenario(async ({ game, need, settle }) => {
     const p = game.player;
+    // QA-V5-014: in the room of chapter one he wakes without coat, bowler or lantern, and puts them on as he takes them
+    game.state.flags.room_phase = 'c1'; game.state.flags.coat_on = false; game.state.flags.lantern_taken = false;
+    game.dressFor('room');
+    need(p.hat === 'none' && p.lantern === false && p.coat !== '#23262b', 'en c1, antes de coger nada, Thomas no lleva abrigo, bombín ni linterna');
+    game.state.flags.coat_on = true;
+    game.dressFor('room');
+    need(p.hat === 'bowler' && p.coat === '#23262b' && p.lantern === false, 'con el abrigo cogido lleva abrigo y bombín, aún sin linterna');
+    game.state.flags.lantern_taken = true;
+    game.dressFor('room');
+    need(p.lantern === true, 'con la linterna cogida la lleva');
+    game.state.flags.coat_on = false; game.state.flags.lantern_taken = false;
+    game.dressFor('foreshore');
+    need(p.hat === 'bowler' && p.lantern === true, 'fuera de la habitación va vestido aunque el cuarto aún no se haya recogido');
+    game.state.flags.coat_on = undefined; game.state.flags.lantern_taken = undefined;
     game.state.flags.room_phase = 'c3b';
     game.dressFor('room');
     need(p.hat === 'none' && p.lantern === false, 'en c3b Thomas no lleva bombín ni linterna');

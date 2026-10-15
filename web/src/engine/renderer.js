@@ -9,6 +9,7 @@
 // Unless quality is low, the shader also lights the scenery per pixel: relief read from the
 // painted albedo, raked by the nearest lights (the player's lantern among them), wet ground that
 // mirrors what stands on it, a little bloom on bright things and rays from lamps through fog.
+import { metrics } from './metrics.js';
 import { noiseCanvas } from '../art/noise.js';
 import { pixelize, quantizeData, paletteLut } from '../art/pixel.js';
 import { Actor } from './actor.js';
@@ -311,8 +312,13 @@ export class Renderer {
     const c = mk2d(Math.ceil(width), Math.ceil(height));
     const ctx = c.getContext('2d');
     if (blur) ctx.filter = `blur(${blur}px)`;
+    if (!metrics.on) { painter(ctx, width, height); return pixelize(c, this.rs, { dither }); }
+    const t0 = performance.now();
     painter(ctx, width, height);
-    return pixelize(c, this.rs, { dither });
+    const t1 = performance.now();
+    const out = pixelize(c, this.rs, { dither });
+    metrics.cost.paint += t1 - t0; metrics.cost.pixelize += performance.now() - t1; metrics.cost.layers++;
+    return out;
   }
 
   // Per-frame props (corpses, rats, drips, swinging signs...). Where the GPU has a texture unit to

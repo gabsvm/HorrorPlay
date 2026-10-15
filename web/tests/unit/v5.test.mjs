@@ -2,7 +2,7 @@
 // (canEnterWater), the save rescue, and the timeline of the name «Jack» (nobody says it before the paper of the 1st).
 import { readFileSync, readdirSync } from 'node:fs';
 import { CHAIN_LINKS, CHAIN_QUESTIONS, CHAIN_FLAG, chainView, chainDone } from '../../src/story/chain.js';
-import { normalizeState, canEnterFinale, canEnterWater, currentGate, gateDeductions } from '../../src/story/progression.js';
+import { normalizeState, canEnterFinale, canEnterWater, currentGate, gateDeductions, lackAlreadySaid } from '../../src/story/progression.js';
 import { QUESTIONS, setPosition, basisFor, sanitizePositions, readPosition } from '../../src/story/positions.js';
 import { evaluate } from '../../src/story/theories.js';
 import { CLUES, DEDUCTIONS } from '../../src/story/data.js';
@@ -118,5 +118,30 @@ export const tests = [
     const ch = read('../../src/story/chapters.js');
     ok(ch.includes("await G.nameEntry('¿Cómo se llama usted?', 'Jack'"), 'la firma final se completa a Jack');
     for (const n of ['Polly', 'Annie', 'Elizabeth', 'Catherine', 'Mary Jane']) ok(ch.includes(n), `falta ${n} en el epílogo`);
+  }],
+  ['post-QA: la ayuda no repite lo que el objetivo ya dice (QA-V5-009)', () => {
+    const objective = 'En el cuaderno, pestaña «Nombre»: ordenar la cadena de la firma.';
+    ok(lackAlreadySaid(objective, 'reconstruir en el cuaderno la cadena del nombre (pestaña Nombre)'), 'el objetivo y la falta dicen lo mismo y se repite');
+    ok(!lackAlreadySaid('Buscar en la consulta de Greaves.', 'relacionar tres pruebas independientes en el cuaderno'), 'una falta distinta sí se dice');
+    ok(!lackAlreadySaid('Mirar alrededor.', ''), 'sin falta no hay nada que repetir');
+  }],
+  ['post-QA: «La mano» no afirma que el papel y la tinta fueran suyos (QA-V5-013)', () => {
+    const mano = CHAIN_LINKS.find((l) => l.id === 'mano');
+    ok(!/eran míos/.test(mano.shows), 'sigue diciendo que eran míos');
+    ok(/no la recuerdo/.test(mano.shows), 'dice lo que sí cabe afirmar: tuvo papel y tinta y no la recuerda');
+  }],
+  ['post-QA: la página y la ayuda del nombre no tienen la «tesis» repetida (QA-V5-008)', () => {
+    const joined = CHAIN_QUESTIONS.map((q) => q.help).join(' ');
+    ok(!/No ha visto al hombre/.test(joined), 'la ayuda de la tercera pregunta repite que no ha visto al hombre');
+  }],
+  ['post-QA: las fuentes viajan con el juego y la página no enlaza con Google Fonts (QA-V5-003)', () => {
+    const html = read('../../index.html'), css = read('../../styles.css');
+    ok(!/fonts\.(googleapis|gstatic)/.test(html + css), 'la página aún enlaza con Google Fonts');
+    for (const f of ['IMFellEnglish-Regular', 'IMFellEnglish-Italic', 'IMFellEnglishSC-Regular', 'SpecialElite-Regular']) {
+      ok(css.includes(`assets/fonts/${f}.woff2`), `falta @font-face de ${f}`);
+      ok(readdirSync(new URL('../../assets/fonts/', import.meta.url)).includes(`${f}.woff2`), `falta el archivo ${f}.woff2`);
+    }
+    ok(readdirSync(new URL('../../assets/fonts/', import.meta.url)).includes('LICENSES.md'), 'faltan las licencias de las tipografías');
+    ok(/data:font\/woff2/.test(read('../../tools/build-artifact.py')), 'la compilación no incrusta las fuentes');
   }],
 ];

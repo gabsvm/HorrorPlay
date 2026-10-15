@@ -627,11 +627,11 @@ export function makeChapters() {
       G.player.pose = 'kneel';
       await G.wait(300);
       G.player.pose = null;
-      await G.doc(`<h3>THE DAILY TELEGRAPH — 1 de octubre de 1888</h3>
+      await G.doc(`<h3>RECORTE DE PRENSA — 1 de octubre de 1888</h3>
         <p class="small">LOS CRÍMENES DEL EAST END. LA CARTA FIRMADA «JACK THE RIPPER».</p>
         <p>Una carta fechada el 25 de septiembre, matasellada y recibida por la Central News Agency el 27, circula ahora entre los investigadores y la prensa. Escrita con <b>tinta roja</b>, menciona al «Leather Apron» y reivindica los crímenes:</p>
-        <p class="red">"I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..."</p>
-        <p class="red" style="text-align:right">Yours truly<br>Jack the Ripper</p>
+        <p class="copy">"I keep on hearing the police have caught me but they wont fix me just yet... That joke about Leather Apron gave me real fits..."</p>
+        <p class="copy" style="text-align:right">Yours truly<br>Jack the Ripper</p>
         ${{ spotted: '<p class="small">Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(G.state.flags) + '. Asegura que podría reconocerlo.</p>',
           injured: '<p class="small">Un agente persiguió de madrugada a un hombre de abrigo oscuro por ' + chaseStreet(G.state.flags) + '. El fugitivo dejó sangre en una tapia; el agente asegura que podría reconocerlo.</p>' }[G.state.flags.chase_outcome] || ''}`);
       G.flag('paper_read', true);
@@ -662,7 +662,7 @@ export function makeChapters() {
     async compareHands(G) {
       const hands = () => G.doc(`<h3>Copia de la carta que circula entre los inspectores y las escrituras de mi mesa</h3>
         <p class="small">La copia de la carta, sin la letra del original:</p>
-        <p class="red">"Dear Boss... Yours truly, Jack the Ripper"</p>
+        <p class="copy">"Dear Boss... Yours truly, Jack the Ripper"</p>
         <p class="small">Una copia pasada en limpio no guarda el trazo: no se puede cotejar con ninguna de las escrituras de abajo.</p>
         <p class="small">La nota de Madame Wexley:</p><p class="hand">Mano redondeada y espaciada. "Los muertos piden hablar con usted..."</p>
         <p class="small">Un informe del sargento Pike, con mis correcciones en rojo:</p><p class="hand">Letra cerrada y recta. "Ronda sin novedad. Las farolas de Buck's Row siguen sin gas..."</p>
@@ -754,14 +754,16 @@ export function makeChapters() {
       G.face(-1);
       await gr.walkTo(G.player.x - 260);
       gr.talking = true;
-      await G.say('Greaves', 'La encontraste.');
       const hand = G.state.flags.handwriting_assessment;
-      if (hand === 'greaves_like') await G.say('Greaves', 'Pensaste que la carta era mía. Te enseñé a escribir así; no a firmar eso.');
-      else if (hand === 'inconclusive' && G.state.investigation?.positions?.letter_author !== 'greaves') await G.say('Greaves', 'No acusaste a nadie por una letra. Siempre fuiste prudente con las pruebas. Con las tuyas también.');
-      else if (hand === 'self_recognition') await G.say('Greaves', 'Reconociste tu letra. Yo la reconocí en marzo de 1879.');
-      else if (hand === 'self_suspicion' || G.state.investigation?.positions?.letter_author === 'yo') await G.say('Greaves', 'Lo llevas en la cara: ya has pensado en tu propia mano. Eso no se piensa sin miedo.');
-      if (G.state.flags.chase_outcome === 'injured') await G.say('Greaves', 'Y esa mano. ¿Quién te la ha cosido?');
-      if (perception.othersNotice(G.state.sanity)) await G.say('Greaves', 'No duermes. Se te ve en los ojos, Thomas.');
+      // never more than three of his lines in a row before Thomas answers: what he notices is said in one breath (QA-V5-008)
+      let about = '';
+      if (hand === 'greaves_like') about = 'Pensaste que la carta era mía. Te enseñé a escribir así; no a firmar eso.';
+      else if (hand === 'inconclusive' && G.state.investigation?.positions?.letter_author !== 'greaves') about = 'No acusaste a nadie por una letra. Siempre fuiste prudente con las pruebas. Con las tuyas también.';
+      else if (hand === 'self_recognition') about = 'Reconociste tu letra. Yo la reconocí en marzo de 1879.';
+      else if (hand === 'self_suspicion' || G.state.investigation?.positions?.letter_author === 'yo') about = 'Lo llevas en la cara: ya has pensado en tu propia mano. Eso no se piensa sin miedo.';
+      await G.say('Greaves', about ? `La encontraste. ${about}` : 'La encontraste.');
+      const notice = [G.state.flags.chase_outcome === 'injured' && 'Y esa mano. ¿Quién te la ha cosido?', perception.othersNotice(G.state.sanity) && 'No duermes. Se te ve en los ojos, Thomas.'].filter(Boolean);
+      if (notice.length) await G.say('Greaves', notice.join(' '));
       await G.say('Greaves', 'Pike me trajo una copia de la carta. Me pareció oír tu voz leyéndola. No sabía qué significaba.');
       gr.talking = false;
       await G.say('Ashgrove', 'No recuerdo haberla escrito.');

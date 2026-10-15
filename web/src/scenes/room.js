@@ -221,6 +221,7 @@ export default {
       id: 'coat', name: 'Abrigo y bombín', when: (G) => !G.flag('coat_on'), rect: [220, GROUND - 340, 130, 190], walk: 300, face: -1,
       act: async (G) => {
         G.flag('coat_on', true);
+        G.game.dressFor('room');   // the coat and the bowler go on (QA-V5-014)
         G.audio.paper();
         if (!G.has('placa')) G.give('placa');
         if (!G.has('penique') && !G.flag('penique_given')) G.give('penique');
@@ -230,6 +231,7 @@ export default {
       id: 'lantern', name: 'Linterna de ojo de buey', when: (G) => !G.flag('lantern_taken'), rect: [312, GROUND - 304, 46, 54], walk: 320, face: -1,
       act: async (G) => {
         G.flag('lantern_taken', true);
+        G.game.dressFor('room');
         G.audio.match();
         G.player.lanternOn = true;
         await G.think(G.two('La mecha sigue caliente. No recuerdo encenderla.', 'La usé anoche. ¿Adónde fui?'));

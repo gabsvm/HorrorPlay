@@ -3,6 +3,7 @@
 // The file's −10 and the cut's −15 are checked in expediente14.js and greaves_resume14.js.
 //   node web/tools/walk.mjs sanity14
 import { scenario, fixture } from './harness.js';
+import { perceptionBand } from '../../src/story/perception.js';
 
 const RUNS = [
   [[0, 1, 1], 'clean'],
@@ -33,6 +34,10 @@ export async function run(opts) {
       const a = game.state.sanity;
       arrivals[label] = a;
       need(a >= LOW && a <= HIGH, `llegada a Greaves con cordura ${a} (${label}), fuera de ${LOW}–${HIGH}`);
+      // QA-V5-010, measured: Greaves costs 10 (the file) and 15 (the cut) on every route, so the sanity that reaches Wren is
+      // at most HIGH − 25: always the frayed band. «Era Thomas.» is written for a higher value that no route reaches (it is
+      // only reached from a fixture, tests/scenarios/sanity.js); it is not forced: an author's decision, see the QA report.
+      need(perceptionBand(a - 25) === 'frayed', `con ${a} a la llegada, la cordura ante Wren no está en la banda desgastada (${label})`);
     }
     // exploration: a second look at the jars costs nothing (the cost is paid once)
     const f = await fixture('saves-v1-baseline/c4.json');

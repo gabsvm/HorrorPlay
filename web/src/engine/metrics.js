@@ -14,6 +14,7 @@ const m = {
   wrongItems: 0,
   hints: 0,
   chapters: {},        // id -> { start, ms }
+  builds: [],          // first visits: what building a scene cost, and where (QA-V5-005)
   current: null,
 };
 
@@ -25,6 +26,14 @@ export const metrics = {
   moveWithItem() { if (ON) m.movesWithItem++; },
   quality(to, cost, iv) { if (ON) m.quality.push({ to, at: Math.round(performance.now() - m.started), cost: +(cost || 0).toFixed(1), interval: +(iv || 0).toFixed(1) }); },
   wrongItem() { if (ON) m.wrongItems++; },
+  // the cost of building one scene's layers: painting them, snapping them to the palette (pixelize), and the rest
+  cost: { paint: 0, pixelize: 0, layers: 0 },
+  buildStart() { if (ON) { metrics.cost.paint = 0; metrics.cost.pixelize = 0; metrics.cost.layers = 0; } },
+  sceneBuilt(id, totalMs, fgMs) {
+    if (!ON) return;
+    const c = metrics.cost;
+    m.builds.push({ scene: id, total: +totalMs.toFixed(1), paint: +c.paint.toFixed(1), pixelize: +c.pixelize.toFixed(1), fg: +fgMs.toFixed(1), layers: c.layers });
+  },
   hint() { if (ON) m.hints++; },
   chapter(id, state) {
     if (!ON) return;
@@ -46,6 +55,7 @@ export const metrics = {
       ayudasPedidas: m.hints,
       intentosRondas: ev.beats ? ev.beats.misses + 1 : null,
       intentosGolpes: ev.raps ? (ev.raps.misses || 0) + 1 : null,
+      construccionDeEscenas: m.builds,
       msPorCapitulo: Object.fromEntries(Object.entries(m.chapters).map(([k, v]) => [k, v.ms ?? Math.round(performance.now() - v.start)])),
     };
   },

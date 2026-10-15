@@ -14,7 +14,7 @@ export const CHAIN_FLAG = 'v5_name_chain';
 export const CHAIN_LINKS = [
   { id: 'mano', title: 'La mano', clue: 'dedos',
     note: 'Tres pliegos que faltan de mi mesa, tinta roja en los dedos y el reloj en las 3:15 del 25: la noche que perdí.',
-    shows: 'Que pude escribirla yo, y que el papel y la tinta eran míos.',
+    shows: 'Que esa noche tuve papel y tinta roja a mano, y que no la recuerdo.',
     notShows: 'Que la escribí. No tengo el original ni su trazo.' },
   { id: 'firma', title: 'La firma', clue: 'carta',
     note: 'Carta fechada el 25, recibida por la Central News el 27 e impresa el 1 de octubre. Tengo un resumen del periódico y una copia de los inspectores.',
@@ -49,7 +49,7 @@ export const CHAIN_QUESTIONS = [
       'De la copia de los inspectores, que alguien ha dejado salir de la comisaría.'],
     right: 0,
     miss: [null, 'Ninguno sabe quién fue: dicen el nombre como quien repite un titular.', 'Nada indica que la copia haya salido de la comisaría. El recorte basta.'],
-    help: 'La calle habla de lo que lee. Lo que lee es el recorte. No ha visto al hombre.' },
+    help: 'La calle habla de lo que lee, y lo que lee es el recorte.' },
 ];
 
 // the order the player has just derived, shown once: what each paper comes from, and who ever saw the man
@@ -57,7 +57,7 @@ export const PROVENANCE = `<h3>De dónde sale cada papel</h3>
   <p class="hand">La mano (noche del 24 al 25) → la carta, fechada el 25</p>
   <p class="hand">→ Central News, el 27 → <b>copia de la policía</b> y <b>texto impreso</b> (1 de octubre): una sola carta, vista dos veces</p>
   <p class="hand">→ la calle, que lee el recorte: <b>el nombre sin el hombre</b></p>
-  <p class="small">Quien dice «Jack» no ha visto a nadie. Quien escribió no firmó con su nombre.</p>`;
+  <p class="small">Quien escribió no firmó con su nombre.</p>`;
 
 export const chainDone = (s) => s.flags?.[CHAIN_FLAG] === 'reasoned';
 
@@ -75,6 +75,6 @@ export function chainView(s) {
 
 // what Thomas concludes, once it is ordered: not a theory of the supernatural, an order of events
 export const CHAIN_CONCLUSION = [
-  'Primero hubo una mano. Después, una firma. Ahora nadie necesita haberlo visto para hablar de él.',
+  'Primero hubo una mano. Después, una firma. Después, la calle.',
   'La carta no le dio solo un nombre al asesino. Le dio un lugar en la ciudad.',
 ];

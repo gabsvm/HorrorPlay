@@ -13,7 +13,7 @@ import { UI } from './ui.js';
 import { KbSpots } from './kbspots.js';
 import { audio } from './audio.js';
 import { prefs } from './prefs.js';
-import { normalizeState, currentGate, gateDeductions, canEnterFinale, canEnterWater } from '../story/progression.js';
+import { normalizeState, currentGate, gateDeductions, canEnterFinale, canEnterWater, lackAlreadySaid } from '../story/progression.js';
 import { statuses } from '../story/theories.js';
 import { setPosition as writePosition } from '../story/positions.js';
 import { perception } from '../story/perception.js';
@@ -418,6 +418,8 @@ export class Game {
     const base = st.objective || 'Mirar alrededor.';
     const gate = currentGate(st);
     const lack = gate && !gate.ok ? gate.missing[0] : null;
+    // the objective already says it when the missing thing is the same as the objective's own words: once, not twice (QA-V5-009)
+    const sayLack = lack && !lackAlreadySaid(base, lack);
     if (lack) {
       // the open requirement comes first; a deduction is offered only if it meets that requirement
       const needed = /cuaderno|relacionar/.test(lack)
@@ -429,7 +431,7 @@ export class Game {
       if (ready && (/cuaderno/i.test(st.objective || '') || again)) return pair(ready);
     }
     // a place that is ready to move on (gate ok) never gets an optional pair in front of its exit
-    if (!again) return lack ? `${base} Antes de seguir me falta ${lack}. (Vuelve a preguntar si sigues atascado.)` : `${base} (Vuelve a preguntar si sigues atascado.)`;
+    if (!again) return sayLack ? `${base} Antes de seguir me falta ${lack}. (Vuelve a preguntar si sigues atascado.)` : `${base} (Vuelve a preguntar si sigues atascado.)`;
     // asked again: what can be touched here is marked; the notebook closes, so the answer is shown as a notice (ui.hint)
     this.ui.closeNotebook();
     this.reveal();
@@ -496,40 +498,50 @@ export class Game {
   // ------------------------------------------------------------ scenes
   buildLayers(scene) {
     const key = `${scene.id}@${this.r.rs}@${scene.variant ? scene.variant(this.G) : ''}`;
+    let tBuild = 0;
     if (!this.layerCache.has(key)) {
       live.on = true; live.list = [];
       let built;
+      metrics.buildStart();
+      const t0 = performance.now();
       try { built = scene.build(this.r, this.G); } finally { live.on = false; }
+      tBuild = performance.now() - t0;
       built.swings = live.list;
       this.layerCache.set(key, built);
     }
     const built = this.layerCache.get(key);
     if (!built._dressed && !scene.noFgDressing) {
+      const tFg = performance.now();
       const w = scene.width * 1.3;
       const fg = this.r.paintLayer(w, (ctx) => fgDressing(ctx, w, { seed: scene.id.length * 13 + scene.width, indoor: !!scene.indoor }), H, { blur: 3 });
       built.layers = [...built.layers, { canvas: fg, parallax: 1.3, kind: 'fg' }];
       built._dressed = true;
+      if (metrics.on && tBuild) metrics.sceneBuilt(scene.id, tBuild + (performance.now() - tFg), performance.now() - tFg);
     }
     scene.layers = built.layers;
     scene.lights = built.lights.map((l) => ({ ...l }));
     scene.built = built;
   }
 
-  // Thomas's clothes follow where he is, never a stored state: in the room of chapter one, after the chase
-  // (room_phase 'c3b'), the coat, the bowler and the lantern hang on the pegs and he has none of them on;
-  // everywhere else, and in every other phase, he is dressed as before.
+  // Thomas's clothes follow where he is and what he has taken, never a stored state. In the room of chapter one
+  // he wakes without them: the coat and the bowler hang on the pegs until he takes them (coat_on) and so does the
+  // lantern (lantern_taken) (QA-V5-014); after the chase (room_phase 'c3b') they hang there again and he has none
+  // of them on; everywhere else, and in every other phase, he is dressed as before.
   dressFor(id) {
     if (this.state.chapter === 'prologue') return;   // the child's look belongs to the prologue (chapters.js LOOKS.child)
-    const undressed = id === 'room' && this.state.flags.room_phase === 'c3b';
-    this.player.coat = undressed ? '#3a3a34' : '#23262b';
-    this.player.hat = undressed ? 'none' : 'bowler';
-    this.player.lantern = !undressed;
+    const f = this.state.flags, inRoom = id === 'room', ph = f.room_phase || 'c1';
+    const c3b = inRoom && ph === 'c3b';
+    const coatOff = c3b || (inRoom && ph === 'c1' && !f.coat_on);
+    const lanternOff = c3b || (inRoom && ph === 'c1' && !f.lantern_taken);
+    this.player.coat = coatOff ? '#3a3a34' : '#23262b';
+    this.player.hat = coatOff ? 'none' : 'bowler';
+    this.player.lantern = !lanternOff;
     // the modelled atlas shows him dressed: undressed, he is drawn procedurally, where the clothes are the ones above
     this._thomasModel ??= this.player.model;
     // a wounded hand (the chase, injured) is drawn procedurally too: the bandage is part of that drawing
-    const bandaged = this.state.flags.chase_outcome === 'injured';
+    const bandaged = f.chase_outcome === 'injured';
     this.player.bandaged = bandaged;
-    this.player.model = undressed || bandaged ? null : this._thomasModel;
+    this.player.model = coatOff || lanternOff || bandaged ? null : this._thomasModel;
   }
 
   async goto(id, { x, facing, fade = true, noEnter = false } = {}) {
@@ -675,6 +687,7 @@ export class Game {
       this.r.fx.mad += (mad - this.r.fx.mad) * Math.min(1, dt * 1.5);
       this.r.fx.flash = Math.max(0, this.r.fx.flash - dt * 2.5);
       this.r.fx.red = Math.max(0, this.r.fx.red - dt * 1.2);
+      this.kb.sync();
       this.updateHover();
       if (this.clickMark) this.clickMark.t += dt;
       if (this.revealT > 0) this.revealT -= dt;
@@ -684,10 +697,10 @@ export class Game {
   }
 
   updateHover() {
+    if (this.kb.focused) return;   // the keyboard is naming a thing: the pointer's label waits
     const p = this.pointer;
     const c = this.cursorEl;
     if (this.cursorItemEl && (!p.inside || p.touch || this.inMenu)) this.cursorItemEl.classList.add('hidden');
-      this.kb.sync();
     if (p.touch && this.armed && !this.running) { this.hoverH = this.armed; if (performance.now() - this.armedAt > 4000) { this.armed = null; this.ui.hover(null); } return; }
     if (!p.inside || p.touch || this.inMenu) { c.style.display = this.inMenu && p.inside && !p.touch ? 'block' : 'none'; c.style.left = `calc(${p.x} * var(--u))`; c.style.top = `calc(${p.y} * var(--u))`; c.className = ''; this.ui.hover(null); return; }
     c.style.display = 'block';
@@ -697,7 +710,6 @@ export class Game {
     const h = this.hotspotAt(p);
     this.hoverH = h;
     const exit = h && h.cursor === 'exit';
-    if (this.kb.focused) return;   // the keyboard is naming a thing: the pointer's label waits
     c.className = h ? (exit ? (this.exitDir(h) < 0 ? 'exit-left' : 'exit-right') : (h.cursor || 'look')) : (this.selectedItem ? 'item' : '');
     if (h) this.ui.hover(h.name, p.x, p.y, this.verbFor(h), this.selectedItem ? 'item' : exit ? 'exit' : '', exit ? this.exitDir(h) : 0);
     else this.ui.hover(null);
