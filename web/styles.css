@@ -1,3 +1,10 @@
+/* The three typefaces travel with the game (assets/fonts, latin subset; licences in assets/fonts/LICENSES.md):
+   no request leaves the device, so the APK and the offline page look the same as the desktop one. */
+@font-face { font-family: "IM Fell English"; font-style: normal; font-weight: 400; font-display: block; src: url(assets/fonts/IMFellEnglish-Regular.woff2) format("woff2"); }
+@font-face { font-family: "IM Fell English"; font-style: italic; font-weight: 400; font-display: block; src: url(assets/fonts/IMFellEnglish-Italic.woff2) format("woff2"); }
+@font-face { font-family: "IM Fell English SC"; font-style: normal; font-weight: 400; font-display: block; src: url(assets/fonts/IMFellEnglishSC-Regular.woff2) format("woff2"); }
+@font-face { font-family: "Special Elite"; font-style: normal; font-weight: 400; font-display: block; src: url(assets/fonts/SpecialElite-Regular.woff2) format("woff2"); }
+
 :root {
   --u: 1px;               /* 1 logical pixel of the 1280x720 stage, set from JS */
   --ink: #e9dcc0;

@@ -14,10 +14,12 @@ out = sys.argv[1]
 apk = '--apk' in sys.argv
 web = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 html = open(os.path.join(web, 'index.html'), encoding='utf-8').read()
-css = open(os.path.join(web, 'styles.css'), encoding='utf-8').read() + NL + ':root{color-scheme:dark}html,body{height:100%;background:#000}' + NL
+css = open(os.path.join(web, 'styles.css'), encoding='utf-8').read()
+# the typefaces (assets/fonts) travel inside the page as data URIs, like the sounds and the figures
+css = re.sub(r'url\(assets/fonts/([\w.-]+\.woff2)\)', lambda m: 'url(data:font/woff2;base64,' + base64.b64encode(open(os.path.join(web, 'assets', 'fonts', m.group(1)), 'rb').read()).decode() + ')', css)
+css += NL + ':root{color-scheme:dark}html,body{height:100%;background:#000}' + NL
 js = open(os.path.join(os.path.dirname(out), 'bundle.js'), encoding='utf-8').read().replace('</script', '<\\/script')
 body = html.split('<body>')[1].split('</body>')[0].replace('<script type="module" src="src/main.js"></script>', '')
-fonts = re.search(r'<link href="https://fonts.googleapis.com[^>]+>', html).group(0)
 # the recorded sounds travel inside the page as data URIs (the engine reads window.__SAMPLES first)
 adir = os.path.join(web, 'assets', 'audio')
 samples = {f[:-4]: 'data:audio/mpeg;base64,' + base64.b64encode(open(os.path.join(adir, f), 'rb').read()).decode()
@@ -44,9 +46,9 @@ if apk:
     page = NL.join([
         '<!doctype html>', '<html lang="es">', '<head>', '<meta charset="utf-8">',
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">',
-        '<title>El Huésped</title>', fonts, '<script>window.__APK = true;</script>',
+        '<title>El Huésped</title>', '<script>window.__APK = true;</script>',
     ]) + NL + style + '</head>' + NL + '<body>' + NL + body + NL + scripts + '</body>' + NL + '</html>' + NL
 else:
-    page = '<title>El Huésped</title>' + NL + fonts + NL + style + body + NL + scripts
+    page = '<title>El Huésped</title>' + NL + style + body + NL + scripts
 open(out, 'w', encoding='utf-8').write(page)
 print(f'{out}: {len(page)} bytes')
