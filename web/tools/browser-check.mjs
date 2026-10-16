@@ -303,6 +303,151 @@ try {
     } finally { sm.close(); }
   }
 
+  // ---- T7: Wren's penny-to-scalpel exchange, played for real (no FAST, no scene= shortcuts)
+  // A chapter-I save starts through the normal chapter entry, then the game is played with real
+  // hotspot clicks (game.onClick with hotspot coordinates) and real DOM .choice buttons, on the
+  // real clock. It checks the staging (coin on the post, Wren down to the ground, coin taken,
+  // scalpel and clue), that autosave never writes mid-sequence, and that resuming from the saves
+  // taken right after and right before stays coherent and allows a full redo.
+  const wren = await browser([], { w: 640, h: 360 });
+  try {
+    await wren.open('');
+    need(!(await wren.ev('!!window.FAST')), 'wren e2e: sin FAST, con el reloj real');
+    need(!(await wren.ev(`location.search.includes('scene=')`)), 'wren e2e: sin atajos de QA de escena (entrada normal)');
+    const wnorm = (s) => String(s || '').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+    const whasMenu = () => wren.ev(`!document.getElementById('choices').classList.contains('hidden') && !!game.ui._choiceKeys`);
+    const wmenuTexts = () => wren.ev(`[...document.querySelectorAll('#choices button')].map((x) => x.textContent)`);
+    // Play one hotspot to completion: trigger it by coordinates, then advance dialogue and press
+    // the wanted real .choice buttons (accent-insensitive) until the script is idle again.
+    const wplay = async (id, picks = [], { timeoutMs = 150000 } = {}) => {
+      const ok = await wren.ev(`(() => { window.__actDone = false; window.__actErr = null; const h = game.activeHotspots().find((x) => x.id === '${id}'); if (!h) { window.__actErr = 'no hotspot ${id}'; return false; } const r = typeof h.rect === 'function' ? h.rect(game.G) : h.rect; game.onClick({ x: r[0] + r[2] / 2 - game.r.cam.x, y: r[1] + r[3] / 2 }, false).then(() => { window.__actDone = true; }).catch((e) => { window.__actErr = String(e && e.message || e); }); return true; })()`);
+      if (!ok) throw new Error(`hotspot not triggered: ${id}`);
+      const queue = [...picks];
+      const t0 = Date.now();
+      while (Date.now() - t0 < timeoutMs) {
+        await sleep(250);
+        if (await whasMenu()) {
+          await sleep(650);
+          if (!await whasMenu()) continue;
+          const cur = await wmenuTexts();
+          const want = queue.shift();
+          if (want === undefined) throw new Error(`unexpected choices at ${id}`);
+          const idx = cur.findIndex((t) => wnorm(t).includes(wnorm(want)));
+          if (idx < 0) throw new Error(`option '${want}' not in menu at ${id}`);
+          await wren.ev(`[...document.querySelectorAll('#choices button')][${idx}].click()`);
+          await sleep(450);
+          if (await whasMenu()) {
+            const again = await wmenuTexts();
+            if (JSON.stringify(again) === JSON.stringify(cur)) { queue.unshift(want); continue; }
+          }
+          continue;
+        }
+        const s = await wren.ev(`({ done: window.__actDone, err: window.__actErr, running: game.running, dlg: !document.getElementById('dialogue').classList.contains('hidden') })`);
+        if (s.err) throw new Error(s.err);
+        if (s.dlg) { await wren.ev('game.ui.advance()'); continue; }
+        if (s.done && s.running === 0) {
+          await sleep(400);
+          const idle = await wren.ev(`({ running: game.running, dlg: !document.getElementById('dialogue').classList.contains('hidden'), menu: !document.getElementById('choices').classList.contains('hidden') && !!game.ui._choiceKeys })`);
+          if (idle.running === 0 && !idle.dlg && !idle.menu) {
+            if (queue.length) throw new Error(`picks left at ${id}`);
+            return;
+          }
+        }
+      }
+      throw new Error(`hotspot timeout: ${id}`);
+    };
+    const c1save = await readFile(join(web, 'tests/fixtures/saves-v1-baseline/c1.json'), 'utf8');
+    await wren.ev(`(() => { localStorage.clear(); window.__c1done = false; game.inMenu = false; game.ui.hideMenu(); game.startChapter('c1', ${c1save}).then(() => { window.__c1done = true; }); return true; })()`);
+    for (let i = 0; i < 120; i++) {
+      await sleep(350);
+      const s = await wren.ev(`({ done: window.__c1done, scene: game.state.scene, running: game.running, dlg: !document.getElementById('dialogue').classList.contains('hidden') })`);
+      if (s.dlg) await wren.ev('game.ui.advance()');
+      if (s.done && s.scene === 'room' && s.running === 0 && !s.dlg) break;
+    }
+    need((await wren.ev(`({ scene: game.state.scene, chapter: game.state.chapter })`)).scene === 'room', 'wren e2e: el capítulo I arranca en el cuarto desde el guardado');
+    await wplay('coat'); await wplay('boots'); await wplay('lantern');
+    await wplay('door');
+    need((await wren.ev('game.state.scene')) === 'bucks_row', 'wren e2e: se llega a Bucks Row por la puerta, con la entrada normal');
+    await wplay('pike', ['medico', 'nada mas']);
+    need(await wren.ev(`game.state.clues.includes('zurdo')`), 'wren e2e: Pike dice lo del forense (pista zurdo)');
+    await wplay('pike', ['trabaja de noche', 'nada mas']);
+    need((await wren.ev('!!game.state.flags.knackers_lead')) === true, 'wren e2e: Pike da el paso al desolladero');
+    await wplay('west');
+    need((await wren.ev('game.state.scene')) === 'knackers', 'wren e2e: se llega a Winthrop Street (knackers) por la salida oeste');
+    const wpreStr = await wren.ev(`localStorage.getItem('elhuesped.save.v1.resume')`);
+    need(!!wpreStr && JSON.parse(wpreStr).state.scene === 'knackers', 'wren e2e: hay guardado al llegar a knackers, antes de Wren');
+    // The exchange itself, sampled on the real clock: coin flag, Wren's feet, inventory, running.
+    const wsamples = [];
+    let wmidSame = null;
+    let wlit = 0;
+    await wren.ev(`(() => { window.__actDone = false; window.__actErr = null; const h = game.activeHotspots().find((x) => x.id === 'wren'); const r = typeof h.rect === 'function' ? h.rect(game.G) : h.rect; game.onClick({ x: r[0] + r[2] / 2 - game.r.cam.x, y: r[1] + r[3] / 2 }, false).then(() => { window.__actDone = true; }).catch((e) => { window.__actErr = String(e && e.message || e); }); return true; })()`);
+    {
+      const queue = ['penique', 'por que'];
+      const t0 = Date.now();
+      while (Date.now() - t0 < 150000) {
+        await sleep(220);
+        if (await whasMenu()) {
+          await sleep(650);
+          if (!await whasMenu()) continue;
+          const cur = await wmenuTexts();
+          const want = queue.shift();
+          if (want === undefined) throw new Error('unexpected choices in wren');
+          const idx = cur.findIndex((t) => wnorm(t).includes(wnorm(want)));
+          if (idx < 0) throw new Error(`option '${want}' not in wren menu`);
+          await wren.ev(`[...document.querySelectorAll('#choices button')][${idx}].click()`);
+          await sleep(450);
+          if (await whasMenu()) {
+            const again = await wmenuTexts();
+            if (JSON.stringify(again) === JSON.stringify(cur)) { queue.unshift(want); continue; }
+          }
+          continue;
+        }
+        const s = await wren.ev(`(() => { const w = game.actor('Wren'); return { done: window.__actDone, err: window.__actErr, running: game.running, dlg: !document.getElementById('dialogue').classList.contains('hidden'), coin: !!game.state.flags.wren_coin_on_post, paid: !!game.state.flags.wren_paid, wy: w ? w.y : null }; })()`);
+        wsamples.push(s);
+        if (s.err) throw new Error(s.err);
+        if (!wmidSame && s.coin && s.running > 0) {
+          wmidSame = await wren.ev(`(() => { const k = 'elhuesped.save.v1.resume'; const a = localStorage.getItem(k); game.autosave(); return localStorage.getItem(k) === a; })()`);
+          wlit = await wren.ev(`new Promise((res) => requestAnimationFrame(() => { try { const gl = game.r.gl; game.r.present(game.scene, game.r.cam.x); const px = new Uint8Array(4 * 64); let sum = 0; for (let i = 0; i < 8; i++) { gl.readPixels(Math.floor(gl.drawingBufferWidth * (i + 0.5) / 8), Math.floor(gl.drawingBufferHeight / 2), 8, 2, gl.RGBA, gl.UNSIGNED_BYTE, px); for (let k = 0; k < px.length; k += 4) sum += px[k] + px[k + 1] + px[k + 2]; } res(sum); } catch { res(0); } }))`);
+        }
+        if (s.dlg) { await wren.ev('game.ui.advance()'); continue; }
+        if (s.done && s.running === 0) {
+          await sleep(400);
+          const idle = await wren.ev(`({ running: game.running, dlg: !document.getElementById('dialogue').classList.contains('hidden'), menu: !document.getElementById('choices').classList.contains('hidden') && !!game.ui._choiceKeys })`);
+          if (idle.running === 0 && !idle.dlg && !idle.menu) break;
+        }
+      }
+      if (queue.length) throw new Error('wren picks left');
+    }
+    const wsawCoin = wsamples.filter((s) => s.coin).length;
+    const wgrounded = wsamples.some((s) => (s.wy || 0) >= 626);
+    const wdescended = wsamples.some((s) => (s.wy || 0) > 561 && (s.wy || 0) < 620);
+    const wremoved = wsamples.some((s) => s.paid && !s.coin);
+    const wlow = wsamples.filter((s) => (s.wy || 0) >= 620).map((s) => s.wy);
+    need(wsawCoin >= 3, `wren e2e: el penique queda visible sobre el poste durante la secuencia (${wsawCoin} muestras)`);
+    need(wlit > 0, `wren e2e: el fotograma no es negro mientras la moneda está puesta (suma ${wlit})`);
+    need(wgrounded && wlow.length && Math.abs(Math.max(...wlow) - 628) <= 2, 'wren e2e: Wren baja hasta el suelo, con los pies en él');
+    need(wdescended, 'wren e2e: Wren desciende progresivamente de las cajas, sin flotar');
+    need(wremoved, 'wren e2e: la moneda se retira al recogerla');
+    const wfin = await wren.ev(`({ paid: !!game.state.flags.wren_paid, coin: !!game.state.flags.wren_coin_on_post, items: game.state.items, clues: game.state.clues, running: game.running, scene: game.state.scene })`);
+    need(wfin.paid && !wfin.coin && wfin.items.includes('bisturi') && !wfin.items.includes('penique'), 'wren e2e: penique consumido y bisturí en el inventario');
+    need(wfin.items.filter((x) => x === 'bisturi').length === 1 && new Set(wfin.items).size === wfin.items.length, 'wren e2e: sin duplicados en el inventario');
+    need(wfin.clues.includes('bisturi') && wfin.clues.includes('regla'), 'wren e2e: la pista del bisturí y la regla quedan anotadas');
+    need(wfin.running === 0 && wfin.scene === 'knackers', 'wren e2e: la secuencia termina con el juego libre en knackers');
+    need(wmidSame === true, 'wren e2e: autosave() no escribe en mitad de la secuencia (running)');
+    const wpostStr = await wren.ev(`localStorage.getItem('elhuesped.save.v1.resume')`);
+    const wpost = JSON.parse(wpostStr);
+    need(wpost.state.flags.wren_paid && wpost.state.flags.bisturi_taken && !wpost.state.flags.wren_coin_on_post && wpost.state.items.includes('bisturi') && !wpost.state.items.includes('penique'), 'wren e2e: el guardado de después es coherente');
+    await wren.ev(`(async () => { window.__resDone = false; await game.resume(JSON.parse(${JSON.stringify(wpostStr)})); window.__resDone = true; return true; })()`);
+    for (let i = 0; i < 60 && !(await wren.ev('window.__resDone && game.running === 0')); i++) await sleep(300);
+    need((await wren.ev(`({ paid: !!game.state.flags.wren_paid, items: game.state.items })`)).paid, 'wren e2e: reanudar desde el guardado de después mantiene el estado');
+    await wren.ev(`(async () => { window.__resDone = false; await game.resume(JSON.parse(${JSON.stringify(wpreStr)})); window.__resDone = true; return true; })()`);
+    for (let i = 0; i < 60 && !(await wren.ev('window.__resDone && game.running === 0')); i++) await sleep(300);
+    const wpre = await wren.ev(`({ paid: !!game.state.flags.wren_paid, coin: !!game.state.flags.wren_coin_on_post, taken: !!game.state.flags.bisturi_taken, items: game.state.items })`);
+    need(!wpre.paid && !wpre.coin && !wpre.taken && wpre.items.includes('penique') && !wpre.items.includes('bisturi'), 'wren e2e: reanudar desde el guardado de antes deja rehacerla sin estados intermedios');
+    await wplay('wren', ['penique', 'por que']);
+    need((await wren.ev(`({ paid: !!game.state.flags.wren_paid, items: game.state.items })`)).paid, 'wren e2e: rehecha desde el guardado de antes, la secuencia completa funciona');
+    need(!wren.errors.length && !(await wren.ev(`(game.scriptErrors || []).length`)), 'wren e2e: ningún error de JS');
+  } finally { wren.close(); }
   // ---- no WebGL at all: the message, not a black screen
   const n = await browser(['--disable-3d-apis', '--disable-webgl']);
   try {
