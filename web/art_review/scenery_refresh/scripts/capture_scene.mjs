@@ -16,11 +16,24 @@ import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const WEB = resolve(HERE, '../../..');
 const AUDIT = resolve(HERE, '..');
-const SCENES = { knackers: 1810, bucks_row: 1470, foreshore: 1210 };
+// Default player x per scene, near the lamp/crate props audited in T0. Values for
+// knackers/bucks_row/foreshore are the historical ones; the rest were picked from
+// the prop coordinates in web/src/scenes/*.js. Pass an explicit x as 4th argument
+// (or --x=N) to capture another spot in the same scene.
+// node web/art_review/scenery_refresh/scripts/capture_scene.mjs alleys audit_t0 1800
+const SCENES = {
+  knackers: 1810, bucks_row: 1470, foreshore: 1210,
+  alleys: 700, goulston: 380, hanbury: 250, millers: 1320, mitre: 1380,
+};
 const scene = process.argv[2] || 'knackers';
-if (!(scene in SCENES)) throw Error('Unsupported scene: ' + scene);
+if (!(scene in SCENES)) throw Error('Unsupported scene: ' + scene + ' (known: ' + Object.keys(SCENES).join(', ') + ')');
 const label = process.argv[3] || 'after';
 if (!/^[a-z0-9_-]+$/i.test(label)) throw Error('Bad output label');
+const xFlag = process.argv.find((a) => a.startsWith('--x='));
+const xArg = xFlag ? xFlag.slice(4) : process.argv[4];
+const xExplicit = xArg !== undefined;
+const X = xExplicit ? Number(xArg) : SCENES[scene];
+if (!Number.isFinite(X) || X < 0 || X > 6000) throw Error('Bad x: ' + xArg);
 const OUT = join(AUDIT, 'comparison', label);
 await mkdir(OUT, { recursive: true });
 const chrome = [
@@ -81,7 +94,7 @@ try {
   await send('Runtime.enable');
   await send('Page.enable');
   await send('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
-  const url='http://127.0.0.1:'+server.address().port+'/index.html?scene='+scene+'&noenter&x='+SCENES[scene];
+  const url='http://127.0.0.1:'+server.address().port+'/index.html?scene='+scene+'&noenter&x='+X;
   await send('Page.navigate',{url});
   let loaded=false;
   for(let i=0;i<120;i++){
@@ -98,7 +111,9 @@ try {
     await sleep(600);
     const state=await ev('({scene:game.scene.id,x:game.player.x,y:game.player.y,camX:game.r.cam.x,frames:game.r.presented})');
     const data=await send('Page.captureScreenshot',{format:'png',fromSurface:true,captureBeyondViewport:false});
-    const name=scene+'_'+width+'x'+height+'.png';
+    // With an explicit x, tag the file so several spots per scene can coexist;
+    // without it keep the historical plain name.
+    const name=xExplicit?scene+'_x'+X+'_'+width+'x'+height+'.png':scene+'_'+width+'x'+height+'.png';
     await writeFile(join(OUT,name),Buffer.from(data.data,'base64'));
     console.log('CAPTURE',label,name,JSON.stringify(state));
     results.push({name,state,width,height});
@@ -121,7 +136,7 @@ try {
     if(!(summary.sawCoin&&summary.grounded&&summary.descended&&summary.removed))throw Error('Wren exchange assertions: '+JSON.stringify(summary));
     console.log('EXCHANGE PASS',JSON.stringify(summary));
   }
-  await writeFile(join(OUT,scene+'_capture_log.json'),JSON.stringify({scene,label,
+  await writeFile(join(OUT,(xExplicit?scene+'_x'+X:scene)+'_capture_log.json'),JSON.stringify({scene,label,x:X,
     method:'actual canvas/render in Chrome; QA scene deep-link, no story entrance',
     androidTested:false,results},null,2));
 } finally {

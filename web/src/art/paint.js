@@ -592,6 +592,10 @@ export function crate(ctx, x, y, w, h, seed = 1, { stencil = null } = {}) {
   if (drawPropIn(ctx, 'crate', x, y, w, h)) {
     // Retain the historically relevant stencil on individual boxes, even
     // when their geometry is supplied by the new modelled sprite.
+    // The sprite is clean studio stock: knock it back into the sooty night
+    // with the same grime the procedural fallback wears (kept lighter so the
+    // modelled shading survives), before the stencil goes on top.
+    stain(ctx, x, y, w, h, { seed, alpha: 0.3 });
     if (stencil) {
       ctx.fillStyle = 'rgba(205,181,132,0.62)';
       ctx.font = '600 12px Georgia, serif';
