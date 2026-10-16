@@ -19,17 +19,24 @@ async function payWren(G) {
   G.flag('wren_paid', true);
   await G.walk(1660);
   G.player.facing = -1;
+  // The exchange needs to exist in the image, not just in the dialogue:
+  // Thomas leaves the penny on the raised cap of the hitching post.
+  G.flag('wren_coin_on_post', true);
   G.audio.tick();
+  await G.wait(650);
   await G.walk(1860);
   const w = G.actor('Wren');
-  await w.walkTo(1610);
+  // Wren starts ON the boxes (ground - 74). walkTo() only updates X, so
+  // walking straight to the post made her float above the road.
+  await w.climb(1610, GROUND, { steps: 4, speed: 110 });
   w.pose = 'reach';
   await G.wait(500);
+  G.flag('wren_coin_on_post', false);
   w.pose = null;
   w.talking = true;
   await G.say('Wren', 'Estaba en la rejilla, antes de que llegara la policía. Brillaba.');
   w.talking = false;
-  await w.walkTo(1474);
+  await w.climb(1474, GROUND - 74, { steps: 4, speed: 110 });
   w.facing = -1;
   await G.walk(1660);
   G.player.facing = -1;
@@ -124,7 +131,7 @@ export default {
       ctx.fillStyle = '#2a2826'; ctx.beginPath(); ctx.arc(1240, GROUND - 80, 6, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = '#3a3a3c'; ctx.fillRect(1214, GROUND - 130, 16, 20); ctx.fillRect(1220, GROUND - 112, 3, 14);
       }
-      // low wall, crates, bollard where Wren perches
+      // low wall, crates and the separate granite hitching-post for the penny
       A.brickWall(ctx, 1380, 430, 300, GROUND - 442, { seed: 41, palette: A.BRICK.stock });
       ctx.fillStyle = '#5c574d'; ctx.fillRect(1376, 424, 308, 10);
       A.crate(ctx, 1440, GROUND - 74, 70, 62, 3, { stencil: 'BARBER' });
@@ -154,6 +161,9 @@ export default {
     layers.push({ canvas: near, parallax: 1, kind: 'near' });
     lights.push({ id: 'brazier', x: 1060, y: GROUND - 80, r: 520, color: [1, 0.42, 0.18], intensity: 1.0, flicker: 0.3, halo: 90, sparks: 18 });
     lights.push({ id: 'arch', x: 230, y: 420 + 160 - 140, r: 300, color: P.gas, intensity: 0.5, flicker: 0.1, halo: 50, shaft: true, shaftW: 90 });
+    // Warm spill from the rear terrace window: Wren's stone post must be
+    // legible without turning an unlit object into a self-glowing quest marker.
+    lights.push({ id: 'yard_window', x: 1800, y: GROUND - 185, r: 315, color: P.candle, intensity: 0.26, flicker: 0.03 });
     if (mob) {
       [1300, 1500, 1700, 1900].forEach((x, i) => lights.push({ id: `torch${i}`, x, y: GROUND - 250, r: 420, color: [1, 0.5, 0.2], intensity: 0.9, flicker: 0.45, halo: 70, sparks: 7 }));
     }
@@ -225,16 +235,24 @@ export default {
       if (b?.grind) this._wheelA = t * 7;
       drawProp(ctx, 'grind_wheel', 1240, GROUND - 80, { rot: this._wheelA || 0 });
     }
-    if (!G || isMob(G) || !G.flag('wren_paid') || G.flag('bisturi_taken')) return;
-    // the scalpel Wren left on top of the post
-    ctx.fillStyle = '#1a120c'; ctx.fillRect(1598, GROUND - 72, 16, 3);
-    ctx.fillStyle = '#c8c8c0'; ctx.beginPath(); ctx.moveTo(1614, GROUND - 73); ctx.lineTo(1628, GROUND - 72); ctx.lineTo(1614, GROUND - 70); ctx.fill();
+    if (!G || isMob(G)) return;
+    if (G.flag('wren_coin_on_post')) {
+      // Penny on the flat stone crown; Wren's hand removes it on arrival.
+      ctx.fillStyle = '#2b1809'; ctx.beginPath(); ctx.ellipse(1611, GROUND - 105, 9, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#b78d44'; ctx.beginPath(); ctx.ellipse(1611, GROUND - 106, 7, 2.8, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#edc97c'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.ellipse(1611, GROUND - 106, 5.3, 1.9, 0, 0, Math.PI * 2); ctx.stroke();
+      return;
+    }
+    if (!G.flag('wren_paid') || G.flag('bisturi_taken')) return;
+    // The scalpel is left on the same crown, not floating in its old position.
+    ctx.fillStyle = '#241911'; ctx.fillRect(1598, GROUND - 107, 16, 3);
+    ctx.fillStyle = '#d3d0bf'; ctx.beginPath(); ctx.moveTo(1614, GROUND - 109); ctx.lineTo(1628, GROUND - 107); ctx.lineTo(1614, GROUND - 105); ctx.fill();
   },
 
   drawGlow(ctx, t) {
-    if (this.G && !isMob(this.G) && this.G.flag('wren_paid') && !this.G.flag('bisturi_taken')) {
+    if (this.G && !isMob(this.G) && this.G.flag('wren_paid') && !this.G.flag('bisturi_taken') && !this.G.flag('wren_coin_on_post')) {
       const k = (t % 2.4) / 2.4;
-      if (k < 0.35) { const a = Math.sin((k / 0.35) * Math.PI) * 0.9; ctx.fillStyle = `rgba(255,240,210,${a})`; ctx.fillRect(1619, GROUND - 80, 2, 16); ctx.fillRect(1612, GROUND - 73, 16, 2); }
+      if (k < 0.35) { const a = Math.sin((k / 0.35) * Math.PI) * 0.7; ctx.fillStyle = `rgba(255,240,210,${a})`; ctx.fillRect(1619, GROUND - 117, 2, 16); ctx.fillRect(1612, GROUND - 107, 16, 2); }
     }
     if (!this.G || isMob(this.G)) return;
     // sparks off the grindstone
@@ -264,7 +282,9 @@ export default {
     if (G.flag('kn_intro')) { G.game.chapterHooks.c1Objective(G); return; }
     G.flag('kn_intro', true);
     G.date(null, '4:31');
-    await G.walk(1620);
+    // Stopping at x=1620 concealed the short hitching post (x=1611)
+    // almost entirely behind Thomas's atlas on first arrival.
+    await G.walk(1780);
     G.objective('Hablar con Brennan y con la niña de las cajas.');
   },
 
@@ -351,7 +371,7 @@ export default {
       },
     },
     {
-      id: 'bollard', name: 'Poste de piedra', rect: [1590, GROUND - 66, 46, 66], walk: 1660, face: -1,
+      id: 'bollard', name: 'Poste de amarre de piedra', rect: [1572, GROUND - 107, 78, 107], walk: 1660, face: -1,
       act: async (G) => {
         if (G.flag('wren_paid') && !G.has('bisturi') && !G.flag('bisturi_taken')) { await G.game.chapterHooks.takeScalpel(G); return; }
         G.audio.tick();   // a hitching post worn by the ropes: Wren's counter, nothing more

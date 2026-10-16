@@ -1,0 +1,52 @@
+{
+  "title": "Thomas A/B in real Buck's Row scene, browser QA (not a full playthrough)",
+  "source": "Unmodified engine; V2.1 supplied via pre-navigation __MODELS",
+  "productionUntouched": true,
+  "androidTested": false,
+  "captures": [
+    {
+      "name": "knackers_640x360_production.png",
+      "variant": "production",
+      "width": 640,
+      "height": 360,
+      "state": {
+        "scene": "knackers",
+        "player": {
+          "x": 1810,
+          "y": 628,
+          "h": 173
+        },
+        "modelReady": true,
+        "source": "production",
+        "camX": 920,
+        "canvas": [
+          640,
+          360
+        ],
+        "count": 103
+      }
+    },
+    {
+      "name": "knackers_1280x720_production.png",
+      "variant": "production",
+      "width": 1280,
+      "height": 720,
+      "state": {
+        "scene": "knackers",
+        "player": {
+          "x": 1810,
+          "y": 628,
+          "h": 173
+        },
+        "modelReady": true,
+        "source": "production",
+        "camX": 920,
+        "canvas": [
+          640,
+          360
+        ],
+        "count": 153
+      }
+    }
+  ]
+}

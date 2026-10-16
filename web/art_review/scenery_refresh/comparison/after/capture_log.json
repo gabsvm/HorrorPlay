@@ -1,0 +1,52 @@
+{
+  "title": "Thomas A/B in real Buck's Row scene, browser QA (not a full playthrough)",
+  "source": "Unmodified engine; V2.1 supplied via pre-navigation __MODELS",
+  "productionUntouched": true,
+  "androidTested": false,
+  "captures": [
+    {
+      "name": "foreshore_640x360_production.png",
+      "variant": "production",
+      "width": 640,
+      "height": 360,
+      "state": {
+        "scene": "foreshore",
+        "player": {
+          "x": 1210,
+          "y": 612,
+          "h": 116
+        },
+        "modelReady": true,
+        "source": "production",
+        "camX": 570,
+        "canvas": [
+          640,
+          360
+        ],
+        "count": 109
+      }
+    },
+    {
+      "name": "foreshore_1280x720_production.png",
+      "variant": "production",
+      "width": 1280,
+      "height": 720,
+      "state": {
+        "scene": "foreshore",
+        "player": {
+          "x": 1210,
+          "y": 612,
+          "h": 116
+        },
+        "modelReady": true,
+        "source": "production",
+        "camX": 570,
+        "canvas": [
+          640,
+          360
+        ],
+        "count": 157
+      }
+    }
+  ]
+}

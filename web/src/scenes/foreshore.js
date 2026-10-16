@@ -6,6 +6,7 @@ import { chainDone } from '../story/chain.js';
 import { profileStairs } from '../art/props.js';
 import { P, shade } from '../art/palette.js';
 import { rng } from '../art/noise.js';
+import { drawProp } from '../art/models.js';
 import { Drip, Crow, Ripples, Rat, Smoke } from '../engine/life.js';
 
 const WIDTH = 2100, GROUND = 612, WATER_Y = 470;
@@ -259,6 +260,7 @@ export default {
     // Nat's toy boat, half sunk in the mud by the jetty piles: a cigar-box hull and a torn sail
     if (!this.G || !is1866(this.G) || this.G.flag('boat')) return;
     const x = 1130, y = GROUND + 30;
+    if (!drawProp(ctx, 'nat_boat', x, y, { rot: -0.18 })) {
     ctx.save();
     ctx.translate(x, y); ctx.rotate(-0.18); ctx.scale(1.35, 1.35);
     ctx.fillStyle = '#6a4428';
@@ -269,6 +271,7 @@ export default {
     ctx.fillStyle = '#ece4cc';
     ctx.beginPath(); ctx.moveTo(1, -42); ctx.lineTo(20, -12); ctx.lineTo(10, -14); ctx.lineTo(8, -20); ctx.lineTo(1, -10); ctx.closePath(); ctx.fill();
     ctx.restore();
+    }
     ctx.fillStyle = '#221d18';                                         // mud lapping over the hull
     ctx.beginPath(); ctx.ellipse(x + 2, y + 12, 56, 8, 0, 0, Math.PI * 2); ctx.fill();
   },

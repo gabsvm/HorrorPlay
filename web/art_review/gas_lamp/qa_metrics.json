@@ -1,0 +1,78 @@
+{
+  "asset": "Victorian gas street lamp, full length",
+  "source_glb": "C:\\Users\\Gabriel Sanchez\\Documents\\Dev\\outputs\\blender\\benchmark_farol_muse\\farol_victoriano.glb",
+  "source_sha256": "aa8ef262b4e97a95bd6e425d1314a4d74dd2030b1ed627b5ec55dee2ad055952",
+  "blender_version": "4.2.16 LTS",
+  "orthographic": true,
+  "camera_ortho_scale_m": 3.9700000286102295,
+  "source_bounds_m": {
+    "min": [
+      -0.28351,
+      -0.24166,
+      0.0
+    ],
+    "max": [
+      0.28351,
+      0.24166,
+      3.32
+    ]
+  },
+  "source_height_m": 3.32,
+  "imported_mesh_count": 8,
+  "imported_materials": [
+    "M_CastIron_Victorian",
+    "M_Gas_Flame",
+    "M_Lantern_Glass",
+    "M_Tarnished_Brass"
+  ],
+  "render_engine": "Cycles",
+  "samples": 48,
+  "sprite_1x": {
+    "resolution_px": [
+      128,
+      384
+    ],
+    "mode": "RGBA",
+    "bbox_alpha_gt_0_1_xyxy": [
+      34,
+      36,
+      93,
+      352
+    ],
+    "margins_px_left_top_right_bottom": [
+      34,
+      36,
+      34,
+      31
+    ],
+    "fully_transparent_fraction": 0.8382,
+    "visible_fraction_alpha_gt_0_1": 0.1548,
+    "partially_transparent_pixel_count": 2808,
+    "visible_luminance_p99_linear": 0.7294,
+    "visible_luminance_max_linear": 0.8536
+  },
+  "sprite_2x": {
+    "resolution_px": [
+      256,
+      768
+    ],
+    "mode": "RGBA",
+    "bbox_alpha_gt_0_1_xyxy": [
+      67,
+      72,
+      188,
+      706
+    ],
+    "margins_px_left_top_right_bottom": [
+      67,
+      72,
+      67,
+      61
+    ],
+    "fully_transparent_fraction": 0.8442,
+    "visible_fraction_alpha_gt_0_1": 0.1521,
+    "partially_transparent_pixel_count": 8529,
+    "visible_luminance_p99_linear": 0.7472,
+    "visible_luminance_max_linear": 0.8973
+  }
+}

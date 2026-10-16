@@ -535,6 +535,14 @@ export function flagstones(ctx, x, y, w, h, { seed = 9 } = {}) {
 // ---------------------------------------------------------------- street furniture
 // Cast-iron gas lamp. Returns the world position of the flame so the scene can register the light.
 export function lampPost(ctx, x, groundY, h = 250, { bracket = false } = {}) {
+  // GLB benchmark farol_victoriano, converted to a lit, transparent 2x sprite.
+  // Keep bracket-mounted lamps procedural: their geometry is not a full post.
+  // The visible sprite height is 635 source pixels and its feet end at y=706.
+  if (!bracket && drawProp(ctx, 'gas_lamp', x, groundY, { sx: h / 635, sy: h / 635 })) {
+    // Keep fog shafts/reflections driven by the engine, not baked into the PNG.
+    // The historical burner sits lower inside the glass than our old glyph.
+    return { x, y: groundY - h + h * 0.20 };
+  }
   ctx.fillStyle = P.iron;
   if (!bracket) {
     ctx.fillRect(x - 13, groundY - 14, 26, 14);           // plinth
@@ -581,6 +589,17 @@ export function railing(ctx, x, y, w, h, { gap = 12 } = {}) {
 }
 
 export function crate(ctx, x, y, w, h, seed = 1, { stencil = null } = {}) {
+  if (drawPropIn(ctx, 'crate', x, y, w, h)) {
+    // Retain the historically relevant stencil on individual boxes, even
+    // when their geometry is supplied by the new modelled sprite.
+    if (stencil) {
+      ctx.fillStyle = 'rgba(205,181,132,0.62)';
+      ctx.font = '600 12px Georgia, serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(stencil, x + w / 2, y + h / 2 + 4);
+    }
+    return;
+  }
   const r = rng(seed);
   ctx.fillStyle = shade(P.wood, r.range(0.8, 1.1)); ctx.fillRect(x, y, w, h);
   for (let yy = y; yy < y + h; yy += h / 4) { ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(x, yy, w, 2); ctx.fillStyle = 'rgba(255,230,200,0.08)'; ctx.fillRect(x, yy + 2, w, 1.5); }

@@ -1,0 +1,32 @@
+{
+  "scene": "bucks_row",
+  "label": "final",
+  "method": "actual canvas/render in Chrome; QA scene deep-link, no story entrance",
+  "androidTested": false,
+  "results": [
+    {
+      "name": "bucks_row_640x360.png",
+      "state": {
+        "scene": "bucks_row",
+        "x": 1470,
+        "y": 628,
+        "camX": 830,
+        "frames": 103
+      },
+      "width": 640,
+      "height": 360
+    },
+    {
+      "name": "bucks_row_1280x720.png",
+      "state": {
+        "scene": "bucks_row",
+        "x": 1470,
+        "y": 628,
+        "camX": 830,
+        "frames": 153
+      },
+      "width": 1280,
+      "height": 720
+    }
+  ]
+}

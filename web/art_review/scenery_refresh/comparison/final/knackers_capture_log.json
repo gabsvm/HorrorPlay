@@ -1,0 +1,32 @@
+{
+  "scene": "knackers",
+  "label": "final",
+  "method": "actual canvas/render in Chrome; QA scene deep-link, no story entrance",
+  "androidTested": false,
+  "results": [
+    {
+      "name": "knackers_640x360.png",
+      "state": {
+        "scene": "knackers",
+        "x": 1810,
+        "y": 628,
+        "camX": 920,
+        "frames": 103
+      },
+      "width": 640,
+      "height": 360
+    },
+    {
+      "name": "knackers_1280x720.png",
+      "state": {
+        "scene": "knackers",
+        "x": 1810,
+        "y": 628,
+        "camX": 920,
+        "frames": 149
+      },
+      "width": 1280,
+      "height": 720
+    }
+  ]
+}
