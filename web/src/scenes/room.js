@@ -70,12 +70,14 @@ export default {
       A.stain(ctx, 404, GROUND - 336, 124, 170, { seed: 33, alpha: 0.5 });
       }
       // a framed photograph over the bed: two boys on the Limehouse steps
+      if (!drawProp(ctx, 'room_photo', 680, GROUND - 400)) {
       ctx.fillStyle = '#3a2a16'; ctx.fillRect(680, GROUND - 400, 110, 84); ctx.fillStyle = '#6a5428'; ctx.fillRect(680, GROUND - 400, 110, 3);
       A.vgrad(ctx, 688, GROUND - 392, 94, 68, [[0, '#8a8272'], [1, '#5a544a']]);
       ctx.fillStyle = '#2a2622';
       ctx.beginPath(); ctx.ellipse(716, GROUND - 368, 7, 8, 0, 0, Math.PI * 2); ctx.ellipse(752, GROUND - 364, 6, 7, 0, 0, Math.PI * 2); ctx.fill();
       ctx.fillRect(706, GROUND - 360, 20, 30); ctx.fillRect(744, GROUND - 357, 16, 27);
       A.stain(ctx, 688, GROUND - 392, 94, 68, { seed: 61, alpha: 0.5 });
+      }
       // bed, a trunk at its foot and a chamber pot beneath
       if (!bed(ctx, 590, GROUND, 330)) { ctx.fillStyle = '#e0d8c8'; ctx.beginPath(); ctx.ellipse(700, GROUND - 8, 18, 9, 0, 0, Math.PI * 2); ctx.fill(); }
       // window
@@ -93,11 +95,13 @@ export default {
       ctx.fillStyle = '#20170f'; for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; ctx.fillRect(1396 + Math.cos(a) * 17 - 1, GROUND - 440 + Math.sin(a) * 17 - 1, 2, 2); }
       ctx.fillStyle = '#0e0b08'; ctx.fillRect(1376, GROUND - 414, 40, 30);
       // map of Whitechapel pinned to the wall, with pins
+      if (!drawProp(ctx, 'room_map', 1206, GROUND - 520)) {
       ctx.fillStyle = '#b4a47e'; ctx.fillRect(1206, GROUND - 520, 130, 96);
       ctx.strokeStyle = 'rgba(40,30,20,0.5)'; ctx.lineWidth = 2;
       for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.moveTo(1206, GROUND - 520 + i * 13); ctx.lineTo(1336, GROUND - 512 + i * 11); ctx.stroke(); }
       for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(1216 + i * 22, GROUND - 520); ctx.lineTo(1206 + i * 24, GROUND - 424); ctx.stroke(); }
       ctx.fillStyle = 'rgba(40,60,80,0.4)'; ctx.beginPath(); ctx.moveTo(1206, GROUND - 440); ctx.quadraticCurveTo(1270, GROUND - 450, 1336, GROUND - 432); ctx.lineTo(1336, GROUND - 424); ctx.lineTo(1206, GROUND - 424); ctx.fill();
+      }
       for (const [px, py] of [[1240, GROUND - 480], [1262, GROUND - 470], [1288, GROUND - 486], [1300, GROUND - 462], [1252, GROUND - 452]]) { ctx.fillStyle = '#a3170f'; ctx.fillRect(px, py, 5, 5); }
       A.stain(ctx, 1206, GROUND - 520, 130, 96, { seed: 4, alpha: 0.4 });
     });
@@ -269,12 +273,21 @@ export default {
       id: 'photo', name: 'Fotografía', rect: [676, GROUND - 404, 118, 92], walk: 740,
       act: async (G) => {
         const p = phase(G);
-        if (p === 'c1') {
-          await G.think('Nat odiaba posar. Aquí se reía.');
-        } else {
-          await G.think('Han raspado mi cara. La de Nat está intacta.');
-          G.sanityOnce('photo', -4); G.audio.whisper(1.2, 0.08);
-        }
+        // the close-up: intact albumen in chapter 1, the scraped face after
+        await G.inspect('photo', {
+          title: 'Fotografía', body: p === 'c1' ? 'room_photo' : 'room_photo_torn',
+          calm: true,
+          points: [
+            { id: 'mirar', x: 640, y: 360, r: 800, name: 'La fotografía', act: async (G) => {
+              if (p === 'c1') {
+                await G.think('Nat odiaba posar. Aquí se reía.');
+              } else {
+                await G.think('Han raspado mi cara. La de Nat está intacta.');
+                G.sanityOnce('photo', -4); G.audio.whisper(1.2, 0.08);
+              }
+            } },
+          ],
+        });
       },
     },
     {
@@ -340,8 +353,17 @@ export default {
     {
       id: 'map', name: 'Mapa de Whitechapel', rect: [1200, GROUND - 526, 140, 106], walk: 1260,
       act: async (G) => {
-        if (G.state.chapter === 'c3' || G.state.chapter === 'c4') await G.think('Todo ocurrió a diez minutos de mi puerta.');
-        else G.audio.paper();   // the division map: pins, nothing yet to read in them
+        // the close-up: his inked Whitechapel under the lamp, pins and pencil
+        await G.inspect('map', {
+          title: 'Mapa de Whitechapel', body: 'room_map',
+          calm: true,
+          points: [
+            { id: 'mirar', x: 640, y: 360, r: 800, name: 'El mapa', act: async (G) => {
+              if (G.state.chapter === 'c3' || G.state.chapter === 'c4') await G.think('Todo ocurrió a diez minutos de mi puerta.');
+              else G.audio.paper();   // the division map: pins, nothing yet to read in them
+            } },
+          ],
+        });
       },
     },
   ],

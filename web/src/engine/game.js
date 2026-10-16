@@ -973,23 +973,23 @@ export class Game {
       flash: (v = 1) => { game.r.fx.flash = prefs.reduceMotion ? v * 0.35 : v; game.punch = prefs.reduceMotion ? 0 : 1; },
       red: (v = 0.8) => { game.r.fx.red = prefs.reduceMotion ? v * 0.6 : v; game.punch = prefs.reduceMotion ? 0 : 1; },
       shake: (v = 10) => { game.r.cam.shake = prefs.reduceMotion ? 0 : v; /* no shaking at all with reduced motion (F11 convention) */ if (!prefs.reduceMotion) game.punch = Math.max(game.punch || 0, 0.6); if (v >= 6) buzz(Math.min(90, v * 5)); },
-      // Kneel over a body and examine it close up. `points`: [{ id, x, y, r, name, act(G) }] in 1280x720.
-      inspect: async (id, { title, body, points }) => {
+      // Kneel over a body and examine it close up. `points`: [{ id, x, y, r, name, act(G) }] in 1280x720. calm looks at a wall object instead: no kneel, no sting, no body toast.
+      inspect: async (id, { title, body, points, calm = false, close = null }) => {
         const seen = ((game.state.seen ||= {})[`insp:${id}`] ||= {});
         const p = game.player;
-        if (!window.FAST && !seen.__first) { p.pose = 'recoil'; G.audio.sting(0.15); await wait(750); }
+        if (!calm && !window.FAST && !seen.__first) { p.pose = 'recoil'; G.audio.sting(0.15); await wait(750); }
         seen.__first = true;
-        p.pose = 'kneel';
+        if (!calm) p.pose = 'kneel';
         if (window.FAST) { for (const pt of points) { await pt.act(G); seen[pt.id] = true; } }
         else {
           // the scene stays black behind the close-up, and comes back when he stands up
           await G.fade(1, 450);
-          await game.ui.inspect({ title, paint: (ctx, w, h) => paintBody(ctx, w, h, body), points, seen, keyMarks: perception.forensicMarks(game.state.sanity), fx: () => ({ red: game.r.fx.red, shake: game.r.cam.shake }) }, (pt) => pt.act(G));
+          await game.ui.inspect({ title, paint: (ctx, w, h) => paintBody(ctx, w, h, body), points, seen, keyMarks: perception.forensicMarks(game.state.sanity), fx: () => ({ red: game.r.fx.red, shake: game.r.cam.shake }), close: close || (calm ? 'Atrás' : null) }, (pt) => pt.act(G));
           await G.fade(0, 600);
           // closing early is allowed; a word says that something that matters was left unexamined
-          if (points.some((pt) => pt.key && !seen[pt.id])) game.ui.toast('Quedan detalles del cuerpo sin examinar.', 3200);
+          if (!calm && points.some((pt) => pt.key && !seen[pt.id])) game.ui.toast('Quedan detalles del cuerpo sin examinar.', 3200);
         }
-        p.pose = null;
+        if (!calm) p.pose = null;
       },
       // a subliminal flash: 'hands' or a body close-up
       vision: (kind = 'hands') => { game.punch = prefs.reduceMotion ? 0 : 1; return game.ui.vision((ctx, w, h) => paintVision(ctx, w, h, kind)); },

@@ -198,10 +198,14 @@ function hand(ctx, x, y, rot, skin = '#a89a86', marks = false) {
   ctx.restore();
 }
 
-// Body lying with the head to the left. kind: 'nichols' | 'chapman' | 'eddowes'
+// Body lying with the head to the left. kind: 'nichols' | 'chapman' | 'eddowes'.
+// 'room_photo' | 'room_photo_torn' | 'room_map' are the room wall objects (room.js):
+// the painted close-up when it is loaded, a plain procedural reading when not.
 export function paintBody(ctx, W, H, kind) {
   const pic = closeupFor(kind);
   if (pic) { ctx.drawImage(pic, 0, 0, W, H); return; }
+  if (kind === 'room_photo' || kind === 'room_photo_torn') return paintRoomPhoto(ctx, W, H, kind);
+  if (kind === 'room_map') return paintRoomMap(ctx, W, H);
   const r = rng(kind.length * 31);
   ground(ctx, W, H, kind === 'chapman' ? 'earth' : kind === 'eddowes' ? 'flags' : 'cobbles', kind.length * 7);
   const hx = 300, hy = 350;
@@ -331,6 +335,79 @@ export function paintBody(ctx, W, H, kind) {
   // a cold shadow at the edges, as the lantern only reaches so far
   const v = ctx.createRadialGradient(W * 0.42, H * 0.5, H * 0.2, W * 0.42, H * 0.5, W * 0.7);
   v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.75)');
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+}
+
+// Fallback when the painted room close-ups are missing: the same two readings,
+// plainly painted, so the inspection still opens under the lantern.
+function paintRoomPhoto(ctx, W, H, kind) {
+  ctx.fillStyle = '#b2a07e'; ctx.fillRect(0, 0, W, H);
+  const px = W * 0.0625, py = H * 0.067, pw = W * 0.875, ph = H * 0.71;
+  const g = ctx.createRadialGradient(px + pw * 0.46, py + ph * 0.4, 10, px + pw * 0.46, py + ph * 0.4, pw * 0.6);
+  g.addColorStop(0, '#94805e'); g.addColorStop(1, '#6a5c44');
+  ctx.fillStyle = g; ctx.fillRect(px, py, pw, ph);
+  ctx.fillStyle = '#6a5c44'; ctx.fillRect(px, py + ph * 0.62, pw, ph * 0.38);
+  ctx.strokeStyle = '#8a6f3e'; ctx.lineWidth = 3; ctx.strokeRect(px - 8, py - 8, pw + 16, ph + 16);
+  const boy = (cx, feet, ht, suit, skin) => {
+    const hr = ht * 0.105, hy = feet - ht + hr * 0.9;
+    ctx.fillStyle = suit;
+    ctx.fillRect(cx - ht * 0.13, hy + hr * 1.5, ht * 0.26, feet - hy - hr * 1.5);
+    ctx.fillStyle = skin;
+    ctx.beginPath(); ctx.ellipse(cx, hy, hr * 0.86, hr, 0, 0, TAU); ctx.fill();
+    return [cx, hy, hr];
+  };
+  const e = boy(W * 0.42, py + ph * 0.91, H * 0.42, '#4a3c2e', '#c49e7a');
+  const y = boy(W * 0.525, py + ph * 0.91, H * 0.33, '#584838', '#c49e7a');
+  ctx.strokeStyle = '#4a3c2e'; ctx.lineWidth = 15;
+  ctx.beginPath(); ctx.moveTo(e[0] + 48, e[1] + 53); ctx.lineTo(y[0] - 10, y[1] + 79); ctx.stroke();
+  if (kind === 'room_photo_torn') {
+    ctx.fillStyle = '#c9c0ae';
+    ctx.beginPath(); ctx.ellipse(e[0], e[1], e[2] * 1.3, e[2] * 1.45, 0, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#7a7060'; ctx.lineWidth = 5;
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath(); ctx.moveTo(e[0] - 30 + i * 20, e[1] - 65); ctx.lineTo(e[0] - 15 + i * 20, e[1] + 65); ctx.stroke();
+    }
+  }
+  ctx.fillStyle = 'rgba(74,58,40,0.9)'; ctx.textAlign = 'center';
+  ctx.font = '600 30px Georgia, serif'; ctx.fillText('E.  VANCE', W / 2, py + ph + 62);
+  ctx.font = '21px Georgia, serif';
+  ctx.fillText('PHOTOGRAPHIC  STUDIO,  23  COMMERCIAL  STREET,  LONDON,  E.', W / 2, py + ph + 96);
+}
+
+// The division map, reduced to what a pencil sketch would keep: the artery,
+// the named streets, the square, the hospital, five pencil crosses.
+function paintRoomMap(ctx, W, H) {
+  ctx.fillStyle = '#c9b183'; ctx.fillRect(0, 0, W, H);
+  const X = (u) => u * W, Y = (v) => v * H;
+  ctx.strokeStyle = 'rgba(150,128,92,0.8)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(X(0.36), 0); ctx.lineTo(X(0.36), H); ctx.moveTo(X(0.71), 0); ctx.lineTo(X(0.71), H); ctx.stroke();
+  const road = (pts, w) => {
+    ctx.strokeStyle = '#e2d0aa'; ctx.lineWidth = w + 2; ctx.beginPath();
+    pts.forEach(([u, v], i) => (i ? ctx.lineTo(X(u), Y(v)) : ctx.moveTo(X(u), Y(v)))); ctx.stroke();
+    ctx.strokeStyle = '#3b2d1f'; ctx.lineWidth = w; ctx.stroke();
+  };
+  const ew = (u, x0, x1) => road([[x0, u], [x1, u]], u > 0.5 ? 7 : 5);
+  const ns = (x, y0, y1) => road([[x, y0], [x, y1]], 6);
+  ew(0.20, 0.55, 0.84); ew(0.28, 0.38, 0.78); ew(0.352, 0.38, 0.62); ew(0.44, 0.42, 0.60);
+  ew(0.52, 0.06, 0.94);
+  ns(0.26, 0.30, 0.52); ns(0.385, 0.10, 0.52); ns(0.62, 0.14, 0.66); ns(0.74, 0.55, 0.82);
+  road([[0.385, 0.52], [0.55, 0.62], [0.72, 0.70], [0.94, 0.80]], 7);
+  ctx.strokeStyle = '#3b2d1f'; ctx.lineWidth = 3;
+  ctx.strokeRect(X(0.072), Y(0.547), X(0.056), Y(0.056));
+  ctx.fillStyle = '#3b2d1f'; ctx.textAlign = 'center';
+  ctx.font = '24px Georgia, serif';
+  for (const [t, u, v] of [['WHITECHAPEL RD', 0.80, 0.474], ['HANBURY ST', 0.52, 0.234],
+      ['DORSET ST', 0.45, 0.305], ['COMMERCIAL RD', 0.60, 0.674], ['MITRE SQUARE', 0.115, 0.505]]) {
+    ctx.fillText(t, X(u), Y(v));
+  }
+  ctx.strokeStyle = 'rgba(84,82,80,0.9)'; ctx.lineWidth = 5;
+  for (const [u, v] of [[0.70, 0.20], [0.50, 0.28], [0.74, 0.68], [0.115, 0.60], [0.575, 0.352]]) {
+    const x = X(u), y = Y(v), s = 20;
+    ctx.beginPath(); ctx.moveTo(x - s, y - s); ctx.lineTo(x + s, y + s);
+    ctx.moveTo(x - s, y + s); ctx.lineTo(x + s, y - s); ctx.stroke();
+  }
+  const v = ctx.createRadialGradient(W / 2, H / 2, H * 0.2, W / 2, H / 2, W * 0.7);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(40,26,12,0.55)');
   ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
 }
 

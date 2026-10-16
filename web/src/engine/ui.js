@@ -308,7 +308,7 @@ export class UI {
   // ------------------------------------------------------------ crime-scene close-up
   // A painted close-up explored in the dark: the pointer carries the lantern, and anything worth
   // examining names itself when the light falls on it. `onPoint(point)` runs the examination.
-  async inspect({ title, paint, points, seen = {}, fx = null, keyMarks = false }, onPoint) {
+  async inspect({ title, paint, points, seen = {}, fx = null, keyMarks = false, close = null }, onPoint) {
     const box = $('inspect'), img = $('insp-img'), dark = $('insp-dark'), label = $('insp-label');
     this.hideDialogue();
     const hi = document.createElement('canvas'); hi.width = 1280; hi.height = 720;
@@ -319,6 +319,7 @@ export class UI {
     // raked from wherever the light is held
     const relight = Actor.lowFx ? null : makeRelight(ic, lo);
     $('insp-title').textContent = title || '';
+    $('insp-close').textContent = close || 'Levantarse';
     box.classList.remove('hidden', 'busy');
     const dc = dark.getContext('2d');
     let lx = 640, ly = 360, hover = null, armed = null, busy = false, closed = false, raf = 0;
