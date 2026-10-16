@@ -35,9 +35,18 @@ HOLE_W, HOLE_H = 236, 267
 HOLE_TOL = 3
 LEFT, TOP = 32, 110
 EDGE = 4  # transparent margin kept around the outer content
-BRIGHTNESS = 1.0  # T1b: no pre-darkening. T1 used 0.85 and the frame died
-# in the engine's night lighting; the gilt is authored bright in Blender so
-# it lands near #8a6a2a AFTER the engine darkens the static layer.
+# T6 tone fix (reproducible, Hanbury-style VALUE): the T1b gilt reads
+# neon-yellow in the engine (stile cores ~+40-60% over the painted frame,
+# measured on comparison/AB_seance_640.png). This multiplier brings the
+# in-engine frame back to <= +25% over the painted original while keeping
+# the carving (eggs, rosettes, dentils, crest urn) legible. Calibrated
+# against work/orig (painted fallback) vs work/before (VALUE 1.0) vs
+# work/after captures at x=700: the gilt-pixel mean is linear in VALUE
+# (slope ~70, additive candle-halo base ~75-85), so 0.72 lands ~1.15-1.20x
+# over the original with margin under the 1.25x cap; 0.85 still read 1.27x.
+# Change it only with a fresh before/after measurement. T1b used 1.0 (T1
+# used 0.85 on a darker render and the frame died in the night lighting).
+VALUE = 0.72
 
 
 def hole_bbox(alpha):
@@ -126,7 +135,7 @@ canvas = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
 canvas.alpha_composite(im, (LEFT - hx0, TOP - hy0))
 im = canvas
 
-rgb = ImageEnhance.Brightness(im.convert("RGB")).enhance(BRIGHTNESS)
+rgb = ImageEnhance.Brightness(im.convert("RGB")).enhance(VALUE)
 rgb.putalpha(im.getchannel("A"))
 im = rgb
 
@@ -136,12 +145,15 @@ im.save(OUT, optimize=True)
 im.save(CANDIDATE, optimize=True)
 
 indexfile = ASSETS / "index.json"
-index = json.loads(indexfile.read_text(encoding="utf8"))
+raw = indexfile.read_bytes()
+eol = b"\r\n" if b"\r\n" in raw else b"\n"
+index = json.loads(raw.decode("utf8"))
 index["wexley_mirror"] = {"ax": ax, "ay": TOP, "h": im.height, "w": im.width}
-# newline="\n": on Windows the default text-mode translation would rewrite
-# the whole LF file to CRLF (T1b caught this); keep the repo's LF endings.
-indexfile.write_text(json.dumps(dict(sorted(index.items())), ensure_ascii=False, indent=1) + "\n",
-                     encoding="utf8", newline="\n")
+# T6: the repo index.json is CRLF (Hanbury pack); keep whatever endings the
+# file already has instead of converting the whole file (T1b caught the
+# LF->CRLF direction; the reverse conversion is just as bad).
+text = json.dumps(dict(sorted(index.items())), ensure_ascii=False, indent=1) + "\n"
+indexfile.write_bytes(text.replace("\n", eol.decode()).encode("utf8"))
 print("PACKED", OUT, im.size, "ax/ay:", ax, TOP,
       f"({OUT.stat().st_size // 1024} KB)")
 off = LEFT - ax  # hole left edge relative to the draw x (== -hole_w//2)
