@@ -10,6 +10,23 @@ import { prefs } from '../engine/prefs.js';
 
 const WIDTH = 4200, GROUND = 630;
 
+// Torn, textless bill patches pasted over each other: layered weathered
+// paper with a peeling corner. No lettering on purpose: words would be
+// illegible at 640x360 and set dressing must not add readable text.
+function bills(ctx, x, y, seed, r) {
+  const n = r.int(2, 4);
+  for (let i = 0; i < n; i++) {
+    const bw = r.range(36, 72), bh = r.range(48, 96);
+    const bx = x + r.range(-24, 24), by = y + r.range(-16, 16);
+    ctx.fillStyle = r.pick(['#8f8466', '#a39478', '#7c7058', '#9a8e72']);
+    ctx.fillRect(bx, by, bw, bh);
+    A.stain(ctx, bx, by, bw, bh, { seed: seed + i, alpha: 0.55 });
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    ctx.beginPath(); ctx.moveTo(bx + bw, by + bh); ctx.lineTo(bx + bw - 16, by + bh); ctx.lineTo(bx + bw - 3, by + bh - 20); ctx.fill();
+  }
+  A.grit(ctx, x - 24, y - 16, 130, 120, { seed, density: 0.5 });
+}
+
 export default {
   id: 'alleys',
   width: WIDTH,
@@ -36,42 +53,89 @@ export default {
     const near = R.paintLayer(WIDTH, (ctx) => {
       const r = rng(17);
       let x = 0, k = 0;
+      let prevKind = null, runLen = 0;
       const signs = ['BEDS 4d.', 'MANGLING DONE', 'GOOD BEDS', 'COFFEE 1d.'];
+      const plasters = [null, null, '#8a7f6c', '#a39a86', '#6e6656'];
       while (x < WIDTH) {
         const w = r.range(260, 480);
+        // never more than two same-material fronts in a row: long runs read as one wall
+        let kind = r.chance(0.4) ? 'plaster' : 'brick';
+        if (kind === prevKind && runLen >= 2) kind = prevKind === 'brick' ? 'plaster' : 'brick';
+        runLen = kind === prevKind ? runLen + 1 : 1;
+        prevKind = kind;
+        const short = r.chance(0.22);   // a lower court block breaks the cornice line
+        const floors = short ? 2 : r.int(2, 3);
+        const wins = r.int(1, 3);
         const ls = facade(ctx, {
-          x, w, top: r.range(-150, -90), base: GROUND - 12, seed: 400 + k, floors: 3, windows: r.int(1, 3), roof: 'parapet',
-          kind: r.chance(0.4) ? 'plaster' : 'brick', stock: r.chance(0.6), boards: [r.int(0, 6)], broken: [r.int(0, 6)],
-          litMap: r.chance(0.4) ? [r.int(0, 5)] : [], figures: [r.int(0, 5)],
-          sign: r.chance(0.35) ? { x: 10, text: signs[k % signs.length], w: 120, h: 40 } : null,
+          x, w, top: short ? r.range(-110, -70) : r.range(-170, -100), base: GROUND - 12, seed: 400 + k,
+          floors, windows: wins, roof: !short && r.chance(0.16) ? 'gable' : 'parapet',
+          kind, color: kind === 'plaster' ? r.pick(plasters) || undefined : undefined,
+          stock: r.chance(0.6), boards: [r.int(0, 8)], broken: [r.int(0, 8)],
+          litMap: r.chance(0.45) ? [r.int(0, wins * floors - 1)] : [], figures: [r.int(0, 5)],
+          sign: r.chance(0.35) ? { x: r.range(8, 30), text: signs[k % signs.length], w: r.range(100, 140), h: 40 } : null,
         });
         ls.forEach((c) => lights.push({ x: c.x, y: c.y, r: 190, color: P.candle, intensity: 0.4, flicker: 0.25, halo: 24 }));
         chimneys.push(...ls.chimneys);
-        if (r.chance(0.5)) { ctx.fillStyle = '#020202'; ctx.fillRect(x + w * 0.4, GROUND - 218, 80, 206); ctx.fillStyle = '#5c574d'; ctx.fillRect(x + w * 0.4 - 6, GROUND - 226, 92, 8); }
+        if (r.chance(0.5)) {
+          const dw = r.range(60, 100), dx = x + w * r.range(0.3, 0.5);
+          ctx.fillStyle = '#020202'; ctx.fillRect(dx, GROUND - 218, dw, 206);
+          ctx.fillStyle = '#5c574d'; ctx.fillRect(dx - 6, GROUND - 226, dw + 12, 8);
+        }
+        // weathered bill patches at hand height: no lettering, just paper and peel
+        if (r.chance(0.55)) bills(ctx, x + r.range(14, Math.max(15, w - 120)), GROUND - r.range(150, 220), 700 + k, r);
         x += w; k++;
       }
-      // laundry lines strung across the court
+      // laundry lines strung across the court: varied sag, garment counts,
+      // sizes and cloth tones so the twelve lines stop reading as one stamp
+      const cloth = ['#6a665c', '#4a4440', '#7a7468', '#5a3a32', '#8a857a', '#3d4148', '#71624a', '#54423a'];
       for (let i = 0; i < 12; i++) {
-        const lx = i * 360 + 80;
+        const lx = i * 360 + 80 + r.range(-30, 30);
+        const ly = r.range(185, 235), sag = r.range(28, 58);
         ctx.strokeStyle = '#121212'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(lx, 200); ctx.quadraticCurveTo(lx + 150, 250, lx + 300, 196); ctx.stroke();
-        for (const [ox, ww, hh, c] of [[90, 40, 60, ['#6a665c', '#4a4440', '#7a7468'][i % 3]], [180, 30, 44, '#5a3a32'], [240, 22, 34, '#8a857a']]) {
-          ctx.fillStyle = c; ctx.fillRect(lx + ox, 228 + (ox === 240 ? -6 : 0), ww, hh);
-          ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(lx + ox, 228 + hh - 6 + (ox === 240 ? -6 : 0), ww, 6);
+        ctx.beginPath(); ctx.moveTo(lx, ly); ctx.quadraticCurveTo(lx + 150, ly + sag, lx + 300, ly + r.range(-8, 8)); ctx.stroke();
+        const n = r.chance(0.1) ? 0 : r.int(1, 4);   // an empty line now and then
+        let ox = r.range(30, 90);
+        for (let g = 0; g < n && ox < 280; g++) {
+          const gw = g === 0 && r.chance(0.3) ? r.range(64, 92) : r.range(18, 46);   // now and then a sheet
+          const gh = r.range(26, 68);
+          const gx = lx + ox, gy = ly + sag * 0.55 + r.range(-4, 6);
+          ctx.fillStyle = r.pick(cloth); ctx.fillRect(gx, gy, gw, gh);
+          if (r.chance(0.25)) { ctx.fillStyle = 'rgba(200,190,170,0.25)'; ctx.fillRect(gx, gy + gh * 0.3, gw, 3); ctx.fillRect(gx, gy + gh * 0.55, gw, 3); }
+          else { ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(gx, gy + gh - 6, gw, 6); }
+          ctx.fillStyle = '#0c0c0c'; ctx.fillRect(gx + 2, gy - 4, 3, 6); ctx.fillRect(gx + gw - 5, gy - 4, 3, 6);
+          ox += gw + r.range(14, 60);
         }
       }
       A.vgrad(ctx, 0, GROUND - 12, WIDTH, 720 - GROUND + 12, [[0, '#2a2622'], [1, '#141210']]);
       A.cobbles(ctx, 0, GROUND + 4, WIDTH, 720 - GROUND - 4, { seed: 93, rows: 8, puddles: 30, litter: 3 });
       ctx.fillStyle = 'rgba(10,14,14,0.85)'; ctx.fillRect(0, GROUND + 40, WIDTH, 10);
       ctx.fillStyle = 'rgba(130,150,150,0.15)'; ctx.fillRect(0, GROUND + 42, WIDTH, 2);
-      // barrels, crates, a broken barrow along the walls
+      // barrels, crates and sacks along the walls: jittered spacing and sizes
       for (let i = 0; i < 10; i++) {
-        const bx = 300 + i * 390 + r.range(-40, 40);
-        if (r.chance(0.5)) A.barrel(ctx, bx, GROUND - 52, 40, 46); else A.crate(ctx, bx, GROUND - 56, 60, 48, 500 + i);
+        const bx = 300 + i * 390 + r.range(-60, 60);
+        const s = r.range(0.85, 1.15);
+        if (r.chance(0.5)) A.barrel(ctx, bx, GROUND - 52 * s, 40 * s, 46 * s);
+        else A.crate(ctx, bx, GROUND - 56 * s, 60 * s, 48 * s, 500 + i);
+        if (r.chance(0.3)) A.sack(ctx, bx + r.range(50, 90), GROUND, 600 + i);
       }
-      for (const jx of [1100, 2200, 3300]) {
-        ctx.fillStyle = '#010101'; ctx.fillRect(jx - 60, 160, 120, GROUND - 172);
-        A.streetSign(ctx, jx - 74, 126, ['WENTWORTH ST', 'FLOWER & DEAN', 'THRAWL ST'][[1100, 2200, 3300].indexOf(jx)]);
+      // side courts: same x as the timed choices, varied widths, signs untouched
+      for (const [jx, name, jw] of [[1100, 'WENTWORTH ST', 120], [2200, 'FLOWER & DEAN', 132], [3300, 'THRAWL ST', 108]]) {
+        ctx.fillStyle = '#010101'; ctx.fillRect(jx - jw / 2, 160, jw, GROUND - 172);
+        // faint cold spill on one jamb so the opening reads as depth, not paint
+        ctx.fillStyle = 'rgba(150,170,180,0.07)'; ctx.fillRect(jx - jw / 2, 160, 5, GROUND - 172);
+        ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(jx + jw / 2 - 8, 160, 8, GROUND - 172);
+        A.streetSign(ctx, jx - 74, 126, name);
+      }
+      // narrow blind passages between fronts: depth rhythm without a sign,
+      // kept clear of junctions and lamps so they never mimic a choice
+      for (let g = 0; g < 4; g++) {
+        const gx = 500 + r.range(0, WIDTH - 700);
+        if ([1100, 2200, 3300].some((jx) => Math.abs(gx - jx) < 190)) continue;
+        if ([700, 1800, 2900, 3800].some((lx) => Math.abs(gx - lx) < 110)) continue;
+        const gw = r.range(24, 44);
+        ctx.fillStyle = '#050505'; ctx.fillRect(gx, 250, gw, GROUND - 262);
+        ctx.fillStyle = 'rgba(150,170,180,0.06)'; ctx.fillRect(gx, 250, 3, GROUND - 262);
+        ctx.fillStyle = '#3a352c'; ctx.fillRect(gx - 5, 242, gw + 10, 8);
       }
       // bracket lamps, few and far between
       for (const lx of [700, 1800, 2900, 3800]) { const l = A.lampPost(ctx, lx, GROUND, 330, { bracket: true }); lights.push({ x: l.x, y: l.y, r: 360, color: P.gas, intensity: 0.7, flicker: 0.15, halo: 70, shaft: true, shaftW: 90 }); }
@@ -83,7 +147,11 @@ export default {
     });
     const fg = R.paintLayer(WIDTH * 1.35, (ctx) => {
       ctx.fillStyle = '#030303';
-      for (let x = 700; x < WIDTH * 1.35; x += 1300) { ctx.fillRect(x, 0, 18, 720); ctx.fillRect(x - 30, 300, 78, 8); }
+      const fr = rng(71);   // jittered posts so the foreground stops ticking like a metronome
+      for (let x = 700 + fr.range(-60, 60); x < WIDTH * 1.35; x += fr.range(1100, 1500)) {
+        ctx.fillRect(x, 0, fr.chance(0.3) ? 26 : 18, 720);
+        ctx.fillRect(x - 30, 300 + fr.range(-24, 24), 78, 8);
+      }
     });
     return { layers: [{ canvas: sky, parallax: 0.1, kind: 'far' }, { canvas: near, parallax: 1, kind: 'near' }, { canvas: fg, parallax: 1.35, kind: 'fg' }], lights, chimneys };
   },
