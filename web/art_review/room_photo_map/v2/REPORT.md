@@ -114,3 +114,68 @@ Integrados (mismos nombres y formatos):
   junto a la cabeza (cotas: mandíbula/barbilla sin `* hr`, 40 cm hacia
   la cámara) más camisa/cuellos enterrados en la chaqueta; corregido en
   origen y verificado en placa.
+
+---
+
+# ENTREGA B — Interacción de la inspección (un punto preciso por close-up)
+
+Pasada ARTÍSTICA/UX sobre `web/src/scenes/room.js` (único archivo de juego
+tocado; `ui.js`/`game.js` intactos). Canon intacto: mismos textos, pistas,
+sonidos, cordura (−4 con `sanityOnce`), variables, objetivos y «Atrás».
+Close-ups intactos (luminancia N/A: no hay assets nuevos).
+
+Antes: foto y mapa abrían `G.inspect` con `{ x: 640, y: 360, r: 800 }` — desde
+la esquina del cartón (dist. ~603 del centro viejo) o la cartela (dist. ~406)
+cualquier clic examinaba. Después: un único punto medido por close-up.
+
+## Geometría (lienzo 1280x720 de la inspección, sin recorte: `paintBody`
+dibuja el JPG a pantalla completa)
+
+- FOTO `{ x: 600, y: 370, r: 180 }`: las dos figuras (mano del mayor sobre el
+  hombro del menor incluida) ocupan x 470–743, y 231–556 dentro de la placa
+  (x 80–1199, y 40–556; medido por píxel). El círculo contiene cabezas,
+  torsos y contacto sin tocar cartón ni marco. Límite honesto: un círculo no
+  cubre un rectángulo de 273x329 sin salirse de la placa; quedan fuera
+  sendas tiras de ~30 px en las rodillas recortadas por el borde inferior y
+  el filo exterior de las piernas. Caras y contacto, holgados (margen ≥8 px).
+- MAPA `{ x: 700, y: 280, r: 175 }`: red de calles con las marcas de Hanbury
+  (660,202), Flower & Dean (740,260) y Goulston (657,377) dentro; márgenes,
+  cartela (a 262 px), rosa (a ~700 px) y escala, fuera. Límite honesto: las
+  cruces de Buck's Row (a 251 px, pegada a la cartela: no cabe sin rozarla),
+  Mitre y Berner quedan fuera — un punto preciso es preferible a extras
+  decorativos, como pide la tarea.
+- Táctil: r 180/175 en lógica son ~90/87 px CSS de radio a 640x360; de sobra
+  para el dedo. Un solo punto basta; no hacen falta más.
+- Disparo doble: `let done` por apertura en cada `act` (el efecto corre una
+  vez por apertura aunque se repulse o caiga a mitad del pensamiento; el −4
+  sigue una vez por partida vía `sanityOnce`, verificado en c3/c4).
+
+## Qué cambió (archivos)
+
+- `web/src/scenes/room.js`: puntos de foto y mapa + guardia `done` (16
+  líneas añadidas, CRLF preservado).
+- `web/tools/browser-check.mjs`: etapa T8 «foto/mapa» (33 `need`, 640x360,
+  ratón + táctil simulado por CDP; sin Chrome hace SKIP como el resto).
+- `v2/scripts/capture_interaction.mjs` + `v2/scripts/make_interaction_png.py`:
+  capturas motor real dentro/fuera (antes con r=800 por llamada directa con
+  la misma ruta de pintado; después con los hotspots reales) y hoja final.
+- `v2/comparison/INTERACTION_640.png` (372 KB): foto y mapa, farol dentro
+  (etiqueta «Examinar» visible) y fuera (sin etiqueta), a 640x360 nativo.
+
+## test-all, no comprobado y riesgos
+
+- `test-all` (REAL, 2026-10-16, `node web/tools/test-all.mjs`): **45 PASS,
+  0 FAIL, 0 SKIP, exit 0** — unit, smoke, audio, 38 scenarios (incluidos
+  `cost14`, `chapter3`, `carta`, `brennan`, `goulston`, `resume`), walk,
+  walk second, walk alt y browser (223,6 s; antes 168,1 s por la etapa T8
+  nueva, con sus 34 `need` en verde). `cost14` sigue cobrando la foto 4
+  solo la primera vez (modo FAST intacto).
+- Evidencia ANTES eliminada tras verificar (los `work/` se regeneran con los
+  scripts): con r=800 el cartón y la cartela mostraban «Examinar»; ahora no.
+- NO comprobado: teléfono físico (el táctil es `pointerType: touch`
+  simulado por CDP); APK/Android; rendimiento móvil (sin assets nuevos).
+- Riesgos: a 1280x720 bajo render por software el jugador camina lento
+  (clamp de dt); solo afecta al script de capturas (teletransporta al punto
+  de paseo), no al juego. Si el guion reencuadra los close-ups, revalidar
+  centros/radios con los scripts de medida (borrados tras medir; el método
+  queda descrito arriba).

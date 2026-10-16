@@ -448,6 +448,151 @@ try {
     need((await wren.ev(`({ paid: !!game.state.flags.wren_paid, items: game.state.items })`)).paid, 'wren e2e: rehecha desde el guardado de antes, la secuencia completa funciona');
     need(!wren.errors.length && !(await wren.ev(`(game.scriptErrors || []).length`)), 'wren e2e: ningún error de JS');
   } finally { wren.close(); }
+  // ---- T8: the room photograph and map inspections, played for real at 640x360 (no FAST)
+  // Each inspection has a single precise point (room.js): the cardboard, the cartouche, the
+  // compass rose and the corners never examine; the figures and the street grid do, once per
+  // opening even when pressed again; touch arms on the first tap and examines on the second;
+  // «Atrás» closes back to the room with nothing running.
+  const pm = await browser([], { w: 640, h: 360 });
+  try {
+    await pm.open('');
+    need(!(await pm.ev('!!window.FAST')), 'foto/mapa: sin FAST, con el reloj real');
+    const inspOpen = () => pm.ev(`!document.getElementById('inspect').classList.contains('hidden')`);
+    const inspBox = (lx, ly) => pm.ev(`(() => { const r = document.getElementById('inspect').getBoundingClientRect(); return { x: r.left + ${lx} / 1280 * r.width, y: r.top + ${ly} / 720 * r.height }; })()`);
+    const inspClick = async (lx, ly) => { const p = await inspBox(lx, ly); await pm.click(p.x, p.y); };
+    const inspMove = async (lx, ly) => { const p = await inspBox(lx, ly); await pm.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p.x, y: p.y }); await sleep(150); };
+    const inspTap = async (lx, ly) => {
+      const p = await inspBox(lx, ly);
+      await pm.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: p.x, y: p.y, id: 1 }] });
+      await pm.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await sleep(150);
+    };
+    const inspLabel = () => pm.ev(`!document.getElementById('insp-label').classList.contains('hidden')`);
+    const dlg = () => pm.ev(`document.getElementById('dialogue').classList.contains('hidden') ? '' : document.getElementById('dlg-text').textContent`);
+    const snd = () => pm.ev(`window.__snd || { w: 0, p: 0 }`);
+    const san = () => pm.ev('game.state.sanity');
+    const waitDlg = async (sub, ms = 6000) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if ((await dlg()).includes(sub)) return true; await sleep(250); } return false; };
+    const finishLines = async () => { for (let i = 0; i < 14; i++) { if (await pm.ev(`document.getElementById('dialogue').classList.contains('hidden')`)) return; await pm.ev('game.ui.advance()'); await sleep(450); } };
+    const openHot = async (id) => {
+      const ok = await pm.ev(`(() => { window.__actDone = false; window.__actErr = null; const h = game.activeHotspots().find((x) => x.id === '${id}'); if (!h) return false; const r = typeof h.rect === 'function' ? h.rect(game.G) : h.rect; game.onClick({ x: r[0] + r[2] / 2 - game.r.cam.x, y: r[1] + r[3] / 2 }, false).then(() => { window.__actDone = true; }).catch((e) => { window.__actErr = String(e && e.message || e); }); return true; })()`);
+      if (!ok) throw new Error('hotspot no disponible: ' + id);
+      for (let i = 0; i < 100 && !(await inspOpen()); i++) await sleep(200);
+      if (!(await inspOpen())) throw new Error('la inspección no se abrió: ' + id);
+    };
+    const closeHot = async () => {
+      const r = await pm.ev(`(() => { const b = document.getElementById('insp-close'); const q = b.getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; })()`);
+      await pm.click(r.x, r.y);
+      for (let i = 0; i < 60 && ((await inspOpen()) || (await pm.ev('game.running')) > 0 || !(await pm.ev('window.__actDone'))); i++) await sleep(250);
+    };
+    const startCh = async (ch, file, flag) => {
+      const save = await readFile(join(web, 'tests/fixtures/saves-v1-baseline/' + file), 'utf8');
+      await pm.ev(`(localStorage.clear(), game.inMenu = false, game.ui.hideMenu(), window.${flag} = false, game.startChapter('${ch}', ${save}).then(() => { window.${flag} = true; }), true)`);
+      for (let i = 0; i < 120; i++) {
+        await sleep(350);
+        const s = await pm.ev(`({ done: window.${flag}, scene: game.state.scene, running: game.running, dlg: !document.getElementById('dialogue').classList.contains('hidden') })`);
+        if (s.dlg) await pm.ev('game.ui.advance()');
+        if (s.done && s.scene === 'room' && s.running === 0 && !s.dlg) break;
+      }
+    };
+    await pm.ev(`(window.__snd = { w: 0, p: 0 }, game.G.audio.whisper = () => { window.__snd.w++; }, game.G.audio.paper = () => { window.__snd.p++; }, true)`);
+    await startCh('c1', 'c1.json', '__c1done');
+    need((await pm.ev('game.state.scene')) === 'room', 'foto/mapa: el capítulo I arranca en el cuarto');
+    await pm.ev('(game.state.sanity = 100, true)');
+    // the photograph in chapter 1, with the mouse
+    await openHot('photo');
+    await inspMove(60, 640);
+    need(!(await inspLabel()), 'foto c1: sobre el cartón no hay etiqueta');
+    let before = await snd();
+    await inspClick(60, 640); await sleep(900);
+    let after = await snd();
+    need((await dlg()) === '' && after.w === before.w && after.p === before.p && (await san()) === 100, 'foto c1: fuera de la zona no examina (ni pensamiento, ni cordura, ni sonido)');
+    await inspMove(610, 350); await sleep(200);
+    need(await inspLabel(), 'foto c1: dentro hay etiqueta de examinar');
+    await inspClick(610, 350);
+    need(await waitDlg('Nat odiaba posar'), 'foto c1: dentro examina con su línea');
+    await finishLines();
+    need((await san()) === 100 && (await snd()).w === 0, 'foto c1: esa línea no toca la cordura ni susurra');
+    before = await snd();
+    await inspClick(610, 350); await sleep(900);
+    after = await snd();
+    need((await dlg()) === '' && after.w === before.w && after.p === before.p, 'foto c1: repetir dentro no reexamina en la misma apertura');
+    need((await pm.ev(`document.getElementById('insp-close').textContent`)) === 'Atrás', 'foto c1: se cierra con «Atrás»');
+    await closeHot();
+    need(!(await inspOpen()) && (await pm.ev('game.running')) === 0 && (await pm.ev('game.state.scene')) === 'room', 'foto c1: «Atrás» vuelve al cuarto sin guion en marcha');
+    // the same photograph with simulated touch: first tap arms, second examines
+    await openHot('photo');
+    await inspTap(610, 350); await sleep(800);
+    need((await dlg()) === '' && (await inspLabel()), 'foto c1 táctil: el primer toque arma y nombra sin examinar');
+    await inspTap(610, 350);
+    need(await waitDlg('Nat odiaba posar'), 'foto c1 táctil: el segundo toque examina');
+    await finishLines();
+    await closeHot();
+    need(!(await inspOpen()) && (await pm.ev('game.running')) === 0, 'foto c1 táctil: se cierra y el juego queda libre');
+    // the map in chapter 1: paper, no thought, no sanity
+    await openHot('map');
+    await inspMove(1050, 75);
+    need(!(await inspLabel()), 'mapa c1: sobre la cartela no hay etiqueta');
+    before = await snd();
+    await inspClick(1050, 75); await sleep(900);
+    after = await snd();
+    need((await dlg()) === '' && after.w === before.w && after.p === before.p && (await san()) === 100, 'mapa c1: la cartela no examina');
+    await inspClick(70, 640); await sleep(900);
+    after = await snd();
+    need((await dlg()) === '' && after.p === before.p, 'mapa c1: la rosa de los vientos no examina');
+    const p0 = (await snd()).p;
+    await inspClick(740, 260); await sleep(900);
+    need((await snd()).p === p0 + 1 && (await dlg()) === '' && (await san()) === 100, 'mapa c1: dentro suena el papel, sin pensamiento ni cordura');
+    await inspClick(740, 260); await sleep(900);
+    need((await snd()).p === p0 + 1, 'mapa c1: repetir no repite el papel en la misma apertura');
+    await closeHot();
+    need(!(await inspOpen()) && (await pm.ev('game.running')) === 0, 'mapa c1: se cierra y el juego queda libre');
+    // the photograph in chapter 3: its line, -4 once, one whisper per opening
+    await startCh('c3', 'c3.json', '__c3done');
+    need((await pm.ev('game.state.scene')) === 'room', 'foto/mapa: el capítulo III arranca en el cuarto');
+    await pm.ev('(game.state.sanity = 100, true)');
+    await openHot('photo');
+    const w0 = (await snd()).w;
+    await inspClick(610, 350);
+    need(await waitDlg('Han raspado mi cara'), 'foto c3: dentro examina con su línea');
+    await finishLines();
+    need((await san()) === 96, 'foto c3: la cordura baja 4');
+    need((await snd()).w === w0 + 1, 'foto c3: susurra una vez');
+    before = await snd();
+    await inspClick(610, 350); await sleep(900);
+    after = await snd();
+    need((await dlg()) === '' && (await san()) === 96 && after.w === before.w, 'foto c3: repetir no cobra ni susurra en la misma apertura');
+    await closeHot();
+    await openHot('photo');
+    const w1 = (await snd()).w;
+    await inspClick(610, 350);
+    need(await waitDlg('Han raspado mi cara'), 'foto c3: reabierta vuelve a examinarse');
+    await finishLines();
+    need((await san()) === 96, 'foto c3: reabierta no vuelve a cobrar');
+    need((await snd()).w === w1 + 1, 'foto c3: reabierta susurra una vez por apertura');
+    await closeHot();
+    // chapter 4 keeps the same branch: the line, no new cost
+    await pm.ev(`(game.state.chapter = 'c4', true)`);
+    await openHot('photo');
+    await inspClick(610, 350);
+    need(await waitDlg('Han raspado mi cara'), 'foto c4: misma línea que en c3');
+    await finishLines();
+    need((await san()) === 96, 'foto c4: la cordura sigue cobrada una sola vez');
+    await closeHot();
+    // the map in chapter 3: its line and nothing else
+    await pm.ev(`(game.state.chapter = 'c3', true)`);
+    await openHot('map');
+    const q0 = await snd();
+    await inspClick(740, 260);
+    need(await waitDlg('diez minutos de mi puerta'), 'mapa c3: dentro examina con su línea');
+    await finishLines();
+    need((await san()) === 96 && (await snd()).p === q0.p && (await snd()).w === q0.w, 'mapa c3: esa línea no añade nada (ni cordura, ni papel, ni susurro)');
+    await inspClick(740, 260); await sleep(900);
+    need((await dlg()) === '' && (await san()) === 96, 'mapa c3: repetir no reexamina en la misma apertura');
+    await closeHot();
+    const resume = await pm.ev(`localStorage.getItem('elhuesped.save.v1.resume')`);
+    need(!!resume && JSON.parse(resume).state.scene === 'room', 'foto/mapa: el guardado sigue coherente en el cuarto');
+    need(!pm.errors.length && !(await pm.ev('(game.scriptErrors || []).length')), 'foto/mapa: ningún error de JS');
+  } finally { pm.close(); }
   // ---- no WebGL at all: the message, not a black screen
   const n = await browser(['--disable-3d-apis', '--disable-webgl']);
   try {

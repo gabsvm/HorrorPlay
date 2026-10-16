@@ -273,12 +273,20 @@ export default {
       id: 'photo', name: 'Fotografía', rect: [676, GROUND - 404, 118, 92], walk: 740,
       act: async (G) => {
         const p = phase(G);
+        // one examination per opening: a repeat press, or one landing mid-thought,
+        // does nothing; the -4 stays once per game through sanityOnce
+        let done = false;
         // the close-up: intact albumen in chapter 1, the scraped face after
         await G.inspect('photo', {
           title: 'Fotografía', body: p === 'c1' ? 'room_photo' : 'room_photo_torn',
           calm: true,
           points: [
-            { id: 'mirar', x: 640, y: 360, r: 800, name: 'La fotografía', act: async (G) => {
+            // measured on the 1280x720 close-up: both boys (the elder's hand on the
+            // younger's shoulder) span x 470-743, y 231-556 inside the plate (x 80-1199,
+            // y 40-556); the circle holds heads, torsos and the contact, off the cardboard
+            { id: 'mirar', x: 600, y: 370, r: 180, name: 'La fotografía', act: async (G) => {
+              if (done) return;
+              done = true;
               if (p === 'c1') {
                 await G.think('Nat odiaba posar. Aquí se reía.');
               } else {
@@ -353,12 +361,20 @@ export default {
     {
       id: 'map', name: 'Mapa de Whitechapel', rect: [1200, GROUND - 526, 140, 106], walk: 1260,
       act: async (G) => {
+        // one examination per opening, as with the photograph above
+        let done = false;
         // the close-up: his inked Whitechapel under the lamp, pins and pencil
         await G.inspect('map', {
           title: 'Mapa de Whitechapel', body: 'room_map',
           calm: true,
           points: [
-            { id: 'mirar', x: 640, y: 360, r: 800, name: 'El mapa', act: async (G) => {
+            // measured on the 1280x720 close-up: the street grid with the Hanbury (660,202),
+            // Flower & Dean (740,260) and Goulston (657,377) marks; the circle stays off the
+            // margins, the title cartouche and the compass rose (Buck's Row, Mitre and Berner
+            // marks lie outside: one precise point beats decorative extras)
+            { id: 'mirar', x: 700, y: 280, r: 175, name: 'El mapa', act: async (G) => {
+              if (done) return;
+              done = true;
               if (G.state.chapter === 'c3' || G.state.chapter === 'c4') await G.think('Todo ocurrió a diez minutos de mi puerta.');
               else G.audio.paper();   // the division map: pins, nothing yet to read in them
             } },

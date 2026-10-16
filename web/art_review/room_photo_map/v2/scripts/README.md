@@ -25,3 +25,12 @@ python $V2/scripts/make_comparison_v2.py
 uses; see `room.js` `phase(G)`), and pins the inspection lantern between
 the two heads so before/after are comparable. Default outputs land in
 `../work/` (regenerable, not shipped).
+
+Entrega B (interaction): lantern inside vs outside the single photo/map
+point, and the `INTERACTION_640.png` sheet (regenerable, not shipped
+except the sheet):
+
+```powershell
+node $V2/scripts/capture_interaction.mjs
+python $V2/scripts/make_interaction_png.py
+```
