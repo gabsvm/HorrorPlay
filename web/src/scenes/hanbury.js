@@ -3,6 +3,7 @@ import * as A from '../art/paint.js';
 import { doorSteps, leatherApron } from '../art/props.js';
 import { facade } from '../art/build.js';
 import { P, shade } from '../art/palette.js';
+import { drawProp } from '../art/models.js';
 import { Actor } from '../engine/actor.js';
 import { canLeaveHanbury } from '../story/progression.js';
 
@@ -57,12 +58,16 @@ export default {
       A.crate(ctx, 190, GROUND - 74, 80, 64, 21, { stencil: 'RICHARDSON' });
       A.crate(ctx, 200, GROUND - 130, 64, 56, 22);
       A.crate(ctx, 280, GROUND - 58, 60, 48, 23);
-      // dolly tub, washboard and a mangle by the back wall
-      A.barrel(ctx, 380, GROUND - 52, 46, 42);
-      ctx.fillStyle = '#6a6458'; ctx.fillRect(398, GROUND - 74, 14, 26);
-      ctx.fillStyle = P.iron; ctx.fillRect(452, GROUND - 120, 6, 110); ctx.fillRect(500, GROUND - 120, 6, 110); ctx.fillRect(452, GROUND - 120, 54, 6);
-      ctx.fillStyle = P.wood; ctx.fillRect(458, GROUND - 104, 42, 10); ctx.fillRect(458, GROUND - 92, 42, 10);
-      ctx.strokeStyle = P.iron; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(530, GROUND - 98, 18, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = P.iron; ctx.fillRect(546, GROUND - 100, 14, 4);
+      // dolly tub, washboard and a mangle by the back wall (modelled, fallback kept)
+      if (!drawProp(ctx, 'hanbury_tub', 403, GROUND - 10)) {
+        A.barrel(ctx, 380, GROUND - 52, 46, 42);
+        ctx.fillStyle = '#6a6458'; ctx.fillRect(398, GROUND - 74, 14, 26);
+      }
+      if (!drawProp(ctx, 'hanbury_mangle', 479, GROUND - 10)) {
+        ctx.fillStyle = P.iron; ctx.fillRect(452, GROUND - 120, 6, 110); ctx.fillRect(500, GROUND - 120, 6, 110); ctx.fillRect(452, GROUND - 120, 54, 6);
+        ctx.fillStyle = P.wood; ctx.fillRect(458, GROUND - 104, 42, 10); ctx.fillRect(458, GROUND - 92, 42, 10);
+        ctx.strokeStyle = P.iron; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(530, GROUND - 98, 18, 0, Math.PI * 2); ctx.stroke(); ctx.fillStyle = P.iron; ctx.fillRect(546, GROUND - 100, 14, 4);
+      }
       // neighbouring houses, their ground floor hidden by the fence
       const mid = facade(ctx, { x: 760, w: 520, top: 118, base: GROUND - 10, seed: 102, floors: 2, windows: 3, roof: 'parapet', kind: 'plaster', litMap: [1], nets: [1] });
       mid.forEach((c) => lights.push({ x: c.x, y: c.y, r: 180, color: P.candle, intensity: 0.35, flicker: 0.15, halo: 24 }));
@@ -82,18 +87,22 @@ export default {
       A.stain(ctx, 690, GROUND - 160, 870, 160, { seed: 5, alpha: 0.55 });
       const right = facade(ctx, { x: 1280, w: 720, top: -130, base: GROUND - 10, seed: 103, floors: 3, windows: 4, roof: 'parapet', broken: [2, 7], boards: [5], stock: true });
       chimneys.push(...right.chimneys);
-      // the tap over a stone sink against the wall
-      ctx.fillStyle = '#5e5a52'; ctx.fillRect(1600, GROUND - 60, 120, 50); ctx.fillStyle = '#121a1c'; ctx.fillRect(1606, GROUND - 58, 108, 8);
-      ctx.fillStyle = P.iron; ctx.fillRect(1650, GROUND - 150, 10, 90); ctx.fillRect(1650, GROUND - 150, 34, 8); ctx.fillRect(1678, GROUND - 146, 6, 18);
-      ctx.fillStyle = '#9a8350'; ctx.fillRect(1672, GROUND - 160, 18, 6);
-      // privy with a heart cut in the door
+      // the tap over a stone sink against the wall (modelled, fallback kept)
+      if (!drawProp(ctx, 'hanbury_tap', 1660, GROUND - 10)) {
+        ctx.fillStyle = '#5e5a52'; ctx.fillRect(1600, GROUND - 60, 120, 50); ctx.fillStyle = '#121a1c'; ctx.fillRect(1606, GROUND - 58, 108, 8);
+        ctx.fillStyle = P.iron; ctx.fillRect(1650, GROUND - 150, 10, 90); ctx.fillRect(1650, GROUND - 150, 34, 8); ctx.fillRect(1678, GROUND - 146, 6, 18);
+        ctx.fillStyle = '#9a8350'; ctx.fillRect(1672, GROUND - 160, 18, 6);
+      }
+      // privy with a heart cut in the door (modelled, fallback kept)
       A.crate(ctx, 1760, GROUND - 70, 80, 60, 7);
-      ctx.fillStyle = shade(P.wood, 0.6); ctx.fillRect(1860, GROUND - 230, 120, 220);
-      for (let x = 1862; x < 1980; x += 14) { ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x, GROUND - 230, 2, 220); }
-      ctx.fillStyle = '#16120e'; ctx.beginPath(); ctx.moveTo(1850, GROUND - 230); ctx.lineTo(1990, GROUND - 230); ctx.lineTo(1980, GROUND - 252); ctx.lineTo(1860, GROUND - 252); ctx.fill();
-      ctx.fillStyle = '#0c0c0c'; ctx.fillRect(1880, GROUND - 200, 70, 190);
-      ctx.fillStyle = shade(P.wood, 0.75); ctx.fillRect(1882, GROUND - 198, 66, 186);
-      ctx.fillStyle = '#060606'; ctx.beginPath(); ctx.arc(1909, GROUND - 170, 5, 0, Math.PI * 2); ctx.arc(1921, GROUND - 170, 5, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.moveTo(1904, GROUND - 168); ctx.lineTo(1915, GROUND - 156); ctx.lineTo(1926, GROUND - 168); ctx.fill();
+      if (!drawProp(ctx, 'hanbury_privy', 1917, GROUND - 10)) {
+        ctx.fillStyle = shade(P.wood, 0.6); ctx.fillRect(1860, GROUND - 230, 120, 220);
+        for (let x = 1862; x < 1980; x += 14) { ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(x, GROUND - 230, 2, 220); }
+        ctx.fillStyle = '#16120e'; ctx.beginPath(); ctx.moveTo(1850, GROUND - 230); ctx.lineTo(1990, GROUND - 230); ctx.lineTo(1980, GROUND - 252); ctx.lineTo(1860, GROUND - 252); ctx.fill();
+        ctx.fillStyle = '#0c0c0c'; ctx.fillRect(1880, GROUND - 200, 70, 190);
+        ctx.fillStyle = shade(P.wood, 0.75); ctx.fillRect(1882, GROUND - 198, 66, 186);
+        ctx.fillStyle = '#060606'; ctx.beginPath(); ctx.arc(1909, GROUND - 170, 5, 0, Math.PI * 2); ctx.arc(1921, GROUND - 170, 5, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.moveTo(1904, GROUND - 168); ctx.lineTo(1915, GROUND - 156); ctx.lineTo(1926, GROUND - 168); ctx.fill();
+      }
       // yard: beaten earth, broken flagstones, a drain
       A.vgrad(ctx, 0, GROUND - 10, WIDTH, 720 - GROUND + 10, [[0, '#3a3530'], [1, '#262320']]);
       for (let i = 0; i < 48; i++) { ctx.fillStyle = shade(P.stone, r.range(0.5, 0.8)); const fx = r.range(0, WIDTH), fy = r.range(GROUND, 710); ctx.fillRect(fx, fy, r.range(40, 110), r.range(4, 10)); ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(fx, fy + 6, 60, 2); }
