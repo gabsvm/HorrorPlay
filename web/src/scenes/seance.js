@@ -56,19 +56,44 @@ export default {
       ctx.fillStyle = '#20150e'; ctx.fillRect(440, GROUND - 200, 40, 40); ctx.fillStyle = '#c9bc98'; ctx.beginPath(); ctx.arc(460, GROUND - 182, 12, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = '#141210'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(460, GROUND - 182); ctx.lineTo(467, GROUND - 182); ctx.moveTo(460, GROUND - 182); ctx.lineTo(462, GROUND - 191); ctx.stroke();
       // the mirror: an ornate gilt frame, black glass. It reflects the room but never the inspector.
-      ctx.fillStyle = '#6a5224'; ctx.fillRect(TABLE_X - 134, 104, 268, 310);
-      ctx.fillStyle = '#8a6a2a';
-      for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(TABLE_X - 134 + i * 53.6, 104, 11, Math.PI, 0); ctx.fill(); }
-      ctx.beginPath(); ctx.moveTo(TABLE_X - 40, 104); ctx.quadraticCurveTo(TABLE_X, 60, TABLE_X + 40, 104); ctx.fill();
-      ctx.fillStyle = '#3a2c14'; ctx.fillRect(TABLE_X - 120, 118, 240, 282);
-      ctx.fillStyle = 'rgba(255,220,150,0.12)'; ctx.fillRect(TABLE_X - 134, 104, 268, 3); ctx.fillRect(TABLE_X - 134, 104, 3, 310);
-      A.vgrad(ctx, TABLE_X - 110, 128, 220, 262, [[0, '#14181a'], [1, '#0b0d0e']]);
-      ctx.fillStyle = '#060707'; ctx.fillRect(TABLE_X - 110, 330, 220, 60);
+      // The moulded frame and crest come from the pre-rendered Blender sprite
+      // (wexley_mirror, ax/ay = hole centre/hole top in sprite px). Drawn at
+      // (TABLE_X, 120) the hole lands on world rect (TABLE_X-120, 120), give
+      // or take 1 px of antialiased fringe, so the frame surrounds the painted
+      // glass (TABLE_X-122, 117, 244x273) on all four sides: the glass overlaps
+      // the hole by ~3 px everywhere and hides under the moulding (T1 drew it
+      // at y=10: ~110 px too high, crest lost off-screen, no bottom rail). The
+      // dark glass, its room reflections and the cracked overlay stay painted
+      // so they align with the sprite opening and the unchanged hotspot.
+      const GX = TABLE_X - 122, GY = 117, GW = 244, GH = 273;
+      if (!drawProp(ctx, 'wexley_mirror', TABLE_X, 120)) {
+        ctx.fillStyle = '#6a5224'; ctx.fillRect(TABLE_X - 134, 104, 268, 310);
+        ctx.fillStyle = '#8a6a2a';
+        for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(TABLE_X - 134 + i * 53.6, 104, 11, Math.PI, 0); ctx.fill(); }
+        ctx.beginPath(); ctx.moveTo(TABLE_X - 40, 104); ctx.quadraticCurveTo(TABLE_X, 60, TABLE_X + 40, 104); ctx.fill();
+        ctx.fillStyle = '#3a2c14'; ctx.fillRect(TABLE_X - 120, 118, 240, 282);
+        ctx.fillStyle = 'rgba(255,220,150,0.12)'; ctx.fillRect(TABLE_X - 134, 104, 268, 3); ctx.fillRect(TABLE_X - 134, 104, 3, 310);
+      }
+      // dark glass with a little depth: cooler at the top, near-black at the sill
+      A.vgrad(ctx, GX, GY, GW, GH, [[0, '#171d20'], [0.55, '#0e1113'], [1, '#08090a']]);
+      // the table's dark reflection along the sill, its edge catching candlelight
+      ctx.fillStyle = '#060707'; ctx.fillRect(GX, GY + GH - 62, GW, 62);
+      ctx.fillStyle = 'rgba(200,120,70,0.16)'; ctx.fillRect(GX + 8, GY + GH - 62, GW - 16, 2);
+      // the seated sitters, head and shoulders, flanking the candles
       ctx.fillStyle = '#0a0b0b';
-      ctx.beginPath(); ctx.ellipse(TABLE_X - 60, 300, 16, 20, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(TABLE_X - 80, 316, 40, 30);
-      ctx.beginPath(); ctx.ellipse(TABLE_X + 50, 304, 15, 19, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(TABLE_X + 32, 318, 38, 30);
-      ctx.fillStyle = '#c99858'; for (const dx of [-20, 4, 28]) ctx.fillRect(TABLE_X + dx, 318, 3, 8);
-      ctx.fillStyle = 'rgba(160,190,200,0.08)'; ctx.beginPath(); ctx.moveTo(TABLE_X - 100, 130); ctx.lineTo(TABLE_X - 30, 130); ctx.lineTo(TABLE_X - 100, 260); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(TABLE_X - 62, GY + 178, 17, 21, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(TABLE_X - 83, GY + 194, 42, 32);
+      ctx.beginPath(); ctx.ellipse(TABLE_X + 52, GY + 182, 16, 20, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(TABLE_X + 33, GY + 196, 40, 32);
+      // three candle flames doubled in the glass, with their soft haloes
+      ctx.fillStyle = 'rgba(255,180,110,0.10)';
+      for (const dx of [-20, 4, 28]) { ctx.beginPath(); ctx.ellipse(TABLE_X + dx + 1, GY + 203, 9, 12, 0, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = '#d8a860'; for (const dx of [-20, 4, 28]) ctx.fillRect(TABLE_X + dx, GY + 198, 4, 9);
+      ctx.fillStyle = '#ffe9c0'; for (const dx of [-20, 4, 28]) ctx.fillRect(TABLE_X + dx + 1, GY + 198, 2, 4);
+      // diagonal sheen across the black glass, doubled for depth
+      ctx.fillStyle = 'rgba(160,190,200,0.08)'; ctx.beginPath(); ctx.moveTo(GX + 12, GY + 12); ctx.lineTo(GX + 82, GY + 12); ctx.lineTo(GX + 12, GY + 142); ctx.fill();
+      ctx.fillStyle = 'rgba(160,190,200,0.045)'; ctx.beginPath(); ctx.moveTo(GX + 96, GY + 12); ctx.lineTo(GX + 126, GY + 12); ctx.lineTo(GX + 56, GY + 142); ctx.fill();
+      // inner shadow so the glass sits back inside the frame
+      ctx.fillStyle = 'rgba(0,0,0,0.38)'; ctx.fillRect(GX, GY, GW, 9); ctx.fillRect(GX, GY, 8, GH);
+      ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(GX, GY + GH - 8, GW, 8); ctx.fillRect(GX + GW - 7, GY, 7, GH);
       // spirit cabinet: black curtains embroidered with stars
       ctx.fillStyle = '#1a0f0b'; ctx.fillRect(1060, GROUND - 340, 150, 340);
       ctx.fillStyle = '#5a4520'; ctx.fillRect(1052, GROUND - 350, 166, 12);
