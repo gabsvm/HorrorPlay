@@ -1705,3 +1705,24 @@ P3 aceptados:
 - La subida de calidad se mide en baja calidad: como mucho dos parpadeos por sesión.
 
 `test-all` exit 0, 44 PASS. La etapa `browser` se ejecutó con Chrome (12/12).
+
+## Pasada de escenografía 3D (handoff 17f308d), 2026-10-16
+
+Equipo real, por orden del autor, para ahorrar cuota: **Muse Spark (Muse Code 1.4.9) implementó** y **Claude Sonnet 5.5 auditó** cada entrega (diff, capturas a 640x360 y `test-all` ejecutado por el auditor). No se usó Opus. Un rechazo de auditoría vuelve a Muse con defectos concretos; cada commit lleva el resultado ya aprobado.
+
+| Commit | Qué | Auditoría |
+|---|---|---|
+| `ee84c78` | Regresión de farolas y cajas en 7 escenas; las cajas recuperan la suciedad nocturna | aprobado |
+| `99b91ff` | Espejo de Wexley modelado en Blender | **rechazado una vez** (desalineado 110 px y marrón liso); aprobado en la segunda |
+| `14602f8` | Fotografía y mapa del cuarto, con inspección a la luz del farol | aprobado; las figuras siguen siendo pictogramas |
+| `940c53c` | Cráneo, microscopio, archivador y frascos de Greaves | **rechazado una vez** (frascos color crema, +54 % de luz); aprobado en la segunda |
+| `6a8d3cc` | Tina, mangle, fregadero y retrete del patio de Hanbury | **rechazado una vez** (todo casi blanco); aprobado en la segunda |
+| `77e2ee3` | Menos repetición en los callejones de la persecución | aprobado; el ladrillo sigue uniforme |
+| `931aa49` | Espejo más apagado (oro envejecido); barca de Nat verificada | espejo y barca aprobados; **la mejora de la foto, rechazada y revertida** (rostros huecos) |
+| `a78c3ee` | Prueba real del intercambio de Wren, el bisturí y los guardados | aprobada; dos ejecuciones con 83 comprobaciones y 0 fallos (~168 s) |
+
+Lección repetida: los sprites de Blender salen demasiado claros y limpios para el motor nocturno. Hay que pedir de entrada un valor comparable al dibujo que reemplazan y comprobarlo con medidas en el motor real, no con el render aislado.
+
+`test-all`: exit 0, 45 PASS, 0 FAIL, 0 SKIP en cada commit (la etapa `browser` tarda ahora unos 170 s).
+
+Pendiente: Android físico (rendimiento, memoria, tono en pantalla de teléfono), playtest humano, la mejora del *acting* de Thomas (sin abordar) y figuras de la fotografía con mejor ilustración. `ANDROID_DEVICE_TESTED` sigue sin declararse.
