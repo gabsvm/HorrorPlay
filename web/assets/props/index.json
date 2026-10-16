@@ -71,17 +71,40 @@
   "h": 400,
   "w": 180
  },
+ "greaves_jar_round": {
+  "ax": 23,
+  "ay": 68,
+  "h": 72,
+  "w": 46,
+  "body": 57
+ },
  "greaves_jar_squat": {
-  "ax": 22,
-  "ay": 53,
-  "h": 57,
-  "w": 44
+  "ax": 23,
+  "ay": 57,
+  "h": 61,
+  "w": 46,
+  "body": 42
  },
  "greaves_jar_tall": {
-  "ax": 22,
-  "ay": 74,
-  "h": 78,
-  "w": 44
+  "ax": 21,
+  "ay": 80,
+  "h": 84,
+  "w": 42,
+  "body": 65
+ },
+ "greaves_jar_thin": {
+  "ax": 19,
+  "ay": 57,
+  "h": 61,
+  "w": 38,
+  "body": 36
+ },
+ "greaves_jar_wide": {
+  "ax": 24,
+  "ay": 73,
+  "h": 77,
+  "w": 48,
+  "body": 58
  },
  "greaves_microscope": {
   "ax": 22,

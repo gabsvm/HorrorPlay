@@ -77,16 +77,22 @@ const NOTA_SWANSON = `<h3>SCOTLAND YARD — NOTA DEL INSPECTOR JEFE D. S. SWANSO
         <p class="small">19 de octubre de 1888 · Copia al Dr. L. Greaves, por consulta.</p>
         <p class="hand">«Al principio el doctor creyó que las heridas las había causado una persona zurda; ahora lo duda.»</p>`;
 
-// Specimen jars: the two jar sprites are shared by all 28 shelf jars, so each
-// jar is drawn from a cached copy veiled with its own olive tone. The veil reuses
-// the rng values of the procedural fallback (which stays untouched for when the
-// sprites are missing), keeping the shelf as dark and varied as the original.
+// Specimen jars: five sprites share the 28 shelf jars (tall/squat plus
+// round/thin/wide), so each jar is drawn from a cached copy veiled with its
+// own olive tone. The veil reuses the rng values of the procedural fallback
+// (which stays untouched for when the sprites are missing), keeping the
+// shelf as dark and varied as the original.
 const JAR_VEIL = 0.6;
+const JAR_NAMES = ['greaves_jar_tall', 'greaves_jar_squat', 'greaves_jar_round', 'greaves_jar_thin', 'greaves_jar_wide'];
 const jarTints = new Map();
 function drawJarTinted(ctx, name, x, y, sy, cR, cG, cB) {
   const p = propSprite(name);
   if (!p) return false;
-  const key = name + '|' + cR + ',' + cG + ',' + cB;
+  // Quantized tints bound the cache: one entry per variant and tint step,
+  // shared by every jar. The static layer is painted once, so no canvas is
+  // ever allocated per frame.
+  const qR = cR & ~3, qG = cG & ~3, qB = cB & ~3;
+  const key = name + '|' + qR + ',' + qG + ',' + qB;
   let t = jarTints.get(key);
   if (!t) {
     t = document.createElement('canvas');
@@ -95,7 +101,7 @@ function drawJarTinted(ctx, name, x, y, sy, cR, cG, cB) {
     const g = t.getContext('2d');
     g.drawImage(p.img, 0, 0, t.width, t.height);
     g.globalCompositeOperation = 'source-atop';
-    g.fillStyle = 'rgba(' + cR + ',' + cG + ',' + cB + ',' + JAR_VEIL + ')';
+    g.fillStyle = 'rgba(' + qR + ',' + qG + ',' + qB + ',' + JAR_VEIL + ')';
     g.fillRect(0, 0, t.width, t.height);
     jarTints.set(key, t);
   }
@@ -144,11 +150,21 @@ export default {
       // shelves of specimen jars, labelled in a careful hand
       ctx.fillStyle = '#1c140e'; for (let s = 0; s < 4; s++) { ctx.fillRect(300, 170 + s * 100, 300, 10); ctx.fillStyle = 'rgba(255,230,200,0.07)'; ctx.fillRect(300, 170 + s * 100, 300, 2); ctx.fillStyle = '#1c140e'; }
       const r = rng(5);
+      let prevJar = -1;
       for (let s = 0; s < 4; s++) for (let i = 0; i < 7; i++) {
         const jx = 310 + i * 41, jy = 170 + s * 100, jh = r.range(46, 78);
         const cR = r.int(70, 95), cG = r.int(78, 96), cB = r.int(48, 62), tilt = r.range(-0.3, 0.3);
-        const tall = jh > 62, sy = jh / (tall ? 59 : 39);
-        if (!drawJarTinted(ctx, tall ? 'greaves_jar_tall' : 'greaves_jar_squat', jx + 16, jy + 4 * sy, sy, cR, cG, cB)) {
+        // Deterministic pick from the same rng(5) stream (same run/resume:
+        // same jars; no Math.random, nothing time-based). A repeated pick
+        // steps aside, so neighbours never read as clones.
+        let vi = r.int(0, JAR_NAMES.length - 1);
+        if (vi === prevJar) vi = (vi + 1 + r.int(0, JAR_NAMES.length - 2)) % JAR_NAMES.length;
+        prevJar = vi;
+        // The glass body below the lid (index body) is what jh measures, so
+        // every silhouette stands on its shelf board like the old rect.
+        const pJar = propSprite(JAR_NAMES[vi]);
+        const sy = jh / ((pJar && pJar.body) || 50);
+        if (!drawJarTinted(ctx, JAR_NAMES[vi], jx + 16, jy + 4 * sy, sy, cR, cG, cB)) {
           ctx.fillStyle = `rgba(${cR},${cG},${cB},0.8)`;
           ctx.fillRect(jx, jy - jh, 32, jh);
           ctx.fillStyle = 'rgba(40,30,20,0.85)'; ctx.beginPath(); ctx.ellipse(jx + 16, jy - jh * 0.45, 9, jh * 0.22, tilt, 0, Math.PI * 2); ctx.fill();
