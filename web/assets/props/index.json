@@ -65,6 +65,36 @@
   "w": 256,
   "h": 768
  },
+ "greaves_cabinet": {
+  "ax": 90,
+  "ay": 400,
+  "h": 400,
+  "w": 180
+ },
+ "greaves_jar_squat": {
+  "ax": 22,
+  "ay": 53,
+  "h": 57,
+  "w": 44
+ },
+ "greaves_jar_tall": {
+  "ax": 22,
+  "ay": 74,
+  "h": 78,
+  "w": 44
+ },
+ "greaves_microscope": {
+  "ax": 22,
+  "ay": 86,
+  "h": 90,
+  "w": 44
+ },
+ "greaves_skull": {
+  "ax": 22,
+  "ay": 52,
+  "h": 56,
+  "w": 44
+ },
  "grind_wheel": {
   "ax": 36,
   "ay": 37,

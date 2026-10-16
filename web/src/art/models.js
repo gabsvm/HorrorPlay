@@ -24,6 +24,9 @@ export function loadProps() {
 
 export const hasProp = (name) => !!props[name];
 
+// The loaded sprite (image plus anchor), or null when it is missing: for painters that
+// post-process a prop before drawing it themselves (a per-instance tint).
+export const propSprite = (name) => props[name] || null;
 // Draw prop `name` with its origin at (x, y); flip mirrors it round x, sx/sy stretch it (a desk of
 // another length), rot turns it round its origin (a wheel). Returns false when there is no such
 // sprite, so the caller paints its own.

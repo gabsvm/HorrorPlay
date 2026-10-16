@@ -2,6 +2,7 @@
 import * as A from '../art/paint.js';
 import { QUESTIONS } from '../story/positions.js';
 import { wallpaper, wainscot, floorboards, interiorWindow, desk, chair, rug, frame } from '../art/build.js';
+import { drawProp, propSprite } from '../art/models.js';
 import { Moths } from '../engine/life.js';
 import { P } from '../art/palette.js';
 import { rng } from '../art/noise.js';
@@ -76,6 +77,36 @@ const NOTA_SWANSON = `<h3>SCOTLAND YARD — NOTA DEL INSPECTOR JEFE D. S. SWANSO
         <p class="small">19 de octubre de 1888 · Copia al Dr. L. Greaves, por consulta.</p>
         <p class="hand">«Al principio el doctor creyó que las heridas las había causado una persona zurda; ahora lo duda.»</p>`;
 
+// Specimen jars: the two jar sprites are shared by all 28 shelf jars, so each
+// jar is drawn from a cached copy veiled with its own olive tone. The veil reuses
+// the rng values of the procedural fallback (which stays untouched for when the
+// sprites are missing), keeping the shelf as dark and varied as the original.
+const JAR_VEIL = 0.6;
+const jarTints = new Map();
+function drawJarTinted(ctx, name, x, y, sy, cR, cG, cB) {
+  const p = propSprite(name);
+  if (!p) return false;
+  const key = name + '|' + cR + ',' + cG + ',' + cB;
+  let t = jarTints.get(key);
+  if (!t) {
+    t = document.createElement('canvas');
+    t.width = p.img.naturalWidth || p.w;
+    t.height = p.img.naturalHeight || p.h;
+    const g = t.getContext('2d');
+    g.drawImage(p.img, 0, 0, t.width, t.height);
+    g.globalCompositeOperation = 'source-atop';
+    g.fillStyle = 'rgba(' + cR + ',' + cG + ',' + cB + ',' + JAR_VEIL + ')';
+    g.fillRect(0, 0, t.width, t.height);
+    jarTints.set(key, t);
+  }
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(1, sy);
+  ctx.drawImage(t, -p.ax, -p.ay);
+  ctx.restore();
+  return true;
+}
+
 export default {
   id: 'greaves',
   width: WIDTH,
@@ -115,12 +146,16 @@ export default {
       const r = rng(5);
       for (let s = 0; s < 4; s++) for (let i = 0; i < 7; i++) {
         const jx = 310 + i * 41, jy = 170 + s * 100, jh = r.range(46, 78);
-        ctx.fillStyle = `rgba(${r.int(70, 95)},${r.int(78, 96)},${r.int(48, 62)},0.8)`;
-        ctx.fillRect(jx, jy - jh, 32, jh);
-        ctx.fillStyle = 'rgba(40,30,20,0.85)'; ctx.beginPath(); ctx.ellipse(jx + 16, jy - jh * 0.45, 9, jh * 0.22, r.range(-0.3, 0.3), 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#2a2016'; ctx.fillRect(jx - 2, jy - jh - 6, 36, 7);
-        ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(jx + 4, jy - jh + 4, 3, jh - 8);
-        ctx.fillStyle = '#c9bc98'; ctx.fillRect(jx + 8, jy - 20, 16, 10); ctx.fillStyle = 'rgba(40,30,20,0.6)'; ctx.fillRect(jx + 10, jy - 16, 12, 1.5);
+        const cR = r.int(70, 95), cG = r.int(78, 96), cB = r.int(48, 62), tilt = r.range(-0.3, 0.3);
+        const tall = jh > 62, sy = jh / (tall ? 59 : 39);
+        if (!drawJarTinted(ctx, tall ? 'greaves_jar_tall' : 'greaves_jar_squat', jx + 16, jy + 4 * sy, sy, cR, cG, cB)) {
+          ctx.fillStyle = `rgba(${cR},${cG},${cB},0.8)`;
+          ctx.fillRect(jx, jy - jh, 32, jh);
+          ctx.fillStyle = 'rgba(40,30,20,0.85)'; ctx.beginPath(); ctx.ellipse(jx + 16, jy - jh * 0.45, 9, jh * 0.22, tilt, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = '#2a2016'; ctx.fillRect(jx - 2, jy - jh - 6, 36, 7);
+          ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(jx + 4, jy - jh + 4, 3, jh - 8);
+          ctx.fillStyle = '#c9bc98'; ctx.fillRect(jx + 8, jy - 20, 16, 10); ctx.fillStyle = 'rgba(40,30,20,0.6)'; ctx.fillRect(jx + 10, jy - 16, 12, 1.5);
+        }
       }
       // anatomical chart
       ctx.fillStyle = '#c6b892'; ctx.fillRect(660, 140, 150, 230);
@@ -133,18 +168,20 @@ export default {
       const win = interiorWindow(ctx, 860, 160, 170, 240);
       lights.push({ x: win.x, y: win.y, r: 300, color: [0.3, 0.38, 0.45], intensity: 0.4, halo: 0, reflect: false, shaft: true, shaftY0: 166, shaftW0: 78, shaftW: 120, shaftSkew: -280, shaftK: 0.5 });
       // locked glass-fronted cabinet of case files
-      ctx.fillStyle = '#1e140c'; ctx.fillRect(1240, GROUND - 400, 180, 400);
-      ctx.fillStyle = '#2a1e14'; ctx.fillRect(1232, GROUND - 410, 196, 12);
-      ctx.fillStyle = 'rgba(30,40,40,0.9)'; ctx.fillRect(1254, GROUND - 386, 152, 220);
-      for (let s = 0; s < 3; s++) {
-        ctx.fillStyle = '#2a1e14'; ctx.fillRect(1254, GROUND - 316 + s * 70, 152, 6);
-        for (let i = 0; i < 6; i++) { ctx.fillStyle = ['#5a4a30', '#3a2a20', '#6a5a3a'][i % 3]; ctx.fillRect(1260 + i * 24, GROUND - 360 + s * 70, 18, 44); ctx.fillStyle = '#c9bc98'; ctx.fillRect(1263 + i * 24, GROUND - 350 + s * 70, 12, 6); }
+      if (!drawProp(ctx, 'greaves_cabinet', 1330, GROUND - 10)) {
+        ctx.fillStyle = '#1e140c'; ctx.fillRect(1240, GROUND - 400, 180, 400);
+        ctx.fillStyle = '#2a1e14'; ctx.fillRect(1232, GROUND - 410, 196, 12);
+        ctx.fillStyle = 'rgba(30,40,40,0.9)'; ctx.fillRect(1254, GROUND - 386, 152, 220);
+        for (let s = 0; s < 3; s++) {
+          ctx.fillStyle = '#2a1e14'; ctx.fillRect(1254, GROUND - 316 + s * 70, 152, 6);
+          for (let i = 0; i < 6; i++) { ctx.fillStyle = ['#5a4a30', '#3a2a20', '#6a5a3a'][i % 3]; ctx.fillRect(1260 + i * 24, GROUND - 360 + s * 70, 18, 44); ctx.fillStyle = '#c9bc98'; ctx.fillRect(1263 + i * 24, GROUND - 350 + s * 70, 12, 6); }
+        }
+        ctx.fillStyle = 'rgba(180,200,210,0.12)'; ctx.beginPath(); ctx.moveTo(1260, GROUND - 386); ctx.lineTo(1300, GROUND - 386); ctx.lineTo(1260, GROUND - 300); ctx.fill();
+        ctx.fillStyle = '#1e140c'; ctx.fillRect(1328, GROUND - 386, 4, 220);
+        ctx.fillStyle = '#b08a4e'; ctx.fillRect(1322, GROUND - 270, 16, 10);
+        ctx.fillStyle = '#171009'; ctx.fillRect(1254, GROUND - 150, 152, 140);
+        ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(1260, GROUND - 144, 68, 128); ctx.fillRect(1332, GROUND - 144, 68, 128);
       }
-      ctx.fillStyle = 'rgba(180,200,210,0.12)'; ctx.beginPath(); ctx.moveTo(1260, GROUND - 386); ctx.lineTo(1300, GROUND - 386); ctx.lineTo(1260, GROUND - 300); ctx.fill();
-      ctx.fillStyle = '#1e140c'; ctx.fillRect(1328, GROUND - 386, 4, 220);
-      ctx.fillStyle = '#b08a4e'; ctx.fillRect(1322, GROUND - 270, 16, 10);
-      ctx.fillStyle = '#171009'; ctx.fillRect(1254, GROUND - 150, 152, 140);
-      ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(1260, GROUND - 144, 68, 128); ctx.fillRect(1332, GROUND - 144, 68, 128);
       // articulated skeleton on its stand: the pole behind, then the bones
       const sx = 1140;
       ctx.fillStyle = '#1a1a1a'; ctx.fillRect(sx - 3, GROUND - 336, 6, 330); ctx.fillRect(sx - 30, GROUND - 6, 60, 6); ctx.fillRect(sx - 3, GROUND - 342, 26, 4);
@@ -154,10 +191,14 @@ export default {
       chair(ctx, 880, GROUND, -1);
       ctx.fillStyle = '#d4c6a0'; ctx.fillRect(620, GROUND - 104, 90, 8); ctx.fillRect(626, GROUND - 108, 70, 4);
       ctx.fillStyle = '#2a2a2a'; ctx.fillRect(780, GROUND - 112, 20, 16);
-      ctx.fillStyle = '#3a3428'; ctx.fillRect(812, GROUND - 104, 30, 6); ctx.fillRect(822, GROUND - 150, 8, 48); ctx.fillRect(818, GROUND - 156, 22, 10);
-      ctx.save(); ctx.translate(826, GROUND - 140); ctx.rotate(-0.3); ctx.fillStyle = '#9a8350'; ctx.fillRect(0, -16, 8, 26); ctx.restore();
-      ctx.fillStyle = '#c4b8a0'; ctx.beginPath(); ctx.ellipse(752, GROUND - 112, 14, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(744, GROUND - 106, 16, 8);
-      ctx.fillStyle = '#1a1612'; ctx.beginPath(); ctx.ellipse(752, GROUND - 112, 3.5, 3.5, 0, 0, Math.PI * 2); ctx.ellipse(760, GROUND - 112, 3, 3, 0, 0, Math.PI * 2); ctx.fill();
+      if (!drawProp(ctx, 'greaves_microscope', 827, GROUND - 98)) {
+        ctx.fillStyle = '#3a3428'; ctx.fillRect(812, GROUND - 104, 30, 6); ctx.fillRect(822, GROUND - 150, 8, 48); ctx.fillRect(818, GROUND - 156, 22, 10);
+        ctx.save(); ctx.translate(826, GROUND - 140); ctx.rotate(-0.3); ctx.fillStyle = '#9a8350'; ctx.fillRect(0, -16, 8, 26); ctx.restore();
+      }
+      if (!drawProp(ctx, 'greaves_skull', 752, GROUND - 99)) {
+        ctx.fillStyle = '#c4b8a0'; ctx.beginPath(); ctx.ellipse(752, GROUND - 112, 14, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(744, GROUND - 106, 16, 8);
+        ctx.fillStyle = '#1a1612'; ctx.beginPath(); ctx.ellipse(752, GROUND - 112, 3.5, 3.5, 0, 0, Math.PI * 2); ctx.ellipse(760, GROUND - 112, 3, 3, 0, 0, Math.PI * 2); ctx.fill();
+      }
       ctx.fillStyle = '#6a5a30'; ctx.fillRect(700, GROUND - 150, 6, 50); ctx.fillRect(686, GROUND - 100, 34, 6);
       ctx.fillStyle = '#1f5a3e'; ctx.beginPath(); ctx.moveTo(672, GROUND - 150); ctx.lineTo(734, GROUND - 150); ctx.lineTo(722, GROUND - 170); ctx.lineTo(684, GROUND - 170); ctx.fill();
       ctx.fillStyle = 'rgba(160,255,200,0.2)'; ctx.fillRect(684, GROUND - 168, 38, 3);
