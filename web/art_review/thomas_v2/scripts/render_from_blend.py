@@ -3,10 +3,12 @@
 Fork of web/tools/blender/figure.py (HEAD ffe46380) with V2 art deltas. NEVER writes to
 web/assets/models/. Destination is always inside web/art_review/thomas_v2/.
 
-usage: blender -b --factory-startup source/Thomas_Ashgrove_V2.blend -P scripts/render_from_blend.py -- OUT_DIR [anim,anim...]
+usage: blender -b source/Thomas_Ashgrove_V2.blend -P scripts/render_from_blend.py -- OUT_DIR [anim,anim...]
 
-WHO is a key of cast.py. The figure is built from simple solids (a lathe per part), posed frame by
-frame with the gait and the poses of Actor.drawFigure (src/engine/actor.js), and every frame is
+The meshes and materials come from the loaded .blend, not from reconstructed geometry.
+Python poses the named rig empties and reconstructs the COAT vertices each frame
+(build_coat), using the gait and poses of Actor.drawFigure (src/engine/actor.js).
+Every frame is
 rendered twice from a side camera: once flat (base colour, ambient occlusion, darker where the surface
 turns away) and once as camera-space normals. The game reduces the colour to its pixel grid and lights
 it per pixel with the normals, like the scenery. Writes into OUT_DIR: albedo.png, normal.png (RG =

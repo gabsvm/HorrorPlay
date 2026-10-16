@@ -1,0 +1,192 @@
+{
+  "title": "Thomas A/B in real Buck's Row scene, browser QA (not a full playthrough)",
+  "source": "Unmodified engine; V2.1 supplied via pre-navigation __MODELS",
+  "productionUntouched": true,
+  "androidTested": false,
+  "captures": [
+    {
+      "name": "bucks_row_640x360_production.png",
+      "variant": "production",
+      "width": 640,
+      "height": 360,
+      "state": {
+        "scene": "bucks_row",
+        "player": {
+          "x": 1470,
+          "y": 628,
+          "h": 173
+        },
+        "modelReady": true,
+        "source": "production",
+        "camX": 830,
+        "canvas": [
+          640,
+          360
+        ],
+        "count": 103
+      }
+    },
+    {
+      "name": "bucks_row_1280x720_production.png",
+      "variant": "production",
+      "width": 1280,
+      "height": 720,
+      "state": {
+        "scene": "bucks_row",
+        "player": {
+          "x": 1470,
+          "y": 628,
+          "h": 173
+        },
+        "modelReady": true,
+        "source": "production",
+        "camX": 830,
+        "canvas": [
+          640,
+          360
+        ],
+        "count": 152
+      }
+    },
+    {
+      "name": "bucks_row_walk_640x360_production.png",
+      "variant": "production",
+      "width": 640,
+      "height": 360,
+      "action": "walk",
+      "state": {
+        "scene": "bucks_row",
+        "playerX": 1513.8026754053035,
+        "camX": 854.1084535644978,
+        "frame": "walk",
+        "moving": true,
+        "talking": false,
+        "pose": null
+      }
+    },
+    {
+      "name": "bucks_row_talk_640x360_production.png",
+      "variant": "production",
+      "width": 640,
+      "height": 360,
+      "action": "talk",
+      "state": {
+        "scene": "bucks_row",
+        "playerX": 1470,
+        "camX": 832.7803899648557,
+        "frame": "talk",
+        "moving": false,
+        "talking": true,
+        "pose": null
+      }
+    },
+    {
+      "name": "bucks_row_recoil_640x360_production.png",
+      "variant": "production",
+      "width": 640,
+      "height": 360,
+      "action": "recoil",
+      "state": {
+        "scene": "bucks_row",
+        "playerX": 1470,
+        "camX": 830.0042891523684,
+        "frame": "recoil",
+        "moving": false,
+        "talking": false,
+        "pose": "recoil"
+      }
+    },
+    {
+      "name": "bucks_row_640x360_v21.png",
+      "variant": "v21",
+      "width": 640,
+      "height": 360,
+      "state": {
+        "scene": "bucks_row",
+        "player": {
+          "x": 1470,
+          "y": 628,
+          "h": 173
+        },
+        "modelReady": true,
+        "source": "candidate",
+        "camX": 830,
+        "canvas": [
+          640,
+          360
+        ],
+        "count": 115
+      }
+    },
+    {
+      "name": "bucks_row_1280x720_v21.png",
+      "variant": "v21",
+      "width": 1280,
+      "height": 720,
+      "state": {
+        "scene": "bucks_row",
+        "player": {
+          "x": 1470,
+          "y": 628,
+          "h": 173
+        },
+        "modelReady": true,
+        "source": "candidate",
+        "camX": 830,
+        "canvas": [
+          640,
+          360
+        ],
+        "count": 166
+      }
+    },
+    {
+      "name": "bucks_row_walk_640x360_v21.png",
+      "variant": "v21",
+      "width": 640,
+      "height": 360,
+      "action": "walk",
+      "state": {
+        "scene": "bucks_row",
+        "playerX": 1515.1755420322581,
+        "camX": 855.2140251221259,
+        "frame": "walk",
+        "moving": true,
+        "talking": false,
+        "pose": null
+      }
+    },
+    {
+      "name": "bucks_row_talk_640x360_v21.png",
+      "variant": "v21",
+      "width": 640,
+      "height": 360,
+      "action": "talk",
+      "state": {
+        "scene": "bucks_row",
+        "playerX": 1470,
+        "camX": 832.8784708086727,
+        "frame": "talk",
+        "moving": false,
+        "talking": true,
+        "pose": null
+      }
+    },
+    {
+      "name": "bucks_row_recoil_640x360_v21.png",
+      "variant": "v21",
+      "width": 640,
+      "height": 360,
+      "action": "recoil",
+      "state": {
+        "scene": "bucks_row",
+        "playerX": 1470,
+        "camX": 830.0583850818784,
+        "frame": "recoil",
+        "moving": false,
+        "talking": false,
+        "pose": "recoil"
+      }
+    }
+  ]
+}

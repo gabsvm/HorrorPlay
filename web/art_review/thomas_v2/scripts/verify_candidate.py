@@ -73,7 +73,10 @@ g34 = Image.open(os.path.join(ROOT, 'comparison', '03_gameplay_640x360_antes_des
 check('03 is 640x360', g34.size == (640, 360), str(g34.size))
 g47 = Image.open(os.path.join(ROOT, 'comparison', '04_gameplay_1280x720_pixelado.png'))
 check('04 is 1280x720', g47.size == (1280, 720), str(g47.size))
-print('NOT_TESTED in-engine lighting (no se edito el juego para cargar el candidato)')
-print('NOT_TESTED captura real del juego / Android (mockup E en su lugar)')
+if 'game_candidate_v21' in os.path.basename(CAND):
+    print('PARTIAL   Buck\'s Row was tested in a real browser with the unchanged engine (see comparison/ab_bucks_row); this validator does not launch the browser')
+    print('NOT_TESTED Android / full story / physical-device frame rate')
+else:
+    print('NOT_TESTED V2.0 inside actual game engine / Android; the 03 comparison is a mockup')
 print('RESULT', 'PASS' if not fails else f'FAIL {fails}')
 sys.exit(1 if fails else 0)
