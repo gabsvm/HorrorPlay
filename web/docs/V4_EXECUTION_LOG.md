@@ -1726,3 +1726,19 @@ Lección repetida: los sprites de Blender salen demasiado claros y limpios para 
 `test-all`: exit 0, 45 PASS, 0 FAIL, 0 SKIP en cada commit (la etapa `browser` tarda ahora unos 170 s).
 
 Pendiente: Android físico (rendimiento, memoria, tono en pantalla de teléfono), playtest humano, la mejora del *acting* de Thomas (sin abordar) y figuras de la fotografía con mejor ilustración. `ANDROID_DEVICE_TESTED` sigue sin declararse.
+
+## Pasada de pulido artístico y UX (orden SONNET_MUSE, base 62c81ea), 2026-10-16
+
+Mismo esquema: **Muse Spark** (Muse Code 1.4.9, `--contributor-mode on`) implementó; **Claude Sonnet 5.5** audió cada entrega con el diff, las capturas del motor a 640x360 miradas una a una y `test-all` ejecutado por el auditor. Sin Opus. Una ejecución de Muse se detuvo y relanzó al principio por no llevar el modo contribuidor.
+
+| Entrega | Commit | Resultado | Iteraciones y rechazos |
+|---|---|---|---|
+| A. Fotografía de Thomas y Nat | `725401f` | aprobada | 3 intentos. 1.º: figuras de maniquí con sonrisa de dientes y miembros de robot. 2.º: cara de peluche (ojos enormes, orejas) y cuerpos de arcilla. 3.º: dos niños angulares en el mismo lenguaje de figura que Thomas V2, brazo del mayor continuo sobre el hombro del menor. La raspadura de c3 cae exactamente sobre el mayor. |
+| B. Inspección de foto y mapa | `caa0a21` | aprobada | 1. Una sola zona medida sobre la imagen real en vez de un radio de 800; efectos idénticos a los antiguos, sin disparo doble; ~30 comprobaciones nuevas en navegador (ratón, toque simulado, c1/c3/c4, cordura −4 una vez). |
+| C. Frascos de Greaves | `5b89196` | aprobada | 1. Cinco variantes, reparto determinista, luminancia −4 % frente a la base. |
+| D. Mangle de Hanbury | este commit | **limitación aceptada, sin cambio de juego** | 1. El mangle comparte franja con la casera y con Thomas; los huecos libres invaden `steps` o `annie`, o esconden la tina aprobada. Mover actores queda fuera de alcance. Evidencia y razonamiento en `web/art_review/hanbury_yard/v2/`. |
+| E. Higiene | este commit | hecha | `git diff --check` limpio en todo el rango; sin rutas personales en el código (solo `/tmp` en los scripts de trabajo antiguos de `thomas_v2/working`); `web/art_review/README.md` con herramientas y flujo; los recursos nuevos verificados dentro del APK (píxeles incluidos). |
+
+Resultados: `test-all` exit 0, **45 PASS, 0 FAIL, 0 SKIP** en cada commit (la etapa `browser` dura ahora unos 220 s). Canon, guardados, cordura y progresión sin cambios: la única lógica que se tocó fue `room.js` (zonas de inspección y guarda de una vez por apertura), con las mismas consecuencias, comprobadas en el navegador.
+
+NOT_TESTED: Android físico (APK instalado, tacto real, memoria, FPS, temperatura, suspensión del WebView), lector de pantalla y playtest humano. Observaciones P3 abiertas: el abrigo del mayor sale algo azulado para una albúmina monocroma; en la pared la foto sigue siendo una mancha sepia a 47 px; el mangle sigue medio oculto por la casera.
