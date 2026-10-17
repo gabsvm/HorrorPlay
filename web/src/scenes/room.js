@@ -282,9 +282,9 @@ export default {
           calm: true,
           points: [
             // measured on the 1280x720 close-up: both boys (the elder's hand on the
-            // younger's shoulder) span x 470-743, y 231-556 inside the plate (x 80-1199,
-            // y 40-556); the circle holds heads, torsos and the contact, off the cardboard
-            { id: 'mirar', x: 600, y: 370, r: 180, name: 'La fotografía', act: async (G) => {
+            // younger's shoulder) span x 503-760, y 139-404 inside the card (x 412-867,
+            // y 58-662); the circle holds heads, torsos and the contact, off the table and the cartouche
+            { id: 'mirar', x: 640, y: 270, r: 185, name: 'La fotografía', act: async (G) => {
               if (done) return;
               done = true;
               if (p === 'c1') {
