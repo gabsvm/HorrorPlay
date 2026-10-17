@@ -4,7 +4,7 @@ import { coatOnPeg, bowlerOnPeg, bullseyeLantern, bootsPair, newspaper, bottle, 
 import { wallpaper, wainscot, floorboards, rug, interiorWindow, bed, desk, chair, bookcase } from '../art/build.js';
 import { Moths } from '../engine/life.js';
 import { P } from '../art/palette.js';
-import { drawProp } from '../art/models.js';
+import { drawProp, hasProp } from '../art/models.js';
 
 const WIDTH = 1500, GROUND = 662;
 
@@ -18,6 +18,9 @@ export default {
   spawn: 760,
   surface: 'wood',
   space: 'room',
+  // the wall photograph changes with the chapter (intact, then scraped), so the
+  // static layer is baked per phase: a visit never keeps the other face on the wall
+  variant: (G) => (phase(G) === 'c1' ? 'c1' : 'torn'),
   // the clock on the wall over the desk; the street comes through the window glass
   sounds: [{ kind: 'clock', x: 1396, vol: 0.8, reach: 900 }],
   indoor: true,
@@ -29,8 +32,9 @@ export default {
   beds: { rain: 0.22, room: 0.4 },
   music: null,
 
-  build(R) {
+  build(R, G) {
     const lights = [];
+    let photoKind = 'intact';
     const near = R.paintLayer(WIDTH, (ctx) => {
       ctx.fillStyle = '#0b0a09'; ctx.fillRect(0, 0, WIDTH, 720);
       wallpaper(ctx, 0, 40, WIDTH, GROUND - 160, { seed: 21 });
@@ -69,8 +73,16 @@ export default {
       for (const fx of [440, 468, 494]) { ctx.beginPath(); ctx.moveTo(fx, GROUND - 330); ctx.quadraticCurveTo(fx + 4, GROUND - 250, fx - 2, GROUND - 176); ctx.stroke(); }
       A.stain(ctx, 404, GROUND - 336, 124, 170, { seed: 33, alpha: 0.5 });
       }
-      // a framed photograph over the bed: two boys on the Limehouse steps
-      if (!drawProp(ctx, 'room_photo', 680, GROUND - 400)) {
+      // a framed photograph over the bed: two boys on the Limehouse steps. From chapter
+      // three the elder boy's face is scraped away, so the torn sprite replaces the intact
+      // one (centred where the old frame hung); the kind baked here is recorded on the
+      // built layer so the live pass knows whether the damage is already on the wall.
+      const wantTorn = G && phase(G) !== 'c1';
+      if (wantTorn && hasProp('room_photo_torn') && drawProp(ctx, 'room_photo_torn', 700, GROUND - 404)) {
+        photoKind = 'torn';
+      } else if (!wantTorn && drawProp(ctx, 'room_photo', 700, GROUND - 404)) {
+        photoKind = 'intact';
+      } else {
       ctx.fillStyle = '#3a2a16'; ctx.fillRect(680, GROUND - 400, 110, 84); ctx.fillStyle = '#6a5428'; ctx.fillRect(680, GROUND - 400, 110, 3);
       A.vgrad(ctx, 688, GROUND - 392, 94, 68, [[0, '#8a8272'], [1, '#5a544a']]);
       ctx.fillStyle = '#2a2622';
@@ -113,7 +125,7 @@ export default {
       ctx.fillRect(0, 0, 70, 720);
       ctx.fillRect(1700, 600, 90, 120); ctx.fillRect(1690, 590, 110, 14);
     });
-    return { layers: [{ canvas: near, parallax: 1, kind: 'near' }, { canvas: fg, parallax: 1.2, kind: 'fg' }], lights };
+    return { layers: [{ canvas: near, parallax: 1, kind: 'near' }, { canvas: fg, parallax: 1.2, kind: 'fg' }], lights, photo: photoKind };
   },
 
   makeLife() {
@@ -158,8 +170,10 @@ export default {
     if (p === 'c1' && !G?.flag('boots_on')) bootsPair(ctx, 212, GROUND);
     if (p === 'c3b' && !G?.flag('paper_read')) newspaper(ctx, 196, GROUND + 14, -0.1);
     if (p === 'c3b') dissectionCase(ctx, 816, GROUND - 2);
-    // by chapter three the face of the older boy in the photograph has been scratched away
-    if (p !== 'c1') { ctx.fillStyle = '#c9c0ae'; ctx.fillRect(709, GROUND - 377, 14, 16); ctx.strokeStyle = '#7a7060'; ctx.lineWidth = 1.5; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(708 + i * 4, GROUND - 378); ctx.lineTo(712 + i * 3, GROUND - 361); ctx.stroke(); } }
+    // by chapter three the face of the older boy in the photograph has been scratched away;
+    // the torn wall sprite carries the damage, so the old procedural scratch only stays as
+    // a fallback while that sprite is missing from the baked layer
+    if (p !== 'c1' && this.built?.photo !== 'torn') { ctx.fillStyle = '#c9c0ae'; ctx.fillRect(709, GROUND - 377, 14, 16); ctx.strokeStyle = '#7a7060'; ctx.lineWidth = 1.5; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(708 + i * 4, GROUND - 378); ctx.lineTo(712 + i * 3, GROUND - 361); ctx.stroke(); } }
   },
 
   drawGlow(ctx, t) {
