@@ -1742,3 +1742,18 @@ Mismo esquema: **Muse Spark** (Muse Code 1.4.9, `--contributor-mode on`) impleme
 Resultados: `test-all` exit 0, **45 PASS, 0 FAIL, 0 SKIP** en cada commit (la etapa `browser` dura ahora unos 220 s). Canon, guardados, cordura y progresión sin cambios: la única lógica que se tocó fue `room.js` (zonas de inspección y guarda de una vez por apertura), con las mismas consecuencias, comprobadas en el navegador.
 
 NOT_TESTED: Android físico (APK instalado, tacto real, memoria, FPS, temperatura, suspensión del WebView), lector de pantalla y playtest humano. Observaciones P3 abiertas: el abrigo del mayor sale algo azulado para una albúmina monocroma; en la pared la foto sigue siendo una mancha sepia a 47 px; el mangle sigue medio oculto por la casera.
+
+## Integración de las ilustraciones 2D de la fotografía (orden ASSETS_2D, base fb429ef), 2026-10-16
+
+Muse Spark (`--contributor-mode on`) implementó y Claude Sonnet 5.5 audió, mirando cada captura del motor a 640x360, con `test-all` ejecutado por el auditor. Sin Opus. Paquete del autor: ocho PNG de 1448x1086 (candidatos, no definitivos); sus SHA-256 y el destino de cada uno están en `web/art_review/room_photo_map/2d_integration/REPORT.md`.
+
+| Entrega | Commit | Resultado | Notas |
+|---|---|---|---|
+| A. Fotografía en el close-up (01 y 02) | `5e991b9` | aprobada | Tarjeta vertical recortada sin estirar sobre una mesa oscura; luminancia 112 frente a 120; mismas transformaciones en intacta y raspada (diferencia fuera del daño 0,28/255); raspado solo en el mayor. Zona de inspección recalculada. |
+| B. Sprite de pared (05) y raspado de pared (02) | `e282cb8` | aprobada | Alfa real, 70x92, luminancia 74,5 frente a 75. Corrige un fallo real: la caché de la capa del cuarto imponía la foto de la primera visita a todas las fases (`variant` por fase). Sin duplicar el raspado procedural. |
+| C. Mapa (04) | — | **rechazada, se mantiene el actual** | Cartela de 1890, fechas y orden de crímenes erróneos, spoilers en capítulo 1. |
+| D. Overlays (06 y 08) | — | **rechazada, no usados** | Halos rojos y amarillos; cobertura alfa 18,2 % y 14,1 % con cajas casi de toda la imagen; sin alineación. |
+
+`test-all`: exit 0, 45 PASS, 0 FAIL, 0 SKIP en cada commit; etapa `browser` ~229 s. Canon, textos, cordura, guardados y progresión sin cambios; lo único tocado en `room.js` son la zona de inspección de la foto, el horneado por fase de la pared y el dibujo del raspado.
+
+NOT_TESTED: Android físico, memoria, FPS, lector de pantalla y playtest humano. P3: a ~35x46 px los rostros de la pared no son legibles (el detalle está en el close-up); el cartón del close-up se ve algo frío a ojo.
