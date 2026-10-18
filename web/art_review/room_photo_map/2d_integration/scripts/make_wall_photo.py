@@ -17,6 +17,13 @@
 #   python web/art_review/room_photo_map/2d_integration/scripts/make_wall_photo.py
 # Output: work/candidates/room_photo_<tag>.png + room_photo_torn_<tag>.png
 #   (from 02 with the same transform), plus metrics on stdout.
+# Required inputs (versioned in ../../source/): 05 (intact wall sprite) and
+# 02 (scraped photo). The discarded 03/07 candidates are strictly optional:
+# when present their room_photo_<tag>.png is also generated for comparison,
+# when absent they are skipped with a notice and the finals still build.
+# 01 is versioned too but never required here (close-up pipeline only).
+# Finals are CANDIDATES (room_photo_final.png, room_photo_torn_final.png):
+# this script never writes web/assets/props/ (see compare_wall_finals.py).
 import os
 from PIL import Image, ImageFilter, ImageDraw
 import numpy as np
@@ -31,6 +38,9 @@ CANDIDATES = {
     "05": "05_sprite_pared_foto_alto_contraste.png",
     "07": "07_sprite_pared_foto_pixel_safe.png",
 }
+# The chosen intact source and the scraped source: both versioned, both
+# required. Every other CANDIDATES entry is a strictly optional extra.
+FINAL_TAG = "05"
 TORN_SRC = "02_foto_raspada_thomas_nat.png"
 
 BG_WHITE = 242
@@ -158,10 +168,24 @@ def build_sprite(card_full, alpha_full, box, name, canvas_w=None, ref_card=None)
     return out
 
 
+def missing(path):
+    return not os.path.isfile(path)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
+    req = {FINAL_TAG: CANDIDATES[FINAL_TAG], "torn": TORN_SRC}
+    for tag, fn in req.items():
+        if missing(os.path.join(SOURCE, fn)):
+            print("missing required source: " + os.path.join(SOURCE, fn))
+            return 1
+    present = {tag: fn for tag, fn in CANDIDATES.items()
+               if not missing(os.path.join(SOURCE, fn))}
+    for tag, fn in CANDIDATES.items():
+        if tag not in present:
+            print("skip optional extra %s (not versioned): %s" % (tag, fn))
     intact = {tag: Image.open(os.path.join(SOURCE, fn)).convert("RGB")
-              for tag, fn in CANDIDATES.items()}
+              for tag, fn in present.items()}
     torn = Image.open(os.path.join(SOURCE, TORN_SRC)).convert("RGB")
     for p in list(intact.values()) + [torn]:
         assert p.size == (1448, 1086), p.size
@@ -188,9 +212,9 @@ def main():
     # 05's window (ZNCC, coarse-to-fine) and tone-matched to the intact card:
     # c1/c3 differ only in the scrape. Both share one FINAL_W x FINAL_H
     # canvas: one placement, one hotspot fit.
-    x0, y0, x1, y1 = boxes["05"]
+    x0, y0, x1, y1 = boxes[FINAL_TAG]
     w05, h05 = x1 - x0 + 1, y1 - y0 + 1
-    card05 = intact["05"].crop((x0, y0, x1 + 1, y1 + 1))
+    card05 = intact[FINAL_TAG].crop((x0, y0, x1 + 1, y1 + 1))
     tx0, ty0, tx1, ty1 = boxes["torn"]
     card02 = torn.crop((tx0, ty0, tx1 + 1, ty1 + 1))
     c5 = card05.resize((w05 // 4, h05 // 4), Image.LANCZOS)
@@ -201,13 +225,13 @@ def main():
                              range(max(0, cdy * 4 - 4), cdy * 4 + 5))
     print("register 02->05 coarse=(%d,%d,%.4f) fine=(%d,%d,%.4f)" % (cdx, cdy, cs, dx, dy, fs))
     reg02 = card02.crop((dx, dy, dx + w05, dy + h05))
-    _, soft05 = card_mask(intact["05"])
-    x0, y0, x1, y1 = boxes["05"]
-    ref = grade(np.asarray(intact["05"].crop(
+    _, soft05 = card_mask(intact[FINAL_TAG])
+    x0, y0, x1, y1 = boxes[FINAL_TAG]
+    ref = grade(np.asarray(intact[FINAL_TAG].crop(
         (x0, y0, x1 + 1, y1 + 1)).resize(
         (round((x1 - x0 + 1) * (CARD_H / (y1 - y0 + 1))), CARD_H),
         Image.LANCZOS)).astype(float))
-    sp = build_sprite(intact["05"], soft05, boxes["05"], "room_photo_final",
+    sp = build_sprite(intact[FINAL_TAG], soft05, boxes[FINAL_TAG], "room_photo_final",
                       canvas_w=FINAL_W)
     sp.save(os.path.join(OUT, "room_photo_final.png"))
     _, soft_t = card_mask(torn)

@@ -29,3 +29,6 @@ web/tools/voices/.refs/
 web/tools/voices/.retake.txt
 unity/HorrorPlay/Assets/ThirdPartyRaw/
 unity/HorrorPlay/Assets/ThirdPartyRaw.meta
+
+# QA/generated candidates (P2-B photo work); never commit temp PNGs
+web/art_review/room_photo_map/2d_integration/work/
