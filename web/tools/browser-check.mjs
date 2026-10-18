@@ -9,10 +9,10 @@
 //     the keyboard alone, the prefilled signature is selected, the «Repasar» button stays in view, and at 640x360 no text
 //     is under 11 CSS px, with real key and mouse events
 //   node web/tools/browser-check.mjs        (CHROME=<path> to choose the browser; skipped if none is found)
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, extname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,16 +37,47 @@ const server = createServer(async (req, res) => {
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}`;
 
+// Chrome tree killer: on Windows taskkill /T /F FIRST while the parent is alive
+// (proc.kill() first orphans the children: the parent PID is gone before taskkill runs).
+// Elsewhere proc.kill() is enough. Only called while proc is still in liveProcs.
+function killTree(proc) {
+  if (!proc) return;
+  if (process.platform === 'win32' && proc.pid && proc.exitCode === null && proc.signalCode === null) {
+    try { spawnSync('taskkill', ['/PID', String(proc.pid), '/T', '/F'], { stdio: 'ignore', timeout: 15000 }); } catch {}
+    if (proc.exitCode !== null || proc.signalCode !== null) return;
+  }
+  try { proc.kill(); } catch {}
+}
+// Windows orphan sweep: chrome.exe can outlive its parent, so a PID tree kill can
+// miss instances. Stop ONLY the chrome.exe whose CommandLine carries this run's
+// unique temp profile id (elh-bc-*). The id is generated internally (base36, no
+// shell metacharacters) and re-validated here, so the interpolation below is safe.
+// No-op off Windows; errors are swallowed (best effort, before rmProfile).
+function killOrphansByProfile(profileId) {
+  if (process.platform !== 'win32') return;
+  if (!/^elh-bc-[A-Za-z0-9-]+$/.test(profileId || '')) return;
+  try {
+    spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+      `Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object { $_.CommandLine -like '*${profileId}*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`],
+      { stdio: 'ignore', timeout: 15000 });
+  } catch {}
+}
+const rmProfile = (profile) => { try { rmSync(profile, { recursive: true, force: true }); } catch {} };
+const waitExit = (proc, ms = 10000) => new Promise((r) => {
+  if (!proc || proc.exitCode !== null || proc.signalCode !== null) return r();
+  const t = setTimeout(r, ms); proc.once('exit', () => { clearTimeout(t); r(); });
+});
+const liveProcs = new Set();
 // one headless Chrome per run; `flags` lets a run take WebGL away
 async function browser(flags = [], { w = 1280, h = 720, reduce = false, block = [] } = {}) {
   const port = 9500 + Math.floor(Math.random() * 400);
-  const proc = spawn(chromePath, ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${join(tmpdir(), 'elh-bc-' + Date.now() + Math.random())}`,
-    `--window-size=${w},${h}`, '--no-first-run', '--autoplay-policy=no-user-gesture-required', ...flags, 'about:blank'], { stdio: 'ignore' });
+  const profileId = 'elh-bc-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10); const profile = join(tmpdir(), profileId); const proc = spawn(chromePath, ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,
+    `--window-size=${w},${h}`, '--no-first-run', '--autoplay-policy=no-user-gesture-required', ...flags, 'about:blank'], { stdio: 'ignore' }); proc.__elhProfileId = profileId; liveProcs.add(proc); proc.on('exit', () => { liveProcs.delete(proc); });
   let target;
   for (let i = 0; i < 80 && !target; i++) { try { target = await (await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT' })).json(); } catch { await sleep(150); } }
-  if (!target) { proc.kill(); throw new Error('Chrome no responde'); }
+  if (!target) { killTree(proc); await waitExit(proc); killOrphansByProfile(profileId); rmProfile(profile); liveProcs.delete(proc); throw new Error('Chrome no responde'); }
   const ws = new WebSocket(target.webSocketDebuggerUrl);
-  await new Promise((r) => ws.addEventListener('open', r));
+  try { await Promise.race([new Promise((r, j) => { ws.addEventListener('open', r, { once: true }); ws.addEventListener('error', j, { once: true }); }), sleep(15000).then(() => { throw new Error('Chrome no responde (websocket)'); })]); } catch (e) { try { ws.close(); } catch {} killTree(proc); await waitExit(proc); killOrphansByProfile(profileId); rmProfile(profile); liveProcs.delete(proc); throw e; }
   let id = 0; const pend = new Map(); const errors = [];
   ws.addEventListener('message', (e) => {
     const m = JSON.parse(e.data);
@@ -67,7 +98,7 @@ async function browser(flags = [], { w = 1280, h = 720, reduce = false, block = 
   const key = async (k, o = {}) => { const code = { ArrowRight: 'ArrowRight', ArrowLeft: 'ArrowLeft', Tab: 'Tab', Enter: 'Enter', Escape: 'Escape', ' ': 'Space' }[k] || undefined; const vk = { ArrowRight: 39, ArrowLeft: 37, Tab: 9, Enter: 13, Escape: 27, ' ': 32 }[k]; const mods = (o.shift ? 8 : 0); await send('Input.dispatchKeyEvent', { type: 'keyDown', key: k, code, windowsVirtualKeyCode: vk, modifiers: mods, text: k.length === 1 ? k : (k === 'Enter' ? String.fromCharCode(13) : undefined) }); await send('Input.dispatchKeyEvent', { type: 'keyUp', key: k, code, windowsVirtualKeyCode: vk, modifiers: mods }); await sleep(60); };
   const typeText = async (t) => { for (const ch of t) { await send('Input.dispatchKeyEvent', { type: 'keyDown', key: ch, text: ch }); await send('Input.dispatchKeyEvent', { type: 'keyUp', key: ch }); await sleep(40); } };
   const click = async (x, y) => { await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y }); await sleep(50); await send('Input.dispatchMouseEvent', { type: 'mousePressed', x, y, button: 'left', buttons: 1, clickCount: 1 }); await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x, y, button: 'left', buttons: 0, clickCount: 1 }); await sleep(80); };
-  return { ev, open, errors, requests, key, typeText, click, send, close: () => { ws.close(); proc.kill(); } };
+  let dead = false; return { ev, open, errors, requests, key, typeText, click, send, close: async () => { if (dead) return; dead = true; try { try { ws.close(); } catch {} killTree(proc); await waitExit(proc); killOrphansByProfile(profileId); rmProfile(profile); } finally { liveProcs.delete(proc); } } };
 }
 
 const fails = [];
@@ -248,7 +279,7 @@ try {
     const runFps = (await drawn()) - r0;
     need(pausedFps > 5 && pausedFps < 16 && runFps > 30, `en pausa ${pausedFps.toFixed(1)} fps, jugando ${runFps} fps`);
     need(!b.errors.length, `sin errores de JS${b.errors.length ? ': ' + b.errors.slice(0, 3).join(' | ') : ''}`);
-  } finally { b.close(); }
+  } finally { await b.close(); }
 
   // ---- QA-V5-003: the typefaces are the game's own: with the Google font hosts blocked, the four faces load from the
   // game and no request leaves for another host
@@ -263,7 +294,7 @@ try {
     const hosts = [...new Set(f.requests.map((u) => new URL(u).host))].filter((h) => !/^127\.0\.0\.1(:\d+)?$/.test(h));
     need(!hosts.length, `fuentes: ninguna petición sale a otro servidor${hosts.length ? ' (' + hosts.join(', ') + ')' : ''}`);
     need(!/fonts\.(googleapis|gstatic)/.test(await f.ev('document.documentElement.outerHTML')), 'fuentes: la página no enlaza con Google Fonts');
-  } finally { f.close(); }
+  } finally { await f.close(); }
 
   // ---- QA-V5-002: with reduced motion a scene starts at zoom 1 (and without it, settling in from 1.07)
   const rm = await browser([], { reduce: true });
@@ -275,13 +306,13 @@ try {
     await rm.ev(`(async () => { await game.goto('bucks_row', { fade: false, noEnter: true }); return true; })()`); await sleep(300);
     const z2 = await rm.ev('({ z: game.zoom.z, fx: game.r.fx.zoom[0] })');
     need(z2.z === 1 && z2.fx === 1, 'movimiento reducido: al cambiar de escena tampoco hay zoom de entrada');
-  } finally { rm.close(); }
+  } finally { await rm.close(); }
   const nm = await browser();
   try {
     await nm.open('scene=bucks_row&noenter&x=1000');
     const z = await nm.ev('({ z: game.zoom.z, pref: matchMedia("(prefers-reduced-motion: reduce)").matches })');
     need(!z.pref && z.z > 1.0 && z.z <= 1.07, `sin movimiento reducido: la entrada sigue asentándose desde 1,07 (${z.z.toFixed(3)})`);
-  } finally { nm.close(); }
+  } finally { await nm.close(); }
 
   // ---- QA-V5-016: at 640x360 and 800x360 nothing is under 11 CSS px and nothing runs off the window
   for (const [w, h] of [[640, 360], [800, 360]]) {
@@ -300,7 +331,7 @@ try {
         const m = await sm.ev(MEASURE);
         need(m.n > 0 && !m.small.length && !m.clipped.length, `${w}x${h} ${name}: ningún texto bajo 11 px ni fuera de la ventana (${m.n} textos${m.small.length ? '; pequeños: ' + m.small.join(', ') : ''}${m.clipped.length ? '; fuera: ' + m.clipped.join(', ') : ''})`);
       }
-    } finally { sm.close(); }
+    } finally { await sm.close(); }
   }
 
   // ---- T7: Wren's penny-to-scalpel exchange, played for real (no FAST, no scene= shortcuts)
@@ -447,7 +478,7 @@ try {
     await wplay('wren', ['penique', 'por que']);
     need((await wren.ev(`({ paid: !!game.state.flags.wren_paid, items: game.state.items })`)).paid, 'wren e2e: rehecha desde el guardado de antes, la secuencia completa funciona');
     need(!wren.errors.length && !(await wren.ev(`(game.scriptErrors || []).length`)), 'wren e2e: ningún error de JS');
-  } finally { wren.close(); }
+  } finally { await wren.close(); }
   // ---- T8: the room photograph and map inspections, played for real at 640x360 (no FAST)
   // Each inspection has a single precise point (room.js): the cardboard, the cartouche, the
   // compass rose and the corners never examine; the figures and the street grid do, once per
@@ -591,18 +622,92 @@ try {
     await closeHot();
     const resume = await pm.ev(`localStorage.getItem('elhuesped.save.v1.resume')`);
     need(!!resume && JSON.parse(resume).state.scene === 'room', 'foto/mapa: el guardado sigue coherente en el cuarto');
+    // ---- P2-B: the wall photograph across phases, in this same instance ----
+    // room_phase c1 -> c3a -> c3b -> c1 with a layer rebuild exactly like
+    // goto() does (room.js variant keys the cache room@<rs>@c1/@torn): the
+    // baked photo must read intact/torn/torn/intact, the cache must hold both
+    // keys at once (a first-visit bake must never stick), and the baked wall
+    // must really change between phases (sprite diff far above the zero
+    // re-bake floor; no strict pixel equality anywhere, weather lives in the
+    // live pass, not in the baked layers). With built.photo 'torn' the
+    // drawNear guard (this.built?.photo !== 'torn', room.js) is false, so the
+    // scraped wall gets no extra procedural scrape; c3a/c3b share the one
+    // torn bake. A live save/resume round-trip must keep the torn bake, and
+    // with the torn PNG blocked at the network (CDP, no asset renamed) c3
+    // must fall back to intact and recover after unblocking. T8 above stays
+    // untouched; its final no-JS-errors check below covers this block too.
+    const shotBody = `const sc = game.scene;
+      const near = sc.layers.find((l) => l.kind === 'near').canvas;
+      const px = near.getContext('2d').getImageData(0, 0, near.width, near.height).data;
+      const st = 4, cells = [];
+      for (let y = 0; y < near.height; y += st) for (let x = 0; x < near.width; x += st) {
+        const i = (y * near.width + x) * 4;
+        cells.push(px[i], px[i + 1], px[i + 2]);
+      }
+      return { photo: sc.built && sc.built.photo, variant: sc.variant(game.G),
+        keys: [...game.layerCache.keys()].filter((k) => String(k).startsWith('room@')),
+        guard: sc.built?.photo !== 'torn', w: near.width, h: near.height, st, cells };`;
+    const readShot = () => pm.ev(`(() => { ${shotBody} })()`);
+    const bakeShot = (phase) => pm.ev(`(() => { game.state.flags.room_phase = ${JSON.stringify(phase)}; game.state.chapter = ${phase === 'c1' ? "'c1'" : "'c3'"}; game.buildLayers(game.scene); ${shotBody} })()`);
+    const shotDiff = (a, b) => {
+      let n = 0, sum = 0, changed = 0, x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1;
+      const cols = Math.ceil(a.w / a.st);
+      for (let i = 0; i < a.cells.length; i += 3) {
+        const d = (Math.abs(a.cells[i] - b.cells[i]) + Math.abs(a.cells[i + 1] - b.cells[i + 1]) + Math.abs(a.cells[i + 2] - b.cells[i + 2])) / 3;
+        n++; sum += d;
+        if (d > 25) { changed++; const cx = (i / 3 % cols) * a.st, cy = Math.floor(i / 3 / cols) * a.st; if (cx < x0) x0 = cx; if (cy < y0) y0 = cy; if (cx > x1) x1 = cx; if (cy > y1) y1 = cy; }
+      }
+      return { mean: sum / n, changed, box: [x0, y0, x1, y1] };
+    };
+    const s1 = await bakeShot('c1');
+    need(s1.photo === 'intact' && s1.variant === 'c1' && s1.keys.some((k) => k.endsWith('@c1')), `foto fase c1: intacta en su caché (${s1.photo}/${s1.variant} [${s1.keys}])`);
+    const s3a = await bakeShot('c3a');
+    const s3b = await bakeShot('c3b');
+    for (const [nm, s] of [['c3a', s3a], ['c3b', s3b]]) need(s.photo === 'torn' && s.variant === 'torn' && s.guard === false, `foto fase ${nm}: raspada horneada sin raspado procedural extra (${s.photo}/${s.variant})`);
+    need(s3a.keys.some((k) => k.endsWith('@c1')) && s3a.keys.some((k) => k.endsWith('@torn')), `foto caché: conviven c1 y torn sin reutilizar la primera visita ([${s3a.keys}])`);
+    const dAA = shotDiff(s3a, s3b);
+    need(dAA.changed === 0, `foto c3a/c3b: un solo horneado torn compartido (${dAA.changed} celdas distintas)`);
+    const d13 = shotDiff(s1, s3b);
+    const pcx = 735 / 1500 * s1.w, pcy = 304 / 720 * s1.h;
+    const inPhoto = d13.box[0] <= pcx && pcx <= d13.box[2] && d13.box[1] <= pcy && pcy <= d13.box[3];
+    const tight = (d13.box[2] - d13.box[0]) < s1.w * 0.25 && (d13.box[3] - d13.box[1]) < s1.h * 0.5;
+    need(d13.changed > 20 && inPhoto && tight, `foto c1/c3: el sprite cambia de verdad en la foto (${d13.changed} celdas, caja [${d13.box}])`);
+    const s1b = await bakeShot('c1');
+    need(s1b.photo === 'intact', 'foto vuelta a c1: la capa c3 no se queda pegada');
+    need(shotDiff(s1, s1b).changed === 0, 'foto re-horneado c1: suelo de ruido cero en la capa horneada');
+    // save/resume as a real fixture: live save bytes, then resume through the real path
+    await pm.ev(`(game.state.flags.room_phase = 'c3b', game.state.chapter = 'c3', game.buildLayers(game.scene), game.save(), true)`);
+    const rawSave = await pm.ev(`localStorage.getItem('elhuesped.save.v1')`);
+    need(!!rawSave && JSON.parse(rawSave).flags.room_phase === 'c3b' && JSON.parse(rawSave).scene === 'room', 'foto guardado: el save real trae room_phase c3b en el cuarto');
+    await pm.ev(`(async () => { window.__rePhoto = false; await game.resume({ state: JSON.parse(localStorage.getItem('elhuesped.save.v1')), x: 740, facing: 1 }); window.__rePhoto = true; return true; })()`);
+    for (let i = 0; i < 60 && !(await pm.ev('window.__rePhoto && game.running === 0')); i++) await sleep(300);
+    const re = await readShot();
+    need((await pm.ev(`game.state.flags.room_phase`)) === 'c3b' && re.photo === 'torn' && re.variant === 'torn', `foto reanudación: la fase y el horneado raspado sobreviven (${re.photo}/${re.variant})`);
+    // fallback with the torn PNG blocked at the network: no asset renamed
+    const waitRoom = async () => { for (let i = 0; i < 80; i++) { await sleep(250); if (await pm.ev(`game.scene?.id === 'room' && game.r.presented > 3`).catch(() => false)) break; } };
+    const nReq = pm.requests.length;
+    await pm.send('Network.setBlockedURLs', { urls: ['*room_photo_torn.png'] });
+    await pm.open('scene=room&noenter&x=740');
+    await waitRoom();
+    const fb = await bakeShot('c3b');
+    need(fb.photo === 'intact' && pm.requests.slice(nReq).some((u) => u.includes('room_photo_torn.png')), `foto fallback: sin el PNG raspado la c3 hornea intacta (${fb.photo})`);
+    await pm.send('Network.setBlockedURLs', { urls: [] });
+    await pm.open('scene=room&noenter&x=740');
+    await waitRoom();
+    const un = await bakeShot('c3b');
+    need(un.photo === 'torn', `foto desbloqueo: con red, la c3 vuelve a hornear raspada (${un.photo})`);
     need(!pm.errors.length && !(await pm.ev('(game.scriptErrors || []).length')), 'foto/mapa: ningún error de JS');
-  } finally { pm.close(); }
+  } finally { await pm.close(); }
   // ---- no WebGL at all: the message, not a black screen
   const n = await browser(['--disable-3d-apis', '--disable-webgl']);
   try {
     await n.open('');
     const f = await n.ev(`(() => { const e = document.getElementById('fatal'); return e ? e.textContent : null; })()`);
     need(!!f && /WebGL/.test(f) && /partidas guardadas no se han tocado/.test(f), 'sin WebGL: se explica en pantalla y no se toca nada');
-  } finally { n.close(); }
+  } finally { await n.close(); }
 } catch (err) {
   fails.push(String(err && err.message || err));
   console.log('FALLO', err);
-} finally { server.close(); }
+} finally { for (const p of [...liveProcs]) { killTree(p); killOrphansByProfile(p.__elhProfileId); } server.close(); }
 console.log(fails.length ? `\n${fails.length} fallo(s)` : '\nnavegador: todo bien');
 process.exit(fails.length ? 1 : 0);
