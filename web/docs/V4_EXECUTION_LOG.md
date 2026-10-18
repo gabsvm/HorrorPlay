@@ -1757,3 +1757,13 @@ Muse Spark (`--contributor-mode on`) implementó y Claude Sonnet 5.5 audió, mir
 `test-all`: exit 0, 45 PASS, 0 FAIL, 0 SKIP en cada commit; etapa `browser` ~229 s. Canon, textos, cordura, guardados y progresión sin cambios; lo único tocado en `room.js` son la zona de inspección de la foto, el horneado por fase de la pared y el dibujo del raspado.
 
 NOT_TESTED: Android físico, memoria, FPS, lector de pantalla y playtest humano. P3: a ~35x46 px los rostros de la pared no son legibles (el detalle está en el close-up); el cartón del close-up se ve algo frío a ojo.
+
+## Release 1.0-rc33 (APK incremental sobre RC32), 2026-10-18
+
+Muse Spark 1.3 (`--contributor-mode on`) construyó; ChatGPT auditó el paquete, la firma y los recursos. Sin cambios de juego, imágenes ni assets: rebuild versionado para actualizar RC32 sin desinstalar. El APK se distribuye como GitHub Release, no como archivo versionado en Git.
+
+- Origen: HEAD `ff81556` (`reboot/web-el-huesped`), árbol limpio; `VERSION=1.0-rc33`, `VERSION_CODE=205` explícitos.
+- Salida: `web/dist/el-huesped.apk` (5 633 423 bytes), copiado a `web/dist/ElHuesped-1.0-rc33.apk`; RC32 no sobrescrito. Artefactos en `web/dist/`, ignorado por git. Clave reutilizada `web/android/debug.keystore` (no regenerada, no commiteada).
+- Verificación: `aapt dump badging` → `com.gabsvm.elhuesped`, `versionCode=205` (> 200), `versionName=1.0-rc33`; `apksigner verify` exit 0 en ambas; certificado SHA-256 idéntico al de RC32 (`a3ccebc3…2d62`); integridad zip OK (18 entradas en ambas); SHA-256 de contenido difieren (rebuild + versión).
+- Reproducible desde PowerShell en `C:\Dev\HorrorPlay\web`: `$env:VERSION='1.0-rc33'; $env:VERSION_CODE='205'; & 'C:/Program Files/Git/bin/bash.exe' 'C:/Dev/HorrorPlay/web/tools/build-apk.sh'`; después, `Copy-Item dist/el-huesped.apk dist/ElHuesped-1.0-rc33.apk`. SHA-256 APK RC33: `EFF343AD1017589C586B59FD328DE0B5F6F4D79B4CCA712425683C0EAADAE4F9`.
+- ANDROID_PHYSICAL_NOT_TESTED: instalación en Motorola del usuario y QA interactivo pendientes; no se tocó el dispositivo ni sus datos. `test-all` 45 PASS ya aprobada, no relanzada.
