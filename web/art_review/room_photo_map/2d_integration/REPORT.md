@@ -208,6 +208,42 @@ aspecto anterior (dif. media 1,79/255 = suelo de ruido de lluvia).
 
 Variantes de pared: se evaluaron 03, 05 y 07 dentro del motor (`comparison/cmp_variants_wall.png`) y se eligió la 05; 03 y 07 se descartaron y no se versionan.
 
+## Regeneración P2-A (reproducible desde checkout limpio, sin 03/07)
+
+Comando (rutas relativas a la raíz del repo, sin rutas personales):
+
+- `python web/art_review/room_photo_map/2d_integration/scripts/make_wall_photo.py`
+- `python web/art_review/room_photo_map/2d_integration/scripts/compare_wall_finals.py`
+
+Dependencias: Python 3 + Pillow + numpy (verificado con Pillow 12.3.0,
+numpy 2.5.3). Entradas obligatorias (versionadas en `source/`): `05_…` y
+`02_…`; `01_…` nunca es obligatoria aquí (solo close-up). Extras
+estrictamente opcionales: `03_…`/`07_…` se generan si aparecen y se avisa
+`skip optional extra` si no; los finales no los necesitan. Geometría,
+tonalidad, alineación (ZNCC), marcos y filtros intactos; los finales salen
+como CANDIDATOS a `work/candidates/` y el script jamás escribe
+`web/assets/props/`.
+
+Medida P2-A (17-oct-2026, sin 03/07 en disco): exit 0, registro
+`02->05 (30,4,0.7157)`, medias finales 74,5/74,5; `compare_wall_finals.py`
+**MATCH**, exit 0: ambos finales 70x92 RGBA con alfa efectivo, diff medio
+0,0000/255 y máx. 0/255 contra `room_photo.png`/`room_photo_torn.png`
+(idénticos al byte) más hoja visual lado a lado en `work/candidates/`.
+Producción sin tocar: si difirieran, se informa y NO se publica.
+
+## Auditoría independiente P2-A/P2-B — ChatGPT + Muse Spark 1.3 Contributor (17-oct-2026)
+
+Muse Code 1.4.10 implementó los cambios con `--model muse-spark-1.3 --contributor-mode on`; ChatGPT inspeccionó diffs, reprodujo el generador y ejecutó las pruebas mediante Desktop Commander Remote.
+
+- **P2-A:** `python web/art_review/room_photo_map/2d_integration/scripts/make_wall_photo.py` = exit 0 sin originales 03/07; `compare_wall_finals.py` = MATCH, exit 0. Ambos finales 70×92 RGBA y diferencia máxima 0/255 con los PNG de producción. Arte de producción no modificado.
+- **P2-B:** `node web/tools/browser-check.mjs` = exit 0 (244,66 s), secuencia c1→c3a→c3b→c1 con la misma instancia del motor; caché por variante; 21 celdas visualmente distintas en la región de la foto y 0 entre c3a/c3b; guardado/reanudación, fallo deliberado de carga del PNG raspado y recuperación tras desbloquear la carga; sin errores JS.
+- **Suite independiente final:** `node web/tools/test-all.mjs` = **45 PASS, 0 FAIL, 0 SKIP**, exit 0, 443,23 s (etapa browser 234,6 s). `node web/tools/unit.mjs`: 182 bien, 0 mal. `git diff --check` sin errores.
+- **Chrome:** se corrigió la limpieza del árbol y de procesos huérfanos por identificador del perfil temporal. Después de `test-all`, **0** procesos Chrome con perfil `elh-bc-*`, frente a 16 procesos Chrome normales preexistentes; consumo de RAM observado 68,2 %.
+- **Inspección visual:** capturas nuevas de motor a 640×360 (pared c1/c3, close-up c1/c3, farol dentro y fuera de las figuras), inspeccionadas por ChatGPT; no se observaron desplazamientos ni halos. Las capturas quedaron temporalmente fuera de Git en `%TEMP%\huesped-photo-audit\`.
+- **P3 físico (revisión inicial):** `adb devices -l` sin dispositivos autorizados. **ANDROID_PHYSICAL_NOT_TESTED**; requiere validación manual en dispositivo Android físico. No equivale a PASS de Android.
+- **Actualización por ChatGPT/RDC (revisión posterior):** ADB detecta un Motorola `moto g86 power 5G` por Wi-Fi (dos entradas para el mismo equipo). La app `com.gabsvm.elhuesped` instalada declara `versionName=1.0-rc32`, consistente con `web/dist/ElHuesped-1.0-rc32.apk`. No se manipuló el teléfono ni se instaló una APK porque tenía otra aplicación en primer plano. Estado **ANDROID_PHYSICAL_NOT_TESTED**, ahora por falta de QA interactivo, no por falta de conexión.
+- **Revalidación independiente posterior (ChatGPT/RDC):** suite `node web/tools/test-all.mjs` completada otra vez: **45 PASS, 0 FAIL, 0 SKIP**, exit 0, 443,76 s; etapa browser 234,1 s. Tras la suite, 0 procesos Chrome con perfil `elh-bc-*` (16 procesos Chrome sin ese perfil), RAM medida 66,7 %. La regeneración y comparación P2-A desde worktree temporal creado desde HEAD más los scripts corregidos finalizó con exit 0 y diferencia de píxeles máxima 0/255; el worktree temporal fue retirado.
+
 ### Huellas SHA-256 de los ocho originales del paquete (sin modificar)
 
 | Archivo | SHA-256 | Estado |
