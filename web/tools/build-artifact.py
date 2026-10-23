@@ -17,6 +17,15 @@ html = open(os.path.join(web, 'index.html'), encoding='utf-8').read()
 css = open(os.path.join(web, 'styles.css'), encoding='utf-8').read()
 # the typefaces (assets/fonts) travel inside the page as data URIs, like the sounds and the figures
 css = re.sub(r'url\(assets/fonts/([\w.-]+\.woff2)\)', lambda m: 'url(data:font/woff2;base64,' + base64.b64encode(open(os.path.join(web, 'assets', 'fonts', m.group(1)), 'rb').read()).decode() + ')', css)
+# In APK (single HTML), embed each CSS paper texture as a data URI.
+# Explicit names avoid unreliable relative URLs and fragile regex escaping.
+for name in ('carta', 'expediente', 'recorte'):
+    filename = name + '_paper_960x540.webp'
+    token = "url('assets/documents/" + filename + "')"
+    if token not in css:
+        raise ValueError('Missing paper reference in CSS: ' + token)
+    encoded = base64.b64encode(open(os.path.join(web, 'assets', 'documents', filename), 'rb').read()).decode()
+    css = css.replace(token, 'url(data:image/webp;base64,' + encoded + ')')
 css += NL + ':root{color-scheme:dark}html,body{height:100%;background:#000}' + NL
 # the licences of the typefaces travel with them (assets/fonts/LICENSES.md): OFL 1.1 for IM Fell, Apache 2.0 for Special Elite
 lic = '<!-- Tipografias incluidas: IM Fell English / IM Fell English SC (SIL Open Font License 1.1) y Special Elite (Apache License 2.0).' + NL + NL.join(open(os.path.join(web, 'assets', 'fonts', n), encoding='utf-8').read() for n in ('OFL.txt', 'LICENSE-2.0.txt')) + NL + '-->' + NL

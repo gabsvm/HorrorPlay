@@ -17,8 +17,7 @@ for nb in sorted(nbs.glob("*.ipynb")):
     count=0
     for code in codes:
         if code.startswith("%"):continue
-        if nb.name.startswith("02") and "from diffusers import AutoPipelineForInpainting" in code:continue
-        if nb.name.startswith("02") and "SEEDS=[1888]" in code:continue
+        # V2 hands RUN_AI=False: execute its CPU fallback and output checks.
         # Keep all generated smoke outputs out of the repository and Colab path.
         code=code.replace("/content/horrorplay_", "C:/Dev/HorrorPlay_Colab_QA/horrorplay_")
         code=code.replace("from IPython.display import display", "display=lambda *a,**kw:None")

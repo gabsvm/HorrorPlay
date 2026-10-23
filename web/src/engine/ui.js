@@ -277,6 +277,12 @@ export class UI {
     const opener = document.activeElement;   // a menu button that opened it gets its focus back
     this._docOpenT = performance.now();
     this.el.docBody.innerHTML = html;
+    // Text remains authored in the engine. Only the paper texture changes.
+    const heading = (String(html).match(/<h3[^>]*>([\s\S]*?)<\/h3>/i)?.[1] || '')
+      .replace(/<[^>]*>/g, '').toLocaleLowerCase('es');
+    const paperKind = /recorte|prensa|peri[oó]dico/.test(heading) ? 'recorte'
+      : /expediente|informe|divisi[oó]n|registro cl[ií]nico|historial/.test(heading) ? 'expediente' : 'carta';
+    this.el.doc.querySelector?.('.doc-paper')?.setAttribute?.('data-paper-kind', paperKind);
     this.el.doc.classList.remove('hidden');
     audio.paper();
     try { $('doc-close').focus({ preventScroll: true }); } catch { /* not focusable yet: the click still works */ }

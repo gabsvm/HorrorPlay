@@ -173,6 +173,22 @@ html.touch .choice-prompt, html.small .choice-prompt { font-size: max(calc(22 * 
 /* Document viewer */
 #document { z-index: 50; position: absolute; inset: 0; background: rgba(0,0,0,0.78); display: flex; align-items: center; justify-content: center; }
 .doc-paper { position: relative; width: calc(640 * var(--u)); max-height: calc(620 * var(--u)); padding: calc(44*var(--u)) calc(50*var(--u)); background: radial-gradient(ellipse at 40% 30%, #ddd0b0, #b9a47a); color: var(--paper-ink); font-family: var(--type); font-size: calc(19 * var(--u)); line-height: 1.5; box-shadow: 0 calc(20*var(--u)) calc(60*var(--u)) #000; transform: rotate(-0.8deg); }
+/* Colab paper textures V2: optimized WebP skins, with all typography kept as HTML. */
+#document > .doc-paper {
+  background-color: #d9c4a0;
+  background-image: linear-gradient(rgba(245,231,205,.09),rgba(245,231,205,.09)),
+    url('assets/documents/carta_paper_960x540.webp');
+  background-size: cover;
+  background-position: center;
+}
+#document > .doc-paper[data-paper-kind="expediente"] {
+  background-image: linear-gradient(rgba(248,232,205,.22),rgba(248,232,205,.22)),
+    url('assets/documents/expediente_paper_960x540.webp');
+}
+#document > .doc-paper[data-paper-kind="recorte"] {
+  background-image: linear-gradient(rgba(248,232,205,.22),rgba(248,232,205,.22)),
+    url('assets/documents/recorte_paper_960x540.webp');
+}
 .doc-paper h3 { font-family: var(--sc); font-weight: normal; text-align: center; margin: 0 0 calc(16*var(--u)); font-size: calc(24*var(--u)); letter-spacing: 0.08em; }
 .doc-paper .hand { font-family: var(--serif); font-style: italic; font-size: calc(22*var(--u)); }
 .doc-paper .red { color: #8f1810; font-family: var(--serif); font-style: italic; font-size: calc(23*var(--u)); }
