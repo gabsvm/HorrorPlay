@@ -28,3 +28,14 @@ Usar inpainting con un modelo abierto para mejorar el realismo de los dos niños
 
 ## QA pendiente antes de integrar
 Comparar en el motor real los close-ups de la habitación (capítulos 1 y 3) a 640×360, asegurar anclas y hotspots, ejecutar `node web/tools/test-all.mjs` y validar APK y rendimiento en el teléfono Android. El notebook no afirma ejecutar esas pruebas.
+
+## Revisión del experimento — 23/10/2026
+
+La primera tanda de Colab (1888/1911/1926) funcionó técnicamente pero **no está aprobada**:
+
+- El polígono original dejaba fuera ambos rostros y centraba el inpainting en ropa y cuerpo.
+- La función que dibujaba la raspadura usaba anclas obsoletas y generaba manchas blancas sobre cuerpo y fondo.
+
+El notebook corregido incluye ambas caras y transfiere la raspadura de la **fotografía original dañada** mediante su delta respecto a la original intacta; así se conserva el dibujo real de los arañazos en vez de inventarlo. También incorpora el ajuste `use_safetensors=False, variant="fp16"`, que funcionó en Colab T4.
+
+La versión arreglada requiere **generar nuevos candidatos**. No reutilizar las tres imágenes raspadas del primer ZIP. Ejecutar `py -3 web/art_review/room_photo_map/colab/verify_notebook.py` para comprobar máscaras, referencias y sintaxis (sin GPU). La calidad final sigue necesitando aprobación humana y pruebas en el motor.
