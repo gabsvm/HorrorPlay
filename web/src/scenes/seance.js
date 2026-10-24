@@ -114,6 +114,8 @@ export default {
       ctx.fillStyle = '#0c0b0c'; ctx.beginPath(); ctx.ellipse(1025, GROUND - 176, 12, 18, 0.2, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.moveTo(1034, GROUND - 188); ctx.lineTo(1046, GROUND - 184); ctx.lineTo(1034, GROUND - 180); ctx.fill();
       ctx.strokeStyle = 'rgba(190,210,215,0.3)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(1004, GROUND - 152); ctx.lineTo(1004, GROUND - 196); ctx.arc(1025, GROUND - 196, 21, Math.PI, 0); ctx.lineTo(1046, GROUND - 152); ctx.stroke();
       }
+      // Victorian birdcage on the parlour's shadowed left side, ambient only.
+      drawProp(ctx, 'scenario_cage', 125, GROUND);
       // the sitters' balloon-back chairs (Wexley's faces left, the widow's right); the young man's
       // is hidden behind the table
       drawProp(ctx, 'balloon_chair', TABLE_X + 178, GROUND, { flip: true });
