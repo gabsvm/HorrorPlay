@@ -142,8 +142,8 @@ export default {
       for (const lx of [700, 1800, 2900, 3800]) { const l = A.lampPost(ctx, lx, GROUND, 330, { bracket: true }); lights.push({ x: l.x, y: l.y, r: 360, color: P.gas, intensity: 0.7, flicker: 0.15, halo: 70, shaft: true, shaftW: 90 }); }
       // Scenario 3D: purely scenic sprites (no lights, doors or interaction hotspots).
       // Sprites are loaded only when imported; absent assets leave the original scene intact.
-      drawProp(ctx, 'scenario_lantern', 565, GROUND);
-      drawProp(ctx, 'scenario_gargoyle', 2525, 300);
+      drawProp(ctx, 'scenario_lantern', 900, GROUND);
+      drawProp(ctx, 'scenario_gargoyle', 2830, 270);
       // end: steps down to the culvert
       ctx.fillStyle = '#030404'; ctx.beginPath(); ctx.moveTo(4000, GROUND); ctx.lineTo(4000, GROUND - 120); ctx.arc(4100, GROUND - 120, 100, Math.PI, 0); ctx.lineTo(4200, GROUND); ctx.fill();
       ctx.strokeStyle = '#4a463e'; ctx.lineWidth = 12; ctx.beginPath(); ctx.arc(4100, GROUND - 120, 106, Math.PI, 0); ctx.stroke();

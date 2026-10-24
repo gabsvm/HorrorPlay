@@ -106,7 +106,7 @@ def optimize(proof, target, height):
     r, g, b, a = cropped.split()
     rgb = Image.merge("RGB", (r, g, b))
     rgb = ImageEnhance.Color(rgb).enhance(0.70)
-    rgb = ImageEnhance.Brightness(rgb).enhance(0.73)
+    rgb = ImageEnhance.Brightness(rgb).enhance(0.88)
     rgb = Image.blend(ImageOps.colorize(rgb.convert("L"), black="#1e1b17", white="#b7aa8f"), rgb, 0.60)
     result = rgb.convert("RGBA")
     result.putalpha(a)

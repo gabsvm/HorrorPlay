@@ -9,7 +9,7 @@
       "target_height": 72,
       "scene": "alleys",
       "location": [
-        565,
+        900,
         630
       ],
       "approx_download_mb": 4.92
@@ -31,7 +31,7 @@
       "target_height": 112,
       "scene": "seance",
       "location": [
-        125,
+        520,
         664
       ],
       "approx_download_mb": 104.33
@@ -42,8 +42,8 @@
       "target_height": 82,
       "scene": "alleys",
       "location": [
-        2525,
-        300
+        2830,
+        270
       ],
       "approx_download_mb": 66.36
     }

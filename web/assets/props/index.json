@@ -62,8 +62,8 @@
  "gas_lamp": {
   "ax": 128,
   "ay": 706,
-  "w": 256,
-  "h": 768
+  "h": 768,
+  "w": 256
  },
  "greaves_cabinet": {
   "ax": 90,
@@ -74,37 +74,37 @@
  "greaves_jar_round": {
   "ax": 23,
   "ay": 68,
+  "body": 57,
   "h": 72,
-  "w": 46,
-  "body": 57
+  "w": 46
  },
  "greaves_jar_squat": {
   "ax": 23,
   "ay": 57,
+  "body": 42,
   "h": 61,
-  "w": 46,
-  "body": 42
+  "w": 46
  },
  "greaves_jar_tall": {
   "ax": 21,
   "ay": 80,
+  "body": 65,
   "h": 84,
-  "w": 42,
-  "body": 65
+  "w": 42
  },
  "greaves_jar_thin": {
   "ax": 19,
   "ay": 57,
+  "body": 36,
   "h": 61,
-  "w": 38,
-  "body": 36
+  "w": 38
  },
  "greaves_jar_wide": {
   "ax": 24,
   "ay": 73,
+  "body": 58,
   "h": 77,
-  "w": 48,
-  "body": 58
+  "w": 48
  },
  "greaves_microscope": {
   "ax": 22,
@@ -201,6 +201,30 @@
   "ay": 51,
   "h": 55,
   "w": 53
+ },
+ "scenario_cage": {
+  "ax": 30,
+  "ay": 111,
+  "h": 112,
+  "w": 61
+ },
+ "scenario_gargoyle": {
+  "ax": 37,
+  "ay": 81,
+  "h": 82,
+  "w": 74
+ },
+ "scenario_key": {
+  "ax": 46,
+  "ay": 18,
+  "h": 19,
+  "w": 92
+ },
+ "scenario_lantern": {
+  "ax": 19,
+  "ay": 71,
+  "h": 72,
+  "w": 38
  },
  "seance_table": {
   "ax": 167,

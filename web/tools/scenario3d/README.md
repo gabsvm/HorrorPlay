@@ -1,42 +1,40 @@
-# Scenario 3D → El Huésped — integración provisional
+# Scenario Labs 3D Collection → El Huésped
 
-Origen: https://huggingface.co/datasets/scenario-labs/3d-collection · licencia declarada del dataset: CC BY 4.0. Créditos añadidos a la pantalla de créditos.
+Fuente: https://huggingface.co/datasets/scenario-labs/3d-collection
+Licencia declarada del dataset: Creative Commons Attribution 4.0 (CC BY 4.0). Se añadió atribución en los créditos del juego.
 
-## Los cuatro recursos elegidos
+## Assets integrados como sprites prerenderizados
 
-| Sprite | ID de Scenario | Escena |
-|---|---|---|
-| scenario_lantern | fKt7GfxXBazxCJDuukgANgja | Alley x565, suelo |
-| scenario_key | MUU29AV1YPaK1A2i5KDPgHcW | Greaves x790, escritorio |
-| scenario_cage | exfG8ymTBAYY5NR3q3n2AQBM | Wexley x125, suelo |
-| scenario_gargoyle | AeppvCPdcSpBz3DYzxrv3GaU | Alley x2525, fachada |
+| Sprite | Identificador de Scenario | Escena | Dimensiones PNG | Función |
+| --- | --- | --- | --- | --- |
+| scenario_lantern | fKt7GfxXBazxCJDuukgANgja | Callejones, x900 | 38×72 | Decoración bajo farolas |
+| scenario_key | MUU29AV1YPaK1A2i5KDPgHcW | Estudio Greaves, x790 | 92×19 | Decoración del escritorio |
+| scenario_cage | exfG8ymTBAYY5NR3q3n2AQBM | Salón Wexley, x520 | 61×112 | Jaula ornamentada |
+| scenario_gargoyle | AeppvCPdcSpBz3DYzxrv3GaU | Callejones, x2830 | 74×82 | Ornamentación de fachada |
 
-El motor de HorrorPlay no carga GLB. Los GLB se importan con Blender para prerenderizar PNG con transparencia, se optimizan y se incluyen en web/assets/props junto a index.json. Las llamadas de escena drawProp no alteran hotspots y no hacen nada mientras no existan los PNG.
+Cada GLB se descargó individualmente a un directorio temporal de Windows, verificó como glTF binario v2 y se renderizó con **Blender 5.2.2 LTS**. Se optimizaron con Pillow a PNG RGBA comprimido y se registraron los anclajes en `web/assets/props/index.json`. No se distribuyen GLB originales.
 
-**Estado: rama de preparación, sin validar ni fusionar.** No se pudo ejecutar Blender ni capturar el juego porque el PC autorizado figura OFFLINE.
+Tamaños finales de las cuatro imágenes PNG: **6870, 3475, 15554 y 12848 bytes**, aproximadamente 38,7 KB en total. Los GLB originales suman ~193 MB; no forman parte del HTML/APK.
 
-## Cuando vuelva la conexión a Windows
+## Integración
 
-Desde la raíz del repo, con Blender y Python/Pillow instalados:
+Las escenas añaden referencias decorativas con `drawProp`. Los sprites faltantes no rompen la pintura del nivel. No se agregaron hotspots, pistas ni mecánicas. Por diseño, la llave es un objeto ambiental y no una llave que pueda recogerse.
 
-    git switch art/scenario3d-props-20261023
-    py -3 -m pip install Pillow
-    py -3 web/tools/scenario3d/build.py --blender "C:\Program Files\Blender Foundation\Blender 4.3\blender.exe"
+El código reproductible queda en:
+- `web/tools/scenario3d/build.py`: descargas, verificación estructural, optimización PNG e instalación que rehúsa sobrescribir props ya existentes.
+- `web/tools/scenario3d/render_glb.py`: importación y renderización de GLB en Blender.
+- `web/tools/scenario3d/manifest.json`: procedencia, licencia, objetivos de tamaño y ubicación.
 
-La ejecución por defecto descarga modelos y genera vistas de prueba **sin tocar los assets jugables**. Los archivos estarán en %TEMP%\HorrorPlay_Scenario3D\proof. Ajustar perspectiva, luz y tamaño según A/B antes de instalar.
+Para hacer una **nueva prueba sin modificar el juego**, volver a ejecutar `build.py --blender "RUTA_REAL_A_BLENDER.exe"` sin `--install`. La instalación original ya fue realizada, y posteriores modificaciones se deben revisar en una rama/commit antes de reemplazar los PNG.
 
-Después de revisar y aprobar los cuatro PNG:
+## Verificaciones efectuadas
+- Blender 5.2.2 importó y renderizó exitosamente los cuatro GLB sin errores; geometría 38.155 / 332.100 / 2.801.544 / 1.482.036 triángulos respectivamente.
+- Prueba en navegador Chromium/Edge real: las escenas `alleys`, `greaves` y `seance` cargaron, y `hasProp(name)` devolvió `true` para los cuatro nombres.
+- Capturas reales a 640×360 en `web/art_review/scenario3d/Scene3D_QA_640.jpg`; farol, gárgola y jaula visibles; llave más discreta, ambientación sin interacción.
+- El empaquetador `web/tools/build-artifact.py --apk` generó un HTML autocontenido de prueba que contiene las cuatro imágenes. **La prueba utilizó JS mínimo** y no constituye una APK compilada.
+- Prueba física Android: **pendiente**. No considerar validada la performance móvil hasta realizarla.
 
-    py -3 web/tools/scenario3d/build.py --install --blender "RUTA_REAL_A_BLENDER.exe"
+## Procedencia y atribución
+Modelos por Scenario Labs, dataset «3d-collection», bajo CC BY 4.0. Adaptación de materiales y conversión a sprites por HorrorPlay. Identificadores exactos en la tabla anterior y enlace a la colección al principio del archivo.
 
-El instalador añade cuatro sprites y sus metadatos y rehúsa sobrescribir entradas existentes. Los GLB fuentes NO se embeben en la APK: tamaños aproximados de descarga 4,92 + 16,16 + 104,33 + 66,36 MiB.
-
-## QA obligatoria antes de fusionar
-
-1. Ejecutar node web/tools/unit.mjs, node web/tools/smoke.mjs y node web/tools/test-all.mjs --quick.
-2. Capturar en Chromium a 640×360 las escenas alleys, greaves y seance; comparar visibilidad, anclajes, oclusiones, paleta y hotspots.
-3. Revisar especialmente: llave decorativa no debe inducir a un puzle inexistente; gárgola no debe flotar ni sugerir un edificio gótico donde no corresponde; jaula no debe bloquear la puerta; el farol no debe confundir la salida.
-4. Revisar el empaquetador web/tools/build-artifact.py para confirmar que los nuevos PNG están embebidos mediante el índice. Probar un APK Android real y calidad/rendimiento.
-5. Sólo entonces fusionar a reboot/web-el-huesped.
-
-Licencia y atribución: Scenario Labs, 3D Collection, CC BY 4.0. Adaptación a sprites por HorrorPlay; comprobar licencia de cada registro antes de distribuir.
+No introducir estos sprites como objetos coleccionables o pistas sin revisar antes el diseño narrativo y los hotspots.
