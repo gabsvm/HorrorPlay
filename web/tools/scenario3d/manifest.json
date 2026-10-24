@@ -1,0 +1,51 @@
+{
+  "source": "https://huggingface.co/datasets/scenario-labs/3d-collection",
+  "license": "CC-BY-4.0",
+  "attribution": "Scenario Labs — 3D Collection, https://huggingface.co/datasets/scenario-labs/3d-collection",
+  "assets": [
+    {
+      "name": "scenario_lantern",
+      "id": "fKt7GfxXBazxCJDuukgANgja",
+      "target_height": 72,
+      "scene": "alleys",
+      "location": [
+        565,
+        630
+      ],
+      "approx_download_mb": 4.92
+    },
+    {
+      "name": "scenario_key",
+      "id": "MUU29AV1YPaK1A2i5KDPgHcW",
+      "target_height": 19,
+      "scene": "greaves",
+      "location": [
+        790,
+        554
+      ],
+      "approx_download_mb": 16.16
+    },
+    {
+      "name": "scenario_cage",
+      "id": "exfG8ymTBAYY5NR3q3n2AQBM",
+      "target_height": 112,
+      "scene": "seance",
+      "location": [
+        125,
+        664
+      ],
+      "approx_download_mb": 104.33
+    },
+    {
+      "name": "scenario_gargoyle",
+      "id": "AeppvCPdcSpBz3DYzxrv3GaU",
+      "target_height": 82,
+      "scene": "alleys",
+      "location": [
+        2525,
+        300
+      ],
+      "approx_download_mb": 66.36
+    }
+  ]
+}
