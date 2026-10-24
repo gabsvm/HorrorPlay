@@ -46,6 +46,18 @@
         270
       ],
       "approx_download_mb": 66.36
+    },
+    {
+      "name": "scenario_barrel",
+      "id": "32YByDGjPViGn8xZj9ZxFNMP",
+      "target_height": 64,
+      "scene": "alleys",
+      "location": [
+        300,
+        630
+      ],
+      "source_sha256": "de71bfc71de0f92af7196edb72805abf3170b5149e1bcf14753dbe27acb8a2d8",
+      "license": "CC-BY-4.0"
     }
   ]
 }

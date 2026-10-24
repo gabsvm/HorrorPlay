@@ -38,3 +38,10 @@ Para hacer una **nueva prueba sin modificar el juego**, volver a ejecutar `build
 Modelos por Scenario Labs, dataset «3d-collection», bajo CC BY 4.0. Adaptación de materiales y conversión a sprites por HorrorPlay. Identificadores exactos en la tabla anterior y enlace a la colección al principio del archivo.
 
 No introducir estos sprites como objetos coleccionables o pistas sin revisar antes el diseño narrativo y los hotspots.
+
+## 24 Oct 2026 — Reemplazo del barril procedural
+- **Origen:** Scenario Labs `32YByDGjPViGn8xZj9ZxFNMP`, CC BY 4.0, prompt «A large wooden barrel reinforced with dark metal bands…». GLB SHA-256: `de71bfc71de0f92af7196edb72805abf3170b5149e1bcf14753dbe27acb8a2d8`.
+- Importado con Blender 5.2.2: **87.596 triángulos**, original **9,3 MiB**; se distribuye exclusivamente como PNG RGBA **60 × 64 px**, unos **9 KB**.
+- En `web/src/scenes/alleys.js`, las apariciones procedurales `A.barrel` usan ahora `drawProp('scenario_barrel')` conservando el área original (40×46 escalada por `s`) y la misma secuencia de RNG. Si el sprite no carga, vuelve a `A.barrel` automáticamente.
+- **No sustituir ciegamente los otros dos usos de `A.barrel`:** en Buck's Row representa el **balde pequeño del niño**; en Hanbury Yard solo aparece como *fallback* de una **tina de lavado**. Reemplazarlos por un barril grande rompería la lógica visual.
+- QA: PNG alfa válido, manifiesto, dimensiones, `node --check`, HTML autocontenido `--apk` y capturas de escenario a 640×360. Pruebas en Android físico todavía pendientes.

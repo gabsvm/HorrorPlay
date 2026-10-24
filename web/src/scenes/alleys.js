@@ -7,7 +7,7 @@ import { Actor } from '../engine/actor.js';
 import { rng } from '../art/noise.js';
 import { Smoke, Rat, Paper, Drip, Cat } from '../engine/life.js';
 import { prefs } from '../engine/prefs.js';
-import { drawProp } from '../art/models.js';
+import { drawProp, propSprite } from '../art/models.js';
 
 const WIDTH = 4200, GROUND = 630;
 
@@ -115,7 +115,14 @@ export default {
       for (let i = 0; i < 10; i++) {
         const bx = 300 + i * 390 + r.range(-60, 60);
         const s = r.range(0.85, 1.15);
-        if (r.chance(0.5)) A.barrel(ctx, bx, GROUND - 52 * s, 40 * s, 46 * s);
+        if (r.chance(0.5)) {
+          // Keep each barrel's original dimensions and placement. Fall back if the
+          // Scenario sprite was not loaded; do not change RNG or gameplay layout.
+          const barrel = propSprite('scenario_barrel');
+          if (!barrel || !drawProp(ctx, 'scenario_barrel', bx + 20 * s, GROUND - 6 * s, {
+            sx: 40 * s / barrel.w, sy: 46 * s / barrel.h,
+          })) A.barrel(ctx, bx, GROUND - 52 * s, 40 * s, 46 * s);
+        }
         else A.crate(ctx, bx, GROUND - 56 * s, 60 * s, 48 * s, 500 + i);
         if (r.chance(0.3)) A.sack(ctx, bx + r.range(50, 90), GROUND, 600 + i);
       }
