@@ -98,8 +98,11 @@ scene.render.image_settings.color_mode = "RGBA"
 scene.render.filepath = output
 scene.camera.data.lens = 50
 scene.view_settings.view_transform = "Standard"
-scene.view_settings.look = "Medium High Contrast" if "Medium High Contrast" in [
-    v.identifier for v in bpy.types.ColorManagedViewSettings.bl_rna.properties["look"].enum_items
-] else "Medium High Contrast"
+try:
+    scene.view_settings.look = "Medium High Contrast"
+except TypeError:
+    scene.view_settings.look = "Medium High Contrast" if bpy.app.version[0] < 4 else "AgX - Medium High Contrast"
+except ValueError:
+    pass
 bpy.ops.render.render(write_still=True)
 print("SCENARIO_RENDER_OK:", output, flush=True)
