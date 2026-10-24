@@ -218,6 +218,8 @@ export default {
       ctx.fillStyle = '#6a5a30'; ctx.fillRect(700, GROUND - 150, 6, 50); ctx.fillRect(686, GROUND - 100, 34, 6);
       ctx.fillStyle = '#1f5a3e'; ctx.beginPath(); ctx.moveTo(672, GROUND - 150); ctx.lineTo(734, GROUND - 150); ctx.lineTo(722, GROUND - 170); ctx.lineTo(684, GROUND - 170); ctx.fill();
       ctx.fillStyle = 'rgba(160,255,200,0.2)'; ctx.fillRect(684, GROUND - 168, 38, 3);
+      // A tiny cast-iron skeleton key, intentionally decorative; never a puzzle clue.
+      drawProp(ctx, 'scenario_key', 790, GROUND - 107);
       // a second gas bracket above the case files
       ctx.fillStyle = '#4a3e28'; ctx.fillRect(1318, GROUND - 426, 24, 6); ctx.fillRect(1328, GROUND - 436, 4, 12);
       ctx.fillStyle = '#e8d4a0'; ctx.beginPath(); ctx.ellipse(1330, GROUND - 442, 7, 9, 0, 0, Math.PI * 2); ctx.fill();
