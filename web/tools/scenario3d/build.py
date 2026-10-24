@@ -107,7 +107,7 @@ def optimize(proof, target, height):
     rgb = Image.merge("RGB", (r, g, b))
     rgb = ImageEnhance.Color(rgb).enhance(0.70)
     rgb = ImageEnhance.Brightness(rgb).enhance(0.73)
-    rgb = ImageOps.colorize(rgb.convert("L"), black="#1e1b17", white="#b7aa8f").blend(rgb, 0.60)
+    rgb = Image.blend(ImageOps.colorize(rgb.convert("L"), black="#1e1b17", white="#b7aa8f"), rgb, 0.60)
     result = rgb.convert("RGBA")
     result.putalpha(a)
     result.save(target, optimize=True)
