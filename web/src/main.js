@@ -76,6 +76,7 @@ async function credits() {
     <p>Programación, arte procedural, sonido sintetizado y textos desarrollados con Claude (Anthropic).</p>
     <p class="small">Grabaciones CC0: lluvia de Ylmir, tormenta de kindland y bucles de agua de rubberduck (OpenGameArt); pasos de TinyWorlds (OpenGameArt); pasos de madera, puertas, telas y papeles de Kenney (kenney.nl).</p>
     <p class="small">Tipografías: IM Fell English (Igino Marini, SIL Open Font License 1.1) y Special Elite (Astigmatic, Apache License 2.0).</p>
+    <p class="small">Modelos 3D decorativos: Scenario Labs, «3D Collection» (CC BY 4.0). https://huggingface.co/datasets/scenario-labs/3d-collection. Adaptación a sprites: HorrorPlay.</p>
     <p class="small">Mary Ann Nichols, Annie Chapman, Elizabeth Stride, Catherine Eddowes y Mary Jane Kelly existieron. Thomas Ashgrove, el Huésped y el resto de personajes son ficticios.</p>
     <p class="hand" style="text-align:center">En memoria de las cinco.</p>`);
   mainMenu();
