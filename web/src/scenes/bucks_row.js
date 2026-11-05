@@ -2,6 +2,7 @@
 import * as A from '../art/paint.js';
 import { nightBackdrop, facade, warehouse } from '../art/build.js';
 import { P } from '../art/palette.js';
+import { prefs } from '../engine/prefs.js';
 import { Actor } from '../engine/actor.js';
 import { canFinishC1 } from '../story/progression.js';
 import { Smoke, Drip, Rat, Cat, Crow, Moths, Paper, Ripples } from '../engine/life.js';
@@ -122,7 +123,43 @@ export default {
     ];
   },
 
+  update(G, dt) {
+    if (G.game.inMenu) return;
+    const boy = G.actor('Chico');
+    if (boy && !boy.talking) {
+      const watching = Math.abs(G.player.x - boy.x) < 165;
+      boy.facing = watching && G.player.x > boy.x ? 1 : -1;
+      boy.scrubTime = (boy.scrubTime || 0) + (watching ? 0 : dt);
+      boy.posePhase = watching || prefs.reduceMotion ? 0 : (boy.scrubTime * 1.45) % 1;
+    }
+
+    const beat = this.trackBeat;
+    if (!beat || beat.player !== G.player) return;
+    beat.elapsed += dt;
+    const low = prefs.reduceMotion || beat.elapsed >= 0.32;
+    beat.player.pose = low ? 'kneel' : 'take';
+    // Choose a particular drawing for the contact and hold it while the text is read.
+    beat.player.posePhase = low ? 0.5 : 0.25;
+    beat.reveal = prefs.reduceMotion ? 1 : Math.min(1, Math.max(0, (beat.elapsed - 0.25) / 0.8));
+  },
+
   drawNear(ctx, t) {
+    const beat = this.trackBeat;
+    if (beat && beat.reveal > 0 && beat.player.lanternOn) {
+      // Catch the wet lip on the very same alternating prints painted in build().
+      ctx.save();
+      ctx.lineWidth = 2;
+      for (let i = 2; i <= 8; i++) {
+        const strength = Math.min(1, Math.max(0, beat.reveal * 7 - (i - 2)));
+        if (!strength) break;
+        const x = 640 - i * 40, y = GROUND + 30 + (i % 2) * 10;
+        ctx.strokeStyle = 'rgba(231,188,120,' + strength * (0.63 - (i - 2) * 0.055) + ')';
+        ctx.beginPath();
+        ctx.ellipse(x, y, 9, 3.2, 0, 0.2, 2.5);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
     // Polly Nichols where the carter found her, Neil's cape over her, waiting for the mortuary barrow
     const gone = !this.G || this.G.flag('polly_taken') || this.G.game.inMenu;
     const L = this.lights && this.lights.find((l) => l.id === 'bodylamp');
@@ -133,6 +170,7 @@ export default {
   },
 
   actors() {
+    this.trackBeat = null;
     return [
       new Actor('Pike', { x: 980, y: GROUND, h: 200, hat: 'bowler', coat: '#2c2a26', coatLen: 0.9, cape: true, facing: 1, build: 1.05, moustache: '#3a2a1e', buttons: 'double', notebook: true, hair: '#3a2a1e' }),
       new Actor('Neil', { x: 1500, y: GROUND, h: 212, hat: 'helmet', coat: '#161c30', trousers: '#12151f', coatLen: 0.8, flare: 1.02, facing: -1, lantern: true, lanternOn: true, belt: true, number: true, moustache: '#4a3424' }),
@@ -144,8 +182,13 @@ export default {
     if (G.flag('br_intro')) return;
     G.flag('br_intro', true);
     G.date('31 de agosto de 1888', '4:12');
-    await G.walk(1180);
     const pike = G.actor('Pike');
+    pike.pose = 'write';
+    try {
+      await G.walk(1180);
+    } finally {
+      pike.pose = null;
+    }
     pike.facing = 1;
     // the finding: a middle framing on the body, the lamp, Pike and Thomas, in silence while Pike speaks (F11, «Hallazgo de Polly»)
     G.zoom(1.2, 920, G.scene.groundY - 110, 0.8);
@@ -193,7 +236,12 @@ export default {
             pike.talking = true;
             await G.say('Pike', 'Quién entra. Quién sale. A qué hora.');
             pike.talking = false;
-            await G.say('Ashgrove', '¿También apunta cuándo llego yo?');
+            pike.pose = 'write';
+            try {
+              await G.say('Ashgrove', '¿También apunta cuándo llego yo?');
+            } finally {
+              pike.pose = null;
+            }
             pike.talking = true;
             await G.say('Pike', 'Cuatro y doce. Lo mandé llamar a las cuatro.');
             pike.talking = false;
@@ -312,12 +360,29 @@ export default {
       },
     },
     {
-      id: 'tracks', name: 'Rastro en los adoquines', rect: [150, GROUND + 14, 520, 40], walk: 560, face: -1,
+      id: 'tracks', name: 'Rastro en los adoquines', rect: [150, GROUND + 14, 520, 40], walk: 560, face: -1, openApproach: true, gesture: false,
       act: async (G) => {
-        G.player.pose = 'kneel';
-        await G.think('Barro del río. La huella se aleja hacia Winthrop Street.');
-        G.clue('huellas');
-        G.player.pose = null;
+        const scene = G.scene, player = G.player, neil = G.actor('Neil');
+        const facing = neil?.facing;
+        const beat = { player, elapsed: 0, reveal: 0 };
+        scene.trackBeat = beat;
+        player.pose = prefs.reduceMotion ? 'kneel' : 'take';
+        if (neil) neil.facing = 1;
+        G.zoom(1.10, player.x - 62, GROUND - 60, 2);
+        try {
+          await G.think('Barro del río. La huella se aleja hacia Winthrop Street.');
+          G.clue('huellas');
+        } finally {
+          if (scene.trackBeat === beat) {
+            scene.trackBeat = null;
+            if (G.scene === scene) {
+              player.pose = null;
+              player.posePhase = null;
+            }
+            if (neil) neil.facing = facing;
+            if (G.scene === scene) G.zoom(1);
+          }
+        }
         await G.think('Mi talla. Eso no significa nada.');
       },
       again: 'Barro de río, hacia Winthrop Street.',
