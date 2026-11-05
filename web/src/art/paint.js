@@ -474,22 +474,32 @@ export function cobbles(ctx, x, y, w, h, { seed = 5, color = P.cobble, rows = 14
   ctx.save();
   ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
   vgrad(ctx, x, y, w, h, [[0, shade(P.cobbleDark, 0.55)], [1, shade(P.cobbleDark, 0.85)]]);
-  // Sample one continuous texture in shallow strips. The source advances continuously
-  // while its vertical scale grows toward the viewer; no strip restarts the pattern.
-  const textured = hasMaterial('cobblestone_floor_04');
+  // Project one period of the paving, then repeat it across the full street.
+  // The strip is temporary; the finished scene already has its own layer cache.
+  const textured = hasMaterial('cobblestone_floor_04') && h > 0;
   if (textured) {
+    const strip = document.createElement('canvas');
+    strip.width = 230;
+    strip.height = Math.ceil(h);
+    const tile = strip.getContext('2d');
     const bands = 32;
+    const bandHeight = h / bands;
     let sourceY = 0;
     for (let i = 0; i < bands; i++) {
-      const top = y + h * i / bands;
-      const height = h * (i + 1) / bands - (top - y);
       const tileH = 42 + 108 * (i + 0.5) / bands;
-      material(ctx, 'cobblestone_floor_04', x, top, w, height + 0.1, {
-        tileW: 230, tileH, offsetY: sourceY * tileH,
-        alpha: 1, mode: 'source-over', tint: '#777a75',
+      material(tile, 'cobblestone_floor_04', 0, i * bandHeight, strip.width, bandHeight + 0.1, {
+        tileW: strip.width, tileH, offsetY: sourceY * tileH, alpha: 1, mode: 'source-over',
       });
-      sourceY += height / tileH;
+      sourceY += bandHeight / tileH;
     }
+    tile.globalCompositeOperation = 'multiply';
+    tile.fillStyle = '#777a75';
+    tile.fillRect(0, 0, strip.width, strip.height);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = ctx.createPattern(strip, 'repeat-x');
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
     vgrad(ctx, x, y, w, h, [[0, 'rgba(8,13,14,0.52)'], [1, 'rgba(8,13,14,0.13)']]);
   }
   let yy = y;
