@@ -37,7 +37,7 @@ export default {
     const lights = [];
     const chimneys = [];
     const sky = R.paintLayer(1280 + (WIDTH - 1280) * 0.2, (ctx, w, h) => {
-      A.sky(ctx, w, h, { top: '#232b31', mid: '#46525a', low: '#8a8e88', glow: 'rgba(220,200,170,0.3)', glowY: 0.42, seed: 81, rim: '#9aa2a0' });
+      A.sky(ctx, w, h, { top: '#232b31', mid: '#46525a', low: '#8a8e88', glow: 'rgba(220,200,170,0.3)', glowY: 0.42, seed: 81, rim: '#9aa2a0', cloudOpacity: 0.3 });
       A.skyline(ctx, { w, baseY: 300, seed: 82, color: '#2a3034', minH: 60, maxH: 160, spire: { x: 700, h: 360 } });
       A.vgrad(ctx, 0, 100, w, 260, [[0, 'rgba(130,140,140,0)'], [1, 'rgba(130,140,140,0.5)']]);
     });

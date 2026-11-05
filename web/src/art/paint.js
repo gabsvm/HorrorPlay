@@ -2,8 +2,9 @@
 // the renderer reduces it to the pixel grid, snaps it to the palette and lights it in one pass.
 // Details are sized for that reduction: nothing meaningful is thinner than two logical pixels.
 import { drawProp, drawPropIn } from './models.js';
+import { material, hasMaterial } from './materials.js';
 import { rng, noiseCanvas } from './noise.js';
-import { P, shade, mix } from './palette.js';
+import { P, shade, mix, toRgb } from './palette.js';
 
 const TAU = Math.PI * 2;
 const cache = new Map();
@@ -70,7 +71,7 @@ export function hgrad(ctx, x, y, w, h, stops) {
 }
 
 // ---------------------------------------------------------------- sky and distance
-export function sky(ctx, w, h, { top = '#05070a', mid = '#0c1217', low = '#1a2a2e', glow = 'rgba(70,110,100,0.18)', glowY = 0.62, seed = 3, moon = null, stars = 0, rim = '#5d6e70' } = {}) {
+export function sky(ctx, w, h, { top = '#05070a', mid = '#0c1217', low = '#1a2a2e', glow = 'rgba(70,110,100,0.18)', glowY = 0.62, seed = 3, moon = null, stars = 0, rim = '#5d6e70', cloudOpacity = 0.14 } = {}) {
   vgrad(ctx, 0, 0, w, h, [[0, top], [0.55, mid], [1, low]]);
   const r = rng(seed + 5);
   for (let i = 0; i < stars; i++) { ctx.fillStyle = `rgba(220,230,235,${r.range(0.25, 0.7)})`; ctx.fillRect(r.range(0, w), r.range(0, h * 0.35), 2, 2); }
@@ -82,14 +83,19 @@ export function sky(ctx, w, h, { top = '#05070a', mid = '#0c1217', low = '#1a2a2
     ctx.fillStyle = 'rgba(120,130,125,0.5)'; ctx.beginPath(); ctx.arc(moon.x - 6, moon.y - 4, 6, 0, TAU); ctx.arc(moon.x + 8, moon.y + 6, 4, 0, TAU); ctx.fill();
   }
   // smog cloud banks: a dark body with a paler, moonlit edge offset above it
-  const clouds = noiseTex(`clouds${seed}`, 200, 70, { scale: 6, seed, octaves: 5, alpha: true, shape: (v, nx, ny) => (v - 0.44) * 2.6 * Math.sin(Math.PI * ny) });
-  const dark = tinted(clouds, mix(top, mid, 0.5)), pale = tinted(clouds, rim);
-  ctx.save();
-  ctx.globalAlpha = 0.5;
-  for (let x = -200; x < w; x += 1500) ctx.drawImage(pale, x, -30, 1500, h * 0.62);
-  ctx.globalAlpha = 0.92;
-  for (let x = -200; x < w; x += 1500) ctx.drawImage(dark, x, -22, 1500, h * 0.62);
-  ctx.restore();
+  // Luminance from a cropped sky study shares the scene's existing colour and light.
+  if (!material(ctx, 'sunset_clouds', 0, 0, w, h, {
+    tileW: w, tileH: h * 1.05, alpha: cloudOpacity, mode: 'luminosity',
+  })) {
+    const clouds = noiseTex(`clouds${seed}`, 200, 70, { scale: 6, seed, octaves: 5, alpha: true, shape: (v, nx, ny) => (v - 0.44) * 2.6 * Math.sin(Math.PI * ny) });
+    const dark = tinted(clouds, mix(top, mid, 0.5)), pale = tinted(clouds, rim);
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    for (let x = -200; x < w; x += 1500) ctx.drawImage(pale, x, -30, 1500, h * 0.62);
+    ctx.globalAlpha = 0.92;
+    for (let x = -200; x < w; x += 1500) ctx.drawImage(dark, x, -22, 1500, h * 0.62);
+    ctx.restore();
+  }
   const g = ctx.createRadialGradient(w * 0.5, h * glowY, 10, w * 0.5, h * glowY, w * 0.6);
   g.addColorStop(0, glow); g.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
@@ -196,19 +202,24 @@ export function brickWall(ctx, x, y, w, h, { seed = 1, bw = 26, bh = 9, palette 
   ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
   ctx.fillStyle = shade(mortar, 0.8);
   ctx.fillRect(x, y, w, h);
-  // Flemish bond: stretchers and darker burnt headers alternate along each course
-  for (let row = 0, yy = y; yy < y + h; row++, yy += bh) {
-    let xx = x - (row % 2 ? bw * 0.75 : 0);
-    let header = row % 2 === 0;
-    while (xx < x + w) {
-      const len = header ? bw / 2 : bw;
-      const base = header ? shade(r.pick(palette), 0.72) : r.pick(palette);
-      ctx.fillStyle = shade(base, r.range(0.84, 1.12));
-      ctx.fillRect(xx + 1, yy + 1, len - 2, bh - 2);
-      // top-edge catchlight and a worn corner now and then
-      ctx.fillStyle = 'rgba(255,230,200,0.07)'; ctx.fillRect(xx + 1, yy + 1, len - 2, 1.5);
-      if (r.chance(0.08)) { ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(xx + len - 6, yy + bh - 4, 4, 3); }
-      xx += len; header = !header;
+  // The photograph supplies the bond and chipped surfaces; the drawn bond is the offline fallback.
+  const mean = palette.map(toRgb).reduce((sum, c) => sum.map((v, i) => v + c[i]), [0, 0, 0]).map((v) => Math.min(255, Math.round(v / palette.length * 1.65)));
+  const tint = `rgb(${mean.join(',')})`;
+  const textured = material(ctx, 'brown_brick_02', x, y, w, h, { tileW: bw * 8, tileH: bh * 10, alpha: 1, mode: 'source-over', tint });
+  if (!textured) {
+    for (let row = 0, yy = y; yy < y + h; row++, yy += bh) {
+      let xx = x - (row % 2 ? bw * 0.75 : 0);
+      let header = row % 2 === 0;
+      while (xx < x + w) {
+        const len = header ? bw / 2 : bw;
+        const base = header ? shade(r.pick(palette), 0.72) : r.pick(palette);
+        ctx.fillStyle = shade(base, r.range(0.84, 1.12));
+        ctx.fillRect(xx + 1, yy + 1, len - 2, bh - 2);
+        // top-edge catchlight and a worn corner now and then
+        ctx.fillStyle = 'rgba(255,230,200,0.07)'; ctx.fillRect(xx + 1, yy + 1, len - 2, 1.5);
+        if (r.chance(0.08)) { ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(xx + len - 6, yy + bh - 4, 4, 3); }
+        xx += len; header = !header;
+      }
     }
   }
   // repointed patches and missing bricks
@@ -245,6 +256,7 @@ export function plasterWall(ctx, x, y, w, h, { seed = 2, color = P.plaster, peel
   ctx.save();
   ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
   ctx.fillStyle = color; ctx.fillRect(x, y, w, h);
+  material(ctx, 'painted_plaster_wall', x, y, w, h, { tileW: 320, alpha: 0.65 });
   stain(ctx, x, y, w, h, { seed, alpha: 0.7, scale: 4 });
   stain(ctx, x, y, w, h, { seed: seed + 1, alpha: 0.35, scale: 14 });
   const r = rng(seed + 5);
@@ -462,22 +474,42 @@ export function cobbles(ctx, x, y, w, h, { seed = 5, color = P.cobble, rows = 14
   ctx.save();
   ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
   vgrad(ctx, x, y, w, h, [[0, shade(P.cobbleDark, 0.55)], [1, shade(P.cobbleDark, 0.85)]]);
-  let yy = y;
-  for (let row = 0; row < rows && yy < y + h; row++) {
-    const t = row / Math.max(1, rows - 1);
-    const rh = 5 + t * t * 16;
-    const sw = rh * 2.1;
-    for (let xx = x - (row % 2) * sw * 0.5 - r.range(0, 6); xx < x + w; xx += sw) {
-      const k = r.range(0.72, 1.15) * (0.7 + t * 0.4);
-      ctx.fillStyle = shade(color, k);
-      ctx.beginPath();
-      ctx.moveTo(xx + 2, yy + 1.5); ctx.lineTo(xx + sw - 2, yy + 1); ctx.lineTo(xx + sw - 1, yy + rh - 1.5); ctx.lineTo(xx + 1.5, yy + rh - 1); ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = `rgba(200,215,220,${0.05 + wet * 0.09 * r()})`;
-      ctx.fillRect(xx + 3, yy + 2, sw * 0.6, Math.max(1.5, rh * 0.18));
-      ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fillRect(xx + 2, yy + rh - 3, sw - 3, 2);
+  // Sample one continuous texture in shallow strips. The source advances continuously
+  // while its vertical scale grows toward the viewer; no strip restarts the pattern.
+  const textured = hasMaterial('cobblestone_floor_04');
+  if (textured) {
+    const bands = 32;
+    let sourceY = 0;
+    for (let i = 0; i < bands; i++) {
+      const top = y + h * i / bands;
+      const height = h * (i + 1) / bands - (top - y);
+      const tileH = 42 + 108 * (i + 0.5) / bands;
+      material(ctx, 'cobblestone_floor_04', x, top, w, height + 0.1, {
+        tileW: 230, tileH, offsetY: sourceY * tileH,
+        alpha: 1, mode: 'source-over', tint: '#777a75',
+      });
+      sourceY += height / tileH;
     }
-    yy += rh;
+    vgrad(ctx, x, y, w, h, [[0, 'rgba(8,13,14,0.52)'], [1, 'rgba(8,13,14,0.13)']]);
+  }
+  let yy = y;
+  if (!textured) {
+    for (let row = 0; row < rows && yy < y + h; row++) {
+      const t = row / Math.max(1, rows - 1);
+      const rh = 5 + t * t * 16;
+      const sw = rh * 2.1;
+      for (let xx = x - (row % 2) * sw * 0.5 - r.range(0, 6); xx < x + w; xx += sw) {
+        const k = r.range(0.72, 1.15) * (0.7 + t * 0.4);
+        ctx.fillStyle = shade(color, k);
+        ctx.beginPath();
+        ctx.moveTo(xx + 2, yy + 1.5); ctx.lineTo(xx + sw - 2, yy + 1); ctx.lineTo(xx + sw - 1, yy + rh - 1.5); ctx.lineTo(xx + 1.5, yy + rh - 1); ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = `rgba(200,215,220,${0.05 + wet * 0.09 * r()})`;
+        ctx.fillRect(xx + 3, yy + 2, sw * 0.6, Math.max(1.5, rh * 0.18));
+        ctx.fillStyle = 'rgba(0,0,0,0.28)'; ctx.fillRect(xx + 2, yy + rh - 3, sw - 3, 2);
+      }
+      yy += rh;
+    }
   }
   stain(ctx, x, y, w, h, { seed: seed + 2, alpha: 0.42, scale: 9 });
   // gutter channel close to the kerb

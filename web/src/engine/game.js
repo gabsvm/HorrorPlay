@@ -4,6 +4,7 @@ import { Actor } from './actor.js';
 import { modelFor, releaseModels } from './model.js';
 import { loadCloseups } from '../art/closeups.js';
 import { loadProps } from '../art/models.js';
+import { loadMaterials } from '../art/materials.js';
 import { buzz } from './haptics.js';
 import { fgDressing } from '../art/build.js';
 import { live } from '../art/paint.js';
@@ -69,7 +70,8 @@ export class Game {
     this.player.model = modelFor('Thomas');
     this._thomasModel = this.player.model;   // the adult's modelled atlas: the prologue's child is drawn procedurally instead (look(), chapters.js)
     loadCloseups();
-    loadProps();
+    // A slow first visit can bake fallback artwork. Repaint on the next visit once images settle.
+    Promise.all([loadProps(), loadMaterials()]).then(() => this.layerCache.clear());
     this.player.onStep = (a) => {
       audio.step(this.scene?.surface || 'stone', a.h / 200);
       if (this.scene && (this.scene.wet || this.scene.rain) && !this.scene.indoor) this.r.splash(a.x + a.facing * 14 * (a.h / 200), a.y);
@@ -556,7 +558,7 @@ export class Game {
     if (!scene) throw new Error(`Escena desconocida: ${id}`);
     if (fade) await this.fadeTo(1, 700);
     // the modelled props are painted into the layers when the scene is built: give them a moment to load
-    await Promise.race([Promise.all([loadProps(), fontsReady()]), wait(2000)]);
+    await Promise.race([Promise.all([loadProps(), loadMaterials(), fontsReady()]), wait(2000)]);
     this.ui.hover(null);
     // a new place starts with empty hands: an object carried through a way out is put away (review of UX-B03)
     if (this.selectedItem) { this.selectedItem = null; this.refreshInventory(); }

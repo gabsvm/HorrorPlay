@@ -50,7 +50,11 @@ closeups = {k: 'data:image/jpeg;base64,' + base64.b64encode(open(os.path.join(cd
 rdir = os.path.join(web, 'assets', 'props')
 ridx = json.load(open(os.path.join(rdir, 'index.json'))) if os.path.isfile(os.path.join(rdir, 'index.json')) else {}
 props = {n: {'meta': m, 'src': 'data:image/png;base64,' + base64.b64encode(open(os.path.join(rdir, n + '.png'), 'rb').read()).decode()} for n, m in ridx.items()}
-sjs = ('<script>window.__SAMPLES=' + json.dumps(samples) + ';window.__MODELS=' + json.dumps(models)
+# Material photographs are embedded for the single-file HTML and Android WebView.
+matdir = os.path.join(web, 'assets', 'materials')
+materials = {f[:-4]: 'data:image/jpeg;base64,' + base64.b64encode(open(os.path.join(matdir, f), 'rb').read()).decode()
+             for f in sorted(os.listdir(matdir)) if f.endswith('.jpg')}
+sjs = ('<script>window.__MATERIALS=' + json.dumps(materials) + ';window.__SAMPLES=' + json.dumps(samples) + ';window.__MODELS=' + json.dumps(models)
        + ';window.__CLOSEUPS=' + json.dumps(closeups) + ';window.__PROPS=' + json.dumps(props) + ';</script>' + NL)
 style = '<style>' + NL + css + '</style>' + NL
 scripts = sjs + '<script type="module">' + NL + js + NL + '</script>' + NL

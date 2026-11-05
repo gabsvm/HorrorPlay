@@ -3,6 +3,7 @@ import * as A from './paint.js';
 import { P, shade } from './palette.js';
 import { rng } from './noise.js';
 import { drawProp } from './models.js';
+import { material } from './materials.js';
 
 const TAU = Math.PI * 2;
 
@@ -183,15 +184,21 @@ export function warehouse(ctx, { x, w, top, base, seed = 1, name = null, hoist =
 }
 
 // ---------------------------------------------------------------- interiors
-export function wallpaper(ctx, x, y, w, h, { seed = 1, base = '#4a4636', stripe = '#3d3a2c', damp = 0.6 } = {}) {
+export function wallpaper(ctx, x, y, w, h, { seed = 1, base = '#4a4636', stripe = '#3d3a2c', damp = 0.6, marigold = false } = {}) {
   ctx.fillStyle = base; ctx.fillRect(x, y, w, h);
-  for (let xx = x; xx < x + w; xx += 36) { ctx.fillStyle = stripe; ctx.fillRect(xx, y, 12, h); ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.fillRect(xx + 12, y, 2, h); }
-  ctx.fillStyle = 'rgba(170,150,105,0.16)';
-  for (let yy = y + 22; yy < y + h; yy += 52) for (let xx = x + 18 + ((Math.round((yy - y) / 52)) % 2) * 18; xx < x + w; xx += 72) {
-    ctx.beginPath(); ctx.ellipse(xx, yy, 6, 11, 0, 0, TAU); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(xx - 8, yy + 6, 5, 3, -0.6, 0, TAU); ctx.ellipse(xx + 8, yy + 6, 5, 3, 0.6, 0, TAU); ctx.fill();
-    ctx.fillRect(xx - 1, yy + 10, 2, 8);
+  const patterned = marigold && material(ctx, 'marigold', x, y, w, h, { tileW: 280, tileH: 280, alpha: 1, mode: 'source-over', tint: base === '#4a1e1c' ? '#805851' : '#596d5b' });
+  if (!patterned) {
+    for (let xx = x; xx < x + w; xx += 36) { ctx.fillStyle = stripe; ctx.fillRect(xx, y, 12, h); ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.fillRect(xx + 12, y, 2, h); }
   }
+  ctx.fillStyle = 'rgba(170,150,105,0.16)';
+  if (!patterned) {
+    for (let yy = y + 22; yy < y + h; yy += 52) for (let xx = x + 18 + ((Math.round((yy - y) / 52)) % 2) * 18; xx < x + w; xx += 72) {
+      ctx.beginPath(); ctx.ellipse(xx, yy, 6, 11, 0, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(xx - 8, yy + 6, 5, 3, -0.6, 0, TAU); ctx.ellipse(xx + 8, yy + 6, 5, 3, 0.6, 0, TAU); ctx.fill();
+      ctx.fillRect(xx - 1, yy + 10, 2, 8);
+    }
+  }
+  material(ctx, 'painted_plaster_wall', x, y, w, h, { tileW: 320, alpha: 0.48 });
   A.stain(ctx, x, y, w, h, { seed, alpha: 0.65, scale: 5 });
   A.stain(ctx, x, y, w, h, { seed: seed + 4, alpha: 0.4, scale: 16 });
   A.vgrad(ctx, x, y + h * 0.65, w, h * 0.35, [[0, 'rgba(25,28,20,0)'], [1, `rgba(25,28,20,${damp})`]]);
@@ -224,6 +231,7 @@ export function wainscot(ctx, x, y, w, h) {
 export function floorboards(ctx, x, y, w, h, { seed = 2, color = '#3b2a1f' } = {}) {
   const r = rng(seed);
   A.vgrad(ctx, x, y, w, h, [[0, A.mix(color, '#000000', 0.5)], [1, color]]);
+  material(ctx, 'wood_floor_worn', x, y, w, h, { tileW: 240, tileH: 420, alpha: 1, mode: 'source-over', tint: '#8a6b55' });
   const vx = x + w / 2, vy = y - 900;
   for (let xx = x - w; xx < x + w * 2; xx += 46) {
     const x0 = vx + (xx - vx) * ((y - vy) / (y + h - vy));
