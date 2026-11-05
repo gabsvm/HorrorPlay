@@ -1,0 +1,44 @@
+name: Comparativa de Buck's Row
+on:
+  push:
+    branches: [qa/bucks-row-actuacion]
+permissions:
+  contents: read
+jobs:
+  comparativa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Preparar las dos versiones
+        run: |
+          git worktree add --detach /tmp/huesped-antes fb4228a1078b82298f70a56b11c8d016c2bf6b36
+          mkdir -p out
+          npm install --no-save --no-package-lock playwright-core@1.55.0 esbuild@0.25.11
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+      - name: Construir el juego sin conexión
+        run: |
+          node_modules/.bin/esbuild web/src/main.js --bundle --format=iife --minify --outfile=out/bundle.js
+          python3 web/tools/build-artifact.py out/El_Huesped.html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: El-Huesped-Bucks-Row
+          path: out/El_Huesped.html
+      - name: Comprobar lógica y escenas
+        run: |
+          node web/tools/unit.mjs
+          node web/tools/smoke.mjs
+      - name: Capturar y comparar el juego real
+        run: |
+          python3 -m http.server 5317 --bind 127.0.0.1 --directory /tmp/huesped-antes/web >/tmp/antes.log 2>&1 &
+          python3 -m http.server 5318 --bind 127.0.0.1 --directory web >/tmp/despues.log 2>&1 &
+          node web/tools/capture-bucks.mjs
+          ffmpeg -loglevel error -framerate 10 -i out/antes/%04d.png -framerate 10 -i out/despues/%04d.png -filter_complex "[0:v]drawtext=text=ANTES:x=18:y=18:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.8[a];[1:v]drawtext=text=DESPUES:x=18:y=18:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.8[b];[a][b]hstack" -c:v libx264 -pix_fmt yuv420p -movflags +faststart out/Bucks_Row.mp4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Comparativa-Bucks-Row
+          path: out/Bucks_Row.mp4
