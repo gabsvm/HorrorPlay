@@ -1,7 +1,7 @@
 name: Comparativa de Buck's Row
 on:
-  push:
-    branches: [qa/bucks-row-actuacion]
+  pull_request:
+    branches: [art/whitechapel-materiales]
 permissions:
   contents: read
 jobs:
