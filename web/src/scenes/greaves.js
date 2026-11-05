@@ -136,7 +136,7 @@ export default {
     const lights = [];
     const near = R.paintLayer(WIDTH, (ctx) => {
       ctx.fillStyle = '#080908'; ctx.fillRect(0, 0, WIDTH, 720);
-      wallpaper(ctx, 0, 30, WIDTH, GROUND - 150, { seed: 71, base: '#2c3a32', stripe: '#24322a', damp: 0.3 });
+      wallpaper(ctx, 0, 30, WIDTH, GROUND - 150, { seed: 71, base: '#2c3a32', stripe: '#24322a', damp: 0.3, marigold: true });
       wainscot(ctx, 0, GROUND - 120, WIDTH, 120);
       ctx.fillStyle = '#0c0d0c'; ctx.fillRect(0, 0, WIDTH, 30); ctx.fillStyle = '#3a3428'; ctx.fillRect(0, 26, WIDTH, 6);
       floorboards(ctx, 0, GROUND - 6, WIDTH, 720 - GROUND + 6, { color: '#33251a' });

@@ -194,6 +194,31 @@ export class Actor {
     }
   }
 
+  // The blue channel of the normal atlas marks the glass. Cache its centre once
+  // per drawing, in unmirrored model pixels, so it also works for shared atlases.
+  lampAnchor() {
+    const frame = this._mf, model = this.model;
+    if (!frame || !model?.ready || !model.nData) return null;
+    const cache = model.lampAnchors ||= new Map();
+    if (cache.has(frame.i)) return cache.get(frame.i);
+    const { w, h, ax, ay, ns = 1 } = model.meta;
+    const left = Math.ceil(frame.fx * ns), top = Math.ceil(frame.fy * ns);
+    const right = Math.floor((frame.fx + w) * ns), bottom = Math.floor((frame.fy + h) * ns);
+    let sumX = 0, sumY = 0, count = 0;
+    for (let y = top; y < bottom; y++) {
+      for (let x = left; x < right; x++) {
+        const p = (y * model.nW + x) * 4;
+        if (model.nData[p + 3] < 128 || model.nData[p + 2] <= 128) continue;
+        sumX += x + 0.5;
+        sumY += y + 0.5;
+        count++;
+      }
+    }
+    const anchor = count ? { x: sumX / count / ns - frame.fx - ax, y: sumY / count / ns - frame.fy - ay } : null;
+    cache.set(frame.i, anchor);
+    return anchor;
+  }
+
   light() {
     if (!this.lantern || !this.lanternOn) {
       // the protagonist always keeps a faint fill so he never vanishes in the dark
@@ -202,6 +227,13 @@ export class Actor {
     const s = this.h / 200;
     // the modelled figure sets the lantern down to write or to clutch its head, and changes hands to
     // reach for something: the light goes where the lantern is
+    const anchor = this.lampAnchor();
+    if (anchor) {
+      const { k, flip } = this._mf;
+      return { x: this.x + (flip ? -1 : 1) * anchor.x * k, y: this.y + anchor.y * k,
+        r: 430, color: P.lantern, intensity: 0.85, flicker: 0.04,
+        cone: { dir: this.facing, spread: 0.3 }, halo: 26, haloK: 0.7, reflect: false };
+    }
     const held = this._mf?.name;
     if (held === 'write' || held === 'clutch') {
       return { x: this.x + this.facing * 44 * s, y: this.y - 16 * s, r: 380, color: P.lantern, intensity: 0.8, flicker: 0.04, cone: { dir: this.facing, spread: 0.3 }, halo: 22, haloK: 0.7, reflect: false };
@@ -304,6 +336,7 @@ export class Actor {
       const up = (this.y - this.reachTo.y) / (this.h / 200);
       return cyc(up < 85 ? 'reach_lo' : up < 135 ? 'reach_mid' : 'reach_hi', 0);
     }
+    if (this.pose && this.posePhase != null && !this.talking) return cyc(this.pose, this.posePhase);
     if (this.pose) return (this.talking && cyc(this.pose + '_talk', gesture)) || cyc(this.pose, breath);
     if (this.turnT > 0 && A.turn) {
       const [s, n] = A.turn, k = 1 - this.turnT / TURN;

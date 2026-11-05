@@ -4,6 +4,7 @@ import { Actor } from './actor.js';
 import { modelFor, releaseModels } from './model.js';
 import { loadCloseups } from '../art/closeups.js';
 import { loadProps } from '../art/models.js';
+import { loadMaterials } from '../art/materials.js';
 import { buzz } from './haptics.js';
 import { fgDressing } from '../art/build.js';
 import { live } from '../art/paint.js';
@@ -69,7 +70,8 @@ export class Game {
     this.player.model = modelFor('Thomas');
     this._thomasModel = this.player.model;   // the adult's modelled atlas: the prologue's child is drawn procedurally instead (look(), chapters.js)
     loadCloseups();
-    loadProps();
+    // A slow first visit can bake fallback artwork. Repaint on the next visit once images settle.
+    Promise.all([loadProps(), loadMaterials()]).then(() => this.layerCache.clear());
     this.player.onStep = (a) => {
       audio.step(this.scene?.surface || 'stone', a.h / 200);
       if (this.scene && (this.scene.wet || this.scene.rain) && !this.scene.indoor) this.r.splash(a.x + a.facing * 14 * (a.h / 200), a.y);
@@ -259,6 +261,7 @@ export class Game {
     this.idleClock = 0;
     if (this.player.fidget) { if (this.player.pose === 'inspect') this.player.pose = null; this.player.fidget = null; this.player.shiver = 0; this.player.stillT = 0; }
     const h = forced || this.hotspotAt(p);
+    const approach = this.approachId = (this.approachId || 0) + 1;
     if (!h) {
       // with an object in hand, empty ground is a step, not a cancel: only Cancel, Back or Escape let it go
       // (UX audit b69323b, UX-B03); the marker keeps showing what is held
@@ -275,8 +278,16 @@ export class Game {
       const [hx, hy, hw, hh] = typeof h.rect === 'function' ? h.rect(this.G) : h.rect;
       this.actingAt = { x: hx + hw / 2 - this.r.cam.x, y: Math.min(660, hy + hh / 2) };
     }
+    // On an open approach the player can redirect Thomas until he reaches the evidence.
+    if (h.openApproach) {
+      const scene = this.scene;
+      const state = this.state;
+      const ok = await this.player.walkTo(h.walk);
+      if (!ok || approach !== this.approachId || this.scene !== scene || this.state !== state ||
+          (this.selectedItem || null) !== item || this.running || this.inMenu || this.ui.notebookOpen || this.ui.inventoryOpen) return;
+    }
     await this.run(async (G) => {
-      if (h.walk != null) {
+      if (h.walk != null && !h.openApproach) {
         const tx = typeof h.walk === 'function' ? h.walk(G) : h.walk;
         const ok = await this.player.walkTo(Math.max(this.scene.walk[0], Math.min(this.scene.walk[1], tx)));
         if (!ok) return;
@@ -556,7 +567,7 @@ export class Game {
     if (!scene) throw new Error(`Escena desconocida: ${id}`);
     if (fade) await this.fadeTo(1, 700);
     // the modelled props are painted into the layers when the scene is built: give them a moment to load
-    await Promise.race([Promise.all([loadProps(), fontsReady()]), wait(2000)]);
+    await Promise.race([Promise.all([loadProps(), loadMaterials(), fontsReady()]), wait(2000)]);
     this.ui.hover(null);
     // a new place starts with empty hands: an object carried through a way out is put away (review of UX-B03)
     if (this.selectedItem) { this.selectedItem = null; this.refreshInventory(); }
@@ -574,6 +585,7 @@ export class Game {
     this.player.lanternOn = !!scene.lantern;
     this.dressFor(id);
     this.player.pose = null;
+    this.player.posePhase = null;
     this.player.alpha = 1;
     this.player.speed = scene.playerSpeed || (this.player.h < 140 ? 120 : 150);
     this.player.stop();

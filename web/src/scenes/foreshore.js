@@ -7,6 +7,7 @@ import { profileStairs } from '../art/props.js';
 import { P, shade } from '../art/palette.js';
 import { rng } from '../art/noise.js';
 import { drawProp } from '../art/models.js';
+import { material } from '../art/materials.js';
 import { Drip, Crow, Ripples, Rat, Smoke } from '../engine/life.js';
 
 const WIDTH = 2100, GROUND = 612, WATER_Y = 470;
@@ -25,19 +26,23 @@ function sailingBarge(ctx, x, y, s, color, sail) {
 
 function farLayers(R, dusk) {
   const sky = R.paintLayer(1280 + (WIDTH - 1280) * 0.15, (ctx, w, h) => {
-    if (dusk) A.sky(ctx, w, h, { top: '#0e0d10', mid: '#2a2224', low: '#6a4632', glow: 'rgba(190,110,60,0.4)', glowY: 0.6, seed: 61, rim: '#8a5a40' });
+    if (dusk) A.sky(ctx, w, h, { top: '#0e0d10', mid: '#2a2224', low: '#6a4632', glow: 'rgba(190,110,60,0.4)', glowY: 0.6, seed: 61, rim: '#8a5a40', cloudOpacity: 0.36 });
     else A.sky(ctx, w, h, { top: '#030405', mid: '#080c0f', low: '#0f1a1c', glow: 'rgba(40,120,100,0.16)', glowY: 0.66, seed: 62, moon: { x: w * 0.7, y: 120 }, stars: 10 });
-    const ink = dusk ? '#1d1a1b' : '#0a1012';
-    // far bank: Rotherhithe wharves with lit windows, masts, cranes, a gasholder
-    A.skyline(ctx, { w, baseY: WATER_Y - 6, seed: 9, color: ink, minH: 30, maxH: 100, cranes: true, gasometer: { x: w * 0.12, w: 150, h: 110 } });
-    const r = rng(4);
-    for (let i = 0; i < w / 30; i++) { if (!r.chance(0.35)) continue; ctx.fillStyle = dusk ? 'rgba(230,160,80,0.55)' : 'rgba(220,150,70,0.6)'; ctx.fillRect(r.range(0, w), WATER_Y - r.range(14, 70), 4, 5); }
-    ctx.strokeStyle = ink;
-    for (let i = 0; i < 9; i++) {
-      const x = r.range(0, w), h2 = r.range(90, 190);
-      ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, WATER_Y - 4); ctx.lineTo(x, WATER_Y - h2); ctx.stroke();
-      ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - 30, WATER_Y - h2 + 30); ctx.lineTo(x + 30, WATER_Y - h2 + 30); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(x, WATER_Y - h2); ctx.lineTo(x + 50, WATER_Y - 20); ctx.moveTo(x, WATER_Y - h2); ctx.lineTo(x - 44, WATER_Y - 20); ctx.stroke();
+    // A period etching, repainted for each visit and set back in the river mist.
+    const wharf = dusk ? 'wharf_dusk' : 'wharf_night';
+    if (!drawProp(ctx, wharf, 0, WATER_Y + 2, { sx: w / 688, sy: 1.22 })) {
+      const ink = dusk ? '#1d1a1b' : '#0a1012';
+      // far bank: Rotherhithe wharves with lit windows, masts, cranes, a gasholder
+      A.skyline(ctx, { w, baseY: WATER_Y - 6, seed: 9, color: ink, minH: 30, maxH: 100, cranes: true, gasometer: { x: w * 0.12, w: 150, h: 110 } });
+      const r = rng(4);
+      for (let i = 0; i < w / 30; i++) { if (!r.chance(0.35)) continue; ctx.fillStyle = dusk ? 'rgba(230,160,80,0.55)' : 'rgba(220,150,70,0.6)'; ctx.fillRect(r.range(0, w), WATER_Y - r.range(14, 70), 4, 5); }
+      ctx.strokeStyle = ink;
+      for (let i = 0; i < 9; i++) {
+        const x = r.range(0, w), h2 = r.range(90, 190);
+        ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, WATER_Y - 4); ctx.lineTo(x, WATER_Y - h2); ctx.stroke();
+        ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - 30, WATER_Y - h2 + 30); ctx.lineTo(x + 30, WATER_Y - h2 + 30); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, WATER_Y - h2); ctx.lineTo(x + 50, WATER_Y - 20); ctx.moveTo(x, WATER_Y - h2); ctx.lineTo(x - 44, WATER_Y - 20); ctx.stroke();
+      }
     }
     A.vgrad(ctx, 0, WATER_Y - 160, w, 170, [[0, 'rgba(60,70,70,0)'], [1, dusk ? 'rgba(130,90,64,0.5)' : 'rgba(30,50,50,0.6)']]);
   });
@@ -148,7 +153,16 @@ export default {
       // mud flat
       const mudTop = GROUND - 8;
       A.vgrad(ctx, 0, mudTop, WIDTH, 720 - mudTop, [[0, '#2e271f'], [0.4, '#1f1a15'], [1, '#110f0c']]);
-      A.stain(ctx, 0, mudTop, WIDTH, 720 - mudTop, { seed: 5, alpha: 0.6, scale: 12 });
+      material(ctx, 'brown_mud_rocks_01', 0, mudTop, WIDTH, 720 - mudTop, { tileW: 360, tileH: 150, alpha: 1, mode: 'source-over', tint: dusk ? '#887667' : '#596561' });
+      A.stain(ctx, 0, mudTop, WIDTH, 720 - mudTop, { seed: 5, alpha: 0.4, scale: 12 });
+      // Shallow pools settle in irregular hollows; edges catch the last river light.
+      for (let k = 0; k < 7; k++) {
+        const px = 420 + k * 205, py = GROUND + 24 + (k % 3) * 23;
+        ctx.fillStyle = dusk ? 'rgba(28,27,25,0.55)' : 'rgba(9,24,23,0.6)';
+        ctx.beginPath(); ctx.ellipse(px, py, 90 + (k % 2) * 40, 10 + (k % 3) * 3, -0.02, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = dusk ? 'rgba(218,158,110,0.35)' : 'rgba(124,171,156,0.3)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.ellipse(px, py - 2, 70 + (k % 2) * 30, 6, -0.02, Math.PI * 1.05, Math.PI * 1.9); ctx.stroke();
+      }
       // the ditch water is painted over the mud (V4-11): it comes out of the culvert mouth, a pool under the arch that thins into a tongue
       ctx.fillStyle = dusk ? '#221d18' : '#0b1210';
       // its back edge runs along the foot of the arch, where the drips from the vault fall (Drip, below)
